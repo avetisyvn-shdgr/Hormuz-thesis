@@ -92,6 +92,12 @@ def main() -> None:
     synth_daily = _read("synthetic_control_daily.csv", ("date",))
     synth_scales = _read("synthetic_control_scales.csv")
     capacity_diag = _read("capacity_missingness_diagnostics.csv")
+    bsts_summary = _read("bsts_counterfactual_summary.csv")
+    bsts_validation = _read("bsts_validation_forecasts.csv", ("date",))
+    block_conformal = _read("block_conformal_summary.csv")
+    synth_pool_stress = _read("synthetic_donor_pool_stress.csv")
+    synth_time_inference = _read("synthetic_donor_time_inference.csv")
+    lng_summary = _read("lng_index_counterfactual_summary.csv")
 
     comparison_rows: list[dict[str, object]] = []
     for model in models:
@@ -176,6 +182,27 @@ def main() -> None:
         "placebo_p_value": float(synth["p_ratio_ge_actual"]),
         "post_pre_rmspe_ratio": float(synth["post_pre_rmspe_ratio"]),
         "effective_donors": float(synth["effective_n_weights"]),
+    })
+    bsts = bsts_summary.iloc[0]
+    bsts_residual = _residual_stats(bsts_validation)
+    comparison_rows.append({
+        "specification": "bsts_local_level_weekly",
+        "role": "state_space_corroboration",
+        "outcome": target,
+        "shortfall_unit": "transits",
+        "pre_rmse": float(bsts["validation_rmse_mean"]),
+        "pre_mase": float(bsts["validation_mase_mean"]),
+        **bsts_residual,
+        "point_shortfall": float(bsts["posterior_median_shortfall"]),
+        "mean_daily_shortfall": float(bsts["posterior_median_shortfall"] / bsts["n_post_days"]),
+        "interval_94d_lower": float(bsts["lower_95"]),
+        "interval_94d_upper": float(bsts["upper_95"]),
+        "placebo_metric": "not_run_for_bsts",
+        "placebo_reference_p95": np.nan,
+        "placebo_separation": np.nan,
+        "placebo_p_value": np.nan,
+        "post_pre_rmspe_ratio": np.nan,
+        "effective_donors": np.nan,
     })
     comparison = pd.DataFrame(comparison_rows)
     comparison_path = config.path("data_processed") / COMPARISON
@@ -267,6 +294,23 @@ def main() -> None:
         (capacity_diag["capacity_column"] == "hormuz_tanker_capacity")
         & (capacity_diag["period"] == "post")
     ].iloc[0]
+    conformal90 = block_conformal.loc[
+        np.isclose(block_conformal["nominal_coverage"], 0.90)
+    ].iloc[0]
+    conformal95 = block_conformal.loc[
+        np.isclose(block_conformal["nominal_coverage"], 0.95)
+    ].iloc[0]
+    clean_pool = synth_pool_stress.loc[
+        synth_pool_stress["donor_pool"] == "low_contamination_donors"
+    ].iloc[0]
+    broad_pool = synth_pool_stress.loc[
+        synth_pool_stress["donor_pool"] == "all_available_donors"
+    ].iloc[0]
+    synth_time = synth_time_inference.iloc[0]
+    lng_ar = lng_summary.loc[lng_summary["model"] == "ar_lag1_7"].iloc[0]
+    lng_bsts = lng_summary.loc[
+        lng_summary["model"] == "bsts_local_level_weekly"
+    ].iloc[0]
     lines = [
         "# End-to-End PortWatch Fallback Run",
         "",
@@ -284,6 +328,7 @@ def main() -> None:
         f"- Horizon-matched 95% interval: **{primary['interval_94d_lower']:,.1f} to {primary['interval_94d_upper']:,.1f} transits**.",
         f"- Temporal-placebo p95: **{primary['placebo_reference_p95']:,.1f}**; separation: **{primary['placebo_separation']:.3f}x**.",
         f"- One-sided placebo p-value: **{primary['placebo_p_value']:.6f}**, floor-censored with 36 overlapping / about 9 non-overlapping windows.",
+        f"- BSTS posterior median shortfall: **{bsts['posterior_median_shortfall']:,.1f}**; 95% posterior predictive interval: **{bsts['lower_95']:,.1f} to {bsts['upper_95']:,.1f}**.",
         "",
         "## Pre-treatment validation and residual fidelity",
         "",
@@ -304,6 +349,14 @@ def main() -> None:
         f"Full machine-readable table: [`data/processed/{COMPARISON}`](../data/processed/{COMPARISON})",
         "",
         "Synthetic-control shortfall is converted from mean-scaled units to a transit-equivalent magnitude for comparison. Its placebo metric is the post/pre RMSPE ratio, not the temporal cumulative-shortfall distribution, and no 94-day interval is asserted for it.",
+        "BSTS is an independent state-space corroboration. Its interval is posterior predictive conditional on the local-level model; it is not a causal posterior.",
+        "",
+        "## Independent-block inference",
+        "",
+        f"- Disjoint 94-day placebo blocks: **{int(conformal90['n_independent_placebo_blocks'])}**; honest rank p-value: **{conformal90['placebo_p_value_greater']:.3f}** (floor **{conformal90['placebo_p_value_floor']:.3f}**).",
+        f"- Actual / independent-placebo p95 separation: **{conformal90['actual_to_placebo_p95_ratio']:.3f}x**.",
+        f"- 90% block-conformal interval: **{conformal90['interval_lower']:,.1f} to {conformal90['interval_upper']:,.1f}**.",
+        f"- 95% block-conformal interval: **unbounded**; nine independent blocks support at most **{conformal95['maximum_finite_coverage']:.0%}** finite-sample coverage.",
         "",
         "## Synthetic-control corroboration",
         "",
@@ -312,6 +365,14 @@ def main() -> None:
         f"- Transit-equivalent cumulative gap: **{synth['cumulative_scaled_throughput_loss'] * scale:,.1f}**.",
         f"- Donor-placebo p95 ratio: **{synth['placebo_ratio_p95']:.3f}**; separation: **{synth['ratio_vs_placebo_p95']:.3f}x**; p-value: **{synth['p_ratio_ge_actual']:.6f}**.",
         f"- Donors: **{int(synth['n_donors'])}**; effective donors: **{synth['effective_n_weights']:.2f}**; largest weight: `{synth['top_weight_slug']}` ({synth['top_weight']:.3f}).",
+        f"- Donor-pool stress: clean ratio **{clean_pool['post_pre_rmspe_ratio']:.3f}**, broad-pool ratio **{broad_pool['post_pre_rmspe_ratio']:.3f}**.",
+        f"- Donor-by-time placebos: **{int(synth_time['n_computed_donor_time_placebos'])}** fits across **{int(synth_time['n_independent_time_windows'])}** disjoint windows; p-value **{synth_time['donor_time_placebo_p_value']:.6f}**, actual/p95 **{synth_time['actual_to_donor_time_p95_ratio']:.3f}x**.",
+        "",
+        "## LNG-specific robustness outcome",
+        "",
+        "The public WTO/AXSMarine series is an LNG-only outbound shipment volume index (2025 average = 100) and excludes LPG. It is not a carrier count, physical volume, or freight rate.",
+        f"- AR 94-day index-point shortfall: **{lng_ar['cumulative_throughput_loss']:,.1f}**.",
+        f"- BSTS posterior median: **{lng_bsts['posterior_median_shortfall']:,.1f}**; 95% interval **{lng_bsts['lower_95']:,.1f} to {lng_bsts['upper_95']:,.1f}**.",
         "",
         "## Data-quality checks",
         "",
@@ -325,6 +386,10 @@ def main() -> None:
         f"![Temporal placebo distribution](figures/{fig_placebo.name})",
         "",
         f"![Actual vs synthetic control](figures/{fig_synth.name})",
+        "",
+        "![BSTS counterfactual](figures/bsts_counterfactual.png)",
+        "",
+        "![LNG-only index counterfactual](figures/lng_index_counterfactual.png)",
         "",
         "## Interpretation guard",
         "",

@@ -160,6 +160,63 @@ def non_overlapping_fold_count(folds: list[Fold]) -> int:
     return count
 
 
+def select_non_overlapping_folds(folds: list[Fold]) -> list[Fold]:
+    """Greedily retain disjoint test windows in chronological order."""
+    selected: list[Fold] = []
+    last_end: pd.Timestamp | None = None
+    for fold in sorted(folds, key=lambda item: item.test_start):
+        if last_end is None or fold.test_start > last_end:
+            selected.append(fold)
+            last_end = fold.test_end
+    return selected
+
+
+def finite_sample_conformal_radius(
+    calibration_errors,
+    alpha: float = 0.1,
+) -> dict[str, float | int | bool]:
+    """Finite-sample split-conformal radius from absolute block errors.
+
+    The order statistic is ``ceil((n + 1) * (1 - alpha))``.  If that rank is
+    larger than the number of independent calibration blocks, the requested
+    coverage cannot be supported and the radius is infinite.  Returning an
+    honest unbounded interval is preferable to silently clipping the rank.
+    """
+    if not 0 < alpha < 1:
+        raise ValueError(f"alpha must be between 0 and 1, got {alpha}.")
+    errors = pd.Series(calibration_errors, dtype="float64").dropna().to_numpy()
+    if len(errors) == 0:
+        raise ValueError("Need at least one finite calibration error.")
+    scores = np.sort(np.abs(errors))
+    rank = int(np.ceil((len(scores) + 1) * (1 - alpha)))
+    supported = rank <= len(scores)
+    radius = float(scores[rank - 1]) if supported else float("inf")
+    return {
+        "radius": radius,
+        "n_calibration_blocks": int(len(scores)),
+        "order_statistic_rank": rank,
+        "finite_interval_supported": supported,
+        "maximum_finite_coverage": float(len(scores) / (len(scores) + 1)),
+    }
+
+
+def conformal_effect_interval(
+    point_effect: float,
+    calibration_errors,
+    alpha: float = 0.1,
+) -> dict[str, float | int | bool]:
+    """Symmetric block-conformal interval around an estimated cumulative effect."""
+    result = finite_sample_conformal_radius(calibration_errors, alpha=alpha)
+    radius = float(result["radius"])
+    return {
+        "point_effect": float(point_effect),
+        "interval_lower": float(point_effect - radius),
+        "interval_upper": float(point_effect + radius),
+        "nominal_coverage": float(1 - alpha),
+        **result,
+    }
+
+
 def separation_ratio(actual: float, reference: float) -> float:
     """Return actual/reference, preserving undefined cases as NaN."""
     if not np.isfinite(actual) or not np.isfinite(reference) or reference == 0:

@@ -1,0 +1,3 @@
+unit,n_donors,n_pre_fit_days,n_post_days,pre_rmspe,post_rmspe,post_pre_rmspe_ratio,cumulative_scaled_throughput_loss,mean_daily_scaled_throughput_loss,top_weight_slug,top_weight,effective_n_weights,donor_pool,placebo_type
+strait_of_hormuz,22,1519,94,0.17519354944076182,0.8348984918759914,4.765577811175608,77.8486450911981,0.8281770754382776,korea_strait,0.18368839065118517,8.740237227656145,low_contamination_donors,actual_pool_stress
+strait_of_hormuz,27,1519,94,0.17133763769393562,0.8523537838143667,4.974702553895052,79.5407207111378,0.8461778799057212,korea_strait,0.16554935959188455,11.937013379751928,all_available_donors,actual_pool_stress

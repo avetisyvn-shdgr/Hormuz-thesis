@@ -13,6 +13,10 @@ paths:
   # docs/DATA_SOURCES.md. Snapshot of 2026-06-12: md5 4728447a13b015cb...,
   # coverage 2019-01-01 -> 2026-06-07.
   portwatch_csv: "data/raw/portwatch/Daily_Chokepoints_Data.csv"
+  # Public WTO/AXSMarine LNG-only outbound shipment volume index. This is an
+  # optional robustness outcome, not a replacement for the locked PortWatch
+  # primary and not a freight-rate measure.
+  wto_hormuz_lng_csv: "data/raw/wto_hormuz/voy_intake_index_lng_export.csv"
 
 # Study window. Pre-period must be long enough for rolling-origin validation;
 # post-period is deliberately short (the proposal warns about overfitting here).

@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight.inference import (
     block_residual_sums,
+    conformal_effect_interval,
     counterfactual_effect,
     empirical_p_value,
     fixed_train_post_fold,
@@ -16,6 +17,7 @@ from lngfreight.inference import (
     placebo_time_folds,
     post_treatment_fold,
     residual_quantiles,
+    select_non_overlapping_folds,
     separation_ratio,
 )
 
@@ -77,6 +79,21 @@ def test_non_overlapping_fold_count_is_greedy():
     )
     assert len(folds) > non_overlapping_fold_count(folds)
     assert non_overlapping_fold_count(folds) == 7
+    selected = select_non_overlapping_folds(folds)
+    assert len(selected) == 7
+    assert all(left.test_end < right.test_start for left, right in zip(selected, selected[1:]))
+
+
+def test_conformal_interval_refuses_unsupported_coverage():
+    finite = conformal_effect_interval(100.0, [1, 2, 3, 4, 5, 6, 7, 8, 9], alpha=0.1)
+    assert finite["finite_interval_supported"] is True
+    assert finite["interval_lower"] == pytest.approx(91.0)
+    unsupported = conformal_effect_interval(
+        100.0, [1, 2, 3, 4, 5, 6, 7, 8, 9], alpha=0.05
+    )
+    assert unsupported["finite_interval_supported"] is False
+    assert unsupported["interval_lower"] == float("-inf")
+    assert unsupported["interval_upper"] == float("inf")
 
 
 def test_placebo_time_folds_fail_loudly_if_no_window_fits():

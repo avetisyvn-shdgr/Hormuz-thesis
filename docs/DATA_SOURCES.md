@@ -49,6 +49,24 @@
 - **What it cannot capture:** laden vs ballast legs, vessel identity, commodity split per vessel, or per-voyage ton-miles. It is **chokepoint-aggregate**, not vessel-level.
 - **Bias / caveats:** AIS coverage gaps, gap-filling/modelling assumptions in PortWatch's own pipeline, and it is *not* LNG-specific at the transit-count level. Treat as media-of-observation data, not ground truth.
 
+### LNG-specific public robustness outcome discovered 2026-06-18
+
+The WTO/AXSMarine **Strait of Hormuz Trade Tracker** exposes a public daily
+LNG-only outbound shipment-volume index (2025 average = 100) and explicitly
+excludes LPG. The reproducible endpoint is
+`https://wtomais.blob.core.windows.net/strait-of-hormuz-tracker/voy_intake_index_lng_export.csv`.
+The frozen snapshot contains 534 complete daily rows from 2025-01-01 through
+2026-06-18 (SHA-256
+`5500461bcbb9f405f38fe255ee4ce6906fef4c75d3208d23b01b5430645f1a6f`).
+
+This materially improves commodity specificity but does **not** recover the
+approved freight-rate dependent variable: it is an indexed shipment-volume
+series, not a carrier count, physical tonnage, ton-mile measure, or freight
+assessment. Its pre-period is also short (423 days before 2026-02-28), and the
+underlying voyage intelligence is supplied by AXSMarine. It is therefore kept
+as an optional LNG-specific robustness outcome while PortWatch remains the
+locked working primary.
+
 ### Mechanism — the ton-mile proxy (the proposal's go/no-go gate)
 
 | Variable | What the proposal wants | Free reality | Status |
@@ -65,6 +83,7 @@
 - **EIA / FRED** — *contribute:* clean, authoritative, free energy-price confounders (Henry Hub, Brent) that are genuine matches, with two independent providers for cross-checking. *Cannot:* give you any freight or LNG-assessment series.
 - **ICE / EEX settlements** — *contribute:* free-ish *proxies* for TTF, JKM, and even the Spark freight benchmarks via futures. *Cannot:* reproduce the daily physical spot assessments; they carry basis, roll and timing risk.
 - **IMF PortWatch** — *contribute:* a genuinely free, independent, AIS-derived operational view of the Hormuz and Panama chokepoints — valuable for the descriptive layer and as a route covariate. *Cannot:* deliver vessel-level laden ton-miles; it is aggregate only.
+- **WTO/AXSMarine Hormuz tracker** — *contribute:* a public LNG-only daily outbound shipment-volume index that excludes LPG. *Cannot:* provide freight rates, carrier counts, physical tonnes, ton-miles, or a long pre-period.
 - **Spark / Platts / Bloomberg / Kpler / Lloyd's** — *contribute:* the actual target and the primary mechanism variable. *Cannot:* be obtained free; these are the items to negotiate via TUM.
 
 ---

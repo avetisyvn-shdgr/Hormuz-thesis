@@ -30,10 +30,10 @@ def project_to_simplex(values: np.ndarray) -> np.ndarray:
 def fit_simplex_weights(
     y: pd.Series,
     donors: pd.DataFrame,
-    max_iter: int = 10000,
-    tol: float = 1e-10,
+    max_iter: int = 2000,
+    tol: float = 1e-9,
 ) -> pd.Series:
-    """Fit convex donor weights by Frank-Wolfe optimization."""
+    """Fit convex donor weights by accelerated projected gradient descent."""
     if donors.empty:
         raise ValueError("Need at least one donor column.")
 
@@ -47,27 +47,35 @@ def fit_simplex_weights(
 
     n = x.shape[1]
     weights = np.full(n, 1.0 / n)
+    # Cache sufficient statistics so donor-by-time placebos remain tractable.
+    gram = np.einsum("ni,nj->ij", x, x)
+    cross = np.einsum("ni,n->i", x, target)
+    lipschitz = 2.0 * float(np.max(np.sum(np.abs(gram), axis=1))) / len(target)
+    if not np.isfinite(lipschitz) or lipschitz <= 0:
+        raise ValueError("Synthetic-control design has no finite variation.")
 
-    for t in range(max_iter):
+    accelerated = weights.copy()
+    momentum = 1.0
+    for _ in range(max_iter):
         with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
-            residual = x @ weights - target
-            grad = (2.0 / len(target)) * (x.T @ residual)
-        if not np.isfinite(residual).all():
-            raise ValueError("Synthetic-control optimization produced non-finite residuals.")
+            fitted_gradient = np.sum(gram * accelerated[None, :], axis=1)
+            grad = (2.0 / len(target)) * (fitted_gradient - cross)
         if not np.isfinite(grad).all():
             raise ValueError("Synthetic-control optimization produced non-finite gradients.")
-        vertex = np.zeros(n)
-        vertex[int(np.argmin(grad))] = 1.0
-        direction = vertex - weights
-        gap = float(-grad @ direction)
-        if gap < tol:
-            break
-        gamma = 2.0 / (t + 2.0)
-        next_weights = weights + gamma * direction
+        next_weights = project_to_simplex(accelerated - grad / lipschitz)
         if np.linalg.norm(next_weights - weights, ord=1) < tol:
             weights = next_weights
             break
+        next_momentum = (1.0 + np.sqrt(1.0 + 4.0 * momentum**2)) / 2.0
+        accelerated = next_weights + (
+            (momentum - 1.0) / next_momentum
+        ) * (next_weights - weights)
         weights = next_weights
+        momentum = next_momentum
+
+    residual = np.sum(x * weights[None, :], axis=1) - target
+    if not np.isfinite(residual).all():
+        raise ValueError("Synthetic-control optimization produced non-finite residuals.")
 
     return pd.Series(weights, index=donors.columns, name="weight")
 

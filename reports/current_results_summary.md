@@ -70,10 +70,10 @@ Donor-weighted synthetic control on the clean donor pool (five rerouting corrido
 | Placebo ratio p95 | 1.23 |
 | Hormuz ratio / placebo p95 | 3.87x |
 | Abadie placebo p-value | 0.043 |
-| Effective donors (1/sum w^2) | 8.8 |
+| Effective donors (1/sum w^2) | 8.7 |
 | Largest single weight | korea_strait (0.18) |
 
-Synthetic-control interpretation: the pre-period fit is credible (RMSPE 0.175 on mean-scaled units, 8.8 effective donors, no single donor dominating), and Hormuz's post/pre RMSPE ratio is far larger than any clean donor placebo. This is independent corroboration of the throughput collapse, consistent with the placebo-in-time and spatial-placebo layers. It remains a scaled, shape-based diagnostic, not an LNG freight-rate estimate.
+Synthetic-control interpretation: the pre-period fit is credible (RMSPE 0.175 on mean-scaled units, 8.7 effective donors, no single donor dominating), and Hormuz's post/pre RMSPE ratio is far larger than any clean donor placebo. This is independent corroboration of the throughput collapse, consistent with the placebo-in-time and spatial-placebo layers. It remains a scaled, shape-based diagnostic, not an LNG freight-rate estimate.
 
 ## Guardrails
 
