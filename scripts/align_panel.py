@@ -14,8 +14,11 @@ Run from the repo root:
 """
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
+
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -24,8 +27,14 @@ from lngfreight.panel import build_panel                   # noqa: E402
 from lngfreight.clean import align_panel, alignment_report  # noqa: E402
 
 
-def main() -> None:
-    raw = build_panel()
+def main(from_interim: bool = False) -> None:
+    if from_interim:
+        path = config.path("data_interim") / "panel_free.csv"
+        if not path.exists():
+            raise FileNotFoundError(f"{path} not found. Run build_panel.py first.")
+        raw = pd.read_csv(path, parse_dates=["date"]).set_index("date")
+    else:
+        raw = build_panel()
     clean, audit = align_panel(raw)
 
     print(f"panel shape: {clean.shape}  "
@@ -66,4 +75,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--from-interim",
+        action="store_true",
+        help="align data/interim/panel_free.csv without refetching providers",
+    )
+    args = parser.parse_args()
+    main(from_interim=args.from_interim)

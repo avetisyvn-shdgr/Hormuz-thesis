@@ -9,17 +9,22 @@ Run from the repo root:
 """
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config           # noqa: E402
-from lngfreight.panel import build_panel, coverage_summary  # noqa: E402
+from lngfreight.panel import (  # noqa: E402
+    build_panel,
+    build_panel_from_frozen_raw,
+    coverage_summary,
+)
 
 
-def main() -> None:
-    panel = build_panel()
+def main(frozen_raw: bool = False) -> None:
+    panel = build_panel_from_frozen_raw() if frozen_raw else build_panel()
     print(f"panel shape: {panel.shape}  "
           f"({panel.index.min().date()} -> {panel.index.max().date()}, calendar-daily)\n")
     print(coverage_summary(panel).to_string())
@@ -33,4 +38,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--frozen-raw",
+        action="store_true",
+        help="rebuild entirely from local provenance-pinned raw snapshots",
+    )
+    args = parser.parse_args()
+    main(frozen_raw=args.frozen_raw)

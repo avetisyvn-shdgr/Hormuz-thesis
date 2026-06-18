@@ -19,13 +19,14 @@
     "data/processed/panel_aligned.csv": "924cf0824d0649959fe3aa0dd87710b5d9efbd048afbcf2d1181e9030a6da816",
     "data/processed/placebo_time_effects.csv": "98aa939ccefe9ad84ab205e7189168cb89c269c8db118259e9b8f12357bdf204",
     "data/processed/placebo_time_summary.csv": "81faefe5cbed4f6befab67975ddeeda26f6605dee3b0f89fed9a8ed83f256550",
+    "data/processed/run_spec_comparison.csv": "c7498618341adab973f9008f8653052e4ca148bd4102e654416e5d7ce3a40c44",
     "data/processed/spark_access_report.json": "5285168894e93c682df21da5fc4d143160ca9fd797d96d886137936989abeb86",
     "data/processed/spatial_placebo_effects.csv": "a78f33db20519966427556a44e901ad24dd2c725faed4e57bec603b52a1e4d17",
     "data/processed/spatial_placebo_leave_one_out.csv": "267a0f7f32fc46e77f81f4553ca078f25c265b683f238f8da41c2793beec8f8a",
     "data/processed/spatial_placebo_summary.csv": "4bca37e27b4fc2af25abd12299d7e189aa39ebf0730126083228f751de390bf1",
-    "data/processed/synthetic_control_daily.csv": "7449043d84b92654796babe885bac7ccf7393837959263e558370f042290199b",
+    "data/processed/synthetic_control_daily.csv": "cbb743c3c42e4e6d350e64bd1eb9c4f10945dc691b4317be3198c73922e55e65",
     "data/processed/synthetic_control_scales.csv": "e4d0bc3706052c65a034edfd7845fd5524218befaa557b05bf865d7dd0ae03b8",
-    "data/processed/synthetic_control_summary.csv": "43331abfa45344c07d42d96f2dd77ede8936ffc72028f44e71ca3bc32343761c",
+    "data/processed/synthetic_control_summary.csv": "67b37b1fc5e9c756b11987ea71d209a19a4998e23ef561cae5d84b27953c8c50",
     "data/processed/synthetic_control_weights.csv": "21a1e5e1cde1a822752f23c871710d9d2367c1e7362d4b8263deb80f19143e0b",
     "data/processed/treatment_robustness_daily.csv": "08d8c8fca8dddf5f91bf3daf9e52e3fd906d44f20a44adbc1b304f122b8d3542",
     "data/processed/treatment_robustness_summary.csv": "248f2ae052eaf5d34d2c142cf581ae1d95d43065410a70ef2ad3f4c2b8b7c929",
@@ -37,13 +38,16 @@
     "reports/figures/fig3_energy_response.pdf": "eea1a0744387454b480de1976da79c9ea3d9f5db38acdde1869aaf1ace1c4b06",
     "reports/figures/fig3_energy_response.png": "82154dddcfabcdddd425f30757cb9648ec679fa0abe1999f8056027a945d151d",
     "reports/figures/fig4_missingness_map.pdf": "46e981f274c55a470e5d9f7ec8c01f275d1b576dcf7cd9b326000c086e9cd15b",
-    "reports/figures/fig4_missingness_map.png": "9910613770664bd57549cd28ddb73c4d97bb623d7b931633ad6392db1cefaa16"
+    "reports/figures/fig4_missingness_map.png": "9910613770664bd57549cd28ddb73c4d97bb623d7b931633ad6392db1cefaa16",
+    "reports/figures/run_actual_vs_counterfactual.png": "1d4c6d2f48d522e29fffbc4c8658b0d4715a2f45b4292c09771e840be3f5ea6f",
+    "reports/figures/run_placebo_distribution.png": "ea65cedb3fcc8c9948559927b7ec7692f51963cd7b5e86029b065806460054d6",
+    "reports/figures/run_synthetic_control_path.png": "42832a69ba0c00206fdbd57da3f78ae3ec5f0ca622b5ae253277757ad88f68cb",
+    "reports/run_output.md": "b12db96c378e9553efe2e588f5802b8c1e131ef20bed8744050efcdf38436fe3"
   },
   "config_sha256": {
     "config/settings.yaml": "37be5f9ed6862b1d60d5a0939016215495cee192bf29cb2bc9b4c042808dbb4d",
     "config/sources.yaml": "46e6588f9b5b4b3f1c6108e4b18261c06ab1dc0b780b6d77409f4672385198fa"
   },
-  "generated_utc": "2026-06-18T19:13:32.933114+00:00",
   "packages": {
     "PyYAML": "6.0.3",
     "numpy": "1.26.4",

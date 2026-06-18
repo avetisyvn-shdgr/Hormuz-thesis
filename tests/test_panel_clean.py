@@ -27,6 +27,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import panel as panel_mod
+from lngfreight import config as config_mod
 from lngfreight.clean import align_panel, alignment_report
 
 
@@ -59,6 +60,32 @@ def test_build_panel_refuses_proxy_without_optin():
     # any network fetch, so this needs no API key.
     with pytest.raises(ValueError, match="proxy"):
         panel_mod.build_panel(variables=["ttf_gas"], allow_proxies=False)
+
+
+def test_build_panel_from_frozen_raw_is_offline_and_calendar_aligned(
+    tmp_path, monkeypatch
+):
+    raw = tmp_path / "data" / "raw" / "provider"
+    raw.mkdir(parents=True)
+    source = raw / "x.csv"
+    pd.DataFrame({
+        "date": ["2026-01-01", "2026-01-03"],
+        "value": [1.0, 3.0],
+    }).to_csv(source, index=False)
+    provenance = tmp_path / "data" / "raw" / "provenance.jsonl"
+    provenance.write_text(
+        '{"variable":"x","file":"data/raw/provider/x.csv"}\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(config_mod, "ROOT", tmp_path)
+    monkeypatch.setattr(config_mod, "settings", lambda: {
+        "study_window": {"full_start": "2026-01-01", "full_end": "2026-01-03"},
+        "paths": {"provenance_log": "data/raw/provenance.jsonl"},
+    })
+    out = panel_mod.build_panel_from_frozen_raw(variables=["x"])
+    assert out["x"].tolist()[0] == 1.0
+    assert np.isnan(out["x"].tolist()[1])
+    assert out["x"].tolist()[2] == 3.0
 
 
 # --------------------------------------------------------------------------

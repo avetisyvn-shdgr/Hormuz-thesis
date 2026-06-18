@@ -22,6 +22,8 @@ Decisions (documented 2026-06, step 3 of the data-foundation phase):
 """
 from __future__ import annotations
 
+import json
+
 import pandas as pd
 
 from . import config
@@ -71,6 +73,54 @@ def build_panel(
 
     panel = pd.DataFrame(cols, index=index)
     return panel
+
+
+def build_panel_from_frozen_raw(
+    variables: list[str] | None = None,
+    start: str | None = None,
+    end: str | None = None,
+) -> pd.DataFrame:
+    """Rebuild the free panel from local immutable raw snapshots only.
+
+    The latest provenance record for each requested variable identifies its
+    tidy `(date, value)` raw file. No provider or network call is made.
+    """
+    win = config.settings()["study_window"]
+    start = start or win["full_start"]
+    end = end or win["full_end"]
+    names = variables if variables is not None else free_variables()
+
+    log_path = config.ROOT / config.settings()["paths"]["provenance_log"]
+    if not log_path.exists():
+        raise FileNotFoundError(f"Frozen provenance log not found: {log_path}")
+    latest: dict[str, dict] = {}
+    for line in log_path.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            record = json.loads(line)
+            latest[record["variable"]] = record
+
+    index = pd.date_range(start, end, freq="D", name="date")
+    cols: dict[str, pd.Series] = {}
+    for name in names:
+        if name not in latest:
+            raise FileNotFoundError(
+                f"No frozen provenance record for {name!r}; cannot run offline."
+            )
+        path = config.ROOT / latest[name]["file"]
+        if not path.exists():
+            raise FileNotFoundError(f"Frozen raw file for {name!r} not found: {path}")
+        frame = pd.read_csv(path, parse_dates=["date"])
+        if list(frame.columns) != ["date", "value"]:
+            raise ValueError(
+                f"Frozen raw file {path} must have columns ['date', 'value'], "
+                f"got {list(frame.columns)}."
+            )
+        if frame["date"].duplicated().any():
+            raise ValueError(f"Frozen raw file {path} contains duplicate dates.")
+        values = pd.to_numeric(frame["value"], errors="coerce")
+        series = pd.Series(values.to_numpy(), index=frame["date"], name=name)
+        cols[name] = series.reindex(index)
+    return pd.DataFrame(cols, index=index)
 
 
 def coverage_summary(panel: pd.DataFrame) -> pd.DataFrame:

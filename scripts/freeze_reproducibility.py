@@ -9,7 +9,6 @@ import argparse
 import hashlib
 import json
 import platform
-from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
@@ -102,7 +101,6 @@ def main(check: bool = False) -> int:
     _write_raw_hashes(root, current_raw)
     spec = working_specification()
     manifest = {
-        "generated_utc": datetime.now(timezone.utc).isoformat(),
         "python": platform.python_version(),
         "platform": platform.platform(),
         "packages": _package_versions(),

@@ -7,3 +7,4 @@ requests~=2.32
 PyYAML~=6.0
 python-dotenv~=1.0
 pytest~=8.2
+matplotlib~=3.10
