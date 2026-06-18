@@ -1,0 +1,115 @@
+# Project-wide settings. Paths are relative to the repo root.
+# Keep ALL magic numbers / windows here, never hard-coded in modules.
+
+paths:
+  data_raw: "data/raw"
+  data_interim: "data/interim"
+  data_processed: "data/processed"
+  figures: "reports/figures"          # Layer-1 descriptive event-study output
+  provenance_log: "data/raw/provenance.jsonl"
+  # Manually downloaded snapshot (no stable public API endpoint pinned yet).
+  # Refresh procedure: re-download from portwatch.imf.org -> Daily Chokepoint
+  # Transit Calls dataset -> CSV, overwrite this file, record date + md5 in
+  # docs/DATA_SOURCES.md. Snapshot of 2026-06-12: md5 4728447a13b015cb...,
+  # coverage 2019-01-01 -> 2026-06-07.
+  portwatch_csv: "data/raw/portwatch/Daily_Chokepoints_Data.csv"
+
+# Study window. Pre-period must be long enough for rolling-origin validation;
+# post-period is deliberately short (the proposal warns about overfitting here).
+study_window:
+  full_start: "2022-01-01"     # generous pre-history for baselines/seasonality
+  full_end:   "2026-06-01"
+  # Treatment-date candidates — VERIFIED 2026-06-14 (see docs/EVENT_CHRONOLOGY.md).
+  # Cross-checked vs the AIS transit collapse in the panel
+  # (Hormuz transits: Feb27=53, Feb28=44, Mar1=7, Mar2=2, Mar4=0).
+  # The pipeline must stay re-runnable across ALL of these, not one fixed date.
+  treatment_candidates:
+    kinetic_trigger:       "2026-02-28"   # CORRECTED from 02-27. US/Israel
+                                          # coordinated airstrikes; IRGC closure
+                                          # warnings within hours; AIS -70%.
+    closure_declaration:   "2026-03-02"   # CONFIRMED. Senior IRGC official
+                                          # confirms strait closed.
+    force_majeure:         "2026-03-25"   # CORRECTED from 03-04 (that was the
+                                          # IRGC 'complete control' claim, NOT an
+                                          # FM). QatarEnergy FM after Ras Laffan
+                                          # strikes 18-19 Mar. Exact day 25 vs 26
+                                          # differs by source; pin to a primary wire.
+    # regime_consolidation DROPPED 2026-06-14: 03-10 had no documented
+    # consolidation event (analyst construct). Closure hardening is gradual, so
+    # persistence is handled by a ROLLING POST-PERIOD WINDOW in the modeling
+    # phase, not a discrete date. 2026-04-18 (Iran's formal closure) is reserved
+    # as a PLACEBO/falsification date, not a treatment candidate.
+  # Documented context milestones (NOT treatment candidates; event-study
+  # annotation / robustness only):
+  #   2026-03-04      IRGC claims 'complete control' of the strait (Reuters).
+  #   2026-03-05      war-risk P&I insurance withdrawn -> effective closure.
+  #   2026-03-18/19   Iranian strikes on Ras Laffan; ~17% Qatari LNG capacity hit.
+  #   2026-03-27      IRGC bans vessels to/from US/Israel-allied ports (AFP).
+  #   2026-04-18      Iran's formal closure statement.
+
+# Step-4 alignment / imputation policy. Applied downstream of build_panel,
+# never inside the data layer (panel_free.csv stays the honest, un-filled state).
+# Discipline: forward-fill only (past -> present); NEVER interpolate or backfill,
+# both of which leak a future observation into the present.
+imputation:
+  # Price columns (registry role energy/target) are business-day series mapped
+  # onto a calendar index. Carry the last observed price forward across
+  # non-trading days, but ONLY up to this many consecutive calendar days, so a
+  # genuine data outage cannot be laundered into fabricated observations.
+  # Weekends = 2 days, long weekends/holidays = 3-4; 4 covers these without
+  # masking a real multi-day gap. Beyond the cap the cell stays NaN (flagged).
+  price_ffill_max_gap_days: 4
+  # PortWatch capacity artifact: days where transit COUNT > 0 but deadweight
+  # capacity logged 0 (AIS rounding / sub-resolution vessels). These are
+  # logically inconsistent with a true zero. "mask" -> set capacity to NaN so it
+  # cannot masquerade as a genuine closure-zero; "keep" -> trust the raw 0.
+  # Every change is recorded in the audit log either way.
+  capacity_zero_with_transits: "mask"   # mask | keep
+
+# Phase-4 modeling policy. TARGET-AGNOSTIC: this block governs HOW models are
+# trained and validated, never WHICH series is the dependent variable (still
+# unresolved pending Spark/Bloomberg access). Adding it now does not commit the
+# thesis to any target choice.
+modeling:
+  # Authorized engineering specification for the working free-data fallback.
+  # This locks the implemented analysis only. Formal proposal/RQ/hypothesis
+  # realignment remains pending explicit Prof. Li confirmation; see
+  # docs/PENDING_ESTIMAND_REALIGNMENT_DRAFT.md.
+  working_specification:
+    status: "working_primary_pending_formal_estimand_confirmation"
+    branch: "fallback_portwatch"
+    primary_outcome: "hormuz_tanker_transits"
+    robustness_outcome: "hormuz_tanker_capacity"
+    active_secondary_outcomes: []
+    dormant_secondary_outcomes:
+      - "spark30s_atlantic_freight"
+      - "spark25s_pacific_freight"
+    primary_estimator: "ar_lag1_7"
+    benchmark_estimators:
+      - "seasonal_naive_7d"
+    conditional_sensitivity_estimators:
+      - "arx_lag1_7_route"
+      - "arx_lag1_7_route_energy"
+    reporting_term: "disruption-associated counterfactual shortfall"
+    transformer_enabled: false
+    transformer_reentry_rule: >-
+      Only if pre-treatment fit and interval coverage improve materially, or
+      Prof. Li makes a Transformer a hard architecture requirement.
+
+  # Chronological rolling-origin validation (src/lngfreight/validation.py).
+  # Discipline: training+validation use ONLY pre-treatment data; never random-split.
+  validation:
+    scheme: "expanding"          # expanding (growing train) | sliding (fixed-length train)
+    initial_train_days: 365      # first origin: >=1 yr of pre-history so seasonality is learnable
+    horizon_days: 30             # length of each out-of-sample test fold
+    step_days: 30                # how far the origin advances between folds
+    sliding_train_days: 365      # train-window length when scheme == sliding (ignored if expanding)
+    max_folds: null              # cap the number of folds (null = as many as the history allows)
+    # Training+validation stay STRICTLY before this date so no fold sees the
+    # disruption regime. "auto" = earliest of study_window.treatment_candidates
+    # (the most conservative cutoff); or pin an explicit YYYY-MM-DD.
+    cutoff: "auto"
+
+reproducibility:
+  random_seed: 20260612
+  timezone: "UTC"

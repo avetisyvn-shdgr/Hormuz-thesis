@@ -1,0 +1,173 @@
+# =====================================================================
+# SERIES REGISTRY
+# ---------------------------------------------------------------------
+# This is the single source of truth that decouples the THESIS VARIABLE
+# (a logical name your analysis code refers to) from the PROVIDER that
+# happens to supply it today.
+#
+# When TUM Bloomberg / Spark access arrives you change ONLY this file:
+# flip `status: proxy` -> `status: primary`, point `provider`/`code` at
+# the proprietary feed, and the pipeline keeps running unchanged.
+#
+# status values:
+#   primary     - the assessment the proposal actually wants (proprietary)
+#   proxy       - a free, imperfect stand-in used under the fallback branch
+#   free        - a free series that IS the real thing (no proprietary gap)
+#   unavailable - no free option exists yet; slot reserved for later access
+#
+# role values (maps to the proposal's panel):
+#   target      - dependent variable (LNG spot freight)
+#   energy      - energy-price confounder set
+#   route       - route-capacity / chokepoint covariate
+#   mechanism   - operational ton-mile mechanism proxy
+# =====================================================================
+
+variables:
+
+  # ---- TARGET: LNG spot freight (the proposal's dependent variable) ----
+  spark30s_atlantic_freight:
+    role: target
+    description: "Atlantic LNG freight, Sabine Pass -> Gate (174k m3, 2-stroke)."
+    status: unavailable          # proprietary Spark assessment
+    primary:
+      provider: spark
+      code: "Spark30S"
+      license: "Spark Commodities subscription; free-trial/academic access being pursued (see docs/DATA_SOURCES.md, decision 2026-06-14)."
+    # Proxy DEMOTED 2026-06-14: ICE LNG-freight-futures settlement has NO verified
+    # free EOD feed (ICE/Barchart are licensed; EEX does not list these futures).
+    # It is NOT a free fallback. Do not build an ice_settlement fetch until a
+    # genuinely free source is confirmed. The realistic free route is the Spark
+    # free-trial/academic API (provider: spark), which returns the real assessment
+    # if its history reaches the study window. See docs/DATA_SOURCES.md.
+    proxy:
+      provider: ice_settlement
+      code: "Spark30S-FUT-M1"    # front-month LNG freight future settlement
+      note: "UNVERIFIED ACCESS. Futures settlement != daily physical spot (basis/roll/timing risk) AND no confirmed free EOD feed. Document explicitly if ever used."
+
+  spark25s_pacific_freight:
+    role: target
+    description: "Pacific LNG freight, North West Shelf -> Tianjin (174k m3, 2-stroke)."
+    status: unavailable
+    primary:
+      provider: spark
+      code: "Spark25S"
+      license: "Spark Commodities subscription; free-trial/academic access being pursued (see docs/DATA_SOURCES.md, decision 2026-06-14)."
+    # Proxy DEMOTED 2026-06-14: see spark30s_atlantic_freight note above.
+    proxy:
+      provider: ice_settlement
+      code: "Spark25S-FUT-M1"
+      note: "UNVERIFIED ACCESS. Same caveat as Spark30S: futures != spot AND no confirmed free EOD feed."
+
+  # ---- ENERGY confounders ----
+  henry_hub_spot:
+    role: energy
+    description: "Henry Hub natural gas spot price, USD/MMBtu, daily."
+    status: free
+    primary:
+      provider: eia
+      code: "NG.RNGWHHD.D"       # EIA series id
+      license: "Public domain (US Govt)"
+    proxy:
+      provider: fred
+      code: "DHHNGSP"            # cross-check / redundancy
+
+  brent_spot:
+    role: energy
+    description: "Europe Brent crude spot, USD/bbl, daily."
+    status: free
+    primary:
+      provider: eia
+      code: "PET.RBRTE.D"
+      license: "Public domain (US Govt)"
+    proxy:
+      provider: fred
+      code: "DCOILBRENTEU"
+
+  ttf_gas:
+    role: energy
+    description: "Dutch TTF natural gas, European benchmark."
+    status: proxy
+    primary:
+      provider: bloomberg
+      code: "TTF-SPOT"
+      license: "Bloomberg / ICE Endex assessment"
+    proxy:
+      provider: ice_settlement
+      code: "TFM-M1"            # TTF front-month future settlement
+      note: "Front-month future, not the physical spot assessment."
+
+  jkm_lng:
+    role: energy
+    description: "Platts JKM (Japan-Korea Marker) LNG price."
+    status: proxy
+    primary:
+      provider: platts
+      code: "JKM"
+      license: "S&P Global Platts assessment (proprietary)"
+    proxy:
+      provider: eex_settlement
+      code: "JKM-FUT-M1"        # EEX Platts JKM future settlement (delayed/free subset)
+      note: "Delayed futures settlement. Not the daily assessment. Basis + timing risk."
+
+  # ---- ROUTE / chokepoint capacity ----
+  # Column choice decided 2026-06-12 (documented methodological decision):
+  # n_tanker = headline route covariate (tanker transit COUNT; the most
+  # LNG-relevant PortWatch class, but diluted - gas carriers share the
+  # `tanker` class with oil/chemical tankers; PortWatch has no LNG class).
+  # capacity_tanker = deadweight-weighted robustness twin.
+  # Schema pinned in sources/portwatch.py from the 2026-06-12 snapshot.
+  hormuz_tanker_transits:
+    role: route
+    description: "Daily tanker transit count, Strait of Hormuz (PortWatch n_tanker)."
+    status: free
+    primary:
+      provider: portwatch
+      code: "chokepoint:strait_of_hormuz:n_tanker"
+      license: "IMF PortWatch (AIS-derived, public)"
+
+  hormuz_tanker_capacity:
+    role: route
+    description: "Daily deadweight capacity of transiting tankers, Strait of Hormuz (PortWatch capacity_tanker)."
+    status: free
+    primary:
+      provider: portwatch
+      code: "chokepoint:strait_of_hormuz:capacity_tanker"
+      license: "IMF PortWatch (AIS-derived, public)"
+
+  panama_tanker_transits:
+    role: route
+    description: "Daily tanker transit count, Panama Canal (PortWatch n_tanker)."
+    status: free
+    primary:
+      provider: portwatch
+      code: "chokepoint:panama_canal:n_tanker"
+      license: "IMF PortWatch (AIS-derived, public)"
+
+  panama_tanker_capacity:
+    role: route
+    description: "Daily deadweight capacity of transiting tankers, Panama Canal (PortWatch capacity_tanker)."
+    status: free
+    primary:
+      provider: portwatch
+      code: "chokepoint:panama_canal:capacity_tanker"
+      license: "IMF PortWatch (AIS-derived, public)"
+
+  # ---- MECHANISM: ton-mile / fleet-vacuum operational proxies ----
+  # The proposal's PRIMARY mechanism proxy is AIS-derived laden ton-miles
+  # to the replacement origin (US Gulf Coast). True vessel-level AIS is
+  # proprietary (Kpler/Spire/MarineTraffic). PortWatch gives an AGGREGATE,
+  # chokepoint-level free approximation only - it cannot resolve laden vs
+  # ballast legs or per-vessel voyage distance. This gap is the proposal's
+  # go/no-go gate. Slot reserved; do NOT pretend the free proxy equals it.
+  ais_laden_tonmiles_usgc:
+    role: mechanism
+    description: "AIS-derived laden ton-miles to US Gulf Coast replacement origin."
+    status: unavailable
+    primary:
+      provider: ais_vendor
+      code: "TODO"
+      license: "Kpler / Spire / commercial AIS - subscription required"
+    proxy:
+      provider: portwatch
+      code: "chokepoint:panama_canal:capacity_tanker"   # weak aggregate stand-in only
+      note: "Aggregate deadweight of tanker transits, NOT laden ton-miles (no laden/ballast or LNG-class resolution). Descriptive use only under fallback branch."

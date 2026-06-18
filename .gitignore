@@ -1,0 +1,25 @@
+# Secrets - NEVER commit
+.env
+
+# Raw/interim data: large, reproducible from code + provenance. Keep the dir,
+# ignore the contents. (Comment these out if your supervisor wants data versioned.)
+data/raw/*
+data/interim/*
+!data/**/.gitkeep
+# Keep provenance and the frozen raw snapshot identities under version control.
+!data/raw/provenance.jsonl
+!data/raw/SHA256SUMS
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+.coverage
+
+# OS / IDE
+.DS_Store
+.idea/

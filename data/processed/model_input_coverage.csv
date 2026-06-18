@@ -1,0 +1,7 @@
+column,pre_rows,pre_non_null,pre_missing,pre_coverage,pre_zeros,post_rows,post_non_null,post_missing,post_coverage,post_zeros,all_rows,all_non_null,all_missing,all_coverage,all_zeros
+henry_hub_spot,1519,1517,2,0.9986833443054641,0,94,94,0,1.0,0,1613,1611,2,0.9987600743955363,0
+brent_spot,1519,1517,2,0.9986833443054641,0,94,94,0,1.0,0,1613,1611,2,0.9987600743955363,0
+hormuz_tanker_transits,1519,1519,0,1.0,0,94,94,0,1.0,21,1613,1613,0,1.0,21
+hormuz_tanker_capacity,1519,1519,0,1.0,0,94,79,15,0.8404255319148937,21,1613,1598,15,0.990700557966522,21
+panama_tanker_transits,1519,1519,0,1.0,0,94,94,0,1.0,0,1613,1613,0,1.0,0
+panama_tanker_capacity,1519,1519,0,1.0,0,94,94,0,1.0,0,1613,1613,0,1.0,0

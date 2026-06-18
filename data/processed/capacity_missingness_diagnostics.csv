@@ -1,0 +1,5 @@
+capacity_column,transit_column,period,rows,missing_capacity,audit_confirmed_artifact_masks,unexplained_missing_capacity,coverage
+hormuz_tanker_capacity,hormuz_tanker_transits,pre,1519,0,0,0,1.0
+hormuz_tanker_capacity,hormuz_tanker_transits,post,94,15,15,0,0.8404255319148937
+panama_tanker_capacity,panama_tanker_transits,pre,1519,0,0,0,1.0
+panama_tanker_capacity,panama_tanker_transits,post,94,0,0,0,1.0

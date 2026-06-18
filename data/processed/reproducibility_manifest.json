@@ -1,0 +1,88 @@
+{
+  "artifact_sha256": {
+    "data/processed/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/processed/alignment_audit.csv": "59b7ca618e76227fb48437fb7a3149ddeaff6abde7b2236ac657e9c5412e9567",
+    "data/processed/baseline_forecasts.csv": "c2705459f4ef735fb916eafe5ea0ee73e4a76ffaada8ffe4d7d21bc261ce1494",
+    "data/processed/baseline_scores.csv": "148aa35b69347ffff3d3be0ac4722c3ca2ddc96a9f784ec0b84a6038b3d332a5",
+    "data/processed/baseline_seasonal_naive_forecasts.csv": "08d44fa0a5a0ddf97590e57169e4675188b416da24a96261cbab5fc293d22807",
+    "data/processed/baseline_seasonal_naive_scores.csv": "12067f1eaaffb82e17cf475247e5319227e9fd8b2187e70036d44731b01d202d",
+    "data/processed/baseline_seasonal_naive_summary.csv": "685f98e4f3832f8c908a84f4e129eafbeedb4e7fb5481fc873d688a90235cd16",
+    "data/processed/baseline_summary.csv": "575977d75caf85aaf359986218a256b83fb4831cba8b3769654c48015d10116d",
+    "data/processed/capacity_missingness_diagnostics.csv": "468607e784289848df66a32ebf8a0e03109ac363ac6cb8325f156034d84826b4",
+    "data/processed/counterfactual_intervals_daily.csv": "02adea635472c4103b77ba3f4dd3192d9eba0784fa9fc580b0285e10764d8d84",
+    "data/processed/counterfactual_intervals_summary.csv": "bffe32a7cf696f20cdc9394e0eb7393f4fa392039cbcd81b94c94a2e778be3b2",
+    "data/processed/counterfactual_post_treatment.csv": "8c9453944347217a87bbb0bca3084fa715073764ad062722b25acc2050f6c12e",
+    "data/processed/counterfactual_post_treatment_summary.csv": "f4025740f9790fe5183ba0695715eddbbdd7c47885244ff48867874346a1d48b",
+    "data/processed/long_horizon_intervals_summary.csv": "a8b611a4eae2cbbd598e5980e0e076171d475929ac65aa49495355fb73a68ae7",
+    "data/processed/model_information_sets.csv": "9194f385bf72e63cc77e1870f252db269c5fe40500b0fa7de1f1e07c76aa42f5",
+    "data/processed/model_input_coverage.csv": "04e82887131eddb426532a640b5d9f17182f0849d62a20fffc609230d49d14df",
+    "data/processed/panel_aligned.csv": "924cf0824d0649959fe3aa0dd87710b5d9efbd048afbcf2d1181e9030a6da816",
+    "data/processed/placebo_time_effects.csv": "98aa939ccefe9ad84ab205e7189168cb89c269c8db118259e9b8f12357bdf204",
+    "data/processed/placebo_time_summary.csv": "81faefe5cbed4f6befab67975ddeeda26f6605dee3b0f89fed9a8ed83f256550",
+    "data/processed/spark_access_report.json": "5285168894e93c682df21da5fc4d143160ca9fd797d96d886137936989abeb86",
+    "data/processed/spatial_placebo_effects.csv": "a78f33db20519966427556a44e901ad24dd2c725faed4e57bec603b52a1e4d17",
+    "data/processed/spatial_placebo_leave_one_out.csv": "267a0f7f32fc46e77f81f4553ca078f25c265b683f238f8da41c2793beec8f8a",
+    "data/processed/spatial_placebo_summary.csv": "4bca37e27b4fc2af25abd12299d7e189aa39ebf0730126083228f751de390bf1",
+    "data/processed/synthetic_control_daily.csv": "7449043d84b92654796babe885bac7ccf7393837959263e558370f042290199b",
+    "data/processed/synthetic_control_scales.csv": "e4d0bc3706052c65a034edfd7845fd5524218befaa557b05bf865d7dd0ae03b8",
+    "data/processed/synthetic_control_summary.csv": "43331abfa45344c07d42d96f2dd77ede8936ffc72028f44e71ca3bc32343761c",
+    "data/processed/synthetic_control_weights.csv": "21a1e5e1cde1a822752f23c871710d9d2367c1e7362d4b8263deb80f19143e0b",
+    "data/processed/treatment_robustness_daily.csv": "08d8c8fca8dddf5f91bf3daf9e52e3fd906d44f20a44adbc1b304f122b8d3542",
+    "data/processed/treatment_robustness_summary.csv": "248f2ae052eaf5d34d2c142cf581ae1d95d43065410a70ef2ad3f4c2b8b7c929",
+    "reports/current_results_summary.md": "50c45d85704d5a5db9cd57fb333a37092d897eda1ac279ab44e5010a11633346",
+    "reports/figures/fig1_chokepoint_event_study.pdf": "405645a7beabfdf036d920e104c1c6e69010faa53eb92e3f79e687b32109bcf5",
+    "reports/figures/fig1_chokepoint_event_study.png": "f59dacc9e03e8f08dee91f44242aceec6de087ede9776253b8425915096bb99f",
+    "reports/figures/fig2_hormuz_robustness.pdf": "163f8ea68281dd65561d6bf2023c05585b5de4c46e43946b186ce77676164d1e",
+    "reports/figures/fig2_hormuz_robustness.png": "ded8b3ceb5b927dc00bdca42d3e6d2b86f7bcf64a43a2ec0280874a741fc4c31",
+    "reports/figures/fig3_energy_response.pdf": "eea1a0744387454b480de1976da79c9ea3d9f5db38acdde1869aaf1ace1c4b06",
+    "reports/figures/fig3_energy_response.png": "82154dddcfabcdddd425f30757cb9648ec679fa0abe1999f8056027a945d151d",
+    "reports/figures/fig4_missingness_map.pdf": "46e981f274c55a470e5d9f7ec8c01f275d1b576dcf7cd9b326000c086e9cd15b",
+    "reports/figures/fig4_missingness_map.png": "9910613770664bd57549cd28ddb73c4d97bb623d7b931633ad6392db1cefaa16"
+  },
+  "config_sha256": {
+    "config/settings.yaml": "37be5f9ed6862b1d60d5a0939016215495cee192bf29cb2bc9b4c042808dbb4d",
+    "config/sources.yaml": "46e6588f9b5b4b3f1c6108e4b18261c06ab1dc0b780b6d77409f4672385198fa"
+  },
+  "generated_utc": "2026-06-18T19:13:32.933114+00:00",
+  "packages": {
+    "PyYAML": "6.0.3",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "pytest": "8.4.2",
+    "requests": "2.34.2"
+  },
+  "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+  "python": "3.14.4",
+  "raw_sha256": {
+    "data/raw/eia/brent_spot__PET_RBRTE_D.csv": "b7afb4cf50283907406fc26833036a89820705c686631a2f0fe48410903fc675",
+    "data/raw/eia/henry_hub_spot__NG_RNGWHHD_D.csv": "860fee8878bdc6d7efd3b4ce9f39a01433911ae3363a8daf1eea5cdaeb82faad",
+    "data/raw/portwatch/Daily_Chokepoints_Data.csv": "ea6c4fdaf44fea41802d852b45e893c0a45911da30c8fd84cbc4534f3b2b26c5",
+    "data/raw/portwatch/ais_laden_tonmiles_usgc__chokepoint_panama_canal_capacity_tanker.csv": "2841006ec4790db022616d86f22c49d47f5edb6881e9833e23aecb5934e1e485",
+    "data/raw/portwatch/hormuz_tanker_capacity__chokepoint_strait_of_hormuz_capacity_tanker.csv": "beb827b27d365d3cd941c8989ba093b856e9af331cfc42c0eb11b83150e5288c",
+    "data/raw/portwatch/hormuz_tanker_transits__chokepoint_strait_of_hormuz_n_tanker.csv": "c763eab5a6c039800d56728b5f4ae0add884cc8cfaf139097869d1669515424d",
+    "data/raw/portwatch/panama_tanker_capacity__chokepoint_panama_canal_capacity_tanker.csv": "2841006ec4790db022616d86f22c49d47f5edb6881e9833e23aecb5934e1e485",
+    "data/raw/portwatch/panama_tanker_transits__chokepoint_panama_canal_n_tanker.csv": "205c83f21918fb29de02303bad24e623d09de859412c0b2bc425c2e2564d497c"
+  },
+  "test_command": ".venv/bin/python -m pytest -q",
+  "working_specification": {
+    "active_secondary_outcomes": [],
+    "benchmark_estimators": [
+      "seasonal_naive_7d"
+    ],
+    "branch": "fallback_portwatch",
+    "conditional_sensitivity_estimators": [
+      "arx_lag1_7_route",
+      "arx_lag1_7_route_energy"
+    ],
+    "dormant_secondary_outcomes": [
+      "spark30s_atlantic_freight",
+      "spark25s_pacific_freight"
+    ],
+    "primary_estimator": "ar_lag1_7",
+    "primary_outcome": "hormuz_tanker_transits",
+    "reporting_term": "disruption-associated counterfactual shortfall",
+    "robustness_outcome": "hormuz_tanker_capacity",
+    "status": "working_primary_pending_formal_estimand_confirmation",
+    "transformer_enabled": false
+  }
+}

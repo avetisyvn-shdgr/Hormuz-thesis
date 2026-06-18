@@ -1,0 +1,5 @@
+model,post_observed_covariates,counterfactual_role
+seasonal_naive_7d,,unconditional_candidate
+ar_lag1_7,,working_primary
+arx_lag1_7_route,"panama_tanker_transits,panama_tanker_capacity",conditional_sensitivity
+arx_lag1_7_route_energy,"panama_tanker_transits,panama_tanker_capacity,henry_hub_spot,brent_spot",conditional_sensitivity

@@ -1,0 +1,9 @@
+# Pinned-minor for reproducibility. Phase-1 (data foundation) only.
+# Modelling libs (statsmodels, scikit-learn, the Transformer stack) are added
+# in later phases, deliberately not now.
+pandas~=2.2
+numpy~=1.26
+requests~=2.32
+PyYAML~=6.0
+python-dotenv~=1.0
+pytest~=8.2
