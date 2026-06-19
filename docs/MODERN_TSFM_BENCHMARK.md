@@ -165,6 +165,25 @@ Caveats to carry into the thesis (CLAUDE.md rules 1, 2):
 - These are the user's first recorded weights run; freeze package versions, model
   revisions, device, and hashes before citing any number.
 
+### Counterfactual cross-check (robustness, optional)
+
+Once a model is `ADMITTED`, `scripts/run_tsfm_counterfactual.py` re-estimates the
+post-treatment shortfall with that model (default Chronos-2) in place of AR-only
+and reports the cumulative shortfall and its % difference vs the AR-only estimate
+(`counterfactual_post_treatment_summary.csv`). It trains univariate on strictly
+pre-cutoff data — no post-treatment covariate leaks in — and is a robustness
+sentence ("the shortfall survives a stronger, better-calibrated forecaster"), not
+a promoted estimator and not causal inference. Pointwise daily bands are written
+but are deliberately NOT summed into a cumulative interval (that is the residual /
+placebo-horizon job of `run_long_horizon_intervals.py`).
+
+```bash
+.venv-bench/bin/python scripts/run_tsfm_counterfactual.py \
+    --model chronos2 --acknowledge-benchmark-only
+# plumbing check in the core env (NOT a model result):
+python scripts/run_tsfm_counterfactual.py --model stub --acknowledge-benchmark-only
+```
+
 This benchmark is deliberately excluded from `scripts/run_all.py` and the frozen
 core requirements because model weights and the PyTorch stack are optional
 external artifacts.

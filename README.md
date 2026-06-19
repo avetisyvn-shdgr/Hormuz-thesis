@@ -65,6 +65,7 @@ Full setup (PyCharm + Claude Code, macOS): `docs/SETUP_CLAUDE_PYCHARM.md`.
 | `requirements-benchmark.txt` | Isolated deps for Chronos-2 + Moirai 2.0 (`.venv-bench`, Python 3.11); kept out of frozen core |
 | `requirements-timesfm.txt` | Isolated deps for TimesFM 2.5 (`.venv-timesfm`, Python 3.11; separate due to torch conflict) |
 | `scripts/run_ar_interval.py` | Raw AR-only interval + final matched-subset TSFM admission verdict (core env, no weights) |
+| `scripts/run_tsfm_counterfactual.py` | Counterfactual shortfall cross-check with an admitted model vs AR-only (robustness; needs weights) |
 | `scripts/run_counterfactual.py` | Post-treatment observed-minus-counterfactual gap export |
 | `scripts/run_placebo_inference.py` | Placebo-in-time p-values for counterfactual gaps |
 | `scripts/run_spatial_placebo.py` | Same-date PortWatch chokepoint placebo checks |

@@ -22,6 +22,7 @@ from lngfreight.tsfm import (
     StubAdapter,
     admission_test,
     aggregate_benchmark,
+    counterfactual_shortfall,
     run_benchmark,
 )
 from lngfreight.validation import rolling_origin_splits
@@ -154,6 +155,38 @@ def test_admission_test_calibration_unavailable_when_ar_has_no_interval():
     assert bool(v.loc[0, "calibration_assessed"]) is False
     assert bool(v.loc[0, "beats_ar_mase"]) is True
     assert "NOT assessed" in v.loc[0, "verdict"]
+
+
+def test_counterfactual_shortfall_is_leakage_safe_and_signed():
+    """Counterfactual trains only on pre-cutoff data, and post-cutoff observed
+    values must not change the forecast; throughput_loss = counterfactual - obs."""
+    idx = pd.date_range("2022-01-01", periods=120, freq="D", name="date")
+    panel = pd.DataFrame({"target": 100.0 + np.arange(120) % 7}, index=idx)
+    cutoff = pd.Timestamp("2022-04-01")
+
+    daily, summary = counterfactual_shortfall(
+        panel, "target", StubAdapter(7), cutoff=cutoff
+    )
+    assert summary["n_days"] == int((panel.index >= cutoff).sum())
+    # Signed consistency: loss equals counterfactual minus observed.
+    np.testing.assert_allclose(
+        daily["throughput_loss_vs_counterfactual"],
+        daily["y_pred"] - daily["y_true"],
+    )
+
+    altered = panel.copy()
+    altered.loc[altered.index >= cutoff, "target"] = 0.0
+    daily2, _ = counterfactual_shortfall(altered, "target", StubAdapter(7), cutoff=cutoff)
+    # Forecast (counterfactual) is unchanged by post-cutoff observed values.
+    np.testing.assert_allclose(daily["y_pred"], daily2["y_pred"])
+
+
+def test_counterfactual_requires_pre_and_post_rows():
+    idx = pd.date_range("2022-01-01", periods=10, freq="D", name="date")
+    panel = pd.DataFrame({"target": np.arange(10.0)}, index=idx)
+    with pytest.raises(ValueError, match="pre- and post-cutoff"):
+        counterfactual_shortfall(panel, "target", StubAdapter(7),
+                                 cutoff=pd.Timestamp("2021-01-01"))
 
 
 def test_admission_test_raises_on_missing_ar_model():

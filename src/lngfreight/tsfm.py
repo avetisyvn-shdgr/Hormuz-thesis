@@ -43,7 +43,7 @@ import numpy as np
 import pandas as pd
 
 from .metrics import score_forecast
-from .validation import Fold, rolling_origin_splits
+from .validation import Fold, resolve_cutoff, rolling_origin_splits
 
 # Default central-interval bounds for the admission test (95% mass).
 DEFAULT_LOWER_Q = 0.025
@@ -485,6 +485,86 @@ def run_benchmark(
     scores = pd.DataFrame(score_rows)
     forecasts = pd.concat(forecast_rows, ignore_index=True)
     return scores, forecasts
+
+
+def counterfactual_shortfall(
+    panel: pd.DataFrame,
+    target: str,
+    adapter: TSFMAdapter,
+    cutoff: pd.Timestamp | str | None = None,
+    lower_q: float = DEFAULT_LOWER_Q,
+    upper_q: float = DEFAULT_UPPER_Q,
+) -> tuple[pd.DataFrame, dict]:
+    """Post-treatment counterfactual shortfall from an ADMITTED benchmark model.
+
+    A robustness CROSS-CHECK only: it re-estimates the observed-minus-predicted
+    shortfall with a foundation model in place of AR-only, to test whether the
+    headline shortfall is sensitive to the forecaster. It does NOT promote the
+    model into the locked pipeline and is NOT causal inference on its own.
+
+    Discipline mirrors ``scripts/run_counterfactual.py``: the model trains on the
+    full STRICTLY pre-cutoff history (univariate target only — no post-treatment
+    covariate can leak in and absorb the disruption) and forecasts the whole
+    post-treatment window. ``throughput_loss = counterfactual - observed``.
+
+    Note on intervals: ``lower_cf``/``upper_cf`` are the model's POINTWISE daily
+    band. They are intentionally NOT summed into a cumulative interval — summing
+    pointwise quantiles ignores serial correlation and would misstate the
+    cumulative band. The honest cumulative interval is the separate residual /
+    placebo-horizon method (``scripts/run_long_horizon_intervals.py``).
+    """
+    if target not in panel.columns:
+        raise KeyError(f"target {target!r} not found in panel columns.")
+    if not isinstance(panel.index, pd.DatetimeIndex):
+        raise TypeError("panel must be indexed by a DatetimeIndex.")
+
+    cut = pd.Timestamp(cutoff) if cutoff is not None else resolve_cutoff()
+    y = panel[target].astype("float64")
+    train = y[y.index < cut].dropna()
+    test_index = panel.index[panel.index >= cut]
+    if len(train) == 0 or len(test_index) == 0:
+        raise ValueError(
+            f"counterfactual needs both pre- and post-cutoff rows at {cut.date()}; "
+            f"have {len(train)} pre and {len(test_index)} post."
+        )
+
+    fc = adapter.predict(train, len(test_index), lower_q=lower_q, upper_q=upper_q)
+    point = pd.Series(fc.point, index=test_index)
+    y_true = y.loc[test_index]
+
+    daily = pd.DataFrame({
+        "date": test_index,
+        "model": adapter.name,
+        "target": target,
+        "y_true": y_true.to_numpy(),
+        "y_pred": point.to_numpy(),
+        "lower_cf": fc.lower,
+        "upper_cf": fc.upper,
+    })
+    daily["gap_observed_minus_predicted"] = daily["y_true"] - daily["y_pred"]
+    daily["throughput_loss_vs_counterfactual"] = daily["y_pred"] - daily["y_true"]
+    daily["cumulative_throughput_loss"] = (
+        daily["throughput_loss_vs_counterfactual"].fillna(0).cumsum()
+    )
+
+    valid = daily.dropna(subset=["y_true", "y_pred"])
+    summary = {
+        "model": adapter.name,
+        "target": target,
+        "nominal_coverage": fc.nominal_coverage,
+        "start": valid["date"].min().date() if len(valid) else None,
+        "end": valid["date"].max().date() if len(valid) else None,
+        "n_days": int(len(valid)),
+        "observed_sum": float(valid["y_true"].sum()),
+        "counterfactual_sum": float(valid["y_pred"].sum()),
+        "cumulative_throughput_loss": float(
+            valid["throughput_loss_vs_counterfactual"].sum()
+        ),
+        "mean_daily_throughput_loss": float(
+            valid["throughput_loss_vs_counterfactual"].mean()
+        ),
+    }
+    return daily, summary
 
 
 def aggregate_benchmark(scores: pd.DataFrame) -> pd.DataFrame:
