@@ -14,6 +14,7 @@ data/interim/*
 __pycache__/
 *.py[cod]
 .venv/
+.venv*/
 venv/
 *.egg-info/
 .ipynb_checkpoints/

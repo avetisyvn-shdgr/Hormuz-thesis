@@ -1,0 +1,25 @@
+# Isolated benchmark env #2: TimesFM 2.5 (Google) ONLY.
+# Separate from requirements-benchmark.txt on purpose: TimesFM 2.5 needs a newer
+# torch (2.12.x) than uni2ts/Moirai allows (2.4.x). In a shared env TimesFM 2.5
+# silently emits all-NaN forecasts under the older torch; the harness guards
+# against that, but the clean fix is a dedicated env.
+#
+# Use Python 3.11:
+#
+#   /opt/homebrew/bin/python3.11 -m venv .venv-timesfm
+#   .venv-timesfm/bin/pip install -r requirements.txt           # data/scoring core
+#   .venv-timesfm/bin/pip install -r requirements-timesfm.txt
+#   .venv-timesfm/bin/python scripts/run_tsfm_benchmark.py \
+#       --model timesfm --acknowledge-benchmark-only
+#
+# Results merge into the SAME data/processed/tsfm_benchmark_*.csv as the
+# Chronos/Moirai run (the runner does merge-on-write per model).
+#
+# Verified working on 2026-06-18 (macOS arm64, Python 3.11.15): timesfm 2.0.1
+# (which ships the TimesFM 2.5 model API: TimesFM_2p5_200M_torch + ForecastConfig)
+# with torch 2.12.1 produced real forecasts. The weights load from the HF repo
+# google/timesfm-2.5-200m-pytorch. Freeze exact versions before reporting.
+
+# The timesfm package version (2.0.x) is decoupled from the model version (2.5);
+# 2.0.1 contains the 2.5 API. Pin the resolved version in the manifest.
+timesfm[torch]>=2.0               # verified: 2.0.1 (ships TimesFM 2.5), torch 2.12.1

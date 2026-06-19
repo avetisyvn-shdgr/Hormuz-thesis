@@ -1,0 +1,7 @@
+model,target,cand_mase_mean,ar_mase_mean,mase_improvement,beats_ar_mase,cand_coverage_error_mean,calibration_assessed,keeps_calibration,admitted,verdict
+chronos2,hormuz_tanker_capacity,0.6980605219988409,0.7681990722189742,0.07013855022013327,True,-0.0007246376811593688,True,True,True,ADMITTED: beats AR MASE and holds calibration — eligible for the post-treatment comparison.
+chronos2,hormuz_tanker_transits,0.8000367817891185,0.9875272287304587,0.1874904469413402,True,-0.012318840579710087,True,True,True,ADMITTED: beats AR MASE and holds calibration — eligible for the post-treatment comparison.
+moirai,hormuz_tanker_capacity,0.7151969160961642,0.7681990722189742,0.05300215612281001,True,0.015942028985507218,True,True,True,ADMITTED: beats AR MASE and holds calibration — eligible for the post-treatment comparison.
+moirai,hormuz_tanker_transits,0.8399183851679082,0.9875272287304587,0.14760884356255055,True,-0.04782608695652176,True,True,True,ADMITTED: beats AR MASE and holds calibration — eligible for the post-treatment comparison.
+timesfm,hormuz_tanker_capacity,0.6969364870580042,0.7681990722189742,0.07126258516097006,True,0.013043478260869544,True,True,True,ADMITTED: beats AR MASE and holds calibration — eligible for the post-treatment comparison.
+timesfm,hormuz_tanker_transits,0.7817235577336589,0.9875272287304587,0.20580367099679986,True,-0.053623188405797155,True,True,True,ADMITTED: beats AR MASE and holds calibration — eligible for the post-treatment comparison.
