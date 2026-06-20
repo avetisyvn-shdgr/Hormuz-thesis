@@ -30,5 +30,5 @@ def test_donut_window_excludes_ambiguous_transition():
 
     assert donut["is_donut"] is True
     assert pd.Timestamp(donut["excluded_start"]) == pd.Timestamp("2026-02-28")
-    assert pd.Timestamp(donut["excluded_end"]) == pd.Timestamp("2026-03-25")
-    assert pd.Timestamp(donut["post_start"]) == pd.Timestamp("2026-03-26")
+    assert pd.Timestamp(donut["excluded_end"]) == pd.Timestamp("2026-03-04")
+    assert pd.Timestamp(donut["post_start"]) == pd.Timestamp("2026-03-05")

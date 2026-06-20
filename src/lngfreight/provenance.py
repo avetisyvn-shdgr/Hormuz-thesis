@@ -33,13 +33,14 @@ def save_raw(
     code: str,
     query: dict,
     license_note: str,
+    filename: str | None = None,
 ) -> Path:
     """Persist a raw pull as CSV and append a provenance record. Returns path."""
     raw_dir = config.path("data_raw") / provider
     raw_dir.mkdir(parents=True, exist_ok=True)
 
     retrieved = datetime.now(timezone.utc).isoformat()
-    fname = f"{variable}__{code.replace(':', '_').replace('.', '_')}.csv"
+    fname = filename or f"{variable}__{code.replace(':', '_').replace('.', '_')}.csv"
     out_path = raw_dir / fname
 
     csv_text = df.to_csv(index=False)

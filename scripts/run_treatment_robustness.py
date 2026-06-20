@@ -61,8 +61,8 @@ def _post_windows() -> list[dict[str, object]]:
             "excluded_start": train_cutoff,
             "excluded_end": force_majeure,
             "note": (
-                "Primary donut design: train before the earliest disruption "
-                "date and exclude the ambiguous transition window."
+                "Donut sensitivity: train before operational onset and exclude "
+                "the transition through QatarEnergy's force-majeure declaration."
             ),
         },
         {
@@ -237,7 +237,7 @@ def main() -> None:
     print(f"wrote {daily_out}")
     print("\nInterpretation guard:")
     print(" - This is not a cutoff sweep; the training cutoff remains 2026-02-28.")
-    print(" - The donut design excludes 2026-02-28 through 2026-03-25 from effect scoring.")
+    print(" - The donut design excludes 2026-02-28 through 2026-03-04 from effect scoring.")
     print(" - Later cutoffs would train on disrupted days and poison the baseline.")
     print(" - Route+energy ARX may absorb post-treatment energy mediation; compare route-only.")
 

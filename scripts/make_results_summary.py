@@ -226,7 +226,7 @@ def main() -> None:
         ],
         "",
         "Donut interpretation: excluding the ambiguous transition window "
-        "2026-02-28 through 2026-03-25 lowers cumulative loss mechanically "
+        "2026-02-28 through 2026-03-04 lowers cumulative loss mechanically "
             "because fewer days are scored, while the mean daily AR-only "
         "loss remains close to the anchored windows.",
         "",

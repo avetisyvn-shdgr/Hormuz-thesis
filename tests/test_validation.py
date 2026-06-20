@@ -33,8 +33,10 @@ from lngfreight.validation import (
 def _settings(scheme="expanding", initial=100, horizon=20, step=20,
               sliding=100, max_folds=None, cutoff="2024-01-01"):
     return {
-        "study_window": {"treatment_candidates": {
-            "a": "2024-01-01", "b": "2024-02-01"}},  # earliest = 2024-01-01
+        "study_window": {
+            "primary_treatment_cutoff": "2024-01-01",
+            "treatment_candidates": {
+                "a": "2024-01-01", "b": "2024-02-01"}},
         "modeling": {"validation": {
             "scheme": scheme, "initial_train_days": initial,
             "horizon_days": horizon, "step_days": step,
@@ -76,9 +78,23 @@ def test_no_fold_crosses_treatment_cutoff():
         assert np.intersect1d(f.train_idx, post).size == 0
 
 
-def test_cutoff_auto_picks_earliest_candidate():
+def test_cutoff_auto_uses_locked_primary_cutoff():
     s = _settings(cutoff="auto")
     assert resolve_cutoff(s) == pd.Timestamp("2024-01-01")
+
+
+def test_milestone_dates_cannot_change_locked_primary_cutoff():
+    s = _settings(cutoff="auto")
+    s["study_window"]["primary_treatment_cutoff"] = "2024-01-15"
+    s["study_window"]["treatment_candidates"]["a"] = "2023-12-01"
+    assert resolve_cutoff(s) == pd.Timestamp("2024-01-15")
+
+
+def test_cutoff_auto_requires_locked_primary_cutoff():
+    s = _settings(cutoff="auto")
+    del s["study_window"]["primary_treatment_cutoff"]
+    with pytest.raises(ValueError, match="primary_treatment_cutoff"):
+        resolve_cutoff(s)
 
 
 # --------------------------------------------------------------------------

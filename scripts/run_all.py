@@ -21,6 +21,7 @@ STEPS = [
     ("Export model diagnostics", ["scripts/run_model_diagnostics.py"]),
     ("Run chronological validation", ["scripts/run_baseline.py"]),
     ("Run AR-only and sensitivity counterfactuals", ["scripts/run_counterfactual.py"]),
+    ("Quantify AIS-dark-vessel bound", ["scripts/run_ais_dark_bound.py"]),
     ("Run Bayesian structural counterfactual", ["scripts/run_bsts_counterfactual.py"]),
     ("Run temporal placebos", ["scripts/run_placebo_inference.py"]),
     ("Run independent-block and conformal inference", ["scripts/run_block_inference.py"]),

@@ -3,7 +3,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from freeze_reproducibility import raw_hashes, sha256_file
+from freeze_reproducibility import (
+    CORE_RAW_INPUTS,
+    core_raw_hashes,
+    raw_hashes,
+    sha256_file,
+    vessel_raw_hashes,
+)
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from lngfreight import config
 
 
 def test_sha256_file_is_stable(tmp_path):
@@ -22,3 +32,20 @@ def test_raw_hashes_excludes_manifests(tmp_path):
     (raw / "SHA256SUMS").write_text("old", encoding="utf-8")
     (raw / "provenance.jsonl").write_text("{}\n", encoding="utf-8")
     assert list(raw_hashes(tmp_path)) == ["data/raw/source.csv"]
+
+
+def test_core_raw_hashes_cover_exactly_declared_inputs():
+    """The core scope is the PortWatch inputs run_all.py consumes; if one is
+    renamed or removed the freeze must fail loudly, not silently shrink."""
+    hashes = core_raw_hashes(config.ROOT)
+    assert set(hashes) == set(CORE_RAW_INPUTS)
+    assert len(hashes) == 9
+
+
+def test_vessel_scope_excludes_core_and_archives():
+    """Vessel-branch raw set must not overlap the core set or canonicalize
+    transient .zip downloads."""
+    core = set(CORE_RAW_INPUTS)
+    vessel = vessel_raw_hashes(config.ROOT)
+    assert core.isdisjoint(vessel)
+    assert not any(rel.endswith(".zip") for rel in vessel)

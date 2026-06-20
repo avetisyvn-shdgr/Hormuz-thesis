@@ -7,6 +7,7 @@ from .eia import EIASource
 from .fred import FREDSource
 from .portwatch import PortWatchSource
 from .spark import SparkSource
+from .wto_hormuz import WTOHormuzLNGSource
 
 # Providers that are not yet implemented map to None so the resolver can give
 # a clear "this needs a backend / proprietary access" error instead of a
@@ -19,6 +20,7 @@ _PROVIDERS: dict[str, type[BaseSource] | None] = {
     # targets are flipped to `status: primary` in sources.yaml (access pending);
     # it requires OAuth2 credentials and fails loudly without them.
     "spark": SparkSource,
+    "wto_hormuz": WTOHormuzLNGSource,
     # not yet wired / require paid access (no verified free historical feed):
     "ice_settlement": None,
     "eex_settlement": None,

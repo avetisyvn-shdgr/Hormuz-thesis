@@ -3,9 +3,9 @@
 These figures document the 2026 Strait of Hormuz disruption in the free panel
 and motivate the research design. They are descriptive only:
 
-  * Treatment-date lines are CANDIDATE (provisional) markers from settings.yaml,
-    not yet re-sourced to primary documents (CLAUDE.md). Drawn dashed + labelled
-    "candidate" so no figure implies a confirmed event date.
+  * Event-date lines are audited milestones from settings.yaml. Only the
+    operational-onset line is the primary model cutoff; later lines provide
+    historical context and sensitivity-window anchors.
   * Hormuz-vs-Panama is a treated-vs-untreated CONTRAST (the visual seed of the
     later donor / synthetic-control design), NOT an estimated effect.
   * The energy-price panel shows CO-MOVEMENT, not a causal response; forward-
@@ -44,7 +44,7 @@ def _candidates() -> dict[str, pd.Timestamp]:
 
 
 def _mark_treatments(ax, *, label: bool = True) -> None:
-    """Draw the four candidate treatment dates as dashed vertical lines."""
+    """Draw the configured event milestones as dashed vertical lines."""
     for (name, ts), color in zip(_candidates().items(), _TREAT_COLORS):
         ax.axvline(ts, ls="--", lw=1.0, color=color, alpha=0.9,
                    label=f"{name} ({ts.date()})" if label else None)

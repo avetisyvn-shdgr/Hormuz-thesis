@@ -20,7 +20,7 @@ Two leakage guards, enforced by construction AND re-asserted before return:
   1. Each test fold lies strictly AFTER its own training window (no future->past).
   2. Every fold lies strictly BEFORE the treatment cutoff, so no training or
      validation ever sees the disruption regime. The cutoff defaults to the
-     EARLIEST treatment candidate in settings.yaml (the most conservative choice).
+     explicitly locked primary treatment cutoff in settings.yaml.
 
 Policy (fold lengths, step, scheme, cutoff) lives in settings.yaml `modeling:`,
 never hard-coded here. Folds are returned as integer POSITIONAL indices into the
@@ -56,15 +56,21 @@ class Fold:
 def resolve_cutoff(settings: dict | None = None) -> pd.Timestamp:
     """The date training+validation must stay strictly before.
 
-    "auto" (the default) = the EARLIEST treatment candidate, so no fold can see
-    the disruption under ANY of the competing treatment-date definitions. An
-    explicit YYYY-MM-DD in settings overrides it.
+    "auto" (the default) = ``study_window.primary_treatment_cutoff``. This is
+    explicit so adding a later event milestone cannot silently change model
+    training. An explicit YYYY-MM-DD in validation settings overrides it.
     """
     settings = settings or config.settings()
     raw = settings.get("modeling", {}).get("validation", {}).get("cutoff", "auto")
     if raw == "auto":
-        candidates = settings["study_window"]["treatment_candidates"].values()
-        return min(pd.Timestamp(c) for c in candidates)
+        study = settings["study_window"]
+        primary = study.get("primary_treatment_cutoff")
+        if primary is None:
+            raise ValueError(
+                "study_window.primary_treatment_cutoff is required when "
+                "modeling.validation.cutoff is 'auto'."
+            )
+        return pd.Timestamp(primary)
     return pd.Timestamp(raw)
 
 
