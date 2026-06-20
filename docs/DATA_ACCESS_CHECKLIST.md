@@ -4,6 +4,27 @@ The proposal makes data access the *critical path* and a binary gate. This is th
 concrete checklist that resolves it. Work the FREE column first (you can start
 today); pursue the PROPRIETARY column in parallel via TUM, because lead times are long.
 
+## Current extension gate (added 2026-06-19)
+
+The active plan is `CURRENT_PLAN.md`; the first reproducible audit is recorded
+in `VESSEL_DATA_FEASIBILITY.md` and
+`data/processed/vessel_data_feasibility.json`.
+
+- [x] Audit existing PortWatch and WTO LNG schemas/coverage.
+- [x] Define pre-committed vessel-sample acceptance thresholds.
+- [x] Confirm from GFW documentation that identity and port visits cover all
+      vessel types, while vessel presence is not a raw track and cargo state is
+      not observed.
+- [x] Register a personal GFW token and add `GFW_API_TOKEN` to `.env`.
+- [x] Freeze a sourced 30-vessel LNG benchmark roster by IMO.
+- [x] Pull a short identity and port-visit sample through registered adapters.
+- [x] Score the sample gate: Q-Flex port-sequence feasibility passed.
+- [x] Expand to the 624-vessel eligible global census and repeat coverage,
+      terminal-match, and endpoint-resolution diagnostics.
+- [ ] Pre-commit route-distance and capacity-mile construction methods.
+- [ ] Continue Spark academic/trial/Bloomberg access in parallel until the
+      thesis is finalized.
+
 ## Tier A — Free, start immediately (no gate)
 - [ ] EIA API key registered, `.env` filled, `henry_hub_spot` pulls OK
 - [ ] FRED API key registered, Henry Hub cross-check matches EIA within tolerance

@@ -29,6 +29,9 @@ Read these rules at the start of every session and follow them.
 
 ## Project structure
 
+- `docs/CURRENT_PLAN.md` — active next-phase roadmap. Preserve the completed
+  PortWatch work and keep Spark open through thesis completion while testing the
+  vessel-data branch and its documented simulation fallback.
 - `config/sources.yaml` — series registry (the swap-in layer). Edit this, not code,
   when data access changes.
 - `config/settings.yaml` — paths, study window, treatment-date candidates, seed.
@@ -45,6 +48,8 @@ code for the current phase. Keep research logic separate from implementation.
 
 ## Treatment dates
 
-The four candidate dates in settings.yaml are PROVISIONAL, pulled from the
-proposal text, NOT yet re-sourced. Do not treat them as confirmed. Phase 1 is to
-verify each against primary sources (CRS, EIA, Lloyd's List, Spark, Argus, S&P).
+The working throughput specification locks `2026-02-28` as the operational-onset
+cutoff. Training must remain strictly before it. Later dates are event milestones
+and sensitivity scoring windows, not alternative training cutoffs. The chronology
+was re-audited on 2026-06-19; consult `docs/EVENT_CHRONOLOGY.md` before changing
+any date or event label.

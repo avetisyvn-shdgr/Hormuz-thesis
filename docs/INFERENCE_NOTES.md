@@ -52,15 +52,15 @@ Updated 2026-06-17: `scripts/run_treatment_robustness.py` writes
 This is deliberately **not a cutoff sweep**. The training cutoff remains fixed at
 the earliest defensible disruption date, **2026-02-28**, so every model trains
 only on rows strictly before the disruption. Later chronology dates define
-post-period scoring windows only. Moving the cutoff to 2026-03-02 or 2026-03-25
+post-period scoring windows only. Moving the cutoff to 2026-03-02 or 2026-03-04
 would put disrupted days into training and would poison the counterfactual
 baseline.
 
-Primary design: treat **2026-02-28 through 2026-03-25** as an ambiguous transition
-window and exclude it from effect scoring. The recursive forecast still begins
-on 2026-02-28 as an unscored bridge, because lagged models need predictions
-through the transition window before they can produce valid late-March forecasts.
-Only rows from **2026-03-26 onward** are scored in the donut result.
+Donut sensitivity: treat **2026-02-28 through 2026-03-04** as the transition
+window through QatarEnergy's force-majeure declaration and exclude it from
+effect scoring. The recursive forecast still begins on 2026-02-28 as an
+unscored bridge. Only rows from **2026-03-05 onward** are scored in the donut
+result.
 
 Methodological justification: this separates the identification-safe training
 rule from uncertainty about exactly when the operational regime fully hardened.
@@ -77,10 +77,10 @@ artifact shows:
 
 | Window | Scored post window | Valid days | Cumulative loss | Mean daily loss |
 |---|---:|---:|---:|---:|
-| Donut clean post | 2026-03-26 to 2026-06-01 | 68 | 3,772 tanker transits | 55.5/day |
+| Donut clean post | 2026-03-05 to 2026-06-01 | 89 | 4,942 tanker transits | 55.5/day |
 | Kinetic-trigger anchored | 2026-02-28 to 2026-06-01 | 94 | 5,176 tanker transits | 55.1/day |
 | Closure-declaration anchored | 2026-03-02 to 2026-06-01 | 92 | 5,112 tanker transits | 55.6/day |
-| Force-majeure anchored | 2026-03-25 to 2026-06-01 | 69 | 3,828 tanker transits | 55.5/day |
+| Force-majeure anchored | 2026-03-04 to 2026-06-01 | 90 | 4,999 tanker transits | 55.5/day |
 
 Interpretation: the cumulative loss changes mechanically with the number of
 scored days, but the mean daily route-only ARX transit loss remains stable across

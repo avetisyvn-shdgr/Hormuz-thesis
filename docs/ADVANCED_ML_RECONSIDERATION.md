@@ -1,0 +1,170 @@
+# Advanced-ML reconsideration (layers 16–20)
+
+**Status:** Methodological reconsideration, 2026-06-20. Reviews four advanced-ML
+layers against the project's gates. **Does not change** the locked AR-only
+primary, the estimand, or the Transformer prohibition. Governing principles:
+prediction ≠ identification (CLAUDE.md rule 2); every model is gated behind the
+admission test (`docs/MODERN_TSFM_BENCHMARK.md`); adding generators enlarges the
+implicit comparison family and must be paid for in the multiplicity ledger below.
+
+Bottom line up front: **three of the four already exist, are run, and are
+defensible as labelled** (cross-check / corroboration, never the estimator). The
+fourth — a hierarchical multi-chokepoint model — **does not add identification
+value** and should be built, if at all, only as an optional fit benchmark, not as
+an identification layer. The cost of *all four* is multiplicity, ledgered below.
+
+---
+
+## 16. Chronos-2 as a counterfactual cross-check — BUILT, defensible
+
+**State.** `scripts/run_tsfm_counterfactual.py` + `tsfm.counterfactual_shortfall`.
+Chronos-2 is `ADMITTED` on the matched fold subset (beats AR-only MASE, holds
+calibration) for both targets, so it is *eligible* to re-estimate the shortfall.
+Frozen result (`tsfm_counterfactual_summary.csv`, provenance now in
+`tsfm_run_manifest.json`):
+
+| Target | Chronos-2 cumulative shortfall | AR-only | % diff |
+|---|---:|---:|---:|
+| transits | 5,246 | 5,121 | **+2.4%** |
+| capacity | 196.1M | 206.9M | −5.2% |
+
+**Verdict — keep, as a one-sentence robustness check.** It trains univariate on
+strictly pre-cutoff data (no post-treatment covariate leaks), so it answers
+exactly one question: *does the shortfall survive a stronger, better-calibrated
+forecaster?* It does (transits within ~2.4%). It is **not** promoted into the
+pipeline and is **not** causal evidence — a better forecaster never identifies an
+effect. Pointwise daily bands are deliberately not summed into a cumulative
+interval (that is layer 18's job). **Action taken:** the cross-check outputs are
+now frozen into the TSFM provenance manifest (they were previously unfrozen
+model results).
+
+## 17. Formal BSTS / CausalImpact layer — BUILT, and correctly univariate
+
+**State.** `src/lngfreight/bsts.py` + `scripts/run_bsts_counterfactual.py`: a
+Gaussian **local-level + weekly-seasonal** state-space model, Gibbs/FFBS, joint
+posterior predictive paths (so cumulative-shortfall intervals retain temporal
+dependence rather than summing independent pointwise bands). This *is* the
+CausalImpact structural form (Brodersen et al. 2015). Frozen result
+(`bsts_counterfactual_summary.csv`): posterior median shortfall **4,982**, 95%
+**[3,348, 6,711]**, P(shortfall > 0) = **1.0**, validation MASE ≈ 0.82.
+
+**The reconsideration point — do NOT add contemporaneous donor controls.** Stock
+CausalImpact sharpens the counterfactual by regressing the treated series on
+*control series* inside the state space. Here the natural controls are other
+chokepoints — and they are **contaminated by rerouting** (the SUTVA single point
+of failure, `SUTVA_CONTAMINATION_AUDIT.md`). Feeding post-treatment donor values
+into the counterfactual would import exactly the contamination the design works to
+exclude, the same reason AR-only (not ARX) is the primary. So the **univariate**
+BSTS is the *more* defensible specification, not a limitation. Document it as a
+deliberate choice.
+
+**Verdict — keep as univariate corroboration.** It is an independent
+(Bayesian, joint-path) counterfactual that agrees with AR-only in direction and
+magnitude. Recommended hardening, both cheap and within discipline: (a) a prior-
+sensitivity sweep on the level-innovation and observation-variance priors,
+reported as a range; (b) a posterior predictive check on the pre-period. Neither
+changes the estimand; both strengthen the "formal" claim.
+
+## 18. Most defensible long-horizon interval — BUILT, method choice is correct
+
+**State.** `scripts/run_long_horizon_intervals.py` recalibrates the cumulative-
+shortfall band at the true ~94-day horizon by reusing the **placebo-in-time
+windows** (each a full 94-day pre-treatment recursive forecast, so its cumulative
+gap is a realised 94-day forecast error including recursive compounding). Result:
+~2.6× wider than the ≤30-day-fold band, and **every** model×target interval still
+excludes zero (route-only transit lower bound 3,960 ≫ 0).
+
+**Why this is the most defensible of the candidates:**
+
+| Method | Verdict |
+|---|---|
+| Sum of pointwise daily quantiles | **Rejected** — ignores serial correlation, understates the cumulative band. |
+| ≤30-day-fold block bootstrap | **Lower bound only** — fold horizon ≤30d, so 31–94-day recursion depths are unrepresented; honest but too narrow. |
+| Conformal prediction | **Rejected** — its finite-sample guarantee assumes pre/post exchangeability, which an event study *deliberately breaks*. |
+| **Placebo-window empirical (chosen)** | **Preferred** — calibrates at the true 94-day horizon on real recursive errors; conservative (wide), not precise. |
+
+**Verdict — keep; it is the right choice.** State its honest limits: overlapping
+placebo windows (~9 effectively independent) make the 2.5/97.5 quantiles coarse,
+and placebo models train on shorter expanding windows than the actual full-pre-
+period model, which *widens* the band (conservative). It is a forecast-error band,
+not a structural causal interval.
+
+## 19. Hierarchical multi-chokepoint model — assess for identification, not fit
+
+**Not built.** A partial-pooling model over the 28 PortWatch chokepoints (e.g.
+chokepoint-level local-level/AR states with shared hyperpriors, plus a Hormuz
+treatment deviation) would borrow strength across units and could improve
+pre-treatment **fit**. The question the project demands is whether it adds
+**identification value**. Assessment:
+
+1. **It inherits, not resolves, the SUTVA single point of failure.** Partial
+   pooling across chokepoints makes the Hormuz counterfactual depend on the other
+   units' post-treatment paths — which are contaminated by rerouting. A
+   hierarchical model that pools contaminated donors has the *same* anti-
+   conservative failure mode as the synthetic control and spatial placebo
+   (`SUTVA_CONTAMINATION_AUDIT.md`), now wrapped in a more sophisticated, less
+   transparent estimator. Apparent sophistication, no new identification.
+2. **It is largely a parametric restatement of evidence we already have.** "Is the
+   Hormuz post-treatment deviation an outlier in the cross-chokepoint distribution
+   of deviations?" is exactly the question the same-date spatial placebo and the
+   Abadie-style synthetic control already answer non-parametrically. A third
+   parametric version of the same comparison is **redundant corroboration** that
+   adds multiplicity for little marginal information.
+3. **The primary needs no help.** The locked estimand is a *within-unit* ITS; it
+   does not pool units and is structurally immune to the donor-contamination SPOF.
+   A hierarchical pool cannot improve the identification of a within-unit
+   contrast; it can only add a cross-unit layer that shares the corroboration
+   layers' weakness.
+
+**Verdict — do not promote; build only as an explicitly fit-only benchmark, if at
+all.** If built, gate it exactly like the TSFMs: it enters nothing unless it
+materially improves *pre-treatment* fit **and** interval calibration on the
+strictly pre-cutoff folds, and even then it is labelled a benchmark, never an
+identification layer. Pre-commit that its cross-unit "treatment deviation" is
+**not** reported as an effect estimate, because its denominator is the
+contaminated donor pool. Given (1)–(3), the recommendation is **not to build it
+now**: it would add multiplicity and a sophistication-vs-transparency cost without
+buying identification, contradicting the rigor this review is meant to enforce. It
+is offered as a gated option, not a queued task.
+
+---
+
+## Multiple-comparison ledger (the cost of all of the above)
+
+The proposal pre-committed to "a step-down multiplicity correction across the
+implicit family of dates, proxies and generators so that robustness multiplicity
+is not laundered into apparent significance." That family is now large. Enumerate
+it honestly:
+
+| Axis | Members | Count |
+|---|---|---|
+| Counterfactual generators | seasonal-naive, AR-only, route ARX, route+energy ARX, BSTS, Chronos-2 (Moirai/TimesFM as benchmarks) | 6 (+2) |
+| Outcomes | transits (primary), capacity (robustness) | 2 |
+| Inference layers | placebo-in-time, spatial placebo, leave-one-donor-out, synthetic control + Abadie placebo, long-horizon interval, treatment-window donut | 6 |
+| Treatment-window anchors | kinetic / closure / force-majeure / donut | 4 |
+
+**Reporting rules to keep multiplicity from inflating significance:**
+
+1. **One pre-registered primary.** AR-only on transits is *the* estimate; every
+   other generator/outcome/window is a robustness axis, declared in advance, not a
+   menu to select the most significant from.
+2. **Lead with separation ratios, not minimum p-values.** The placebo and Abadie
+   p-values are small-N **design floors** (1/37 ≈ 0.027, 1/23 ≈ 0.043); report
+   actual-loss / placebo-p95 separations as the headline so a floored p cannot be
+   over-read.
+3. **Apply a step-down (Holm/Romano-Wolf) correction across the within-axis
+   family** when any cross-axis claim is made (e.g. "significant across all four
+   treatment windows"), and state the family size explicitly.
+4. **Benchmarks are not tests.** The TSFMs and any hierarchical model are
+   admission-gated benchmarks; their MASE wins are *not* added to the inferential
+   family and are never counted as effect evidence (rule 2).
+5. **Adding a generator must clear a bar, not just exist.** A new model enters the
+   reported family only if it answers a question the existing six do not. By that
+   bar: Chronos-2 (a *stronger-forecaster* robustness sentence) and the univariate
+   BSTS (an *independent Bayesian joint-path* counterfactual) each earn a place; a
+   hierarchical pool does not.
+
+**Net recommendation:** keep 16, 17, 18 as built and labelled; harden 17 with a
+prior-sensitivity sweep; do not build 19 as an identification layer; and carry the
+ledger above into the thesis's robustness section so the breadth of checks reads
+as discipline, not as multiplicity mining.

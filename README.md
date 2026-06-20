@@ -71,12 +71,19 @@ Full setup (PyCharm + Claude Code, macOS): `docs/SETUP_CLAUDE_PYCHARM.md`.
 | `scripts/run_spatial_placebo.py` | Same-date PortWatch chokepoint placebo checks |
 | `scripts/run_interval_calibration.py` | Residual-calibrated pointwise and aggregate loss intervals |
 | `scripts/make_results_summary.py` | Generated Markdown summary of current empirical results |
+| `scripts/make_mechanism_summary.py` | Standalone GFW/WTO mechanism report and integrated figure; excluded from the frozen PortWatch run |
 | `reports/current_results_summary.md` | Thesis-ready working table from processed outputs |
+| `reports/mechanism_results_summary.md` | Generated open-data LNG mechanism evidence chain |
 | `docs/INFERENCE_NOTES.md` | Reporting caveats for placebo-in-time evidence |
 | `docs/` | Data-source registry, setup guide, go/no-go checklist |
 | `CLAUDE.md` | Anti-hallucination rules for AI assistance |
 
 ## Phase roadmap (do NOT skip ahead)
+
+The active extension plan is recorded in
+[`docs/CURRENT_PLAN.md`](docs/CURRENT_PLAN.md). It preserves this roadmap and the
+Spark re-entry option while adding the vessel-data feasibility gate and network
+simulation fallback.
 
 1. **Data foundation** — skeleton + free sources + provenance.
 2. **Go/no-go gate** — fallback branch selected; Spark/Bloomberg now upside.
@@ -87,6 +94,7 @@ Full setup (PyCharm + Claude Code, macOS): `docs/SETUP_CLAUDE_PYCHARM.md`.
 
 ## Status of treatment dates
 
-The treatment-date candidates in `settings.yaml` were verified on 2026-06-14
-and documented in `docs/EVENT_CHRONOLOGY.md`. The earliest candidate
-(`2026-02-28`) is used as the conservative modeling cutoff.
+The chronology was re-audited on 2026-06-19 and is documented in
+`docs/EVENT_CHRONOLOGY.md`. The operational onset (`2026-02-28`) is explicitly
+locked as the modeling cutoff; later milestones define scoring sensitivities
+and cannot silently change the training boundary.
