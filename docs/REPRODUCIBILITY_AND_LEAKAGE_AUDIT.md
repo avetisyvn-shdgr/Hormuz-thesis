@@ -17,10 +17,10 @@ environment from scratch.
 
 ```
 PYTHONHASHSEED=0 OMP_NUM_THREADS=1 .venv-claude/bin/python -m pytest -q
-156 passed in ~7s
+161 passed
 ```
 
-All 156 tests pass with no network access. No code changes were needed to make
+All 161 tests pass with no network access. No code changes were needed to make
 the suite green in a clean environment.
 
 ## 2. TSFM run frozen into a manifest — DONE (isolated)
@@ -42,9 +42,9 @@ Captured (verified on disk 2026-06-20):
 Model revisions (HF snapshot commits): `amazon/chronos-2`
 `29ec3766…`, `google/timesfm-2.5-200m-pytorch` `1d952420…`,
 `Salesforce/moirai-2.0-R-small` `30f43ff0…`. Device: `cpu`, macOS arm64. The four
-`tsfm_*` benchmark CSV hashes recorded in the TSFM manifest match the core
-`reproducibility_manifest.json` byte-for-byte, confirming the on-disk benchmark
-outputs are the ones cited.
+`tsfm_*` benchmark CSV hashes are recorded in the separate TSFM manifest. They
+are deliberately excluded from the core `reproducibility_manifest.json` because
+the weight runs require separate environments and cached model snapshots.
 
 **Two hygiene flags to clear before citing the numbers in the thesis:**
 - `.venv-bench` reports inconsistent pandas metadata: `pip freeze` says 2.3.3 but
@@ -56,54 +56,40 @@ outputs are the ones cited.
   the matched subset is unchanged: all six model×target cells `ADMITTED`, but
   `ADMITTED` means *eligible as a cross-check only* — never the locked primary.
 
-## 3. Deterministic end-to-end reproducibility — PROVEN, with a stale-manifest fix required
+## 3. Deterministic end-to-end reproducibility — PASS
 
-**Determinism is proven.** The full core pipeline was regenerated in
-`.venv-claude` under the `run_all.py` environment flags (`PYTHONHASHSEED=0`,
-single-thread BLAS, fixed `MPLCONFIGDIR`). Against the frozen manifest:
+`scripts/run_all.py` now runs 35 offline steps spanning the PortWatch model and
+the open-data LNG mechanism branch. It verifies 9 core raw snapshots, 11 vessel
+raw snapshots, and one frozen carrier preprocessing input before execution. It
+then regenerates the panel, models, inference outputs, event-study figures,
+vessel sequences, route distances, capacity-nautical miles, WTO validation,
+importer exposure, vessel-days, and both generated result reports.
 
-- **All 13 figure artifacts (PNG/PDF) are byte-identical.** matplotlib output is
-  reproducible once `MPLCONFIGDIR` is pinned.
-- **50 of 53 data/text artifacts are byte-identical.**
-- The panel build was run **twice**; the two fresh `panel_aligned.csv` outputs
-  are byte-identical to each other → the pipeline itself is deterministic.
+The runner no longer overwrites the reference manifest. Its final step invokes
+`freeze_reproducibility.py --verify`, which builds a candidate manifest in a
+temporary directory and compares it with the committed manifest. Missing,
+unexpected, or changed hashes fail the run. The verified run on 2026-06-20
+finished with:
 
-**Three artifacts differ from the frozen manifest, and the cause is a stale
-manifest, not non-determinism:**
+```text
+INPUT HASH CHECK PASSED: 9 core raw files match.
+INPUT HASH CHECK PASSED: 11 vessel raw files match.
+INPUT HASH CHECK PASSED: 1 interim inputs match.
+161 passed
+ARTIFACT VERIFICATION PASSED: 87 regenerated artifacts match.
+END-TO-END RUN COMPLETED CLEANLY
+```
 
-| Artifact | Why it differs |
-|---|---|
-| `panel_aligned.csv` | Now carries a `wto_hormuz_lng_outbound_index` column (8 cols) integrated *after* the last freeze. Deterministic across reruns. |
-| `model_input_coverage.csv` | Reflects the panel's column set; changed for the same reason. |
-| `vessel_data_feasibility.json` | Phase-3A vessel-branch artifact regenerated after the last freeze; not produced by `run_all.py`. |
+The 87-file scope is an explicit allowlist, not a directory glob. Matplotlib PDF
+creation/modification dates are pinned so PDF bytes are deterministic. Rebuilding
+an identical derived raw crosswalk is provenance-idempotent and does not append a
+new timestamped log entry.
 
-**`run_all.py` currently aborts at step 1.** The raw-hash check
-(`freeze_reproducibility.py --check`) globs the *entire* `data/raw/` tree and
-finds 23 files, but the frozen `SHA256SUMS` records only the 9 core PortWatch
-inputs. The extra 14 are Phase-3A vessel-branch raw files (GFW/GEM) plus a few
-transient download `.zip`s that landed after the last freeze. So the "frozen
-PortWatch run" cannot self-verify, which blocks a clean end-to-end pass.
-
-### Required decision before re-freezing (see open question)
-
-The fix is a **scope** decision on the raw-hash check, with thesis-framing
-consequences:
-
-- **(A) Core-scoped (recommended).** Restrict the raw-hash check to the core
-  PortWatch inputs `run_all.py` actually consumes (the existing 9), and freeze the
-  vessel-branch raw inputs separately (excluding transient `.zip`s). This keeps
-  the architecture's branch separation — `run_all.py` stays a self-verifying,
-  PortWatch-only pipeline independent of the optional vessel branch.
-- **(B) Whole-tree.** Re-freeze all current raw files into one `SHA256SUMS`. This
-  couples the core run's precheck to the presence/identity of vessel-branch files
-  and would canonicalize transient `.zip`s — contrary to the documented branch
-  isolation.
-
-Either way the manifest must then be re-frozen so `panel_aligned.csv`,
-`model_input_coverage.csv`, and `vessel_data_feasibility.json` hashes are current.
-**Because the manifest is described as "frozen" but was found stale, and it is a
-load-bearing record, the re-freeze is held pending your scope choice rather than
-silently overwritten.**
+The guarantee deliberately excludes three artifact families that the core
+environment cannot regenerate faithfully: isolated TSFM weight runs (separate
+`tsfm_run_manifest.json`), the credential-gated Spark access report, and manually
+assembled supervisor presentation assets. The manifest states these exclusions
+explicitly rather than silently hashing them.
 
 ## 4. AR-only primary — leakage and code-quality audit — CLEAN
 

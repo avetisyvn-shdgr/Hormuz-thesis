@@ -1,10 +1,13 @@
 import sys
+import json
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
+import freeze_reproducibility as freeze
 from freeze_reproducibility import (
     CORE_RAW_INPUTS,
+    ORCHESTRATED_ARTIFACTS,
     core_raw_hashes,
     raw_hashes,
     sha256_file,
@@ -30,6 +33,7 @@ def test_raw_hashes_excludes_manifests(tmp_path):
     (raw / "source.csv").write_text("x\n1\n", encoding="utf-8")
     (raw / ".gitkeep").write_text("", encoding="utf-8")
     (raw / "SHA256SUMS").write_text("old", encoding="utf-8")
+    (raw / "SHA256SUMS.vessel").write_text("old", encoding="utf-8")
     (raw / "provenance.jsonl").write_text("{}\n", encoding="utf-8")
     assert list(raw_hashes(tmp_path)) == ["data/raw/source.csv"]
 
@@ -49,3 +53,33 @@ def test_vessel_scope_excludes_core_and_archives():
     vessel = vessel_raw_hashes(config.ROOT)
     assert core.isdisjoint(vessel)
     assert not any(rel.endswith(".zip") for rel in vessel)
+
+
+def test_orchestrated_artifact_scope_excludes_optional_outputs():
+    assert len(ORCHESTRATED_ARTIFACTS) == len(set(ORCHESTRATED_ARTIFACTS))
+    assert not any("tsfm_" in rel for rel in ORCHESTRATED_ARTIFACTS)
+    assert not any("/presentation/" in rel for rel in ORCHESTRATED_ARTIFACTS)
+    assert "reports/Hormuz_Thesis_Supervisor_Review.pptx" not in ORCHESTRATED_ARTIFACTS
+
+
+def test_verify_manifest_compares_without_overwriting(tmp_path, monkeypatch):
+    manifest_path = tmp_path / freeze.RUN_MANIFEST
+    manifest_path.parent.mkdir(parents=True)
+    expected = {
+        "artifact_sha256": {"data/processed/result.csv": "abc"},
+        "manifest_schema": 2,
+    }
+    original = json.dumps(expected, indent=2, sort_keys=True) + "\n"
+    manifest_path.write_text(original, encoding="utf-8")
+    monkeypatch.setattr(freeze, "build_manifest", lambda root: expected)
+
+    assert freeze.verify_manifest(tmp_path) == 0
+    assert manifest_path.read_text(encoding="utf-8") == original
+
+    drifted = {
+        "artifact_sha256": {"data/processed/result.csv": "changed"},
+        "manifest_schema": 2,
+    }
+    monkeypatch.setattr(freeze, "build_manifest", lambda root: drifted)
+    assert freeze.verify_manifest(tmp_path) == 1
+    assert manifest_path.read_text(encoding="utf-8") == original

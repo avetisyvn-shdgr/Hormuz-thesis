@@ -2,13 +2,128 @@
   "acceptance_criteria": {
     "accepted_measure": "inferred_lng_capacity_nautical_miles",
     "benchmark_vessels": 30,
+    "global_carrier_frame": {
+      "minimum_capacity_m3": 125000,
+      "sampling_design": "eligible_fleet_census",
+      "statuses": [
+        "active"
+      ],
+      "vessel_types": [
+        "conventional",
+        "icebreaker"
+      ]
+    },
+    "importer_basin_exposure": {
+      "destination_basin_by_country": {
+        "Argentina": "Atlantic",
+        "Bangladesh": "Pacific",
+        "Belgium": "Atlantic",
+        "Brazil": "Atlantic",
+        "Canada": "Atlantic",
+        "Chile": "Pacific",
+        "China": "Pacific",
+        "Colombia": "Atlantic",
+        "Croatia": "Atlantic",
+        "Dominican Republic": "Atlantic",
+        "Egypt": "Middle East",
+        "El Salvador": "Pacific",
+        "Finland": "Atlantic",
+        "France": "Atlantic",
+        "Germany": "Atlantic",
+        "Gibraltar": "Atlantic",
+        "Greece": "Atlantic",
+        "Hong Kong": "Pacific",
+        "India": "Pacific",
+        "Indonesia": "Pacific",
+        "Italy": "Atlantic",
+        "Jamaica": "Atlantic",
+        "Japan": "Pacific",
+        "Jordan": "Middle East",
+        "Kuwait": "Middle East",
+        "Lithuania": "Atlantic",
+        "Malaysia": "Pacific",
+        "Malta": "Atlantic",
+        "Mexico": "Pacific",
+        "Netherlands": "Atlantic",
+        "Pakistan": "Pacific",
+        "Panama": "Atlantic",
+        "Philippines": "Pacific",
+        "Poland": "Atlantic",
+        "Portugal": "Atlantic",
+        "Singapore": "Pacific",
+        "South Korea": "Pacific",
+        "Spain": "Atlantic",
+        "Sweden": "Atlantic",
+        "Taiwan": "Pacific",
+        "Thailand": "Pacific",
+        "T\u00fcrkiye": "Atlantic",
+        "United Arab Emirates": "Middle East",
+        "United Kingdom": "Atlantic",
+        "United States": "Atlantic",
+        "Vietnam": "Pacific"
+      },
+      "gulf_export_project_ids": [
+        "T100000130594",
+        "T100000130601"
+      ],
+      "route_specification": "expanded_60nm_snap",
+      "terminal_match_radius_km": 30
+    },
     "max_median_ais_gap_hours": 24,
     "min_identity_match_rate": 0.8,
     "min_port_visit_coverage_rate": 0.8,
     "min_terminal_capacity_mtpa": 1.0,
     "min_terminal_endpoint_rate": 0.9,
     "prohibited_measure_label": "observed_laden_cargo_ton_miles",
-    "terminal_match_max_km": 30
+    "route_distance": {
+      "engine": "searoute",
+      "engine_version": "1.6.0",
+      "expanded_max_endpoint_snap_nm": 60.0,
+      "max_endpoint_snap_nm": 30.0,
+      "min_route_to_geodesic_ratio": 0.95,
+      "restrictions": [
+        "northwest"
+      ],
+      "review_route_to_geodesic_ratio": 3.0,
+      "units": "naut"
+    },
+    "terminal_match_max_km": 30,
+    "vessel_day_estimation": {
+      "elapsed_implied_speed_max_knots": 25.0,
+      "elapsed_implied_speed_min_knots": 5.0,
+      "primary_speed_knots": 15.0,
+      "speed_sensitivity_knots": [
+        13.0,
+        15.0,
+        17.0
+      ]
+    },
+    "wto_departure_validation": {
+      "comparison_windows": {
+        "post": [
+          "2026-02-28",
+          "2026-06-01"
+        ],
+        "pre": [
+          "2025-02-28",
+          "2025-06-01"
+        ]
+      },
+      "daily_lag_sensitivity_days": [
+        -3,
+        -2,
+        -1,
+        0,
+        1,
+        2,
+        3
+      ],
+      "gulf_export_project_ids": [
+        "T100000130594",
+        "T100000130601"
+      ],
+      "terminal_match_radius_km": 30
+    }
   },
   "audit_date": "2026-06-19",
   "empirical_vessel_branch": {

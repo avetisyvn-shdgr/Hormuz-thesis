@@ -39,15 +39,13 @@ def save_raw(
     raw_dir = config.path("data_raw") / provider
     raw_dir.mkdir(parents=True, exist_ok=True)
 
-    retrieved = datetime.now(timezone.utc).isoformat()
     fname = filename or f"{variable}__{code.replace(':', '_').replace('.', '_')}.csv"
     out_path = raw_dir / fname
 
     csv_text = df.to_csv(index=False)
     out_path.write_text(csv_text)
 
-    record = {
-        "retrieved_utc": retrieved,
+    identity = {
         "variable": variable,
         "provider": provider,
         "code": code,
@@ -59,9 +57,18 @@ def save_raw(
         "sha256": _sha256(csv_text),
     }
 
-    log_path = config.path("provenance_log") if config.path else None
     log_path = config.ROOT / config.settings()["paths"]["provenance_log"]
     log_path.parent.mkdir(parents=True, exist_ok=True)
+    if log_path.exists():
+        for line in log_path.read_text(encoding="utf-8").splitlines():
+            existing = json.loads(line)
+            if all(existing.get(key) == value for key, value in identity.items()):
+                return out_path
+
+    record = {
+        "retrieved_utc": datetime.now(timezone.utc).isoformat(),
+        **identity,
+    }
     with open(log_path, "a") as fh:
         fh.write(json.dumps(record) + "\n")
 

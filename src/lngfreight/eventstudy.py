@@ -16,6 +16,8 @@ Nothing here estimates anything. Pure plotting from the aligned panel.
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -36,6 +38,11 @@ _STYLE = {
 }
 _TREAT_COLORS = ["#c1121f", "#d4762a", "#6a4c93", "#118ab2"]
 _SOURCE = "Source: IMF PortWatch (AIS-derived) & EIA. Free-data panel."
+_PDF_METADATA = {
+    "Creator": "lngfreight reproducible pipeline",
+    "CreationDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
+    "ModDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
+}
 
 
 def _candidates() -> dict[str, pd.Timestamp]:
@@ -187,7 +194,8 @@ def save(fig: plt.Figure, name: str) -> list:
     paths = []
     for ext in ("pdf", "png"):
         p = out_dir / f"{name}.{ext}"
-        fig.savefig(p, bbox_inches="tight")
+        metadata = _PDF_METADATA if ext == "pdf" else None
+        fig.savefig(p, bbox_inches="tight", metadata=metadata)
         paths.append(p)
     plt.close(fig)
     return paths

@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
@@ -21,6 +22,11 @@ from lngfreight import config  # noqa: E402
 
 REPORT = "mechanism_results_summary.md"
 FIGURE = "mechanism_evidence_summary.png"
+PDF_METADATA = {
+    "Creator": "lngfreight reproducible pipeline",
+    "CreationDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
+    "ModDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
+}
 
 
 def _csv(path_key: str) -> pd.DataFrame:
@@ -157,7 +163,9 @@ def _save_figure(
     fig.tight_layout(rect=[0, 0.035, 1, 0.95])
     output = config.path("figures") / FIGURE
     fig.savefig(output, dpi=180, bbox_inches="tight")
-    fig.savefig(output.with_suffix(".pdf"), bbox_inches="tight")
+    fig.savefig(
+        output.with_suffix(".pdf"), bbox_inches="tight", metadata=PDF_METADATA
+    )
     plt.close(fig)
     return output
 

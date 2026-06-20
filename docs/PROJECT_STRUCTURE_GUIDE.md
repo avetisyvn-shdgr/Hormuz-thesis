@@ -110,8 +110,11 @@ they do: `run_baseline.py` validates the baseline, `run_counterfactual.py`
 estimates the post-event gap, and `run_spatial_placebo.py` performs the spatial
 comparison.
 
-`scripts/run_all.py` runs the frozen PortWatch pipeline in order, regenerates
-reports, checks reproducibility, and finishes with the complete test suite.
+`scripts/run_all.py` runs the PortWatch and open-data LNG mechanism pipelines in
+order, regenerates 87 declared artifacts, runs the complete test suite, and
+compares a temporary candidate manifest with the committed reference manifest.
+Output drift fails the run; the reference manifest is never overwritten by the
+verification path.
 Optional Transformer/foundation-model benchmarks are deliberately excluded from
 this core runner because they require large model weights and separate software.
 
@@ -170,4 +173,3 @@ The repository audit on 2026-06-19 found:
 - user environments, raw snapshots, processed outputs, figures, IDE settings,
   the formal proposal, and all pre-existing uncommitted work were retained;
 - the local core suite passed all 124 tests after cleanup.
-
