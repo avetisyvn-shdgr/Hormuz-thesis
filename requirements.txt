@@ -8,3 +8,5 @@ PyYAML~=6.0
 python-dotenv~=1.0
 pytest~=8.2
 matplotlib~=3.10
+# Phase-3 modeled maritime distances. Exact pin freezes the bundled route graph.
+searoute==1.6.0

@@ -152,6 +152,15 @@ variables:
       code: "chokepoint:panama_canal:capacity_tanker"
       license: "IMF PortWatch (AIS-derived, public)"
 
+  wto_hormuz_lng_outbound_index:
+    role: mechanism
+    description: "Daily outbound LNG shipment-volume index through the Strait of Hormuz (2025 average = 100)."
+    status: free
+    primary:
+      provider: wto_hormuz
+      code: "lng_outbound_volume_index"
+      license: "WTO Strait of Hormuz Trade Tracker; underlying voyage intelligence by AXSMarine"
+
   # ---- MECHANISM: ton-mile / fleet-vacuum operational proxies ----
   # The proposal's PRIMARY mechanism proxy is AIS-derived laden ton-miles
   # to the replacement origin (US Gulf Coast). True vessel-level AIS is

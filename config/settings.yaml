@@ -17,27 +17,65 @@ paths:
   # optional robustness outcome, not a replacement for the locked PortWatch
   # primary and not a freight-rate measure.
   wto_hormuz_lng_csv: "data/raw/wto_hormuz/voy_intake_index_lng_export.csv"
+  # Optional GFW feasibility inputs. Raw files remain ignored by Git; the audit
+  # records presence/schema only and never stores an API token.
+  gfw_lng_vessel_benchmark_csv: "data/raw/gfw/lng_vessel_benchmark.csv"
+  gfw_vessel_identity_csv: "data/raw/gfw/vessel_identity.csv"
+  gfw_port_visits_csv: "data/raw/gfw/port_visits.csv"
+  gfw_lng_terminals_csv: "data/raw/gem/lng_terminals.csv"
+  gem_lng_terminals_geojson: "data/raw/gem/GEM-GGIT-LNG-Terminals-2025-09.geojson"
+  voyage_feasibility_summary_json: "data/processed/voyage_feasibility_summary.json"
+  gem_carrier_json: "data/interim/gem_lng_carriers.json"
+  global_carrier_frame_csv: "data/interim/global_lng_carrier_frame.csv"
+  global_gfw_vessel_identity_csv: "data/raw/gfw/global_vessel_identity.csv"
+  global_gfw_port_visits_csv: "data/raw/gfw/global_port_visits.csv"
+  global_gfw_lng_terminals_csv: "data/raw/gem/global_lng_terminals.csv"
+  global_terminal_matching_audit_csv: "data/processed/global_lng_terminal_matching_audit.csv"
+  global_candidate_voyage_endpoints_csv: "data/processed/global_candidate_voyage_endpoints.csv"
+  global_voyage_feasibility_summary_json: "data/processed/global_voyage_feasibility_summary.json"
+  maritime_route_distances_csv: "data/processed/maritime_route_distances.csv"
+  maritime_route_distance_summary_json: "data/processed/maritime_route_distance_summary.json"
+  maritime_route_distances_sensitivity_csv: "data/processed/maritime_route_distances_sensitivity.csv"
+  inferred_capacity_nm_voyages_csv: "data/processed/inferred_capacity_nautical_miles_voyages.csv"
+  inferred_capacity_nm_period_summary_csv: "data/processed/inferred_capacity_nautical_miles_period_summary.csv"
+  inferred_capacity_nm_comparison_csv: "data/processed/inferred_capacity_nautical_miles_comparison.csv"
+  inferred_capacity_nm_diagnostics_json: "data/processed/inferred_capacity_nautical_miles_diagnostics.json"
+  gulf_departure_validation_daily_csv: "data/processed/gulf_departure_wto_validation_daily.csv"
+  gulf_departure_validation_weekly_csv: "data/processed/gulf_departure_wto_validation_weekly.csv"
+  gulf_departure_validation_correlations_csv: "data/processed/gulf_departure_wto_validation_correlations.csv"
+  gulf_departure_validation_terminal_csv: "data/processed/gulf_departure_wto_validation_by_terminal.csv"
+  gulf_departure_validation_summary_json: "data/processed/gulf_departure_wto_validation_summary.json"
+  importer_exposure_voyages_csv: "data/processed/importer_exposure_voyages.csv"
+  importer_exposure_summary_csv: "data/processed/importer_exposure_summary.csv"
+  basin_exposure_summary_csv: "data/processed/basin_exposure_summary.csv"
+  importer_basin_exposure_diagnostics_json: "data/processed/importer_basin_exposure_diagnostics.json"
+  vessel_day_voyage_diagnostics_csv: "data/processed/vessel_day_voyage_diagnostics.csv"
+  vessel_day_period_summary_csv: "data/processed/vessel_day_period_summary.csv"
+  vessel_day_comparison_csv: "data/processed/vessel_day_comparison.csv"
+  vessel_day_diagnostics_json: "data/processed/vessel_day_diagnostics.json"
+  mechanism_evidence_summary_csv: "data/processed/mechanism_evidence_summary.csv"
 
 # Study window. Pre-period must be long enough for rolling-origin validation;
 # post-period is deliberately short (the proposal warns about overfitting here).
 study_window:
   full_start: "2022-01-01"     # generous pre-history for baselines/seasonality
   full_end:   "2026-06-01"
-  # Treatment-date candidates — VERIFIED 2026-06-14 (see docs/EVENT_CHRONOLOGY.md).
+  # Locked pre-treatment boundary for the working throughput estimand.
+  # Training uses dates strictly before this date and post scoring includes it.
+  # This is the operational onset, not a claim that every legal, military, and
+  # commercial component of the disruption began simultaneously.
+  primary_treatment_cutoff: "2026-02-28"
+  # Event milestones — re-audited 2026-06-19 (see docs/EVENT_CHRONOLOGY.md).
   # Cross-checked vs the AIS transit collapse in the panel
   # (Hormuz transits: Feb27=53, Feb28=44, Mar1=7, Mar2=2, Mar4=0).
-  # The pipeline must stay re-runnable across ALL of these, not one fixed date.
+  # These define sensitivity scoring windows. They do NOT move the fixed
+  # pre-treatment training boundary above.
   treatment_candidates:
-    kinetic_trigger:       "2026-02-28"   # CORRECTED from 02-27. US/Israel
-                                          # coordinated airstrikes; IRGC closure
-                                          # warnings within hours; AIS -70%.
-    closure_declaration:   "2026-03-02"   # CONFIRMED. Senior IRGC official
-                                          # confirms strait closed.
-    force_majeure:         "2026-03-25"   # CORRECTED from 03-04 (that was the
-                                          # IRGC 'complete control' claim, NOT an
-                                          # FM). QatarEnergy FM after Ras Laffan
-                                          # strikes 18-19 Mar. Exact day 25 vs 26
-                                          # differs by source; pin to a primary wire.
+    kinetic_trigger:       "2026-02-28"   # US operation begins; first observed
+                                          # break in Hormuz tanker throughput.
+    closure_declaration:   "2026-03-02"   # Closure-confirmation milestone;
+                                          # operational collapse already underway.
+    force_majeure:         "2026-03-04"   # QatarEnergy primary announcement.
     # regime_consolidation DROPPED 2026-06-14: 03-10 had no documented
     # consolidation event (analyst construct). Closure hardening is gradual, so
     # persistence is handled by a ROLLING POST-PERIOD WINDOW in the modeling
@@ -45,9 +83,10 @@ study_window:
     # as a PLACEBO/falsification date, not a treatment candidate.
   # Documented context milestones (NOT treatment candidates; event-study
   # annotation / robustness only):
-  #   2026-03-04      IRGC claims 'complete control' of the strait (Reuters).
+  #   2026-03-04      QatarEnergy declares force majeure; IRGC also claims
+  #                   'complete control' of the strait.
   #   2026-03-05      war-risk P&I insurance withdrawn -> effective closure.
-  #   2026-03-18/19   Iranian strikes on Ras Laffan; ~17% Qatari LNG capacity hit.
+  #   2026-03-18/19   Later Ras Laffan escalation; ~17% LNG capacity damaged.
   #   2026-03-27      IRGC bans vessels to/from US/Israel-allied ports (AFP).
   #   2026-04-18      Iran's formal closure statement.
 
@@ -110,10 +149,120 @@ modeling:
     sliding_train_days: 365      # train-window length when scheme == sliding (ignored if expanding)
     max_folds: null              # cap the number of folds (null = as many as the history allows)
     # Training+validation stay STRICTLY before this date so no fold sees the
-    # disruption regime. "auto" = earliest of study_window.treatment_candidates
-    # (the most conservative cutoff); or pin an explicit YYYY-MM-DD.
+    # disruption regime. "auto" = study_window.primary_treatment_cutoff;
+    # or pin an explicit YYYY-MM-DD.
     cutoff: "auto"
 
 reproducibility:
   random_seed: 20260612
   timezone: "UTC"
+
+# Phase-2 vessel-data feasibility gate. Passing supports an INFERRED LNG
+# capacity-mile measure from terminal sequences, not observed cargo ton-miles.
+vessel_data_feasibility:
+  benchmark_vessels: 30
+  min_identity_match_rate: 0.80
+  min_port_visit_coverage_rate: 0.80
+  min_terminal_endpoint_rate: 0.90
+  max_median_ais_gap_hours: 24
+  # GEM facility coordinates can be inland while GFW anchorages are offshore.
+  # This creates candidates for audit, not automatic proof of a terminal call.
+  terminal_match_max_km: 30
+  # Exclude small-scale facilities that are implausible Q-Flex discharge points.
+  min_terminal_capacity_mtpa: 1.0
+  accepted_measure: "inferred_lng_capacity_nautical_miles"
+  prohibited_measure_label: "observed_laden_cargo_ton_miles"
+  route_distance:
+    # Open shortest-path network estimate; it is not an observed AIS track.
+    engine: "searoute"
+    engine_version: "1.6.0"
+    units: "naut"
+    # Keep ordinary commercial passages available. The Arctic Northwest Passage
+    # is excluded by default because it is not a plausible baseline LNG route.
+    restrictions: ["northwest"]
+    # Strict limit for terminal-to-network connectors, which are added to the
+    # graph distance and retained separately for audit.
+    max_endpoint_snap_nm: 30.0
+    # Data-informed expanded sensitivity after the first graph-resolution audit.
+    # The original 30 nm rule remains the strict specification.
+    expanded_max_endpoint_snap_nm: 60.0
+    # Numerical tolerance against the great-circle lower bound.
+    min_route_to_geodesic_ratio: 0.95
+    # High ratios are retained for audit but require manual review before use.
+    review_route_to_geodesic_ratio: 3.0
+  wto_departure_validation:
+    terminal_match_radius_km: 30
+    # Liquefaction origins geographically inside Hormuz. Oman Qalhat is outside
+    # the strait and is deliberately excluded from this validation.
+    gulf_export_project_ids:
+      - "T100000130594"  # QatarEnergy LNG (N), Qatar
+      - "T100000130601"  # Das Island LNG Terminal, United Arab Emirates
+    comparison_windows:
+      pre: ["2025-02-28", "2025-06-01"]
+      post: ["2026-02-28", "2026-06-01"]
+    daily_lag_sensitivity_days: [-3, -2, -1, 0, 1, 2, 3]
+  importer_basin_exposure:
+    terminal_match_radius_km: 30
+    route_specification: "expanded_60nm_snap"
+    gulf_export_project_ids:
+      - "T100000130594"
+      - "T100000130601"
+    # Explicit destination-market classification. Pacific includes Asian and
+    # Pacific-coast American terminals; Middle East is kept separate.
+    destination_basin_by_country:
+      Argentina: "Atlantic"
+      Belgium: "Atlantic"
+      Brazil: "Atlantic"
+      Canada: "Atlantic"
+      Colombia: "Atlantic"
+      Croatia: "Atlantic"
+      Dominican Republic: "Atlantic"
+      Finland: "Atlantic"
+      France: "Atlantic"
+      Germany: "Atlantic"
+      Gibraltar: "Atlantic"
+      Greece: "Atlantic"
+      Italy: "Atlantic"
+      Jamaica: "Atlantic"
+      Lithuania: "Atlantic"
+      Malta: "Atlantic"
+      Netherlands: "Atlantic"
+      Panama: "Atlantic"
+      Poland: "Atlantic"
+      Portugal: "Atlantic"
+      Spain: "Atlantic"
+      Sweden: "Atlantic"
+      Türkiye: "Atlantic"
+      United Kingdom: "Atlantic"
+      United States: "Atlantic"
+      Bangladesh: "Pacific"
+      Chile: "Pacific"
+      China: "Pacific"
+      El Salvador: "Pacific"
+      Hong Kong: "Pacific"
+      India: "Pacific"
+      Indonesia: "Pacific"
+      Japan: "Pacific"
+      Malaysia: "Pacific"
+      Mexico: "Pacific"
+      Pakistan: "Pacific"
+      Philippines: "Pacific"
+      Singapore: "Pacific"
+      South Korea: "Pacific"
+      Taiwan: "Pacific"
+      Thailand: "Pacific"
+      Vietnam: "Pacific"
+      Egypt: "Middle East"
+      Jordan: "Middle East"
+      Kuwait: "Middle East"
+      United Arab Emirates: "Middle East"
+  vessel_day_estimation:
+    primary_speed_knots: 15.0
+    speed_sensitivity_knots: [13.0, 15.0, 17.0]
+    elapsed_implied_speed_min_knots: 5.0
+    elapsed_implied_speed_max_knots: 25.0
+  global_carrier_frame:
+    statuses: ["active"]
+    vessel_types: ["conventional", "icebreaker"]
+    minimum_capacity_m3: 125000
+    sampling_design: "eligible_fleet_census"
