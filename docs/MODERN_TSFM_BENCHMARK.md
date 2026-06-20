@@ -1,6 +1,7 @@
 # Modern Time-Series Foundation Model Benchmark Gate
 
-Status: engineering research note, checked 2026-06-18. This does not alter the
+Status: optional engineering extension, clean-rebuilt and checked 2026-06-20.
+This does not alter the
 formal proposal, estimand, hypotheses, locked AR-only primary, or Transformer
 prohibition. A foundation model remains an isolated benchmark until it improves
 both pre-treatment fit and interval calibration.
@@ -80,19 +81,19 @@ need Python 3.11 (the repo core venv is 3.14; uni2ts is < 3.12). So:
 
 | Env | Python | Models | Requirements |
 |---|---|---|---|
-| `.venv-bench` | 3.11 | Chronos-2 + Moirai 2.0 | `requirements.txt` + `requirements-benchmark.txt` |
-| `.venv-timesfm` | 3.11 | TimesFM 2.5 | `requirements.txt` + `requirements-timesfm.txt` |
+| `.venv-bench` | 3.11 | Chronos-2 + Moirai 2.0 | `requirements-benchmark.lock.txt` |
+| `.venv-timesfm` | 3.11 | TimesFM 2.5 | `requirements-timesfm.lock.txt` |
 
 ```bash
 # Env 1 — Chronos-2 + Moirai 2.0:
 /opt/homebrew/bin/python3.11 -m venv .venv-bench
-.venv-bench/bin/pip install -r requirements.txt -r requirements-benchmark.txt
+.venv-bench/bin/python -m pip install -r requirements-benchmark.lock.txt
 .venv-bench/bin/python scripts/run_tsfm_benchmark.py \
     --model chronos2,moirai --acknowledge-benchmark-only
 
 # Env 2 — TimesFM 2.5 (results MERGE into the same CSVs via merge-on-write):
 /opt/homebrew/bin/python3.11 -m venv .venv-timesfm
-.venv-timesfm/bin/pip install -r requirements.txt -r requirements-timesfm.txt
+.venv-timesfm/bin/python -m pip install -r requirements-timesfm.lock.txt
 .venv-timesfm/bin/python scripts/run_tsfm_benchmark.py \
     --model timesfm --acknowledge-benchmark-only
 
@@ -109,17 +110,30 @@ Outputs (written to `data/processed/`): `tsfm_benchmark_scores.csv` (per fold),
 `tsfm_benchmark_forecasts.csv` (per test day), `tsfm_benchmark_summary.csv`
 (aggregate), and `tsfm_admission_test.csv` (the per-target verdict).
 
-## Status and first recorded run (2026-06-18)
+The `.lock.txt` files contain the complete exact-version environment used for the
+citable rerun. The shorter unpinned requirements files remain development
+constraints only and must not be used to claim reproduction of the reported
+numbers.
+
+## Status and clean rebuild confirmation (2026-06-20)
 
 - **Harness, runner, contract tests, admission test: implemented and passing**
   (`tests/test_tsfm.py`, 9 tests in the core env).
-- **All three adapters verified end-to-end on real weights** in the two envs
-  above (macOS arm64, Python 3.11.15), over the full 38 strictly pre-treatment
-  folds × both outcomes. These numbers are a first recorded run; freeze exact
-  package versions, model revisions, device, and hashes into the reproducibility
-  manifest before citing them in the thesis.
+- **All three adapters re-run end-to-end on real weights in newly created
+  environments** built from the exact lockfiles above (macOS arm64, Python
+  3.11.15), over all 38 strictly pre-treatment folds × both outcomes.
+- Both environments pass `pip check`. Pandas import and distribution metadata
+  agree: 2.1.4 in Chronos/Moirai and 2.3.3 in TimesFM.
+- Compared with the pre-rebuild snapshot, admission decisions and Chronos
+  counterfactual outputs are byte-equivalent after excluding runtime fields.
+  Benchmark prediction differences are only floating-point noise (maximum
+  `1.4e-14`; maximum score-field difference `4.7e-10`) and do not change any
+  reported value.
+- `data/processed/tsfm_run_manifest.json` records lockfile hashes, package
+  versions, pandas consistency, `pip check`, model revisions, device, and output
+  hashes.
 
-First recorded mean scores (pre-treatment validation, 30-day horizon, NOT causal
+Clean-rerun mean scores (pre-treatment validation, 30-day horizon, NOT causal
 effects). AR-only baseline shown for reference (`baseline_summary.csv`):
 
 | Model | Native | Transits MASE | Capacity MASE | Transits cov. | Capacity cov. |
@@ -146,7 +160,7 @@ MASE and calibration are compared on identical folds. It runs in the core env
 (no model weights). Outputs: `ar_interval_{scores,bands,summary}.csv` and the
 final `tsfm_admission_test.csv`.
 
-**First recorded verdict (matched subset, 2026-06-18 run):** all three models
+**Clean-rerun verdict (matched subset, 2026-06-20):** all three models
 beat AR-only on MASE **and** on calibration, so all six model×target cells are
 `ADMITTED`. The AR raw band under-covers (empirical ≈0.87–0.90 transits/capacity
 vs 0.95 nominal) because recursive AR multi-step errors are fat-tailed; the
@@ -162,8 +176,9 @@ Caveats to carry into the thesis (CLAUDE.md rules 1, 2):
   the dose-response and donor estimators, not on which forecaster fits best).
 - The AR interval is a raw per-step-residual band, **not** a guaranteed-coverage
   interval; treat the calibration comparison as indicative, not exact.
-- These are the user's first recorded weights run; freeze package versions, model
-  revisions, device, and hashes before citing any number.
+- These results are an optional robustness extension. They are not load-bearing
+  for the core throughput estimate and may be omitted without changing the
+  primary model, inference, or conclusions.
 
 ### Counterfactual cross-check (robustness, optional)
 

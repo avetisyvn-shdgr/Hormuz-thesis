@@ -1,4 +1,6 @@
 # Isolated benchmark env #1: Chronos-2 (Amazon) + Moirai 2.0 (Salesforce).
+# DEVELOPMENT CONSTRAINTS ONLY. For the citable environment, install the full
+# exact `requirements-benchmark.lock.txt` into a fresh Python-3.11 venv.
 # DELIBERATELY SEPARATE from the frozen core requirements.txt: the PyTorch stack
 # and model weights are optional external artifacts and must never be added to
 # the locked analysis pipeline (CLAUDE.md; docs/MODERN_TSFM_BENCHMARK.md).
@@ -7,8 +9,7 @@
 # Python 3.14 venv, and uni2ts/Moirai is pinned below Python 3.12.
 #
 #   /opt/homebrew/bin/python3.11 -m venv .venv-bench
-#   .venv-bench/bin/pip install -r requirements.txt          # data/scoring core
-#   .venv-bench/bin/pip install -r requirements-benchmark.txt
+#   .venv-bench/bin/python -m pip install -r requirements-benchmark.lock.txt
 #   .venv-bench/bin/python scripts/run_tsfm_benchmark.py \
 #       --model chronos2,moirai --acknowledge-benchmark-only
 #

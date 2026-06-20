@@ -1,6 +1,12 @@
 {
   "benchmark_environments": {
     ".venv-bench": {
+      "installed_distribution_count": 99,
+      "lock_matches_installed": true,
+      "locked_distribution_count": 99,
+      "lockfile": "requirements-benchmark.lock.txt",
+      "lockfile_sha256": "b4ac5fc4205fc6117409a4e99b220a05dc4afa00d54a0b31bd5740caa06a0683",
+      "metadata_consistent": true,
       "packages": {
         "accelerate": "1.14.0",
         "chronos-forecasting": "2.3.0",
@@ -11,11 +17,21 @@
         "transformers": "5.12.1",
         "uni2ts": "2.0.0"
       },
+      "pandas_import_path": "/Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/.venv-bench/lib/python3.11/site-packages/pandas/__init__.py",
+      "pandas_import_version": "2.1.4",
+      "pandas_metadata_version": "2.1.4",
+      "pip_check": "passed",
       "platform": "macOS-26.5.1-arm64-arm-64bit",
       "python": "3.11.15",
       "status": "captured"
     },
     ".venv-timesfm": {
+      "installed_distribution_count": 50,
+      "lock_matches_installed": true,
+      "locked_distribution_count": 50,
+      "lockfile": "requirements-timesfm.lock.txt",
+      "lockfile_sha256": "078797d3cd57f52c6bf7c151712ad0df3601a6adafa0491c2bec94306aca9eca",
+      "metadata_consistent": true,
       "packages": {
         "huggingface-hub": "1.20.0",
         "numpy": "1.26.4",
@@ -24,6 +40,10 @@
         "torch": "2.12.1",
         "transformers": "not-installed"
       },
+      "pandas_import_path": "/Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/.venv-timesfm/lib/python3.11/site-packages/pandas/__init__.py",
+      "pandas_import_version": "2.3.3",
+      "pandas_metadata_version": "2.3.3",
+      "pip_check": "passed",
       "platform": "macOS-26.5.1-arm64-arm-64bit",
       "python": "3.11.15",
       "status": "captured"
@@ -31,14 +51,14 @@
   },
   "benchmark_output_sha256": {
     "data/processed/tsfm_admission_test.csv": "2677be504ce9a39545490b6b65d319942b6f44147f68c3e831a4510add2a3197",
-    "data/processed/tsfm_benchmark_forecasts.csv": "7f807e8a3397b605f3162f86f326d647fa33564bcbdc1c89012623dedbf5f4bb",
-    "data/processed/tsfm_benchmark_scores.csv": "d2a8f74e7eb7ea0f346cbc86ea3ec9c82f36bcad4b5a32eb0b934eb251754c9b",
-    "data/processed/tsfm_benchmark_summary.csv": "9da15a1085e38a4dd85170327559d27269bacf464e85bd920e72767e17692848",
+    "data/processed/tsfm_benchmark_forecasts.csv": "521f07bfbccaf0f17f1b363e7a2cbe60ce0143a58f34dbdb97e186e35be807a3",
+    "data/processed/tsfm_benchmark_scores.csv": "e9bb752b50c43204b1d33f32e32eb5c2ea1af7489f5b64bd530769b2dd625e32",
+    "data/processed/tsfm_benchmark_summary.csv": "a5256f0d5962d6eedbbad30ca7374d389deea276ec649bd2653e153a68442041",
     "data/processed/tsfm_counterfactual_daily.csv": "b1e68beca36e63832a3ffe84cf0f93af724c1370747e62384dd2cfaca3c8b63f",
     "data/processed/tsfm_counterfactual_summary.csv": "15e119726c25ce65dd3098a41eb9f13ab71764ecf50febca98fd0394e0a87373"
   },
   "capture_host_platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
-  "captured_at": "2026-06-20T00:05:41+00:00",
+  "captured_at": "2026-06-20T11:24:50+00:00",
   "device": "cpu",
   "model_revisions": {
     "hf_hub": "/Users/mheravetisyan/.cache/huggingface/hub",

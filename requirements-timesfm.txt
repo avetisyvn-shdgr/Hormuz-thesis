@@ -1,4 +1,6 @@
 # Isolated benchmark env #2: TimesFM 2.5 (Google) ONLY.
+# DEVELOPMENT CONSTRAINTS ONLY. For the citable environment, install the full
+# exact `requirements-timesfm.lock.txt` into a fresh Python-3.11 venv.
 # Separate from requirements-benchmark.txt on purpose: TimesFM 2.5 needs a newer
 # torch (2.12.x) than uni2ts/Moirai allows (2.4.x). In a shared env TimesFM 2.5
 # silently emits all-NaN forecasts under the older torch; the harness guards
@@ -7,8 +9,7 @@
 # Use Python 3.11:
 #
 #   /opt/homebrew/bin/python3.11 -m venv .venv-timesfm
-#   .venv-timesfm/bin/pip install -r requirements.txt           # data/scoring core
-#   .venv-timesfm/bin/pip install -r requirements-timesfm.txt
+#   .venv-timesfm/bin/python -m pip install -r requirements-timesfm.lock.txt
 #   .venv-timesfm/bin/python scripts/run_tsfm_benchmark.py \
 #       --model timesfm --acknowledge-benchmark-only
 #

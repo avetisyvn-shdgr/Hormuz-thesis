@@ -62,8 +62,9 @@ Full setup (PyCharm + Claude Code, macOS): `docs/SETUP_CLAUDE_PYCHARM.md`.
 | `scripts/fetch_baseline.py` | Phase-1 smoke test on free data |
 | `scripts/run_baseline.py` | Phase-4 first benchmarks: free-data forecast scores |
 | `scripts/run_tsfm_benchmark.py` | Unified foundation-model benchmark runner (`--model all\|chronos2\|timesfm\|moirai\|stub`); isolated, excluded from `run_all.py` |
-| `requirements-benchmark.txt` | Isolated deps for Chronos-2 + Moirai 2.0 (`.venv-bench`, Python 3.11); kept out of frozen core |
-| `requirements-timesfm.txt` | Isolated deps for TimesFM 2.5 (`.venv-timesfm`, Python 3.11; separate due to torch conflict) |
+| `requirements-benchmark.txt` | Development constraints for Chronos-2 + Moirai 2.0; not the citable lock |
+| `requirements-timesfm.txt` | Development constraints for TimesFM 2.5; not the citable lock |
+| `requirements-*.lock.txt` | Complete exact-version environments for the optional citable TSFM rerun |
 | `scripts/run_ar_interval.py` | Raw AR-only interval + final matched-subset TSFM admission verdict (core env, no weights) |
 | `scripts/run_tsfm_counterfactual.py` | Counterfactual shortfall cross-check with an admitted model vs AR-only (robustness; needs weights) |
 | `scripts/run_counterfactual.py` | Post-treatment observed-minus-counterfactual gap export |

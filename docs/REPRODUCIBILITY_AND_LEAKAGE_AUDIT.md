@@ -46,15 +46,13 @@ Model revisions (HF snapshot commits): `amazon/chronos-2`
 are deliberately excluded from the core `reproducibility_manifest.json` because
 the weight runs require separate environments and cached model snapshots.
 
-**Two hygiene flags to clear before citing the numbers in the thesis:**
-- `.venv-bench` reports inconsistent pandas metadata: `pip freeze` says 2.3.3 but
-  `importlib.metadata` (what the code actually imports) resolves 2.1.4. Rebuild
-  `.venv-bench` cleanly so the resolved version is unambiguous.
-- The TSFM numbers remain the user's **first recorded run** (CLAUDE.md rule 4).
-  Re-run `scripts/freeze_tsfm_run.py` on the same machine immediately after the
-  benchmark to certify the manifest matches the cited table. Admission verdict on
-  the matched subset is unchanged: all six model×target cells `ADMITTED`, but
-  `ADMITTED` means *eligible as a cross-check only* — never the locked primary.
+**Clean rebuild completed 2026-06-20.** Both Python-3.11 environments were
+recreated from complete exact-version lockfiles and the three real-weight
+benchmarks were rerun over all 38 folds. `pip check` passes in both environments;
+pandas import and metadata versions agree (2.1.4 for Chronos/Moirai, 2.3.3 for
+TimesFM). The refreshed TSFM manifest records lockfile hashes and these checks.
+All six model×target cells remain `ADMITTED`, meaning eligible as an optional
+cross-check only, never the locked primary.
 
 ## 3. Deterministic end-to-end reproducibility — PASS
 

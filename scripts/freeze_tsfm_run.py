@@ -44,6 +44,10 @@ BENCH_ENVS = {
         "timesfm", "torch", "transformers", "huggingface-hub", "numpy", "pandas",
     ),
 }
+BENCH_LOCKS = {
+    ".venv-bench": "requirements-benchmark.lock.txt",
+    ".venv-timesfm": "requirements-timesfm.lock.txt",
+}
 
 # Model repos pulled by the adapters in src/lngfreight/tsfm.py.
 MODEL_REPOS = (
@@ -79,6 +83,7 @@ def _venv_provenance(root: Path, venv: str, packages: tuple[str, ...]) -> dict:
         return {"status": "unavailable", "reason": f"{venv}/bin/python not found"}
     probe = (
         "import json,platform\n"
+        "import pandas\n"
         "from importlib.metadata import version, PackageNotFoundError\n"
         f"pkgs={list(packages)!r}\n"
         "out={}\n"
@@ -86,7 +91,9 @@ def _venv_provenance(root: Path, venv: str, packages: tuple[str, ...]) -> dict:
         "    try: out[p]=version(p)\n"
         "    except PackageNotFoundError: out[p]='not-installed'\n"
         "info={'python':platform.python_version(),'platform':platform.platform(),"
-        "'packages':out}\n"
+        "'packages':out,'pandas_import_version':pandas.__version__,"
+        "'pandas_metadata_version':version('pandas'),"
+        "'pandas_import_path':pandas.__file__}\n"
         "print(json.dumps(info))\n"
     )
     try:
@@ -96,7 +103,41 @@ def _venv_provenance(root: Path, venv: str, packages: tuple[str, ...]) -> dict:
     except subprocess.CalledProcessError as exc:  # pragma: no cover - env probe
         return {"status": "error", "reason": exc.stderr.strip()[:500]}
     data = json.loads(res.stdout)
+    check = subprocess.run(
+        [str(py), "-m", "pip", "check"], capture_output=True, text=True
+    )
+    data["pip_check"] = "passed" if check.returncode == 0 else check.stdout.strip()
+    data["metadata_consistent"] = (
+        data["pandas_import_version"] == data["pandas_metadata_version"]
+    )
     data["status"] = "captured"
+    return data
+
+
+def _environment_provenance(
+    root: Path, venv: str, packages: tuple[str, ...]
+) -> dict:
+    data = _venv_provenance(root, venv, packages)
+    lock_rel = BENCH_LOCKS[venv]
+    lock_path = root / lock_rel
+    data["lockfile"] = lock_rel
+    data["lockfile_sha256"] = _sha256(lock_path)
+    if data.get("status") != "captured":
+        return data
+
+    py = root / venv / "bin" / "python"
+    freeze = subprocess.run(
+        [str(py), "-m", "pip", "freeze"], capture_output=True, text=True, check=True
+    )
+    installed = sorted(line.strip().lower() for line in freeze.stdout.splitlines() if line)
+    locked = sorted(
+        line.strip().lower()
+        for line in lock_path.read_text(encoding="utf-8").splitlines()
+        if line and not line.startswith("#")
+    )
+    data["locked_distribution_count"] = len(locked)
+    data["installed_distribution_count"] = len(installed)
+    data["lock_matches_installed"] = locked == installed
     return data
 
 
@@ -136,7 +177,7 @@ def main() -> int:
         ),
         "device": "cpu",
         "benchmark_environments": {
-            venv: _venv_provenance(root, venv, pkgs)
+            venv: _environment_provenance(root, venv, pkgs)
             for venv, pkgs in BENCH_ENVS.items()
         },
         "model_revisions": _model_revisions(hub),
@@ -149,7 +190,12 @@ def main() -> int:
     for venv, prov in manifest["benchmark_environments"].items():
         if prov.get("status") == "captured":
             torch_v = prov["packages"].get("torch", "n/a")
-            print(f"  {venv}: python {prov['python']}, torch {torch_v}")
+            print(
+                f"  {venv}: python {prov['python']}, torch {torch_v}, "
+                f"pandas metadata consistent={prov['metadata_consistent']}, "
+                f"pip check={prov['pip_check']}, "
+                f"lock exact={prov['lock_matches_installed']}"
+            )
         else:
             print(f"  {venv}: {prov['status']} ({prov.get('reason', '')})")
     rev = manifest["model_revisions"]

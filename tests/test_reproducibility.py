@@ -83,3 +83,28 @@ def test_verify_manifest_compares_without_overwriting(tmp_path, monkeypatch):
     monkeypatch.setattr(freeze, "build_manifest", lambda root: drifted)
     assert freeze.verify_manifest(tmp_path) == 1
     assert manifest_path.read_text(encoding="utf-8") == original
+
+
+def test_tsfm_lockfiles_use_exact_versions():
+    for name in (
+        "requirements-benchmark.lock.txt",
+        "requirements-timesfm.lock.txt",
+    ):
+        lines = (config.ROOT / name).read_text().splitlines()
+        requirements = [line for line in lines if line and not line.startswith("#")]
+        assert requirements
+        assert all("==" in requirement for requirement in requirements)
+
+
+def test_tsfm_manifest_records_clean_environment_checks():
+    path = config.ROOT / "data/processed/tsfm_run_manifest.json"
+    manifest = json.loads(path.read_text())
+    for environment in manifest["benchmark_environments"].values():
+        assert environment["status"] == "captured"
+        assert environment["metadata_consistent"] is True
+        assert environment["pip_check"] == "passed"
+        assert environment["lock_matches_installed"] is True
+        assert environment["locked_distribution_count"] == environment[
+            "installed_distribution_count"
+        ]
+        assert len(environment["lockfile_sha256"]) == 64
