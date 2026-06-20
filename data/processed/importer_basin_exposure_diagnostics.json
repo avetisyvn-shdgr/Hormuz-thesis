@@ -1,0 +1,82 @@
+{
+  "actual_import_volume_observed": false,
+  "by_period": {
+    "post": {
+      "destination_basins": 3,
+      "destination_countries": 37,
+      "expanded_route_coverage_rate": 0.9731903485254692,
+      "hormuz_exposed_voyages": 2,
+      "inside_hormuz_origin_voyages": 5,
+      "resolved_voyages": 746
+    },
+    "pre": {
+      "destination_basins": 3,
+      "destination_countries": 37,
+      "expanded_route_coverage_rate": 0.976313079299691,
+      "hormuz_exposed_voyages": 145,
+      "inside_hormuz_origin_voyages": 148,
+      "resolved_voyages": 971
+    }
+  },
+  "measure": "inferred_nominal_capacity_exposure",
+  "missing_destination_country_rows": 0,
+  "policy": {
+    "destination_basin_by_country": {
+      "Argentina": "Atlantic",
+      "Bangladesh": "Pacific",
+      "Belgium": "Atlantic",
+      "Brazil": "Atlantic",
+      "Canada": "Atlantic",
+      "Chile": "Pacific",
+      "China": "Pacific",
+      "Colombia": "Atlantic",
+      "Croatia": "Atlantic",
+      "Dominican Republic": "Atlantic",
+      "Egypt": "Middle East",
+      "El Salvador": "Pacific",
+      "Finland": "Atlantic",
+      "France": "Atlantic",
+      "Germany": "Atlantic",
+      "Gibraltar": "Atlantic",
+      "Greece": "Atlantic",
+      "Hong Kong": "Pacific",
+      "India": "Pacific",
+      "Indonesia": "Pacific",
+      "Italy": "Atlantic",
+      "Jamaica": "Atlantic",
+      "Japan": "Pacific",
+      "Jordan": "Middle East",
+      "Kuwait": "Middle East",
+      "Lithuania": "Atlantic",
+      "Malaysia": "Pacific",
+      "Malta": "Atlantic",
+      "Mexico": "Pacific",
+      "Netherlands": "Atlantic",
+      "Pakistan": "Pacific",
+      "Panama": "Atlantic",
+      "Philippines": "Pacific",
+      "Poland": "Atlantic",
+      "Portugal": "Atlantic",
+      "Singapore": "Pacific",
+      "South Korea": "Pacific",
+      "Spain": "Atlantic",
+      "Sweden": "Atlantic",
+      "Taiwan": "Pacific",
+      "Thailand": "Pacific",
+      "T\u00fcrkiye": "Atlantic",
+      "United Arab Emirates": "Middle East",
+      "United Kingdom": "Atlantic",
+      "United States": "Atlantic",
+      "Vietnam": "Pacific"
+    },
+    "gulf_export_project_ids": [
+      "T100000130594",
+      "T100000130601"
+    ],
+    "route_specification": "expanded_60nm_snap",
+    "terminal_match_radius_km": 30
+  },
+  "replacement_causality_supported": false,
+  "unclassified_destination_basin_rows": 0,
+  "warning": "Non-Gulf post/pre changes are descriptive composition shifts, not identified replacement cargoes or importer demand effects."
+}

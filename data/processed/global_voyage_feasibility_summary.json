@@ -1,0 +1,101 @@
+{
+  "by_period": {
+    "post": {
+      "export_origin_calls": 988,
+      "resolved_calls": 746,
+      "right_censored_calls": 213,
+      "scorable_calls": 775
+    },
+    "pre": {
+      "export_origin_calls": 1237,
+      "resolved_calls": 971,
+      "right_censored_calls": 242,
+      "scorable_calls": 995
+    }
+  },
+  "cargo_quantity_observed": false,
+  "cargo_state_observed": false,
+  "causal_interpretation_supported": false,
+  "eligible_fleet_census_imos": 624,
+  "endpoint_resolution_rate": 0.9700564971751412,
+  "imos_observed_in_both_periods": 549,
+  "imos_observed_in_neither_period": 13,
+  "imos_observed_in_one_period": 62,
+  "matched_ports": 460,
+  "measure_supported": "inferred_lng_capacity_nautical_miles_pending_route_method",
+  "observed_imos_by_period": {
+    "post": 560,
+    "pre": 600
+  },
+  "passes_threshold": true,
+  "resolved_endpoint_calls": 1717,
+  "scope_warning": "Terminal calls are provisional spatial classifications. Export-to-import sequences do not prove laden state, cargo quantity, or the sailed route.",
+  "scorable_export_origin_calls": 1770,
+  "terminal_distance_sensitivity_km": {
+    "10": {
+      "by_period": {
+        "post": {
+          "export_origin_calls": 636,
+          "resolved_calls": 396,
+          "right_censored_calls": 209,
+          "scorable_calls": 427
+        },
+        "pre": {
+          "export_origin_calls": 848,
+          "resolved_calls": 567,
+          "right_censored_calls": 244,
+          "scorable_calls": 604
+        }
+      },
+      "endpoint_resolution_rate": 0.9340446168768186,
+      "matched_ports": 262,
+      "passes_threshold": true,
+      "resolved_endpoint_calls": 963,
+      "scorable_export_origin_calls": 1031
+    },
+    "20": {
+      "by_period": {
+        "post": {
+          "export_origin_calls": 923,
+          "resolved_calls": 685,
+          "right_censored_calls": 207,
+          "scorable_calls": 716
+        },
+        "pre": {
+          "export_origin_calls": 1180,
+          "resolved_calls": 920,
+          "right_censored_calls": 232,
+          "scorable_calls": 948
+        }
+      },
+      "endpoint_resolution_rate": 0.9645432692307693,
+      "matched_ports": 389,
+      "passes_threshold": true,
+      "resolved_endpoint_calls": 1605,
+      "scorable_export_origin_calls": 1664
+    },
+    "30": {
+      "by_period": {
+        "post": {
+          "export_origin_calls": 988,
+          "resolved_calls": 746,
+          "right_censored_calls": 213,
+          "scorable_calls": 775
+        },
+        "pre": {
+          "export_origin_calls": 1237,
+          "resolved_calls": 971,
+          "right_censored_calls": 242,
+          "scorable_calls": 995
+        }
+      },
+      "endpoint_resolution_rate": 0.9700564971751412,
+      "matched_ports": 460,
+      "passes_threshold": true,
+      "resolved_endpoint_calls": 1717,
+      "scorable_export_origin_calls": 1770
+    }
+  },
+  "track_distance_observed": false,
+  "verdict": "global_port_sequence_feasibility_passed_scope_limited"
+}

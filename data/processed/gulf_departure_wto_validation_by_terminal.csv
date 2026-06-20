@@ -1,0 +1,5 @@
+sample_period,project_id,terminal_name,departure_calls,nominal_departure_capacity_m3,first_departure_date,last_departure_date
+post,T100000130594,QatarEnergy LNG (N),10,1532300.0,2026-02-28,2026-05-14
+post,T100000130601,Das Island LNG Terminal,2,308400.0,2026-02-28,2026-04-09
+pre,T100000130594,QatarEnergy LNG (N),149,22390900.0,2025-02-28,2025-06-01
+pre,T100000130601,Das Island LNG Terminal,22,3127900.0,2025-03-04,2025-06-01

@@ -1,0 +1,38 @@
+{
+  "by_period": {
+    "post": {
+      "elapsed_time_status_counts": {
+        "extended_elapsed_time": 42,
+        "implied_speed_too_high": 1,
+        "nonpositive_elapsed_time": 1,
+        "plausible_elapsed_transit": 702
+      },
+      "median_endpoint_elapsed_days": 12.731435185185184,
+      "resolved_voyages": 746
+    },
+    "pre": {
+      "elapsed_time_status_counts": {
+        "extended_elapsed_time": 50,
+        "plausible_elapsed_transit": 921
+      },
+      "median_endpoint_elapsed_days": 12.543993055555555,
+      "resolved_voyages": 971
+    }
+  },
+  "causal_interpretation_supported": false,
+  "endpoint_elapsed_time_is_sailing_time": false,
+  "measure": "modeled_sailing_vessel_days",
+  "modeled_sailing_days_include_waiting_or_port_time": false,
+  "observed_ais_duration": false,
+  "policy": {
+    "elapsed_implied_speed_max_knots": 25.0,
+    "elapsed_implied_speed_min_knots": 5.0,
+    "primary_speed_knots": 15.0,
+    "speed_sensitivity_knots": [
+      13.0,
+      15.0,
+      17.0
+    ]
+  },
+  "warning": "Endpoint elapsed time can include waiting, storage, reloads, and missed calls. Speed-based vessel-days are assumptions, not observed AIS duration."
+}

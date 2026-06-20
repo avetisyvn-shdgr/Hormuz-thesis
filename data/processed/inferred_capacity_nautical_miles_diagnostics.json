@@ -1,0 +1,36 @@
+{
+  "candidate_rows": 5812,
+  "capacity_nautical_miles_calculated": true,
+  "cargo_quantity_observed": false,
+  "carrier_frame": {
+    "carrier_rows": 624,
+    "duplicate_imos": 0,
+    "invalid_capacity_rows": 0,
+    "unique_imos": 624
+  },
+  "causal_interpretation_supported": false,
+  "laden_state_observed": false,
+  "measure": "inferred_nominal_lng_capacity_cubic_meter_nautical_miles",
+  "missing_carrier_capacity_rows": 0,
+  "missing_route_pair_rows": 0,
+  "route_matrix": {
+    "accepted_route_pair_rate": 0.7520128824476651,
+    "accepted_route_pairs": 467,
+    "capacity_nautical_miles_calculated": false,
+    "distance_interpretation": "modeled_shortest_navigable_sea_route",
+    "expanded_accepted_route_pair_rate": 0.9629629629629629,
+    "expanded_accepted_route_pairs": 598,
+    "max_destination_snap_nm": 100.65082999639425,
+    "max_origin_snap_nm": 109.52030916311915,
+    "median_route_to_geodesic_ratio": 1.1730927331874546,
+    "observed_ais_track_distance": false,
+    "route_status_counts": {
+      "accepted_expanded_endpoint_snap": 131,
+      "accepted_modeled_shortest_sea_route": 467,
+      "endpoint_snap_exceeds_expanded_threshold": 23
+    },
+    "unique_resolved_terminal_pairs": 621
+  },
+  "sailed_route_observed": false,
+  "warning": "Pre/post changes combine voyage count, vessel mix, destination mix, terminal classification, and modeled distance. They are not an ATT."
+}

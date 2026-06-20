@@ -1,0 +1,26 @@
+{
+  "ais_gap_criterion": "not_applicable_without_track_derived_distance",
+  "by_period": {
+    "post": {
+      "export_origin_calls": 8,
+      "resolved_calls": 3,
+      "right_censored_calls": 5,
+      "scorable_calls": 3
+    },
+    "pre": {
+      "export_origin_calls": 59,
+      "resolved_calls": 43,
+      "right_censored_calls": 16,
+      "scorable_calls": 43
+    }
+  },
+  "cargo_quantity_observed": false,
+  "cargo_state_observed": false,
+  "endpoint_resolution_rate": 1.0,
+  "measure_supported": "port_to_port_sequence_feasibility",
+  "passes_threshold": true,
+  "resolved_endpoint_calls": 46,
+  "scope_warning": "Q-Flex coverage supports Qatar-linked port-sequence reconstruction; it does not represent the global replacement-supply fleet.",
+  "scorable_export_origin_calls": 46,
+  "track_distance_observed": false
+}

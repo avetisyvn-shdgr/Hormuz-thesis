@@ -1,0 +1,215 @@
+{
+  "acceptance_criteria": {
+    "accepted_measure": "inferred_lng_capacity_nautical_miles",
+    "benchmark_vessels": 30,
+    "max_median_ais_gap_hours": 24,
+    "min_identity_match_rate": 0.8,
+    "min_port_visit_coverage_rate": 0.8,
+    "min_terminal_capacity_mtpa": 1.0,
+    "min_terminal_endpoint_rate": 0.9,
+    "prohibited_measure_label": "observed_laden_cargo_ton_miles",
+    "terminal_match_max_km": 30
+  },
+  "audit_date": "2026-06-19",
+  "empirical_vessel_branch": {
+    "blockers": [],
+    "maximum_defensible_measure_if_passed": "inferred_lng_capacity_nautical_miles",
+    "prohibited_label": "observed_laden_cargo_ton_miles",
+    "status": "qflex_port_sequence_feasibility_passed_scope_limited"
+  },
+  "gfw": {
+    "coverage_diagnostics": {
+      "all_periods_pass": true,
+      "identity_match_rate": 1.0,
+      "matched_imos": 31,
+      "periods": {
+        "post": {
+          "coverage_rate": 0.967741935483871,
+          "covered_imos": 30,
+          "matched_imo_denominator": 31,
+          "passes_threshold": true
+        },
+        "pre": {
+          "coverage_rate": 0.9032258064516129,
+          "covered_imos": 28,
+          "matched_imo_denominator": 31,
+          "passes_threshold": true
+        }
+      },
+      "roster_imos": 31
+    },
+    "documented_capabilities": [
+      "all-vessel identity search",
+      "all-vessel port-visit events",
+      "gridded hourly vessel presence"
+    ],
+    "documented_limitations": [
+      "presence product is not an individual raw vessel track",
+      "no observed LNG cargo quantity",
+      "no authoritative laden/ballast state"
+    ],
+    "required_local_inputs": {
+      "gfw_lng_terminals_csv": {
+        "columns": [
+          "port_id",
+          "terminal_name",
+          "terminal_role",
+          "country",
+          "source",
+          "project_id",
+          "terminal_lat",
+          "terminal_lon",
+          "distance_km",
+          "capacity_mtpa",
+          "match_status"
+        ],
+        "missing_columns": [],
+        "path": "data/raw/gem/lng_terminals.csv",
+        "present": true,
+        "rows": 54,
+        "schema_valid": true
+      },
+      "gfw_lng_vessel_benchmark_csv": {
+        "columns": [
+          "imo",
+          "vessel_name",
+          "lng_capacity_m3",
+          "source"
+        ],
+        "missing_columns": [],
+        "path": "data/raw/gfw/lng_vessel_benchmark.csv",
+        "present": true,
+        "quality_valid": true,
+        "roster_diagnostics": {
+          "blank_source_rows": 0,
+          "blank_vessel_name_rows": 0,
+          "duplicate_imo_rows": 0,
+          "invalid_capacity_rows": 0,
+          "invalid_imo_rows": 0,
+          "minimum_vessels_required": 30,
+          "unique_imo_count": 31
+        },
+        "rows": 31,
+        "schema_valid": true
+      },
+      "gfw_port_visits_csv": {
+        "columns": [
+          "event_id",
+          "vessel_id",
+          "start",
+          "end",
+          "port_id",
+          "port_name",
+          "port_country",
+          "lat",
+          "lon",
+          "confidence",
+          "at_dock",
+          "sample_period"
+        ],
+        "missing_columns": [],
+        "path": "data/raw/gfw/port_visits.csv",
+        "present": true,
+        "rows": 299,
+        "schema_valid": true
+      },
+      "gfw_vessel_identity_csv": {
+        "columns": [
+          "imo",
+          "vessel_id"
+        ],
+        "missing_columns": [],
+        "path": "data/raw/gfw/vessel_identity.csv",
+        "present": true,
+        "rows": 40,
+        "schema_valid": true
+      }
+    },
+    "token_configured": true,
+    "voyage_feasibility": {
+      "ais_gap_criterion": "not_applicable_without_track_derived_distance",
+      "by_period": {
+        "post": {
+          "export_origin_calls": 8,
+          "resolved_calls": 3,
+          "right_censored_calls": 5,
+          "scorable_calls": 3
+        },
+        "pre": {
+          "export_origin_calls": 59,
+          "resolved_calls": 43,
+          "right_censored_calls": 16,
+          "scorable_calls": 43
+        }
+      },
+      "cargo_quantity_observed": false,
+      "cargo_state_observed": false,
+      "endpoint_resolution_rate": 1.0,
+      "measure_supported": "port_to_port_sequence_feasibility",
+      "passes_threshold": true,
+      "resolved_endpoint_calls": 46,
+      "scope_warning": "Q-Flex coverage supports Qatar-linked port-sequence reconstruction; it does not represent the global replacement-supply fleet.",
+      "scorable_export_origin_calls": 46,
+      "track_distance_observed": false
+    }
+  },
+  "local_evidence": {
+    "portwatch_chokepoints": {
+      "columns": [
+        "date",
+        "year",
+        "month",
+        "day",
+        "portid",
+        "portname",
+        "n_container",
+        "n_dry_bulk",
+        "n_general_cargo",
+        "n_roro",
+        "n_tanker",
+        "n_cargo",
+        "n_total",
+        "capacity_container",
+        "capacity_dry_bulk",
+        "capacity_general_cargo",
+        "capacity_roro",
+        "capacity_tanker",
+        "capacity_cargo",
+        "capacity",
+        "ObjectId"
+      ],
+      "missing_columns": [],
+      "path": "data/raw/portwatch/Daily_Chokepoints_Data.csv",
+      "present": true,
+      "rows": 76020,
+      "schema_valid": true
+    },
+    "wto_lng_outbound_index": {
+      "columns": [
+        "voy_load_date",
+        "voy_intake_index"
+      ],
+      "end": "2026-06-18",
+      "missing_columns": [],
+      "path": "data/raw/wto_hormuz/voy_intake_index_lng_export.csv",
+      "present": true,
+      "rows": 534,
+      "schema_valid": true,
+      "start": "2025-01-01"
+    }
+  },
+  "simulation_fallback": {
+    "available_input": "daily aggregate LNG outbound-volume index",
+    "status": "partially_ready",
+    "still_needed": [
+      "bilateral LNG origin-destination flows",
+      "liquefaction and regasification capacities",
+      "route-distance matrix",
+      "documented vessel-capacity assumptions"
+    ]
+  },
+  "spark_extension": {
+    "preserved": true,
+    "status": "dormant_access_unverified"
+  }
+}

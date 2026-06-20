@@ -1,0 +1,200 @@
+{
+  "directional_agreement": true,
+  "interpretation": "Independent directional and timing validation of inferred Gulf LNG departures; not equality of units, observed cargo, or causal identification.",
+  "periods": {
+    "post": {
+      "days": 94,
+      "gfw_departure_calls": 12,
+      "gfw_nominal_departure_capacity_m3": 1840700.0,
+      "gfw_nonzero_departure_days": 10,
+      "wto_mean_outbound_volume_index": 1.38135626009765,
+      "wto_nonzero_days": 4
+    },
+    "pre": {
+      "days": 94,
+      "gfw_departure_calls": 171,
+      "gfw_nominal_departure_capacity_m3": 25518800.0,
+      "gfw_nonzero_departure_days": 79,
+      "wto_mean_outbound_volume_index": 101.7763069492384,
+      "wto_nonzero_days": 92
+    }
+  },
+  "policy": {
+    "comparison_windows": {
+      "post": [
+        "2026-02-28",
+        "2026-06-01"
+      ],
+      "pre": [
+        "2025-02-28",
+        "2025-06-01"
+      ]
+    },
+    "daily_lag_sensitivity_days": [
+      -3,
+      -2,
+      -1,
+      0,
+      1,
+      2,
+      3
+    ],
+    "gulf_export_project_ids": [
+      "T100000130594",
+      "T100000130601"
+    ],
+    "terminal_match_radius_km": 30
+  },
+  "pre_post_changes": {
+    "gfw_departure_calls_percent_change": -92.98245614035088,
+    "gfw_nominal_capacity_percent_change": -92.78688653071461,
+    "wto_mean_index_percent_change": -98.64275261944157
+  },
+  "scaling_or_calibration_applied": false,
+  "zero_lag_correlations": [
+    {
+      "correlation": 0.18254548828200684,
+      "frequency": "daily",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_departure_calls",
+      "method": "pearson",
+      "n_observations": 94,
+      "sample_period": "post"
+    },
+    {
+      "correlation": 0.2615192906071259,
+      "frequency": "daily",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_departure_calls",
+      "method": "spearman",
+      "n_observations": 94,
+      "sample_period": "post"
+    },
+    {
+      "correlation": 0.20430051486171208,
+      "frequency": "daily",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_nominal_departure_capacity_m3",
+      "method": "pearson",
+      "n_observations": 94,
+      "sample_period": "post"
+    },
+    {
+      "correlation": 0.26863832388216724,
+      "frequency": "daily",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_nominal_departure_capacity_m3",
+      "method": "spearman",
+      "n_observations": 94,
+      "sample_period": "post"
+    },
+    {
+      "correlation": 0.4244996964017415,
+      "frequency": "daily",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_departure_calls",
+      "method": "pearson",
+      "n_observations": 94,
+      "sample_period": "pre"
+    },
+    {
+      "correlation": 0.4087246364873359,
+      "frequency": "daily",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_departure_calls",
+      "method": "spearman",
+      "n_observations": 94,
+      "sample_period": "pre"
+    },
+    {
+      "correlation": 0.43235044831724107,
+      "frequency": "daily",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_nominal_departure_capacity_m3",
+      "method": "pearson",
+      "n_observations": 94,
+      "sample_period": "pre"
+    },
+    {
+      "correlation": 0.41675998667979997,
+      "frequency": "daily",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_nominal_departure_capacity_m3",
+      "method": "spearman",
+      "n_observations": 94,
+      "sample_period": "pre"
+    },
+    {
+      "correlation": 0.40764999034646565,
+      "frequency": "complete_7d_bins",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_departure_calls",
+      "method": "pearson",
+      "n_observations": 13,
+      "sample_period": "post"
+    },
+    {
+      "correlation": 0.3328414417156283,
+      "frequency": "complete_7d_bins",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_departure_calls",
+      "method": "spearman",
+      "n_observations": 13,
+      "sample_period": "post"
+    },
+    {
+      "correlation": 0.40872200382071133,
+      "frequency": "complete_7d_bins",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_nominal_departure_capacity_m3",
+      "method": "pearson",
+      "n_observations": 13,
+      "sample_period": "post"
+    },
+    {
+      "correlation": 0.323138043056611,
+      "frequency": "complete_7d_bins",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_nominal_departure_capacity_m3",
+      "method": "spearman",
+      "n_observations": 13,
+      "sample_period": "post"
+    },
+    {
+      "correlation": 0.43971953160438665,
+      "frequency": "complete_7d_bins",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_departure_calls",
+      "method": "pearson",
+      "n_observations": 13,
+      "sample_period": "pre"
+    },
+    {
+      "correlation": 0.5265134638735808,
+      "frequency": "complete_7d_bins",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_departure_calls",
+      "method": "spearman",
+      "n_observations": 13,
+      "sample_period": "pre"
+    },
+    {
+      "correlation": 0.46322347859490876,
+      "frequency": "complete_7d_bins",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_nominal_departure_capacity_m3",
+      "method": "pearson",
+      "n_observations": 13,
+      "sample_period": "pre"
+    },
+    {
+      "correlation": 0.6043956043956044,
+      "frequency": "complete_7d_bins",
+      "gfw_lag_days": 0,
+      "gfw_measure": "gfw_nominal_departure_capacity_m3",
+      "method": "spearman",
+      "n_observations": 13,
+      "sample_period": "pre"
+    }
+  ]
+}

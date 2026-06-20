@@ -1,0 +1,30 @@
+{
+  "accepted_route_pair_rate": 0.755,
+  "accepted_route_pairs": 453,
+  "capacity_nautical_miles_calculated": false,
+  "distance_interpretation": "modeled_shortest_navigable_sea_route",
+  "expanded_accepted_route_pair_rate": 0.9633333333333334,
+  "expanded_accepted_route_pairs": 578,
+  "max_destination_snap_nm": 100.65082999639425,
+  "max_origin_snap_nm": 109.52030916311915,
+  "median_route_to_geodesic_ratio": 1.172539995396235,
+  "observed_ais_track_distance": false,
+  "policy": {
+    "engine": "searoute",
+    "engine_version": "1.6.0",
+    "expanded_max_endpoint_snap_nm": 60.0,
+    "max_endpoint_snap_nm": 30.0,
+    "min_route_to_geodesic_ratio": 0.95,
+    "restrictions": [
+      "northwest"
+    ],
+    "review_route_to_geodesic_ratio": 3.0,
+    "units": "naut"
+  },
+  "route_status_counts": {
+    "accepted_expanded_endpoint_snap": 125,
+    "accepted_modeled_shortest_sea_route": 453,
+    "endpoint_snap_exceeds_expanded_threshold": 22
+  },
+  "unique_resolved_terminal_pairs": 600
+}

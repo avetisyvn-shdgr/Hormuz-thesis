@@ -1,0 +1,59 @@
+{
+  "benchmark_environments": {
+    ".venv-bench": {
+      "packages": {
+        "accelerate": "1.14.0",
+        "chronos-forecasting": "2.3.0",
+        "gluonts": "0.14.4",
+        "numpy": "1.26.4",
+        "pandas": "2.1.4",
+        "torch": "2.4.1",
+        "transformers": "5.12.1",
+        "uni2ts": "2.0.0"
+      },
+      "platform": "macOS-26.5.1-arm64-arm-64bit",
+      "python": "3.11.15",
+      "status": "captured"
+    },
+    ".venv-timesfm": {
+      "packages": {
+        "huggingface-hub": "1.20.0",
+        "numpy": "1.26.4",
+        "pandas": "2.3.3",
+        "timesfm": "2.0.1",
+        "torch": "2.12.1",
+        "transformers": "not-installed"
+      },
+      "platform": "macOS-26.5.1-arm64-arm-64bit",
+      "python": "3.11.15",
+      "status": "captured"
+    }
+  },
+  "benchmark_output_sha256": {
+    "data/processed/tsfm_admission_test.csv": "2677be504ce9a39545490b6b65d319942b6f44147f68c3e831a4510add2a3197",
+    "data/processed/tsfm_benchmark_forecasts.csv": "7f807e8a3397b605f3162f86f326d647fa33564bcbdc1c89012623dedbf5f4bb",
+    "data/processed/tsfm_benchmark_scores.csv": "d2a8f74e7eb7ea0f346cbc86ea3ec9c82f36bcad4b5a32eb0b934eb251754c9b",
+    "data/processed/tsfm_benchmark_summary.csv": "9da15a1085e38a4dd85170327559d27269bacf464e85bd920e72767e17692848",
+    "data/processed/tsfm_counterfactual_daily.csv": "b1e68beca36e63832a3ffe84cf0f93af724c1370747e62384dd2cfaca3c8b63f",
+    "data/processed/tsfm_counterfactual_summary.csv": "15e119726c25ce65dd3098a41eb9f13ab71764ecf50febca98fd0394e0a87373"
+  },
+  "capture_host_platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+  "captured_at": "2026-06-20T00:05:41+00:00",
+  "device": "cpu",
+  "model_revisions": {
+    "hf_hub": "/Users/mheravetisyan/.cache/huggingface/hub",
+    "snapshots": {
+      "models--Salesforce--moirai-2.0-R-small": [
+        "30f43ff08c8494f4943ae1521e9d4e94a0fbb389"
+      ],
+      "models--amazon--chronos-2": [
+        "29ec3766d36d6f73f0696f85560a422f50e8498c"
+      ],
+      "models--google--timesfm-2.5-200m-pytorch": [
+        "1d952420fba87f3c6dee4f240de0f1a0fbc790e3"
+      ]
+    },
+    "status": "captured"
+  },
+  "note": "Provenance of the isolated TSFM benchmark run. NOT part of the frozen PortWatch run_all.py pipeline. Re-run on the machine that produced the cited numbers; verify these versions/revisions match docs/MODERN_TSFM_BENCHMARK.md before citing any TSFM result. Foundation models are an ADMITTED benchmark cross-check only, never the locked AR-only primary (CLAUDE.md rule 2)."
+}

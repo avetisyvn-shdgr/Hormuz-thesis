@@ -1,0 +1,12 @@
+{
+  "active_rows": 821,
+  "duplicate_imos": 0,
+  "eligible_rows": 624,
+  "minimum_capacity_m3": 125000.0,
+  "missing_capacity_references": 5,
+  "tracker_rows": 1100,
+  "vessel_type_counts": {
+    "conventional": 609,
+    "icebreaker": 15
+  }
+}

@@ -31,12 +31,12 @@ All rows keep the training cutoff fixed at **2026-02-28**; later event dates def
 
 | Window | Scored post window | Valid days | Cumulative loss | Mean daily loss |
 |---|---:|---:|---:|---:|
-| donut_clean_post_after_force_majeure | 2026-03-26 to 2026-06-01 | 68 | 3,726 | 54.8/day |
+| donut_clean_post_after_force_majeure | 2026-03-05 to 2026-06-01 | 89 | 4,889 | 54.9/day |
 | anchored_kinetic_trigger | 2026-02-28 to 2026-06-01 | 94 | 5,121 | 54.5/day |
 | anchored_closure_declaration | 2026-03-02 to 2026-06-01 | 92 | 5,058 | 55.0/day |
-| anchored_force_majeure | 2026-03-25 to 2026-06-01 | 69 | 3,782 | 54.8/day |
+| anchored_force_majeure | 2026-03-04 to 2026-06-01 | 90 | 4,947 | 55.0/day |
 
-Donut interpretation: excluding the ambiguous transition window 2026-02-28 through 2026-03-25 lowers cumulative loss mechanically because fewer days are scored, while the mean daily AR-only loss remains close to the anchored windows.
+Donut interpretation: excluding the ambiguous transition window 2026-02-28 through 2026-03-04 lowers cumulative loss mechanically because fewer days are scored, while the mean daily AR-only loss remains close to the anchored windows.
 
 ## Same-date Spatial Placebo
 
