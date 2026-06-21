@@ -1,7 +1,7 @@
 # Project structure guide
 
 This guide explains the repository for a reader with no programming or machine
-learning background. It describes what is present as of 2026-06-19; it does not
+learning background. It describes what is present as of 2026-06-20; it does not
 change the thesis's formal research question or claim that unavailable data has
 been obtained.
 
@@ -21,8 +21,8 @@ Spark30S remain preserved as optional freight-rate outcomes if access arrives.
 2. `docs/CURRENT_PLAN.md` states the active next research phase.
 3. `reports/current_results_summary.md` contains the current numerical results.
 4. `config/settings.yaml` records the locked dates, outcomes, models, and rules.
-5. `docs/VESSEL_DATA_FEASIBILITY.md` explains why the next empirical branch is
-   blocked pending a vessel sample and what evidence is required to unblock it.
+5. `docs/VESSEL_DATA_FEASIBILITY.md` records how the vessel gate passed, its
+   coverage, and the limits on what the resulting mechanism can claim.
 
 `AGENTS.md` and `CLAUDE.md` are operating rules for AI assistants. They are not
 thesis chapters or model code.
@@ -147,18 +147,16 @@ remain important limitations.
 
 ## Current phase and next gate
 
-The PortWatch foundation is complete. The active task is a vessel-data
-feasibility gate:
+The PortWatch foundation and the open-data LNG mechanism branch are complete.
+The vessel gate passed with limited scope: 624 eligible carriers, modeled route
+distances, inferred nominal capacity-distance, vessel-day sensitivities, WTO
+departure validation, and importer/basin exposure are present. These remain
+descriptive terminal-sequence results, not observed cargo, sailed tracks, or a
+causal freight effect.
 
-1. obtain a personal Global Fishing Watch token;
-2. assemble a sourced roster of at least 30 LNG carriers identified by IMO;
-3. obtain a short identity and port-visit sample;
-4. score the pre-committed coverage thresholds;
-5. proceed to inferred LNG capacity-nautical miles only if the gate passes;
-6. otherwise build the documented LNG trade-network scenario simulation.
-
-Until those inputs exist, a vessel-level result is a hypothesis, not an empirical
-finding. Spark access remains a parallel optional path and its files must remain.
+The next blocking decision is supervisor approval of the staged estimand/title/RQ
+realignment. Spark access remains a parallel, optional freight-rate validation
+path and does not block the working thesis.
 
 ## Audit and cleanup record
 
@@ -172,4 +170,5 @@ The repository audit on 2026-06-19 found:
 - macOS `.DS_Store`, Python `__pycache__`, and pytest cache files were removed;
 - user environments, raw snapshots, processed outputs, figures, IDE settings,
   the formal proposal, and all pre-existing uncommitted work were retained;
-- the local core suite passed all 124 tests after cleanup.
+- the cleanup-time suite passed; the current expanded suite is verified by
+  `run_all.py` rather than this historical audit record.

@@ -1,6 +1,6 @@
 # Importer and basin exposure results
 
-**Status:** Verified locally; 153 tests pass.  
+**Status:** Verified locally and covered by the current full suite.
 **Scope:** Descriptive inferred nominal-capacity exposure, not observed imports,
 cargo allocation, or causal replacement.
 
@@ -30,19 +30,12 @@ not establish that specific non-Gulf cargoes replaced missing Gulf cargoes.
 
 ## Importer exposure
 
-| Importer | Pre exposed share | Lost exposed capacity | Non-Gulf change | Descriptive offset | Total capacity change | Capacity-distance change |
-|---|---:|---:|---:|---:|---:|---:|
-| India | 66.8% | -7.90m m3 | +5.29m m3 | 67.1% | -22.0% | +59.3% |
-| Bangladesh | 85.2% | -1.90m m3 | +1.88m m3 | 99.2% | -0.7% | +86.8% |
-| China | 13.4% | -2.27m m3 | +1.86m m3 | 81.7% | -2.3% | +1.7% |
-| Pakistan | 100.0% | -2.06m m3 | 0 | 0.0% | -93.7% | -93.7% |
-| Taiwan | 37.3% | -3.48m m3 | +0.24m m3 | 6.9% | -34.7% | -35.5% |
-
-India and Bangladesh combine lost Gulf-origin capacity with much higher
-capacity-distance per retained supply, which is the clearest descriptive
-signature of the proposed fleet-distance mechanism. Pakistan instead shows
-near-complete loss with no observed non-Gulf offset. These are heterogeneous
-exposure patterns, not estimates of unmet demand.
+Country-level Hormuz-exposed changes are **not estimable** in this snapshot.
+Only two post-period voyages meet the modeled crossing definition across all
+countries, below the pre-specified minimum of five post voyages per country.
+Accordingly, all 39 country rows retain sample-size and total-flow diagnostics
+but suppress the exposed-capacity change, percent change, and offset ratio. No
+country ranking or country-specific mechanism claim should be reported.
 
 ## Coverage and limitations
 
@@ -50,7 +43,8 @@ exposure patterns, not estimates of unmet demand.
   countries and three market basins.
 - Expanded route coverage is 97.6% pre and 97.3% post.
 - No destination country or basin is missing.
-- Only 145 pre and two post voyages meet the modeled Hormuz-crossing definition.
+- Only 145 pre and two post voyages meet the modeled Hormuz-crossing definition;
+  all country-level exposed estimates are therefore suppressed.
 - Nominal vessel capacity is not loaded cargo volume. Terminal sequences may
   still reflect partial cargoes, reloads, floating storage, or AIS omissions.
 - The descriptive offset ratio is a composition calculation. It must not be

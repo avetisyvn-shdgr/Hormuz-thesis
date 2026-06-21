@@ -44,6 +44,7 @@ def main() -> None:
     treatment_robustness = _read_processed("treatment_robustness_summary.csv")
     intervals = _read_processed("counterfactual_intervals_summary.csv")
     synthetic = _read_processed("synthetic_control_summary.csv")
+    tsfm_counterfactual = _read_processed("tsfm_counterfactual_summary.csv")
 
     synth_transit = synthetic[
         (synthetic["value_col"] == "n_tanker")
@@ -110,6 +111,14 @@ def main() -> None:
     ar_long_horizon = long_horizon[
         (long_horizon["model"] == spec.primary_estimator)
         & (long_horizon["target"] == spec.primary_outcome)
+    ].iloc[0]
+    chronos_transit = tsfm_counterfactual[
+        (tsfm_counterfactual["model"] == "chronos2")
+        & (tsfm_counterfactual["target"] == spec.primary_outcome)
+    ].iloc[0]
+    chronos_capacity = tsfm_counterfactual[
+        (tsfm_counterfactual["model"] == "chronos2")
+        & (tsfm_counterfactual["target"] == spec.robustness_outcome)
     ].iloc[0]
     route_robustness = treatment_robustness[
         (treatment_robustness["model"] == spec.primary_estimator)
@@ -201,6 +210,24 @@ def main() -> None:
             "wider than the short-fold band, and still excluding zero by a wide "
             "margin. Use this as the reported interval; the short-fold band is a "
             "lower bound. The band is coarse/conservative (~9 effective windows)."
+        ),
+        (
+            "Independent circular-block cross-check (10,000 draws, 14-day blocks "
+            "from the ordered out-of-fold residual path): "
+            f"**{_num(ar_long_horizon['interval_circular_bootstrap_lower'])} to "
+            f"{_num(ar_long_horizon['interval_circular_bootstrap_upper'])} transits**. "
+            "It is materially narrower than the placebo-window band, so interval "
+            "width is method-sensitive even though both bands exclude zero."
+        ),
+        "",
+        (
+            "Chronos-2 changes the locked-primary transit shortfall by only "
+            f"**{chronos_transit['pct_diff_vs_ar']:+.1f}%**, but changes the capacity "
+            f"shortfall by **{chronos_capacity['pct_diff_vs_ar']:+.1f}%** "
+            f"({chronos_capacity['ar_cumulative_throughput_loss']/1e6:.1f}M AR-only "
+            f"versus {chronos_capacity['cumulative_throughput_loss']/1e6:.1f}M Chronos-2). "
+            "Capacity is therefore a directional secondary, model-sensitive outcome; "
+            "its precise magnitude is not load-bearing."
         ),
         "",
         "The time-placebo p-value is floor-censored because 36 overlapping placebo "
@@ -312,7 +339,7 @@ def main() -> None:
         "",
         "- Results are about observed AIS-based tanker throughput, not LNG-specific freight rates.",
         "- Normalized spatial loss should lead the spatial-placebo interpretation because raw counts are scale-confounded.",
-        "- Capacity results require mean-daily interpretation because artifact masking changes valid day counts.",
+        "- Capacity is a directional secondary, model-sensitive outcome; use mean-daily direction and do not lean on its precise magnitude.",
         "- PortWatch fallback is the working primary; formal estimand realignment remains pending Prof. Li confirmation.",
         "- Spark is a dormant optional secondary-outcome extension and is not a blocker.",
     ]

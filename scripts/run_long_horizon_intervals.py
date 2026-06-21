@@ -27,7 +27,10 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config  # noqa: E402
-from lngfreight.inference import long_horizon_loss_interval  # noqa: E402
+from lngfreight.inference import (  # noqa: E402
+    circular_block_bootstrap_loss_interval,
+    long_horizon_loss_interval,
+)
 
 ALPHA = 0.05
 
@@ -58,9 +61,12 @@ def main() -> None:
     intervals_30d = _read_processed("counterfactual_intervals_summary.csv")
     placebo = _read_processed("placebo_time_effects.csv")
     placebo = placebo[~placebo["is_actual"]].copy()
+    validation_forecasts = _read_processed("baseline_forecasts.csv")
+    crosscheck = config.settings()["long_horizon_crosscheck"]
+    seed = int(config.settings()["reproducibility"]["random_seed"])
 
     rows = []
-    for _, base in intervals_30d.iterrows():
+    for row_number, (_, base) in enumerate(intervals_30d.iterrows()):
         model, target = base["model"], base["target"]
         windows = placebo[(placebo["model"] == model) & (placebo["target"] == target)]
         if windows.empty:
@@ -76,6 +82,21 @@ def main() -> None:
         )
         daily = long_horizon_loss_interval(
             base["mean_daily_loss"], daily_errors, alpha=ALPHA
+        )
+        residual_path = validation_forecasts.loc[
+            validation_forecasts["model"].eq(model)
+            & validation_forecasts["target"].eq(target)
+        ].sort_values("date")
+        if residual_path["date"].duplicated().any():
+            raise ValueError(f"Duplicate OOF residual dates for {model}/{target}.")
+        circular = circular_block_bootstrap_loss_interval(
+            base["point_cumulative_throughput_loss"],
+            residual_path["error"],
+            horizon=int(base["n_post_days"]),
+            block_length=int(crosscheck["circular_block_length_days"]),
+            n_draws=int(crosscheck["bootstrap_draws"]),
+            seed=seed + row_number,
+            alpha=ALPHA,
         )
 
         width_30d = base["loss_interval_upper"] - base["loss_interval_lower"]
@@ -100,6 +121,13 @@ def main() -> None:
             ),
             "excludes_zero_94dhorizon": cum["excludes_zero"],
             "pre_period_bias_centered_out": cum["pre_period_mean_error_centered_out"],
+            # Independent cross-check from the ordered OOF residual path.
+            "interval_circular_bootstrap_lower": circular["interval_lower"],
+            "interval_circular_bootstrap_upper": circular["interval_upper"],
+            "interval_circular_bootstrap_width": circular["interval_width"],
+            "circular_bootstrap_block_length": circular["block_length"],
+            "circular_bootstrap_draws": circular["n_bootstrap_draws"],
+            "circular_bootstrap_n_oof_residuals": circular["n_residuals"],
             # Mean-daily band (robust to differing valid-day counts, esp. capacity).
             "mean_daily_loss": daily["point_loss"],
             "mean_daily_94dhorizon_lower": daily["interval_lower"],
@@ -115,6 +143,7 @@ def main() -> None:
         "model", "target", "point_cumulative_throughput_loss",
         "interval_30dfold_lower", "interval_30dfold_upper",
         "interval_94dhorizon_lower", "interval_94dhorizon_upper",
+        "interval_circular_bootstrap_lower", "interval_circular_bootstrap_upper",
         "widening_factor_vs_30dfold", "excludes_zero_94dhorizon",
         "n_horizon_windows", "effective_non_overlapping_windows",
     ]
@@ -126,6 +155,7 @@ def main() -> None:
     print(" - It is wider than the 30-day-fold interval; that gap is the previous understatement.")
     print(" - Placebo windows overlap (~9 effective) and use expanding training, so the band is")
     print("   coarse and conservative (wider), not a precise tail.")
+    print(" - The circular-block band independently resamples the chronological OOF residual path.")
     print(" - It does not fix AIS measurement bias, donor contamination, or energy mediation.")
 
 

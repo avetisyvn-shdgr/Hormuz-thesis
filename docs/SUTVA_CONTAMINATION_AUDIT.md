@@ -59,15 +59,17 @@ corroboration, not the estimate (consistent with FALLBACK_STRATEGY.md).
 
 ## Recommended hardening (pre-committed, cheap)
 
-1. **Contamination stress test.** Re-run the spatial placebo and synthetic control
-   under a *deliberately pessimistic* screen: move the most plausible borderline
-   donors (e.g. Gulf-of-Oman-adjacent, Mediterranean, Indian-Ocean corridors) into
-   the contaminated set, and separately into the clean set, and report the
-   **range** of Hormuz separation. If the separation stays > ~2× under the
-   pessimistic screen, the SPOF is contained.
-2. **Donor-influence diagnostic.** Report each clean donor's post-period throughput
-   *change sign*: a donor whose traffic *rose* post-treatment is a rerouting
-   suspect and should be screened out, not retained.
+1. **Contamination stress test.** ✅ DONE (2026-06-21,
+   `scripts/run_donor_contamination_stress.py`,
+   `docs/DONOR_CONTAMINATION_STRESS_RESULTS.md`). Re-ran the synthetic control
+   under four screens (none / a-priori / data-driven / pessimistic union). Under
+   the pessimistic screen (11 donors removed, 16 remaining) Hormuz separation
+   stays at 4.17× (transits) and 2.10× (capacity), both above the 2.0× floor →
+   **SPOF contained**, with capacity flagged as the weaker, screen-sensitive leg.
+2. **Donor-influence diagnostic.** ✅ DONE (same runner). Each donor's post-period
+   directional deviation is computed from the AR counterfactual; donors whose
+   traffic rose are flagged. This caught **six rerouting suspects the a-priori
+   screen missed** (Lombok, Mindoro, Mona Passage, Sunda, Tsugaru, Yucatan).
 3. **State the non-independence explicitly in the thesis.** Do not claim the
    spatial placebo and synthetic control are independent corroborations without the
    caveat that they share the donor-partition assumption.

@@ -1,0 +1,20 @@
+{
+  "any_method_meets_nominal_under_realistic_design": false,
+  "best_coverage_under_realistic_design": 0.72,
+  "best_method_under_realistic_design": "marginal_quantile_sum",
+  "coverage_tolerance": 0.03,
+  "decision": "keep_basin_point_only",
+  "methods_evaluated": [
+    "independent_normal_sum",
+    "marginal_quantile_sum",
+    "placebo_reference_as_interval",
+    "joint_centered_resample"
+  ],
+  "n_replications": 4000,
+  "nominal_coverage": 0.8,
+  "purpose": "Task 3 acceptance check: basin interval coverage evidence.",
+  "realistic_scenario": "realistic_design_nine_draws",
+  "seed": 20260621,
+  "synthetic_only": true,
+  "uses_real_corridor_panel": false
+}

@@ -6,9 +6,9 @@
 
 1. The independent WTO/AXSMarine LNG outbound index falls **98.6%**.
 2. Inferred Qatar/UAE departure calls fall **93.0%**, providing independent directional agreement.
-3. At the 30 km terminal radius with expanded route QA, routed voyages fall **23.4%**, while mean capacity-distance per voyage rises **10.2%**.
+3. At the 30 km terminal radius with expanded route QA, routed voyages fall **23.4%**, while mean capacity-distance per voyage rises **10.2%** (carrier-cluster BCa 95% interval **4.4% to 17.0%**; percentile comparison **4.1% to 16.7%**).
 4. At 15 knots, mean modeled sailing days per voyage rise **8.1%**, equivalent to **656 descriptive excess post sailing days** versus the pre mean.
-5. Importer effects are heterogeneous: some markets show non-Gulf composition offsets, while others show near-complete loss.
+5. Country-level Hormuz-exposed changes are suppressed where post-period voyage support is below the pre-specified minimum; basin aggregates are retained.
 
 ## Primary physical-mechanism specification
 
@@ -19,15 +19,17 @@
 | Mean nominal capacity-distance/voyage (million m3-nm) | 662.7 | 730.3 | +10.2% |
 | Modeled sailing vessel-days at 15 kn | 10518 | 8710 | -17.2% |
 
+## Route shift-share decomposition
+
+Across **189** terminal pairs observed in both periods, the common-route mean change is **38.0 million m3-nm**: **37.1 million** from route-share composition and **0.8 million** within pairs. Entry/exit routes contribute a separate **29.6 million m3-nm** residual.
+
+Modeled distance is fixed within a terminal pair, so the within-pair term reflects vessel-capacity mix, not route elongation. The +10.2% headline is predominantly compositional.
+
 ## Highest importer exposures
 
 | Importer | Pre Hormuz-exposed share | Descriptive non-Gulf offset | Total capacity change | Capacity-distance change |
 |---|---:|---:|---:|---:|
-| India | 66.8% | 67.1% | -22.0% | +59.3% |
-| Taiwan | 37.3% | 6.9% | -34.7% | -35.5% |
-| China | 13.4% | 81.7% | -2.3% | +1.7% |
-| Pakistan | 100.0% | 0.0% | -93.7% | -93.7% |
-| Bangladesh | 85.2% | 99.2% | -0.7% | +86.8% |
+| Not estimable | Country-level post Hormuz support is only 2 voyages overall | - | - | - |
 
 ## Coverage
 

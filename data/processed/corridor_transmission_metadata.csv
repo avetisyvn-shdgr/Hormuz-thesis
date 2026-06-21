@@ -1,0 +1,29 @@
+portid,slug,portname,basin_group,grouping_type,aggregation_allowed,basin_assignment_note,contamination_flag,contamination_note,eligible_n_tanker,eligible_capacity_tanker
+chokepoint4,bab_el_mandeb_strait,Bab el-Mandeb Strait,red_sea_arabian_gulf,operational_maritime_region,False,Red Sea–Gulf access boundary; grouped operationally with Suez and Hormuz.,True,Potential rerouting / Red Sea disruption exposure.,True,True
+chokepoint25,balabac_strait,Balabac Strait,maritime_southeast_asia_oceania,operational_maritime_region,False,Philippine internal/archipelagic passage.,False,,True,False
+chokepoint26,bering_strait,Bering Strait,north_pacific_arctic,operational_maritime_region,False,Boundary between the North Pacific and Arctic systems.,False,,True,False
+chokepoint17,bohai_strait,Bohai Strait,northeast_asia,operational_maritime_region,False,Access to the Bohai/Yellow Sea system.,False,,True,True
+chokepoint3,bosporus_strait,Bosporus Strait,europe_mediterranean_black_sea,operational_maritime_region,False,Boundary between the Black Sea and Mediterranean system.,False,,True,True
+chokepoint7,cape_of_good_hope,Cape of Good Hope,southern_africa,operational_maritime_region,False,Atlantic–Indian Ocean routing boundary.,True,Direct rerouting substitute for Middle East-Europe traffic.,True,True
+chokepoint9,dover_strait,Dover Strait,europe_mediterranean_black_sea,operational_maritime_region,False,English Channel–North Sea boundary.,False,,True,True
+chokepoint8,gibraltar_strait,Gibraltar Strait,europe_mediterranean_black_sea,operational_maritime_region,False,Atlantic–Mediterranean boundary.,True,Europe/Mediterranean route exposure; possible spillover.,True,True
+chokepoint28,kerch_strait,Kerch Strait,europe_mediterranean_black_sea,operational_maritime_region,False,Black Sea–Sea of Azov boundary.,False,,True,False
+chokepoint12,korea_strait,Korea Strait,northeast_asia,operational_maritime_region,False,East China Sea–Sea of Japan passage.,False,,True,True
+chokepoint15,lombok_strait,Lombok Strait,maritime_southeast_asia_oceania,operational_maritime_region,False,Indonesian archipelagic passage.,False,,True,True
+chokepoint14,luzon_strait,Luzon Strait,northeast_asia,operational_maritime_region,False,South China Sea–western Pacific boundary.,False,,True,True
+chokepoint21,magellan_strait,Magellan Strait,southern_south_america,operational_maritime_region,False,Atlantic–Pacific passage at southern South America.,False,,True,False
+chokepoint20,makassar_strait,Makassar Strait,maritime_southeast_asia_oceania,operational_maritime_region,False,Indonesian archipelagic passage.,False,,True,True
+chokepoint5,malacca_strait,Malacca Strait,maritime_southeast_asia_oceania,operational_maritime_region,False,Indian Ocean–South China Sea routing boundary.,False,,True,True
+chokepoint27,mindoro_strait,Mindoro Strait,maritime_southeast_asia_oceania,operational_maritime_region,False,Philippine internal/archipelagic passage.,False,,True,False
+chokepoint24,mona_passage,Mona Passage,caribbean_gulf_of_mexico,operational_maritime_region,False,Atlantic–Caribbean passage.,False,,True,True
+chokepoint16,ombai_strait,Ombai Strait,maritime_southeast_asia_oceania,operational_maritime_region,False,Indonesian archipelagic passage toward the Indian Ocean.,False,,True,False
+chokepoint10,oresund_strait,Oresund Strait,europe_mediterranean_black_sea,operational_maritime_region,False,Baltic–North Sea access system.,False,,True,True
+chokepoint2,panama_canal,Panama Canal,central_america_interoceanic,operational_maritime_region,False,Artificial Atlantic–Pacific interoceanic connection.,True,Potential rerouting / Atlantic-Pacific LNG arbitrage channel.,True,True
+chokepoint6,strait_of_hormuz,Strait of Hormuz,red_sea_arabian_gulf,operational_maritime_region,False,Arabian/Persian Gulf–Gulf of Oman boundary.,False,,True,True
+chokepoint1,suez_canal,Suez Canal,red_sea_arabian_gulf,operational_maritime_region,False,Artificial Mediterranean–Red Sea connection.,True,Potential rerouting / Red Sea disruption exposure.,True,True
+chokepoint19,sunda_strait,Sunda Strait,maritime_southeast_asia_oceania,operational_maritime_region,False,Indonesian archipelagic passage.,False,,True,True
+chokepoint11,taiwan_strait,Taiwan Strait,northeast_asia,operational_maritime_region,False,East China Sea–South China Sea boundary.,False,,True,True
+chokepoint18,torres_strait,Torres Strait,maritime_southeast_asia_oceania,operational_maritime_region,False,Arafura Sea–Coral Sea passage.,False,,True,False
+chokepoint13,tsugaru_strait,Tsugaru Strait,northeast_asia,operational_maritime_region,False,Sea of Japan–western Pacific passage.,False,,True,True
+chokepoint23,windward_passage,Windward Passage,caribbean_gulf_of_mexico,operational_maritime_region,False,Atlantic–Caribbean passage.,False,,True,False
+chokepoint22,yucatan_channel,Yucatan Channel,caribbean_gulf_of_mexico,operational_maritime_region,False,Caribbean–Gulf of Mexico boundary.,False,,True,True

@@ -32,10 +32,23 @@ def main() -> None:
         gulf_export_project_ids=list(policy["gulf_export_project_ids"]),
         destination_basin_by_country=dict(policy["destination_basin_by_country"]),
     )
-    importer = exposure_summary(enriched, "destination_country")
+    minimum = int(policy["min_country_post_hormuz_exposed_voyages"])
+    importer = exposure_summary(
+        enriched,
+        "destination_country",
+        min_post_exposed_voyages=minimum,
+    )
     basin = exposure_summary(enriched, "destination_basin")
     diagnostics = exposure_diagnostics(enriched)
     diagnostics["policy"] = policy
+    diagnostics["country_hormuz_exposed_estimates_suppressed"] = int(
+        (~importer["country_hormuz_exposed_estimate_estimable"]).sum()
+    )
+    diagnostics["country_reporting_rule"] = (
+        "Country-level Hormuz-exposed changes are not estimable below the "
+        f"minimum of {minimum} post-period exposed voyages; basin aggregates "
+        "remain descriptive."
+    )
 
     outputs = {
         paths["importer_exposure_voyages_csv"]: enriched,

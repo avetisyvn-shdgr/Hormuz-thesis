@@ -1,0 +1,155 @@
+# Frozen specification for the corridor-panel TSFM admission gate.
+# The specification (panel, admission gate, inference contract) was frozen BEFORE
+# any post-cutoff result was viewed. The author has chosen to proceed to
+# exploratory results without waiting for supervisor sign-off, to support an
+# upcoming discussion. All post-cutoff outputs are therefore EXPLORATORY and
+# carry no "admitted"/significance claims (see docs/CORRIDOR_TRANSMISSION_RESULTS.md).
+version: 1
+status: "exploratory_no_supervisor_signoff"
+frozen_on: "2026-06-21"
+results_generated_on: "2026-06-21"
+
+history:
+  start: "2022-01-01"
+  cutoff_exclusive: "2026-02-28"
+
+panel:
+  end_inclusive: "2026-06-01"
+  history_policy: "common_2022_window_for_all_models"
+  targets:
+    n_tanker:
+      unit: "daily_tanker_transit_count"
+    capacity_tanker:
+      unit: "daily_tanker_deadweight_capacity"
+  outputs:
+    panel: "data/processed/corridor_transmission_panel.csv"
+    metadata: "data/processed/corridor_transmission_metadata.csv"
+    quality: "data/processed/corridor_transmission_quality.csv"
+    audit: "data/processed/corridor_transmission_panel_audit.json"
+    manifest: "data/processed/corridor_transmission_panel_manifest.json"
+
+validation:
+  scheme: "expanding"
+  initial_train_days: 365
+  horizon_days: 30
+  step_days: 30
+  minimum_prior_calibration_folds: 15
+  minimum_scored_days_per_fold: 24
+  expected_scored_folds: 23
+  shared_test_origins:
+    - "2024-03-26"
+    - "2024-04-25"
+    - "2024-05-25"
+    - "2024-06-24"
+    - "2024-07-24"
+    - "2024-08-23"
+    - "2024-09-22"
+    - "2024-10-22"
+    - "2024-11-21"
+    - "2024-12-21"
+    - "2025-01-20"
+    - "2025-02-19"
+    - "2025-03-21"
+    - "2025-04-20"
+    - "2025-05-20"
+    - "2025-06-19"
+    - "2025-07-19"
+    - "2025-08-18"
+    - "2025-09-17"
+    - "2025-10-17"
+    - "2025-11-16"
+    - "2025-12-16"
+    - "2026-01-15"
+
+interval:
+  lower_quantile: 0.10
+  upper_quantile: 0.90
+  nominal_coverage: 0.80
+
+gate:
+  baseline_model: "ar_lag1_7"
+  minimum_median_relative_mase_improvement: 0.05
+  minimum_fraction_corridors_non_worse_mase: 0.60
+  maximum_median_absolute_calibration_error: 0.10
+  calibration_noninferiority_margin: 0.02
+  minimum_corridor_empirical_coverage: 0.70
+  minimum_fraction_corridors_meeting_coverage: 0.80
+  require_every_target_family_to_pass: true
+
+eligible_corridors:
+  n_tanker:
+    - "bab_el_mandeb_strait"
+    - "balabac_strait"
+    - "bering_strait"
+    - "bohai_strait"
+    - "bosporus_strait"
+    - "cape_of_good_hope"
+    - "dover_strait"
+    - "gibraltar_strait"
+    - "kerch_strait"
+    - "korea_strait"
+    - "lombok_strait"
+    - "luzon_strait"
+    - "magellan_strait"
+    - "makassar_strait"
+    - "malacca_strait"
+    - "mindoro_strait"
+    - "mona_passage"
+    - "ombai_strait"
+    - "oresund_strait"
+    - "panama_canal"
+    - "strait_of_hormuz"
+    - "suez_canal"
+    - "sunda_strait"
+    - "taiwan_strait"
+    - "torres_strait"
+    - "tsugaru_strait"
+    - "windward_passage"
+    - "yucatan_channel"
+  capacity_tanker:
+    - "bab_el_mandeb_strait"
+    - "bohai_strait"
+    - "bosporus_strait"
+    - "cape_of_good_hope"
+    - "dover_strait"
+    - "gibraltar_strait"
+    - "korea_strait"
+    - "lombok_strait"
+    - "luzon_strait"
+    - "makassar_strait"
+    - "malacca_strait"
+    - "mona_passage"
+    - "oresund_strait"
+    - "panama_canal"
+    - "strait_of_hormuz"
+    - "suez_canal"
+    - "sunda_strait"
+    - "taiwan_strait"
+    - "tsugaru_strait"
+    - "yucatan_channel"
+
+inference:
+  status: "exploratory_no_supervisor_signoff"
+  family_name: "ar_only_corridor_deviations_all_targets"
+  model: "ar_lag1_7"
+  statistic: "mean_scaled_signed_deviation"
+  sign: "observed_minus_counterfactual"
+  alternative: "two-sided"
+  studentize: true
+  post_horizon_days: 94
+  minimum_scored_days_per_window: 76
+  primary_placebo_design: "non_overlapping_shared_origins"
+  expected_joint_draws: 9
+  shared_placebo_origins:
+    - "2023-01-01"
+    - "2023-05-01"
+    - "2023-08-29"
+    - "2023-12-27"
+    - "2024-04-25"
+    - "2024-08-23"
+    - "2024-12-21"
+    - "2025-04-20"
+    - "2025-08-18"
+  overlapping_30_day_step_placebos: "sensitivity_only"
+  basin_interval_policy: "point_only"
+  basin_reference_distribution_label: "placebo_reference_not_interval"

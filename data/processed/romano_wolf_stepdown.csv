@@ -1,0 +1,11 @@
+family,hypothesis,observed_statistic,studentized_statistic,raw_resampling_p_value,romano_wolf_p_value,stepdown_rank,family_size,n_joint_resamples
+placebo_in_time_generators_by_outcome,arx_lag1_7_route_energy::hormuz_tanker_capacity,235059271.9860798,10.799073319485679,0.02702702702702703,0.02702702702702703,1,8,36
+placebo_in_time_generators_by_outcome,arx_lag1_7_route_energy::hormuz_tanker_transits,5825.9869605725535,10.747959862655826,0.02702702702702703,0.02702702702702703,2,8,36
+placebo_in_time_generators_by_outcome,seasonal_naive_7d::hormuz_tanker_transits,5234.0,10.29929654181379,0.02702702702702703,0.02702702702702703,3,8,36
+placebo_in_time_generators_by_outcome,ar_lag1_7::hormuz_tanker_capacity,206906330.12015095,9.444510221453541,0.02702702702702703,0.02702702702702703,4,8,36
+placebo_in_time_generators_by_outcome,ar_lag1_7::hormuz_tanker_transits,5121.295139292581,9.346253805676884,0.02702702702702703,0.02702702702702703,5,8,36
+placebo_in_time_generators_by_outcome,arx_lag1_7_route::hormuz_tanker_transits,5176.352591808412,9.334000574564952,0.02702702702702703,0.02702702702702703,6,8,36
+placebo_in_time_generators_by_outcome,arx_lag1_7_route::hormuz_tanker_capacity,207003968.935679,9.262079667554193,0.02702702702702703,0.02702702702702703,7,8,36
+placebo_in_time_generators_by_outcome,seasonal_naive_7d::hormuz_tanker_capacity,205495285.0,9.082811806236029,0.02702702702702703,0.02702702702702703,8,8,36
+spatial_placebo_outcomes_low_contamination,n_tanker,0.9552838109144004,4.547964508164759,0.045454545454545456,0.045454545454545456,1,2,21
+spatial_placebo_outcomes_low_contamination,capacity_tanker,0.9515137827294508,2.5007477815668904,0.045454545454545456,0.045454545454545456,2,2,21

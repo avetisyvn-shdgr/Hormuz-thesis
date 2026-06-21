@@ -86,7 +86,12 @@ def _pct_change(pre: float, post: float) -> float:
     return (post / pre - 1.0) * 100 if pre else np.nan
 
 
-def exposure_summary(voyages: pd.DataFrame, group_column: str) -> pd.DataFrame:
+def exposure_summary(
+    voyages: pd.DataFrame,
+    group_column: str,
+    *,
+    min_post_exposed_voyages: int | None = None,
+) -> pd.DataFrame:
     """Summarize total, Gulf, and non-Gulf exposure by importer or basin."""
     required = {
         group_column, "sample_period", "event_id", "imo", "capacity_m3",
@@ -159,6 +164,20 @@ def exposure_summary(voyages: pd.DataFrame, group_column: str) -> pd.DataFrame:
                 row["pre_expanded_m3_nm"], row["post_expanded_m3_nm"]
             ),
         })
+        if min_post_exposed_voyages is not None:
+            estimable = row["post_hormuz_exposed_voyages"] >= min_post_exposed_voyages
+            row["country_hormuz_exposed_estimate_estimable"] = bool(estimable)
+            row["country_hormuz_exposed_suppression_reason"] = (
+                "" if estimable else
+                f"post exposed voyages below {min_post_exposed_voyages}"
+            )
+            if not estimable:
+                for column in (
+                    "hormuz_exposed_capacity_absolute_change_m3",
+                    "hormuz_exposed_capacity_percent_change",
+                    "descriptive_non_gulf_offset_ratio",
+                ):
+                    row[column] = np.nan
         rows.append(row)
     return pd.DataFrame(rows).sort_values(
         ["pre_hormuz_exposed_nominal_capacity_m3", group_column],

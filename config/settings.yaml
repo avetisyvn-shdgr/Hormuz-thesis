@@ -40,6 +40,12 @@ paths:
   inferred_capacity_nm_period_summary_csv: "data/processed/inferred_capacity_nautical_miles_period_summary.csv"
   inferred_capacity_nm_comparison_csv: "data/processed/inferred_capacity_nautical_miles_comparison.csv"
   inferred_capacity_nm_diagnostics_json: "data/processed/inferred_capacity_nautical_miles_diagnostics.json"
+  inferred_capacity_nm_bootstrap_json: "data/processed/inferred_capacity_nautical_miles_bootstrap.json"
+  inferred_capacity_nm_decomposition_json: "data/processed/inferred_capacity_nautical_miles_decomposition.json"
+  multiplicity_correction_csv: "data/processed/romano_wolf_stepdown.csv"
+  bsts_prior_sensitivity_csv: "data/processed/bsts_prior_sensitivity.csv"
+  bsts_pre_period_ppc_csv: "data/processed/bsts_pre_period_ppc.csv"
+  bsts_pre_period_ppc_summary_json: "data/processed/bsts_pre_period_ppc_summary.json"
   gulf_departure_validation_daily_csv: "data/processed/gulf_departure_wto_validation_daily.csv"
   gulf_departure_validation_weekly_csv: "data/processed/gulf_departure_wto_validation_weekly.csv"
   gulf_departure_validation_correlations_csv: "data/processed/gulf_departure_wto_validation_correlations.csv"
@@ -54,6 +60,16 @@ paths:
   vessel_day_comparison_csv: "data/processed/vessel_day_comparison.csv"
   vessel_day_diagnostics_json: "data/processed/vessel_day_diagnostics.json"
   mechanism_evidence_summary_csv: "data/processed/mechanism_evidence_summary.csv"
+  basin_interval_coverage_csv: "data/processed/basin_interval_coverage_simulation.csv"
+  basin_interval_coverage_summary_json: "data/processed/basin_interval_coverage_summary.json"
+  corridor_transmission_results_csv: "data/processed/corridor_transmission_results.csv"
+  corridor_transmission_basin_csv: "data/processed/corridor_transmission_basin_point_summary.csv"
+  corridor_transmission_ar_mase_csv: "data/processed/corridor_transmission_ar_baseline_mase.csv"
+  corridor_transmission_results_manifest_json: "data/processed/corridor_transmission_results_manifest.json"
+  donor_contamination_diagnostic_csv: "data/processed/donor_contamination_diagnostic.csv"
+  donor_contamination_stress_csv: "data/processed/donor_contamination_stress.csv"
+  donor_contamination_verdict_json: "data/processed/donor_contamination_verdict.json"
+  transmission_chain_csv: "data/processed/transmission_chain_cascade.csv"
 
 # Study window. Pre-period must be long enough for rolling-origin validation;
 # post-period is deliberately short (the proposal warns about overfitting here).
@@ -157,6 +173,18 @@ reproducibility:
   random_seed: 20260612
   timezone: "UTC"
 
+bsts:
+  variance_prior_shape: 2.5
+  observation_prior_scale_multiplier: 0.5
+  level_prior_scale_multiplier: 0.5
+  prior_sensitivity_scale_multipliers: [0.1, 0.5, 2.0]
+  prior_sensitivity_draws: 500
+  prior_sensitivity_burn: 300
+
+long_horizon_crosscheck:
+  circular_block_length_days: 14
+  bootstrap_draws: 10000
+
 # Phase-2 vessel-data feasibility gate. Passing supports an INFERRED LNG
 # capacity-mile measure from terminal sequences, not observed cargo ton-miles.
 vessel_data_feasibility:
@@ -204,6 +232,9 @@ vessel_data_feasibility:
   importer_basin_exposure:
     terminal_match_radius_km: 30
     route_specification: "expanded_60nm_snap"
+    # Country estimates are suppressed when post-disruption Hormuz support is
+    # thinner than this. Basin aggregates remain descriptive and published.
+    min_country_post_hormuz_exposed_voyages: 5
     gulf_export_project_ids:
       - "T100000130594"
       - "T100000130601"

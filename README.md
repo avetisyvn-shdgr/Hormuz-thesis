@@ -8,10 +8,9 @@ estimator. Formal proposal/RQ/hypothesis realignment remains pending Prof. Li's
 explicit approval; staged language is isolated in
 `docs/PENDING_ESTIMAND_REALIGNMENT_DRAFT.md`.
 
-> This is still a conservative modeling foundation, not the final thesis model.
-> The first transparent benchmark now exists: leakage-safe rolling-origin
-> seasonal-naive, AR, and conditional ARX forecasts for the free
-> chokepoint-throughput outcomes.
+> This is a conservative working thesis pipeline, not a finalized causal model.
+> It now includes leakage-safe baselines, counterfactual and placebo inference,
+> synthetic/BSTS corroboration, and the open-data LNG vessel mechanism branch.
 
 ## Why it is built this way
 
@@ -40,7 +39,7 @@ python3.11 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env          # add free EIA + FRED keys
 python scripts/fetch_baseline.py   # pulls the free energy confounders
-pytest -q                     # 4 no-network contract tests
+pytest -q                     # full no-network test suite
 ```
 Full setup (PyCharm + Claude Code, macOS): `docs/SETUP_CLAUDE_PYCHARM.md`.
 
@@ -88,17 +87,20 @@ remain outside this guarantee and carry separate provenance.
 
 ## Phase roadmap (do NOT skip ahead)
 
-The active extension plan is recorded in
-[`docs/CURRENT_PLAN.md`](docs/CURRENT_PLAN.md). It preserves this roadmap and the
-Spark re-entry option while adding the vessel-data feasibility gate and network
-simulation fallback.
+The completed extension path is recorded in
+[`docs/CURRENT_PLAN.md`](docs/CURRENT_PLAN.md). It preserves the Spark re-entry
+option and documents both the implemented vessel branch and unused simulation
+fallback.
 
-1. **Data foundation** — skeleton + free sources + provenance.
-2. **Go/no-go gate** — fallback branch selected; Spark/Bloomberg now upside.
-3. **Cleaned daily panel + descriptive event study** — Layer 1 figures.
-4. **Transparent baselines** ← *you are here.* Seasonal-naive + ARX, post-gap export, placebo-in-time inference.
-5. **Corroboration and inference** — synthetic control, spatial/temporal placebos, long-horizon intervals.
-6. **Optional model extension only after a gate** — no Transformer unless it materially improves pre-treatment fit and interval coverage, or Prof. Li requires it.
+1. **Data foundation — complete.** Free sources, provenance, aligned panel.
+2. **Fallback decision — complete.** PortWatch is working primary; Spark remains optional.
+3. **Baseline and descriptive layer — complete.** Event study and chronological baselines.
+4. **Inference and corroboration — complete.** Counterfactual gaps, temporal/spatial placebos, intervals, BSTS, and synthetic control.
+5. **Open-data LNG mechanism — complete with stated limits.** GFW terminal sequences, modeled routes, capacity-distance, vessel-days, WTO validation, and importer exposure.
+6. **Optional TSFM extension — clean-rebuilt and isolated.** It remains a robustness benchmark, not the primary estimator.
+
+The current blocking decision is formal supervisor approval of the revised
+estimand/title/RQ. Spark freight access remains desirable but non-blocking.
 
 ## Status of treatment dates
 

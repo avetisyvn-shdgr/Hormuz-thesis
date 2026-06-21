@@ -66,8 +66,8 @@ Sources:
 
 ## Maximum defensible empirical product
 
-If the sample passes the thresholds in `config/settings.yaml`, the defensible
-measure is **inferred LNG capacity-nautical miles**. A likely laden leg may be
+The sample passed the thresholds in `config/settings.yaml`; the resulting
+defensible measure is **inferred LNG capacity-nautical miles**. A likely laden leg may be
 inferred from a liquefaction-terminal departure followed by a regasification-
 terminal visit, multiplied by nominal vessel capacity and route distance.
 
@@ -88,21 +88,23 @@ ship-to-ship transfers, and AIS gaps.
 
 The GFW token belongs in `.env` as `GFW_API_TOKEN`; it must never be committed.
 
-## Decision after the sample
+## Decision taken after the sample
 
-- **Pass:** implement registered GFW identity/port-visit adapters, reconstruct
-  voyages, publish exclusion/coverage diagnostics, and validate aggregate Gulf
-  departures against the WTO LNG index.
-- **Fail:** retain the completed PortWatch empirical result and proceed to the
-  constrained LNG trade-network simulation in `CURRENT_PLAN.md`.
-- **At all times:** continue the Spark access path in `SPARK_REENTRY.md`.
+- **Passed with limited scope:** registered GFW adapters, voyage reconstruction,
+  exclusion/coverage diagnostics, WTO validation, modeled capacity-distance,
+  vessel-days, and importer exposure are implemented.
+- **Simulation fallback not activated:** it remains documented in
+  `CURRENT_PLAN.md` if the empirical branch later fails external validation.
+- **Spark path remains open:** continue the optional access path in
+  `SPARK_REENTRY.md`.
 
 ## Scope of the pass
 
 The global pass establishes that GFW can support identity matching and
 port-to-port sequence reconstruction for the eligible carrier census. It does
 not establish observed cargo quantity, authoritative laden state, or sailed
-track distance. The next empirical step is to pre-commit a reproducible maritime
-route-distance method, then construct nominal capacity-nautical miles with
-terminal-distance and censoring sensitivities. Modeled route distances must not
-be described as observed AIS tracks.
+track distance. The completed downstream steps use a pre-committed reproducible
+maritime route-distance method and construct nominal capacity-nautical miles
+with terminal-distance and censoring sensitivities. The interpretation boundary
+remains unchanged: modeled route distances must not be described as observed AIS
+tracks.

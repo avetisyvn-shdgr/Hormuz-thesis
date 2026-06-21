@@ -46,17 +46,18 @@ classification and graph resolution; it is not evidence that the terminal
 match is correct. Results must later be repeated under the pre-committed 10,
 20, and 30 km terminal matching radii.
 
-## Outputs and next action
+## Outputs and downstream status
 
 `scripts/build_maritime_route_distances.py` writes one row per unique resolved
 terminal pair plus engine version, restrictions, passages, great-circle lower
 bound, snap diagnostics, route ratio, status, and error text. It deliberately
 does not join vessel capacity or calculate capacity-nautical miles.
 
-After route acceptance and manual review, the next phase may join the frozen
-one-row-per-IMO carrier frame and compare pre/post inferred capacity-nautical
-miles. Coverage and voyage composition must be reported separately from the
-distance-weighted result.
+The downstream join to the frozen one-row-per-IMO carrier frame is complete.
+Pre/post inferred capacity-nautical miles, coverage, voyage composition, and
+route sensitivities are reported in
+`INFERRED_CAPACITY_NAUTICAL_MILES_RESULTS.md`. Manual review remains a validation
+requirement, not an unstarted pipeline phase.
 
 ## Source and limitations
 

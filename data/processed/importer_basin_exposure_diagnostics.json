@@ -18,6 +18,8 @@
       "resolved_voyages": 971
     }
   },
+  "country_hormuz_exposed_estimates_suppressed": 39,
+  "country_reporting_rule": "Country-level Hormuz-exposed changes are not estimable below the minimum of 5 post-period exposed voyages; basin aggregates remain descriptive.",
   "measure": "inferred_nominal_capacity_exposure",
   "missing_destination_country_rows": 0,
   "policy": {
@@ -73,6 +75,7 @@
       "T100000130594",
       "T100000130601"
     ],
+    "min_country_post_hormuz_exposed_voyages": 5,
     "route_specification": "expanded_60nm_snap",
     "terminal_match_radius_km": 30
   },

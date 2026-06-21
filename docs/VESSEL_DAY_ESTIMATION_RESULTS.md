@@ -1,6 +1,6 @@
 # Modeled vessel-day estimation
 
-**Status:** Verified locally; 156 tests pass.  
+**Status:** Verified locally and covered by the current full suite.
 **Measure:** Speed-based modeled sailing days, not observed AIS voyage duration.
 
 ## Method

@@ -1,0 +1,15 @@
+{
+  "common_route_composition_change": 37112163.58692822,
+  "common_route_total_change": 37957648.86126721,
+  "common_route_within_change": 845485.2743389236,
+  "entry_exit_route_residual": 29627532.692587256,
+  "identity_error": 6.705522537231445e-08,
+  "n_common_routes": 189,
+  "n_post_routes": 362,
+  "n_pre_routes": 405,
+  "overall_absolute_change": 67585181.55385447,
+  "overall_percent_change": 10.198372516920262,
+  "post_overall_mean": 730290740.129235,
+  "pre_overall_mean": 662705558.5753806,
+  "within_interpretation": "Within identical terminal pairs, modeled distance is fixed; this term reflects vessel-capacity mix, not route elongation."
+}

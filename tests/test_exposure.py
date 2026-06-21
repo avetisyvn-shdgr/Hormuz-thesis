@@ -45,3 +45,16 @@ def test_importer_exposure_separates_gulf_loss_and_non_gulf_gain():
     assert result.loc[0, "hormuz_exposed_capacity_absolute_change_m3"] == -100.0
     assert result.loc[0, "non_gulf_capacity_absolute_change_m3"] == 50.0
     assert result.loc[0, "descriptive_non_gulf_offset_ratio"] == 0.5
+
+
+def test_country_exposed_estimates_are_suppressed_below_post_support():
+    enriched = attach_exposure_metadata(
+        _voyages(), _audit(), terminal_match_radius_km=30,
+        gulf_export_project_ids=["gulf"],
+        destination_basin_by_country={"Japan": "Pacific"},
+    )
+    result = exposure_summary(
+        enriched, "destination_country", min_post_exposed_voyages=5
+    )
+    assert not bool(result.loc[0, "country_hormuz_exposed_estimate_estimable"])
+    assert pd.isna(result.loc[0, "hormuz_exposed_capacity_absolute_change_m3"])

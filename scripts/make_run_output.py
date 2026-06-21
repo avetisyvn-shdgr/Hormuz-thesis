@@ -130,6 +130,12 @@ def main() -> None:
             "mean_daily_shortfall": float(effect["actual_mean_daily_throughput_loss"]),
             "interval_94d_lower": float(interval["interval_94dhorizon_lower"]),
             "interval_94d_upper": float(interval["interval_94dhorizon_upper"]),
+            "interval_circular_bootstrap_lower": float(
+                interval["interval_circular_bootstrap_lower"]
+            ),
+            "interval_circular_bootstrap_upper": float(
+                interval["interval_circular_bootstrap_upper"]
+            ),
             "placebo_metric": "cumulative_shortfall",
             "placebo_reference_p95": float(effect["placebo_loss_p95"]),
             "placebo_separation": float(effect["loss_vs_placebo_p95_ratio"]),
@@ -326,9 +332,11 @@ def main() -> None:
         "",
         f"- Point shortfall: **{primary['point_shortfall']:,.1f} tanker transits** ({primary['mean_daily_shortfall']:.2f}/day).",
         f"- Horizon-matched 95% interval: **{primary['interval_94d_lower']:,.1f} to {primary['interval_94d_upper']:,.1f} transits**.",
+        f"- Independent 14-day circular-block bootstrap band: **{primary['interval_circular_bootstrap_lower']:,.1f} to {primary['interval_circular_bootstrap_upper']:,.1f} transits**; narrower than the placebo-window band, so width is method-sensitive.",
         f"- Temporal-placebo p95: **{primary['placebo_reference_p95']:,.1f}**; separation: **{primary['placebo_separation']:.3f}x**.",
         f"- One-sided placebo p-value: **{primary['placebo_p_value']:.6f}**, floor-censored with 36 overlapping / about 9 non-overlapping windows.",
         f"- BSTS posterior median shortfall: **{bsts['posterior_median_shortfall']:,.1f}**; 95% posterior predictive interval: **{bsts['lower_95']:,.1f} to {bsts['upper_95']:,.1f}**.",
+        f"- BSTS prior-grid median range: **{bsts['prior_sensitivity_median_shortfall_min']:,.1f} to {bsts['prior_sensitivity_median_shortfall_max']:,.1f}**; interval-envelope endpoints: **{bsts['prior_sensitivity_lower_endpoint_min']:,.1f} to {bsts['prior_sensitivity_upper_endpoint_max']:,.1f}**; pre-period PPC pointwise coverage: **{bsts['pre_period_ppc_pointwise_95_coverage']:.1%}**.",
         "",
         "## Pre-treatment validation and residual fidelity",
         "",
@@ -377,7 +385,7 @@ def main() -> None:
         "## Data-quality checks",
         "",
         f"- Primary transit outcome has complete post-period coverage (94/94 days).",
-        f"- Capacity robustness outcome has `{int(cap_post['missing_capacity'])}` masked post-period values; all `{int(cap_post['audit_confirmed_artifact_masks'])}` are audit-confirmed zero-capacity/positive-transit artifacts and `{int(cap_post['unexplained_missing_capacity'])}` are unexplained.",
+        f"- Capacity is a directional secondary, model-sensitive outcome. It has `{int(cap_post['missing_capacity'])}` masked post-period values; all `{int(cap_post['audit_confirmed_artifact_masks'])}` are audit-confirmed zero-capacity/positive-transit artifacts and `{int(cap_post['unexplained_missing_capacity'])}` are unexplained. Do not lean on its precise magnitude.",
         "",
         "## Figures",
         "",

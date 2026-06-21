@@ -22,6 +22,9 @@ Information-set sensitivity: AR-only uses no observed post-treatment covariates 
 Residual-calibrated 95% aggregate interval for the AR-only working-primary transit loss: **4,758 to 5,434 tanker transits**, or 50.6 to 57.8 per day. This band is calibrated on <=30-day folds and understates a 94-day horizon.
 
 Honest 94-day-horizon interval (recalibrated on the placebo-in-time windows, which are full 94-day forecast errors): **3,934 to 5,722 tanker transits** — about 2.6x wider than the short-fold band, and still excluding zero by a wide margin. Use this as the reported interval; the short-fold band is a lower bound. The band is coarse/conservative (~9 effective windows).
+Independent circular-block cross-check (10,000 draws, 14-day blocks from the ordered out-of-fold residual path): **4,649 to 5,516 transits**. It is materially narrower than the placebo-window band, so interval width is method-sensitive even though both bands exclude zero.
+
+Chronos-2 changes the locked-primary transit shortfall by only **+2.4%**, but changes the capacity shortfall by **-5.2%** (206.9M AR-only versus 196.1M Chronos-2). Capacity is therefore a directional secondary, model-sensitive outcome; its precise magnitude is not load-bearing.
 
 The time-placebo p-value is floor-censored because 36 overlapping placebo windows provide only about 9 non-overlapping 94-day windows. Report the separation ratio alongside the p-value.
 
@@ -79,6 +82,6 @@ Synthetic-control interpretation: the pre-period fit is credible (RMSPE 0.175 on
 
 - Results are about observed AIS-based tanker throughput, not LNG-specific freight rates.
 - Normalized spatial loss should lead the spatial-placebo interpretation because raw counts are scale-confounded.
-- Capacity results require mean-daily interpretation because artifact masking changes valid day counts.
+- Capacity is a directional secondary, model-sensitive outcome; use mean-daily direction and do not lean on its precise magnitude.
 - PortWatch fallback is the working primary; formal estimand realignment remains pending Prof. Li confirmation.
 - Spark is a dormant optional secondary-outcome extension and is not a blocker.

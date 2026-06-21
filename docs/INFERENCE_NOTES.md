@@ -94,10 +94,8 @@ treatment-correlated AIS dark activity, donor contamination, or energy-price
 mediation. The route+energy ARX remains a sensitivity model because post-shock
 energy prices may absorb part of the treatment path.
 
-Next action: after the user reruns `scripts/run_treatment_robustness.py` and
-confirms the artifacts, proceed to donor-weighted synthetic control as
-corroboration only. Exclude the five contaminated corridors and assess fit with
-pre-period RMSPE before interpreting any post/pre placebo ratios.
+Downstream status: treatment robustness and donor-weighted synthetic control
+have both been run and are included in the verified end-to-end pipeline.
 
 ## Capacity target caveat
 
@@ -173,6 +171,12 @@ Capacity therefore has 79 valid Hormuz post-treatment observations. As before,
 use mean-daily capacity loss as the cleaner comparison when valid day counts
 differ.
 
+Capacity is a **directional secondary, model-sensitive outcome**, not a second
+co-primary. The AR-only shortfall is 206.9M and Chronos-2 gives 196.1M (−5.2%),
+whereas the transit shortfall changes only +2.4%. This is consistent with the
+heavier-tailed count × per-vessel-capacity construction. Report direction and
+separation, not a precise capacity effect magnitude.
+
 ## Leave-one-donor-out spatial sensitivity
 
 Updated 2026-06-17: `scripts/run_spatial_placebo.py` now also writes
@@ -210,10 +214,9 @@ N and quantile sensitivity. It does not create a synthetic counterfactual, solve
 donor contamination, or identify an LNG-specific effect. It only checks whether
 the existing unweighted spatial comparison is single-donor fragile.
 
-Next action: after the user reruns `scripts/run_spatial_placebo.py` and verifies
-the leave-one-out CSV, proceed to treatment-date robustness using the donut
-design. The training cutoff must remain at 2026-02-28; later cutoffs would train
-the counterfactual on disrupted days and poison the baseline.
+Downstream status: leave-one-out spatial sensitivity and the donut treatment-
+window robustness are complete. The training cutoff remains fixed at
+2026-02-28; later event dates are scoring windows only.
 
 ## Residual-calibrated intervals
 
@@ -278,6 +281,14 @@ the interval widens by 2.5–3.3× and **every one still excludes zero by a wide
 margin** (route-only transit lower bound 3,960 ≫ 0), so the throughput-collapse
 conclusion survives honest long-horizon uncertainty.
 
+An independent 10,000-draw circular block bootstrap now resamples the ordered
+out-of-fold AR residual path in 14-day blocks. For the locked-primary AR transit
+shortfall it gives **[4,649, 5,516]**, compared with the preferred
+placebo-window **[3,934, 5,722]**. The cross-check is materially narrower, so the
+methods do not agree on width; both exclude zero. Retain the placebo-window band
+as the conservative headline and report the block-bootstrap band as interval-
+method sensitivity.
+
 Limitations: the placebo windows overlap (94-day windows stepped by 30 days, ~9
 effectively independent), so the 2.5/97.5 quantiles are coarse, and the placebo
 models train on expanding windows smaller than the actual full-pre-period model,
@@ -334,6 +345,25 @@ not an LNG-specific freight estimate. The p-value is again a small-N design floo
 so report the ratio/p95 separation alongside it. Mean-scaling assumes a stable
 pre-period level, and the clean-donor pool, while contamination-screened, is still
 an imperfect control set.
+
+## Romano-Wolf multiplicity correction
+
+Updated 2026-06-20: `scripts/run_multiplicity_correction.py` applies a
+studentized Romano-Wolf max-statistic step-down to placebo families for which
+joint null draws are genuinely aligned. The placebo-in-time family contains 8
+generator-by-outcome hypotheses over 36 shared time windows; its adjusted
+p-values remain at the finite-design floor, 0.027. The low-contamination spatial
+family contains 2 outcomes over the 21 donors with complete joint statistics;
+both adjusted p-values are 0.045. These are still small-sample design floors and
+must be reported as corrected cross-outcome values rather than the earlier
+per-outcome 0.037-0.048 range.
+
+The output is `data/processed/romano_wolf_stepdown.csv`, with family size and
+joint-resample count on every row. Inference layers with incompatible resampling
+units are not pooled by independently shuffling placebo columns, because that
+would invent rather than preserve their dependence structure. Corrections are
+therefore within-axis, matching the reporting rule in
+`ADVANCED_ML_RECONSIDERATION.md`.
 
 ## Still not covered by any inference layer
 

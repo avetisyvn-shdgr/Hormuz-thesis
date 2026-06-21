@@ -1,0 +1,92 @@
+# Operational map groups for visual organization, not hydrological basin claims.
+# Boundary chokepoints have no unique basin assignment. These labels must not be
+# used to sum traffic: one voyage may cross multiple chokepoints in one group.
+version: 1
+status: "pending_supervisor_approval"
+grouping_type: "operational_maritime_region"
+aggregation_allowed: false
+mapping:
+  bab_el_mandeb_strait:
+    basin_group: "red_sea_arabian_gulf"
+    note: "Red Sea–Gulf access boundary; grouped operationally with Suez and Hormuz."
+  balabac_strait:
+    basin_group: "maritime_southeast_asia_oceania"
+    note: "Philippine internal/archipelagic passage."
+  bering_strait:
+    basin_group: "north_pacific_arctic"
+    note: "Boundary between the North Pacific and Arctic systems."
+  bohai_strait:
+    basin_group: "northeast_asia"
+    note: "Access to the Bohai/Yellow Sea system."
+  bosporus_strait:
+    basin_group: "europe_mediterranean_black_sea"
+    note: "Boundary between the Black Sea and Mediterranean system."
+  cape_of_good_hope:
+    basin_group: "southern_africa"
+    note: "Atlantic–Indian Ocean routing boundary."
+  dover_strait:
+    basin_group: "europe_mediterranean_black_sea"
+    note: "English Channel–North Sea boundary."
+  gibraltar_strait:
+    basin_group: "europe_mediterranean_black_sea"
+    note: "Atlantic–Mediterranean boundary."
+  kerch_strait:
+    basin_group: "europe_mediterranean_black_sea"
+    note: "Black Sea–Sea of Azov boundary."
+  korea_strait:
+    basin_group: "northeast_asia"
+    note: "East China Sea–Sea of Japan passage."
+  lombok_strait:
+    basin_group: "maritime_southeast_asia_oceania"
+    note: "Indonesian archipelagic passage."
+  luzon_strait:
+    basin_group: "northeast_asia"
+    note: "South China Sea–western Pacific boundary."
+  magellan_strait:
+    basin_group: "southern_south_america"
+    note: "Atlantic–Pacific passage at southern South America."
+  makassar_strait:
+    basin_group: "maritime_southeast_asia_oceania"
+    note: "Indonesian archipelagic passage."
+  malacca_strait:
+    basin_group: "maritime_southeast_asia_oceania"
+    note: "Indian Ocean–South China Sea routing boundary."
+  mindoro_strait:
+    basin_group: "maritime_southeast_asia_oceania"
+    note: "Philippine internal/archipelagic passage."
+  mona_passage:
+    basin_group: "caribbean_gulf_of_mexico"
+    note: "Atlantic–Caribbean passage."
+  ombai_strait:
+    basin_group: "maritime_southeast_asia_oceania"
+    note: "Indonesian archipelagic passage toward the Indian Ocean."
+  oresund_strait:
+    basin_group: "europe_mediterranean_black_sea"
+    note: "Baltic–North Sea access system."
+  panama_canal:
+    basin_group: "central_america_interoceanic"
+    note: "Artificial Atlantic–Pacific interoceanic connection."
+  strait_of_hormuz:
+    basin_group: "red_sea_arabian_gulf"
+    note: "Arabian/Persian Gulf–Gulf of Oman boundary."
+  suez_canal:
+    basin_group: "red_sea_arabian_gulf"
+    note: "Artificial Mediterranean–Red Sea connection."
+  sunda_strait:
+    basin_group: "maritime_southeast_asia_oceania"
+    note: "Indonesian archipelagic passage."
+  taiwan_strait:
+    basin_group: "northeast_asia"
+    note: "East China Sea–South China Sea boundary."
+  torres_strait:
+    basin_group: "maritime_southeast_asia_oceania"
+    note: "Arafura Sea–Coral Sea passage."
+  tsugaru_strait:
+    basin_group: "northeast_asia"
+    note: "Sea of Japan–western Pacific passage."
+  windward_passage:
+    basin_group: "caribbean_gulf_of_mexico"
+    note: "Atlantic–Caribbean passage."
+  yucatan_channel:
+    basin_group: "caribbean_gulf_of_mexico"
+    note: "Caribbean–Gulf of Mexico boundary."

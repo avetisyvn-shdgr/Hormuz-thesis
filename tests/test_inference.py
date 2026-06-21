@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight.inference import (
     block_residual_sums,
+    circular_block_bootstrap_loss_interval,
     conformal_effect_interval,
     counterfactual_effect,
     empirical_p_value,
@@ -17,6 +18,7 @@ from lngfreight.inference import (
     placebo_time_folds,
     post_treatment_fold,
     residual_quantiles,
+    romano_wolf_stepdown,
     select_non_overlapping_folds,
     separation_ratio,
 )
@@ -126,6 +128,24 @@ def test_empirical_p_value_rejects_bad_alternative():
         empirical_p_value(1.0, [1.0], "sideways")
 
 
+def test_romano_wolf_stepdown_is_monotone_and_dependence_aware():
+    observed = pd.Series({"strong": 4.0, "weak": 2.0})
+    joint = pd.DataFrame({
+        "strong": [-1.0, 0.0, 1.0, 2.0, 5.0],
+        "weak": [-0.5, 0.0, 0.5, 1.0, 2.5],
+    })
+    out = romano_wolf_stepdown(observed, joint)
+    assert out["family_size"].eq(2).all()
+    assert out["n_joint_resamples"].eq(5).all()
+    assert out["romano_wolf_p_value"].is_monotonic_increasing
+    assert (out["romano_wolf_p_value"] >= out["raw_resampling_p_value"]).all()
+
+
+def test_romano_wolf_rejects_incomplete_joint_draws():
+    with pytest.raises(ValueError, match="finite and complete"):
+        romano_wolf_stepdown([2.0, 1.0], [[0.0, float("nan")]])
+
+
 def test_separation_ratio_handles_zero_reference():
     assert separation_ratio(10.0, 2.0) == pytest.approx(5.0)
     assert pd.isna(separation_ratio(10.0, 0.0))
@@ -147,6 +167,18 @@ def test_block_residual_sums_are_deterministic_and_correct_shape():
 def test_block_residual_sums_reject_bad_inputs():
     with pytest.raises(ValueError, match="horizon"):
         block_residual_sums([1], horizon=0)
+
+
+def test_circular_block_bootstrap_interval_is_reproducible():
+    residuals = [-2, -1, 0, 1, 2] * 10
+    first = circular_block_bootstrap_loss_interval(
+        100.0, residuals, horizon=20, block_length=5, n_draws=200, seed=3
+    )
+    second = circular_block_bootstrap_loss_interval(
+        100.0, residuals, horizon=20, block_length=5, n_draws=200, seed=3
+    )
+    assert first == second
+    assert first["interval_lower"] <= 100 <= first["interval_upper"]
 
 
 def test_long_horizon_interval_centers_on_point_loss_and_is_symmetric():

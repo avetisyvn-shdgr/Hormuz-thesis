@@ -1,14 +1,14 @@
 # Current thesis implementation plan
 
-**Status:** Active plan from 2026-06-19. This document adds to the existing
-roadmaps and fallback decisions; it does not replace or remove them.
+**Status:** Phase 3A implementation complete as of 2026-06-20. This document
+records the completed branch and the remaining non-blocking Spark option.
 
 ## Research direction
 
 Keep the completed PortWatch counterfactual as the first-stage measurement of
-the Hormuz operational shock. The next contribution tests whether accessible
-vessel data can support an LNG-specific replacement-voyage measure. If that gate
-fails, build a transparent LNG trade-network scenario model instead.
+the Hormuz operational shock. The completed extension shows that accessible
+vessel data support a scope-limited LNG terminal-sequence and capacity-distance
+measure. The transparent LNG trade-network simulation remains an unused fallback.
 
 The intended chain is:
 
@@ -75,7 +75,7 @@ Passing this gate permits an inferred capacity-mile robustness/mechanism layer.
 It does not permit causal claims about actual cargo quantities. Failing the gate
 does not invalidate the existing throughput result.
 
-## Phase 3A - empirical branch if the gate passes
+## Phase 3A - empirical branch completed
 
 1. Add GFW identity and port-visit adapters through the source registry. **Done.**
 2. Freeze a versioned LNG-vessel roster and LNG-terminal dictionary. **Done.**
@@ -86,10 +86,10 @@ does not invalidate the existing throughput result.
    **Done.**
 6. Translate inferred flows into importer and destination-basin exposure.
    **Done.**
-6. Treat discrepancies as measurement uncertainty, not values to be forced into
+7. Treat discrepancies as measurement uncertainty, not values to be forced into
    agreement.
 
-## Phase 3B - simulation fallback if the gate fails
+## Phase 3B - unused simulation fallback
 
 Build a constrained LNG trade-network model using public bilateral flows,
 liquefaction capacity, regasification capacity, route distances, and explicit
@@ -106,7 +106,7 @@ or re-entry documentation. Spark is not required for Phases 2-3, but it remains
 the preferred downstream freight-rate validation layer until the thesis is
 finalized.
 
-## Immediate actions
+## Completed implementation actions
 
 1. Define and test a reproducible maritime route-distance method. **Done.**
 2. Join nominal vessel capacity after one-row-per-IMO validation. **Done.**
@@ -114,4 +114,9 @@ finalized.
 4. Validate aggregate Gulf departures against the WTO LNG index. **Done.**
 5. Build importer and destination-basin exposure tables. **Done.**
 6. Estimate vessel-days as an explicitly assumption-driven extension. **Done.**
-7. Keep pursuing Spark access in parallel.
+
+## Remaining action
+
+Keep pursuing Spark access in parallel. Formal estimand/title/RQ approval is the
+separate thesis-governance decision recorded in
+`ESTIMAND_PROPOSAL_RECONCILIATION.md`.

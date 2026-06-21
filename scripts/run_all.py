@@ -30,6 +30,7 @@ STEPS = [
     ("Calibrate horizon-matched intervals", ["scripts/run_long_horizon_intervals.py"]),
     ("Run treatment-window robustness", ["scripts/run_treatment_robustness.py"]),
     ("Run spatial placebos", ["scripts/run_spatial_placebo.py"]),
+    ("Apply Romano-Wolf multiplicity correction", ["scripts/run_multiplicity_correction.py"]),
     ("Run synthetic control", ["scripts/run_synthetic_control.py"]),
     ("Stress synthetic donors and donor-time placebos", ["scripts/run_synthetic_stress.py"]),
     ("Run optional LNG-only index robustness", ["scripts/run_lng_index_analysis.py"]),

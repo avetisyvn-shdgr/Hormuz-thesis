@@ -1,6 +1,7 @@
 """Nominal LNG capacity-nautical miles from inferred terminal sequences."""
 from __future__ import annotations
 
+from statistics import NormalDist
 from typing import Any
 
 import numpy as np
@@ -195,3 +196,161 @@ def capacity_pre_post_comparison(period_summary: pd.DataFrame) -> pd.DataFrame:
             })
         rows.append(row)
     return pd.DataFrame(rows).sort_values("terminal_match_radius_km").reset_index(drop=True)
+
+
+def cluster_bootstrap_mean_change(
+    voyages: pd.DataFrame,
+    value_column: str,
+    *,
+    cluster_column: str = "imo",
+    n_draws: int = 5000,
+    seed: int = 20260612,
+    alpha: float = 0.05,
+) -> dict[str, Any]:
+    """Carrier-cluster bootstrap for the pre/post mean percent change."""
+    required = {cluster_column, "sample_period", value_column}
+    missing = required.difference(voyages.columns)
+    if missing:
+        raise ValueError(f"Bootstrap frame missing columns: {sorted(missing)}")
+    if n_draws <= 0 or not 0 < alpha < 1:
+        raise ValueError("n_draws must be positive and alpha must be in (0, 1).")
+    frame = voyages.loc[
+        voyages[value_column].notna() & voyages["sample_period"].isin(["pre", "post"])
+    ].copy()
+    clusters = frame[cluster_column].dropna().unique()
+    if len(clusters) < 3:
+        raise ValueError("Need at least three carrier clusters for BCa inference.")
+
+    def statistic(sample: pd.DataFrame) -> float:
+        means = sample.groupby("sample_period")[value_column].mean()
+        if not {"pre", "post"}.issubset(means.index) or means["pre"] == 0:
+            return float("nan")
+        return float((means["post"] / means["pre"] - 1.0) * 100.0)
+
+    point = statistic(frame)
+    grouped = {key: value for key, value in frame.groupby(cluster_column, sort=False)}
+    rng = np.random.default_rng(seed)
+    estimates = []
+    for _ in range(n_draws):
+        selected = rng.choice(clusters, size=len(clusters), replace=True)
+        sample = pd.concat([grouped[key] for key in selected], ignore_index=True)
+        estimate = statistic(sample)
+        if np.isfinite(estimate):
+            estimates.append(estimate)
+    if len(estimates) < max(100, int(n_draws * 0.9)):
+        raise ValueError("Too many invalid bootstrap draws; period support is inadequate.")
+    estimates_array = np.asarray(estimates, dtype="float64")
+    percentile_lower, percentile_upper = np.quantile(
+        estimates_array, [alpha / 2, 1 - alpha / 2]
+    )
+
+    # BCa bias correction from the bootstrap distribution and acceleration
+    # from a leave-one-carrier-out jackknife.
+    normal = NormalDist()
+    tail_clip = 1.0 / (2.0 * len(estimates_array))
+    proportion_below = float(np.mean(estimates_array < point))
+    proportion_below = float(np.clip(proportion_below, tail_clip, 1 - tail_clip))
+    bias_correction = normal.inv_cdf(proportion_below)
+    jackknife = np.asarray([
+        statistic(frame.loc[frame[cluster_column] != cluster])
+        for cluster in clusters
+    ])
+    if not np.isfinite(jackknife).all():
+        raise ValueError("Leave-one-cluster jackknife produced invalid estimates.")
+    jackknife_center = float(jackknife.mean())
+    deviations = jackknife_center - jackknife
+    denominator = 6.0 * float(np.sum(deviations**2)) ** 1.5
+    acceleration = (
+        float(np.sum(deviations**3)) / denominator if denominator > 0 else 0.0
+    )
+
+    adjusted_probabilities = []
+    for probability in (alpha / 2, 1 - alpha / 2):
+        z_alpha = normal.inv_cdf(probability)
+        shifted = bias_correction + z_alpha
+        denominator_term = 1.0 - acceleration * shifted
+        if denominator_term == 0:
+            raise ValueError("BCa adjusted quantile is undefined.")
+        adjusted = normal.cdf(
+            bias_correction + shifted / denominator_term
+        )
+        adjusted_probabilities.append(float(np.clip(adjusted, 0.0, 1.0)))
+    bca_lower, bca_upper = np.quantile(estimates_array, adjusted_probabilities)
+    return {
+        "point_estimate_percent_change": point,
+        "ci_lower": float(bca_lower),
+        "ci_upper": float(bca_upper),
+        "bca_ci_lower": float(bca_lower),
+        "bca_ci_upper": float(bca_upper),
+        "percentile_ci_lower": float(percentile_lower),
+        "percentile_ci_upper": float(percentile_upper),
+        "bca_adjusted_lower_probability": adjusted_probabilities[0],
+        "bca_adjusted_upper_probability": adjusted_probabilities[1],
+        "bca_bias_correction": float(bias_correction),
+        "bca_acceleration": float(acceleration),
+        "n_jackknife_clusters": int(len(jackknife)),
+        "confidence_level": float(1 - alpha),
+        "n_bootstrap_draws_requested": int(n_draws),
+        "n_bootstrap_draws_valid": int(len(estimates)),
+        "n_clusters": int(len(clusters)),
+        "cluster_column": cluster_column,
+        "interval_method": "carrier_cluster_bca_bootstrap",
+    }
+
+
+def route_shift_share_decomposition(
+    voyages: pd.DataFrame,
+    value_column: str,
+    *,
+    route_columns: tuple[str, ...] = ("project_id", "destination_project_id"),
+) -> dict[str, Any]:
+    """Decompose the mean change on common routes and isolate entry/exit residual.
+
+    The common-support Kitagawa identity splits its mean change into a within-
+    route component and a route-share component.  New/dropped routes are kept
+    as a separate residual because assigning them a counterfactual within-route
+    mean would require an unsupported assumption.
+    """
+    required = {"sample_period", value_column, *route_columns}
+    missing = required.difference(voyages.columns)
+    if missing:
+        raise ValueError(f"Decomposition frame missing columns: {sorted(missing)}")
+    frame = voyages.loc[
+        voyages[value_column].notna() & voyages["sample_period"].isin(["pre", "post"])
+    ].copy()
+    grouped = frame.groupby([*route_columns, "sample_period"])[value_column].agg(
+        route_mean="mean", voyages="size"
+    ).reset_index()
+    means = grouped.pivot(index=list(route_columns), columns="sample_period", values="route_mean")
+    counts = grouped.pivot(index=list(route_columns), columns="sample_period", values="voyages").fillna(0)
+    common = means.dropna(subset=["pre", "post"]).index
+    if len(common) == 0:
+        raise ValueError("No common pre/post routes for shift-share decomposition.")
+    m0, m1 = means.loc[common, "pre"], means.loc[common, "post"]
+    s0 = counts.loc[common, "pre"] / counts.loc[common, "pre"].sum()
+    s1 = counts.loc[common, "post"] / counts.loc[common, "post"].sum()
+    within = float((((s0 + s1) / 2) * (m1 - m0)).sum())
+    between = float((((m0 + m1) / 2) * (s1 - s0)).sum())
+    common_pre = float((s0 * m0).sum())
+    common_post = float((s1 * m1).sum())
+    overall = frame.groupby("sample_period")[value_column].mean()
+    overall_change = float(overall["post"] - overall["pre"])
+    common_change = common_post - common_pre
+    return {
+        "pre_overall_mean": float(overall["pre"]),
+        "post_overall_mean": float(overall["post"]),
+        "overall_absolute_change": overall_change,
+        "overall_percent_change": float((overall["post"] / overall["pre"] - 1) * 100),
+        "common_route_within_change": within,
+        "common_route_composition_change": between,
+        "common_route_total_change": common_change,
+        "entry_exit_route_residual": float(overall_change - common_change),
+        "n_pre_routes": int((counts["pre"] > 0).sum()),
+        "n_post_routes": int((counts["post"] > 0).sum()),
+        "n_common_routes": int(len(common)),
+        "identity_error": float(common_change - within - between),
+        "within_interpretation": (
+            "Within identical terminal pairs, modeled distance is fixed; this "
+            "term reflects vessel-capacity mix, not route elongation."
+        ),
+    }

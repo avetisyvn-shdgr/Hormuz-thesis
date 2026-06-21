@@ -38,6 +38,12 @@ interval (that is layer 18's job). **Action taken:** the cross-check outputs are
 now frozen into the TSFM provenance manifest (they were previously unfrozen
 model results).
 
+Capacity is explicitly demoted to a **directional secondary, model-sensitive
+outcome**. It is a count × per-vessel-capacity product with a heavier tail, and
+its Chronos-2 magnitude moves −5.2% versus AR-only, compared with only +2.4% for
+the locked-primary transit count. Directional agreement may be reported; its
+precise shortfall magnitude should not carry the conclusion.
+
 ## 17. Formal BSTS / CausalImpact layer — BUILT, and correctly univariate
 
 **State.** `src/lngfreight/bsts.py` + `scripts/run_bsts_counterfactual.py`: a
@@ -60,10 +66,14 @@ deliberate choice.
 
 **Verdict — keep as univariate corroboration.** It is an independent
 (Bayesian, joint-path) counterfactual that agrees with AR-only in direction and
-magnitude. Recommended hardening, both cheap and within discipline: (a) a prior-
-sensitivity sweep on the level-innovation and observation-variance priors,
-reported as a range; (b) a posterior predictive check on the pre-period. Neither
-changes the estimand; both strengthen the "formal" claim.
+magnitude. Hardening is now implemented. A 3×3 grid over empirical-scale
+observation-variance and level-innovation priors gives posterior-median
+shortfalls of **4,972–5,082**. The interval is more prior-sensitive: grid
+endpoints span **[2,651, 7,513]**, driven mainly by the level-innovation prior.
+The pre-period PPC has 96.5% pointwise coverage and Bayesian p-values of 0.97
+(mean), 0.47 (SD), and 0.82 (maximum), with no evident gross misfit. Thus the
+shortfall center is robust but the formal interval remains model/prior
+conditional.
 
 ## 18. Most defensible long-horizon interval — BUILT, method choice is correct
 
@@ -82,6 +92,7 @@ excludes zero (route-only transit lower bound 3,960 ≫ 0).
 | ≤30-day-fold block bootstrap | **Lower bound only** — fold horizon ≤30d, so 31–94-day recursion depths are unrepresented; honest but too narrow. |
 | Conformal prediction | **Rejected** — its finite-sample guarantee assumes pre/post exchangeability, which an event study *deliberately breaks*. |
 | **Placebo-window empirical (chosen)** | **Preferred** — calibrates at the true 94-day horizon on real recursive errors; conservative (wide), not precise. |
+| Circular 14-day block bootstrap on ordered OOF residuals | **Independent cross-check** — AR-only transit band [4,649, 5,516], narrower than the chosen [3,934, 5,722] but still excludes zero. |
 
 **Verdict — keep; it is the right choice.** State its honest limits: overlapping
 placebo windows (~9 effectively independent) make the 2.5/97.5 quantiles coarse,

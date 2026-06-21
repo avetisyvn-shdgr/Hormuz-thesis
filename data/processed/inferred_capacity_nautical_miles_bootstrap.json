@@ -1,0 +1,20 @@
+{
+  "bca_acceleration": 0.007826002246325181,
+  "bca_adjusted_lower_probability": 0.031779066177614466,
+  "bca_adjusted_upper_probability": 0.9806764145335674,
+  "bca_bias_correction": 0.03810997272868065,
+  "bca_ci_lower": 4.394198838245945,
+  "bca_ci_upper": 17.04803843576426,
+  "ci_lower": 4.394198838245945,
+  "ci_upper": 17.04803843576426,
+  "cluster_column": "imo",
+  "confidence_level": 0.95,
+  "interval_method": "carrier_cluster_bca_bootstrap",
+  "n_bootstrap_draws_requested": 5000,
+  "n_bootstrap_draws_valid": 5000,
+  "n_clusters": 510,
+  "n_jackknife_clusters": 510,
+  "percentile_ci_lower": 4.054421773391077,
+  "percentile_ci_upper": 16.69720803818326,
+  "point_estimate_percent_change": 10.198372516920262
+}

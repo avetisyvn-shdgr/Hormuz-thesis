@@ -274,6 +274,46 @@ def block_residual_sums(
     return out
 
 
+def circular_block_bootstrap_loss_interval(
+    point_loss: float,
+    residuals,
+    *,
+    horizon: int,
+    block_length: int = 14,
+    n_draws: int = 10000,
+    seed: int = 20260612,
+    alpha: float = 0.05,
+) -> dict[str, float | int | bool]:
+    """Circular-block bootstrap interval from an ordered OOF residual path."""
+    if not 0 < alpha < 1:
+        raise ValueError("alpha must lie strictly between zero and one.")
+    values = pd.Series(residuals, dtype="float64").dropna().to_numpy()
+    if len(values) < block_length:
+        raise ValueError("Residual path must contain at least one full block.")
+    mean_residual = float(values.mean())
+    sums = block_residual_sums(
+        values - mean_residual,
+        horizon=horizon,
+        block_length=block_length,
+        n_draws=n_draws,
+        seed=seed,
+    )
+    lower_error, upper_error = np.quantile(sums, [alpha / 2, 1 - alpha / 2])
+    lower = float(point_loss + lower_error)
+    upper = float(point_loss + upper_error)
+    return {
+        "point_loss": float(point_loss),
+        "interval_lower": lower,
+        "interval_upper": upper,
+        "interval_width": float(upper - lower),
+        "excludes_zero": bool(lower > 0 or upper < 0),
+        "n_residuals": int(len(values)),
+        "block_length": int(block_length),
+        "n_bootstrap_draws": int(n_draws),
+        "pre_period_mean_residual_centered_out": mean_residual,
+    }
+
+
 def long_horizon_loss_interval(
     point_loss: float,
     horizon_cumulative_errors,
@@ -360,3 +400,79 @@ def empirical_p_value(
             f"got {alternative!r}."
         )
     return float((extreme + 1) / (len(vals) + 1))
+
+
+def romano_wolf_stepdown(
+    observed,
+    resampled,
+    *,
+    alternative: str = "greater",
+    studentize: bool = True,
+) -> pd.DataFrame:
+    """Dependence-aware Romano-Wolf max-statistic step-down p-values.
+
+    Rows of ``resampled`` must be aligned joint null draws across hypotheses.
+    This requirement is substantive: independently shuffled placebo columns do
+    not preserve dependence and must not be passed to this function.  The +1
+    correction keeps finite-resample p-values away from zero.
+    """
+    obs = pd.Series(observed, dtype="float64")
+    draws = pd.DataFrame(resampled, columns=obs.index, dtype="float64")
+    if obs.empty:
+        raise ValueError("Need at least one observed statistic.")
+    if draws.empty:
+        raise ValueError("Need at least one joint resampling draw.")
+    if obs.isna().any() or not np.isfinite(obs.to_numpy()).all():
+        raise ValueError("Observed statistics must all be finite.")
+    if draws.isna().any().any() or not np.isfinite(draws.to_numpy()).all():
+        raise ValueError("Joint resampling matrix must be finite and complete.")
+    if alternative not in {"greater", "less", "two-sided"}:
+        raise ValueError("alternative must be 'greater', 'less', or 'two-sided'.")
+
+    if alternative == "less":
+        obs = -obs
+        draws = -draws
+
+    if studentize:
+        scale = draws.std(axis=0, ddof=1)
+        invalid = ~np.isfinite(scale) | scale.le(0)
+        if invalid.any():
+            bad = list(scale.index[invalid])
+            raise ValueError(f"Cannot studentize zero-variance hypotheses: {bad}")
+        center = draws.mean(axis=0)
+        test_obs = (obs - center) / scale
+        test_draws = (draws - center) / scale
+        if alternative == "two-sided":
+            test_obs = test_obs.abs()
+            test_draws = test_draws.abs()
+    else:
+        test_obs = obs.abs() if alternative == "two-sided" else obs
+        test_draws = draws.abs() if alternative == "two-sided" else draws
+
+    order = list(test_obs.sort_values(ascending=False, kind="stable").index)
+    raw = {
+        name: (1.0 + float((test_draws[name] >= test_obs[name]).sum()))
+        / (len(test_draws) + 1.0)
+        for name in order
+    }
+    adjusted: dict[object, float] = {}
+    running = 0.0
+    for position, name in enumerate(order):
+        remaining = order[position:]
+        maxima = test_draws[remaining].max(axis=1)
+        step_p = (1.0 + float((maxima >= test_obs[name]).sum())) / (
+            len(test_draws) + 1.0
+        )
+        running = max(running, step_p)
+        adjusted[name] = min(running, 1.0)
+
+    return pd.DataFrame({
+        "hypothesis": order,
+        "observed_statistic": [float(observed[name]) for name in order],
+        "studentized_statistic": [float(test_obs[name]) for name in order],
+        "raw_resampling_p_value": [raw[name] for name in order],
+        "romano_wolf_p_value": [adjusted[name] for name in order],
+        "stepdown_rank": range(1, len(order) + 1),
+        "family_size": len(order),
+        "n_joint_resamples": len(test_draws),
+    })

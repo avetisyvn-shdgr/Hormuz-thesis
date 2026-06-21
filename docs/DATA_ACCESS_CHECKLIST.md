@@ -21,18 +21,18 @@ in `VESSEL_DATA_FEASIBILITY.md` and
 - [x] Score the sample gate: Q-Flex port-sequence feasibility passed.
 - [x] Expand to the 624-vessel eligible global census and repeat coverage,
       terminal-match, and endpoint-resolution diagnostics.
-- [ ] Pre-commit route-distance and capacity-mile construction methods.
+- [x] Pre-commit route-distance and capacity-mile construction methods.
 - [ ] Continue Spark academic/trial/Bloomberg access in parallel until the
       thesis is finalized.
 
 ## Tier A — Free, start immediately (no gate)
-- [ ] EIA API key registered, `.env` filled, `henry_hub_spot` pulls OK
+- [x] Frozen EIA Henry Hub and Brent snapshots cover the working panel.
 - [ ] FRED API key registered, Henry Hub cross-check matches EIA within tolerance
-- [ ] Brent pulls OK from EIA (+ FRED cross-check)
-- [ ] IMF PortWatch: download Hormuz + Panama chokepoint CSV once by hand; pin the
+- [ ] Complete the Brent FRED cross-check against the frozen EIA series.
+- [x] IMF PortWatch: download Hormuz + Panama chokepoint CSV once by hand; pin the
       real column names into `sources/portwatch.py`; confirm daily coverage across
       the study window
-- [ ] Descriptive event-study layer (Layer 1) reproducible from free data alone
+- [x] Descriptive event-study layer (Layer 1) reproducible from free data alone
 
 ## Tier B — Proprietary, negotiate via TUM (the real gate)
 For each, record: *can TUM provide it? at what granularity? for which date range? export-allowed?*
@@ -45,7 +45,10 @@ For each, record: *can TUM provide it? at what granularity? for which date range
 
 ## The decision
 - **Full branch** (Tier B Spark + AIS + Lloyd's secured): run all five layers incl. the mechanism mediation and causal-direction tests.
-- **Fallback branch** (Tier B not secured): run Layers 1–4 on free data + futures proxies; reframe the mechanism question as *descriptive*; the identification *protocol* remains the contribution. The proposal already declares this a valid, passing outcome.
+- **Fallback branch (active):** run the throughput and open-data vessel pipelines
+  on frozen free data; keep the inferred capacity-distance mechanism descriptive.
+  The original freight-rate and laden-cargo claims remain unavailable without
+  Tier B access.
 
 ## What to ask your supervisor / TUM library, specifically
 1. Does the TUM Bloomberg terminal expose Spark25S, Spark30S and Baltic LNG benchmarks, and **may data be exported** for a thesis (some terminal licences forbid bulk export)?

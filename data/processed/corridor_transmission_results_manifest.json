@@ -1,0 +1,28 @@
+{
+  "basin_interval_policy": "point_only",
+  "finite_sample_p_value_floor": 0.1,
+  "interpretation_guard": [
+    "Exploratory: specification frozen pre-results; no supervisor sign-off.",
+    "AR-only is the locked primary estimator; no causal/routing language.",
+    "Adjusted p-values floor at 0.10; do not claim 5% significance.",
+    "Basin output is point-only and never sums corridors."
+  ],
+  "is_exploratory": true,
+  "leakage_check": {
+    "corridor_checked": "n_tanker/strait_of_hormuz",
+    "invariant_to_other_corridors": true
+  },
+  "model_family": "ar_only_corridor_deviations_all_targets",
+  "n_hypotheses": 48,
+  "n_shared_placebo_origins": 9,
+  "outputs_sha256": {
+    "corridor_transmission_ar_baseline_mase.csv": "0e27dc7b40861ebfcb2dd0ee90d679a289f224bcfda8ce3ed3fc6ffb2e51aa23",
+    "corridor_transmission_basin_point_summary.csv": "52e2a873a695c26ff29e5364f37868976a45f14146ac52d019245433f09eb8d9",
+    "corridor_transmission_results.csv": "6319186f510841a3f13787b820991327bc3a25e8f6bc256be3b21de16e25299e"
+  },
+  "post_horizon_days": 94,
+  "primary_estimator": "ar_lag1_7",
+  "schema_version": 1,
+  "status": "exploratory_no_supervisor_signoff",
+  "supervisor_signoff": false
+}

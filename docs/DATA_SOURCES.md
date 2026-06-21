@@ -74,7 +74,11 @@ locked working primary.
 | `ais_laden_tonmiles_usgc` | AIS-derived **laden ton-miles to the US Gulf Coast** replacement origin | True vessel-level AIS with laden/ballast resolution is proprietary (Kpler, Spire, MarineTraffic). PortWatch is only a weak **aggregate** stand-in. | unavailable |
 
 - This is the single most important data dependency in the thesis, because H3 (the contribution-bearing mechanism test) **pre-commits** to this exact proxy. PortWatch cannot substitute for it — it cannot separate laden ton-miles from raw transit counts.
-- **Consequence, stated plainly:** under the free-only branch you can run Layers 1–4 (descriptive event study, debiased dose-response on a freight *proxy*, ML counterfactual, donor synthetic control) but you **cannot** execute the primary mechanism test (Layer 5) as specified. The proposal already anticipates this: the fallback branch reframes the mechanism question as descriptive. That is a valid, passing outcome — but it must be a *decision*, not an accident.
+- **Consequence, stated plainly:** the free branch cannot execute the proposal's
+  original observed laden-ton-mile mechanism as specified. It now implements a
+  weaker empirical layer using GFW terminal sequences, nominal vessel capacity,
+  and modeled route distance. That inferred capacity-nautical-mile result is
+  descriptive and explicitly not observed cargo ton-miles.
 
 ---
 

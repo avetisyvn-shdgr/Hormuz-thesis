@@ -21,6 +21,8 @@ class BSTSResult:
     beta_draws: np.ndarray
     observation_variance_draws: np.ndarray
     level_variance_draws: np.ndarray
+    training_dates: pd.DatetimeIndex | None = None
+    training_predictive_draws: np.ndarray | None = None
 
     def forecast_frame(self) -> pd.DataFrame:
         return pd.DataFrame({
@@ -87,6 +89,10 @@ def fit_bsts_forecast(
     burn: int = 500,
     thin: int = 2,
     seed: int = 20260612,
+    observation_prior_scale_multiplier: float = 0.5,
+    level_prior_scale_multiplier: float = 0.5,
+    variance_prior_shape: float = 2.5,
+    retain_training_predictive_draws: bool = False,
 ) -> BSTSResult:
     """Fit the local-level BSTS and sample posterior predictive paths.
 
@@ -105,12 +111,17 @@ def fit_bsts_forecast(
         raise ValueError("All forecast dates must be after the training series.")
     if n_draws <= 0 or burn < 0 or thin <= 0:
         raise ValueError("n_draws and thin must be positive; burn cannot be negative.")
+    if observation_prior_scale_multiplier <= 0 or level_prior_scale_multiplier <= 0:
+        raise ValueError("Variance-prior scale multipliers must be positive.")
+    if variance_prior_shape <= 1:
+        raise ValueError("variance_prior_shape must exceed one.")
 
     values = y.to_numpy()
     x = _weekly_design(y.index)
     x_future = _weekly_design(forecast_index)
     n, p = x.shape
     rng = np.random.default_rng(seed)
+    ppc_rng = np.random.default_rng(seed + 10_000_019)
 
     beta = np.linalg.lstsq(np.column_stack([np.ones(n), x]), values, rcond=None)[0][1:]
     level = np.full(n, float(np.mean(values)))
@@ -120,13 +131,18 @@ def fit_bsts_forecast(
     level_variance = max(observation_variance * 0.05, 1e-3)
     prior_variance = max(float(np.var(values)) * 100.0, 100.0)
     prior_precision = np.eye(p) / prior_variance
-    a0 = 2.5
-    b0 = max(float(np.var(values)) * 0.5, 1e-3)
+    a0 = float(variance_prior_shape)
+    empirical_variance = max(float(np.var(values)), 1e-3)
+    observation_b0 = empirical_variance * observation_prior_scale_multiplier
+    level_b0 = empirical_variance * level_prior_scale_multiplier
 
     prediction_draws = np.empty((n_draws, len(forecast_index)))
     beta_draws = np.empty((n_draws, p))
     obs_var_draws = np.empty(n_draws)
     level_var_draws = np.empty(n_draws)
+    training_draws = (
+        np.empty((n_draws, n)) if retain_training_predictive_draws else None
+    )
     total_iterations = burn + n_draws * thin
     kept = 0
     for iteration in range(total_iterations):
@@ -145,12 +161,12 @@ def fit_bsts_forecast(
 
         residual = values - level - _linear_component(x, beta)
         obs_shape = a0 + n / 2.0
-        obs_scale = b0 + float(np.sum(residual**2)) / 2.0
+        obs_scale = observation_b0 + float(np.sum(residual**2)) / 2.0
         observation_variance = 1.0 / rng.gamma(obs_shape, 1.0 / obs_scale)
 
         differences = np.diff(level)
         level_shape = a0 + (n - 1) / 2.0
-        level_scale = b0 + float(np.sum(differences**2)) / 2.0
+        level_scale = level_b0 + float(np.sum(differences**2)) / 2.0
         level_variance = 1.0 / rng.gamma(level_shape, 1.0 / level_scale)
 
         if iteration < burn or (iteration - burn) % thin:
@@ -168,6 +184,12 @@ def fit_bsts_forecast(
         beta_draws[kept] = beta
         obs_var_draws[kept] = observation_variance
         level_var_draws[kept] = level_variance
+        if training_draws is not None:
+            fitted = level + _linear_component(x, beta)
+            training_draws[kept] = np.maximum(
+                fitted + ppc_rng.normal(0.0, np.sqrt(observation_variance), size=n),
+                0.0,
+            )
         kept += 1
 
     return BSTSResult(
@@ -176,7 +198,48 @@ def fit_bsts_forecast(
         beta_draws=beta_draws,
         observation_variance_draws=obs_var_draws,
         level_variance_draws=level_var_draws,
+        training_dates=y.index if training_draws is not None else None,
+        training_predictive_draws=training_draws,
     )
+
+
+def posterior_predictive_check(
+    result: BSTSResult,
+    observed: pd.Series,
+) -> tuple[pd.DataFrame, dict[str, float]]:
+    """Summarize in-sample posterior replications for model-adequacy checking."""
+    draws = result.training_predictive_draws
+    if draws is None or result.training_dates is None:
+        raise ValueError("Fit must retain training predictive draws for a PPC.")
+    y = observed.astype("float64").reindex(result.training_dates)
+    if y.isna().any() or draws.shape[1] != len(y):
+        raise ValueError("Observed training data must align with retained PPC draws.")
+    values = y.to_numpy()
+    median = np.median(draws, axis=0)
+    lower = np.quantile(draws, 0.025, axis=0)
+    upper = np.quantile(draws, 0.975, axis=0)
+
+    def p_value(stat_draws: np.ndarray, observed_stat: float) -> float:
+        upper_tail = float(np.mean(stat_draws >= observed_stat))
+        lower_tail = float(np.mean(stat_draws <= observed_stat))
+        return min(1.0, 2.0 * min(upper_tail, lower_tail))
+
+    frame = pd.DataFrame({
+        "date": result.training_dates,
+        "y_true": values,
+        "posterior_median": median,
+        "lower_95": lower,
+        "upper_95": upper,
+    })
+    summary = {
+        "n_pre_days": int(len(values)),
+        "pointwise_95_coverage": float(np.mean((values >= lower) & (values <= upper))),
+        "posterior_median_rmse": float(np.sqrt(np.mean((values - median) ** 2))),
+        "bayesian_p_mean": p_value(draws.mean(axis=1), float(values.mean())),
+        "bayesian_p_sd": p_value(draws.std(axis=1), float(values.std())),
+        "bayesian_p_max": p_value(draws.max(axis=1), float(values.max())),
+    }
+    return frame, summary
 
 
 def posterior_shortfall(

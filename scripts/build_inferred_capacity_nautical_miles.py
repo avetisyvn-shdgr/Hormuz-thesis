@@ -14,6 +14,8 @@ from lngfreight.capacity_miles import (  # noqa: E402
     attach_capacity_nautical_miles,
     capacity_period_summary,
     capacity_pre_post_comparison,
+    cluster_bootstrap_mean_change,
+    route_shift_share_decomposition,
     validate_carrier_capacity_frame,
 )
 from lngfreight.routes import (  # noqa: E402
@@ -83,6 +85,21 @@ def main() -> None:
     enriched = attach_capacity_nautical_miles(all_voyages, routes, carriers)
     period_summary = capacity_period_summary(enriched)
     comparison = capacity_pre_post_comparison(period_summary)
+    primary = enriched.loc[
+        enriched["terminal_match_radius_km"].eq(30)
+        & enriched["inferred_nominal_m3_nm_expanded"].notna()
+    ].copy()
+    seed = int(settings["reproducibility"]["random_seed"])
+    bootstrap = cluster_bootstrap_mean_change(
+        primary,
+        "inferred_nominal_m3_nm_expanded",
+        n_draws=5000,
+        seed=seed,
+    )
+    decomposition = route_shift_share_decomposition(
+        primary,
+        "inferred_nominal_m3_nm_expanded",
+    )
 
     route_diagnostics = route_distance_summary(routes)
     diagnostics = {
@@ -118,6 +135,13 @@ def main() -> None:
     diagnostics_path = config.ROOT / paths["inferred_capacity_nm_diagnostics_json"]
     diagnostics_path.write_text(json.dumps(diagnostics, indent=2, sort_keys=True) + "\n")
     print(f"wrote {diagnostics_path}")
+    for key, payload in (
+        ("inferred_capacity_nm_bootstrap_json", bootstrap),
+        ("inferred_capacity_nm_decomposition_json", decomposition),
+    ):
+        output = config.ROOT / paths[key]
+        output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+        print(f"wrote {output}")
     print(comparison.to_string(index=False))
 
 

@@ -12,9 +12,11 @@
 
 - Point shortfall: **5,121.3 tanker transits** (54.48/day).
 - Horizon-matched 95% interval: **3,933.9 to 5,721.8 transits**.
+- Independent 14-day circular-block bootstrap band: **4,648.9 to 5,516.3 transits**; narrower than the placebo-window band, so width is method-sensitive.
 - Temporal-placebo p95: **1,297.3**; separation: **3.948x**.
 - One-sided placebo p-value: **0.027027**, floor-censored with 36 overlapping / about 9 non-overlapping windows.
 - BSTS posterior median shortfall: **4,982.2**; 95% posterior predictive interval: **3,348.3 to 6,710.8**.
+- BSTS prior-grid median range: **4,971.9 to 5,081.6**; interval-envelope endpoints: **2,651.5 to 7,512.9**; pre-period PPC pointwise coverage: **96.5%**.
 
 ## Pre-treatment validation and residual fidelity
 
@@ -68,7 +70,7 @@ The public WTO/AXSMarine series is an LNG-only outbound shipment volume index (2
 ## Data-quality checks
 
 - Primary transit outcome has complete post-period coverage (94/94 days).
-- Capacity robustness outcome has `15` masked post-period values; all `15` are audit-confirmed zero-capacity/positive-transit artifacts and `0` are unexplained.
+- Capacity is a directional secondary, model-sensitive outcome. It has `15` masked post-period values; all `15` are audit-confirmed zero-capacity/positive-transit artifacts and `0` are unexplained. Do not lean on its precise magnitude.
 
 ## Figures
 

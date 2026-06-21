@@ -104,28 +104,40 @@ def _save_figure(
     ax.grid(axis="y", alpha=0.2)
 
     ax = axes[1, 0]
-    top = importer.loc[importer["pre_hormuz_exposed_voyages"].gt(0)].head(7).copy()
+    top = importer.loc[
+        importer["pre_hormuz_exposed_voyages"].gt(0)
+        & importer["country_hormuz_exposed_estimate_estimable"].eq(True)
+    ].head(7).copy()
     top = top.iloc[::-1]
     y = np.arange(len(top))
-    ax.barh(
-        y - 0.18,
-        top["hormuz_exposed_capacity_absolute_change_m3"] / 1e6,
-        height=0.34,
-        color=colors["loss"],
-        label="Hormuz-exposed change",
-    )
-    ax.barh(
-        y + 0.18,
-        top["non_gulf_capacity_absolute_change_m3"] / 1e6,
-        height=0.34,
-        color=colors["gain"],
-        label="Non-Gulf change",
-    )
-    ax.set_yticks(y, top["destination_country"])
-    ax.axvline(0, color="#333333", linewidth=0.8)
-    ax.set(title="C. Largest pre-period importer exposures", xlabel="Nominal capacity change (million m3)")
-    ax.legend(frameon=False, fontsize=8, loc="lower right")
-    ax.grid(axis="x", alpha=0.2)
+    if top.empty:
+        ax.text(
+            0.5, 0.5,
+            "Country-level Hormuz-exposed changes\nnot estimable (post n = 2 overall)",
+            ha="center", va="center", transform=ax.transAxes,
+        )
+        ax.set_axis_off()
+        ax.set_title("C. Importer estimates suppressed")
+    else:
+        ax.barh(
+            y - 0.18,
+            top["hormuz_exposed_capacity_absolute_change_m3"] / 1e6,
+            height=0.34,
+            color=colors["loss"],
+            label="Hormuz-exposed change",
+        )
+        ax.barh(
+            y + 0.18,
+            top["non_gulf_capacity_absolute_change_m3"] / 1e6,
+            height=0.34,
+            color=colors["gain"],
+            label="Non-Gulf change",
+        )
+        ax.set_yticks(y, top["destination_country"])
+        ax.axvline(0, color="#333333", linewidth=0.8)
+        ax.set(title="C. Largest pre-period importer exposures", xlabel="Nominal capacity change (million m3)")
+        ax.legend(frameon=False, fontsize=8, loc="lower right")
+        ax.grid(axis="x", alpha=0.2)
 
     ax = axes[1, 1]
     ordered = basin.set_index("destination_basin").reindex(["Pacific", "Atlantic", "Middle East"])
@@ -179,6 +191,8 @@ def main() -> None:
     wto = _json("gulf_departure_validation_summary_json")
     exposure_diag = _json("importer_basin_exposure_diagnostics_json")
     route_diag = _json("inferred_capacity_nm_diagnostics_json")
+    capacity_bootstrap = _json("inferred_capacity_nm_bootstrap_json")
+    capacity_decomposition = _json("inferred_capacity_nm_decomposition_json")
 
     capacity = capacity_all.loc[
         capacity_all["terminal_match_radius_km"].eq(30)
@@ -228,7 +242,10 @@ def main() -> None:
     evidence.to_csv(evidence_path, index=False)
 
     figure = _save_figure(changes, capacity, vessel, importer, basin)
-    top = importer.loc[importer["pre_hormuz_exposed_voyages"].gt(0)].head(5)
+    top = importer.loc[
+        importer["pre_hormuz_exposed_voyages"].gt(0)
+        & importer["country_hormuz_exposed_estimate_estimable"].eq(True)
+    ].head(5)
     importer_rows = [
         (
             f"| {row['destination_country']} | {row['pre_hormuz_exposure_capacity_share_pct']:.1f}% | "
@@ -238,6 +255,10 @@ def main() -> None:
         )
         for _, row in top.iterrows()
     ]
+    if not importer_rows:
+        importer_rows = [
+            "| Not estimable | Country-level post Hormuz support is only 2 voyages overall | - | - | - |"
+        ]
     lines = [
         "# Integrated LNG Mechanism Results",
         "",
@@ -248,9 +269,9 @@ def main() -> None:
         "",
         f"1. The independent WTO/AXSMarine LNG outbound index falls **{abs(changes['wto_mean_index_percent_change']):.1f}%**.",
         f"2. Inferred Qatar/UAE departure calls fall **{abs(changes['gfw_departure_calls_percent_change']):.1f}%**, providing independent directional agreement.",
-        f"3. At the 30 km terminal radius with expanded route QA, routed voyages fall **{abs(capacity['expanded_routed_voyage_percent_change']):.1f}%**, while mean capacity-distance per voyage rises **{capacity['expanded_mean_per_voyage_percent_change']:.1f}%**.",
+        f"3. At the 30 km terminal radius with expanded route QA, routed voyages fall **{abs(capacity['expanded_routed_voyage_percent_change']):.1f}%**, while mean capacity-distance per voyage rises **{capacity['expanded_mean_per_voyage_percent_change']:.1f}%** (carrier-cluster BCa 95% interval **{capacity_bootstrap['bca_ci_lower']:.1f}% to {capacity_bootstrap['bca_ci_upper']:.1f}%**; percentile comparison **{capacity_bootstrap['percentile_ci_lower']:.1f}% to {capacity_bootstrap['percentile_ci_upper']:.1f}%**).",
         f"4. At 15 knots, mean modeled sailing days per voyage rise **{vessel['mean_modeled_sailing_days_per_voyage_percent_change']:.1f}%**, equivalent to **{vessel['descriptive_post_excess_sailing_days_vs_pre_mean']:.0f} descriptive excess post sailing days** versus the pre mean.",
-        "5. Importer effects are heterogeneous: some markets show non-Gulf composition offsets, while others show near-complete loss.",
+        "5. Country-level Hormuz-exposed changes are suppressed where post-period voyage support is below the pre-specified minimum; basin aggregates are retained.",
         "",
         "## Primary physical-mechanism specification",
         "",
@@ -260,6 +281,12 @@ def main() -> None:
         f"| Nominal capacity-distance (billion m3-nm) | {capacity['expanded_pre_total_nominal_m3_nm']/1e9:.1f} | {capacity['expanded_post_total_nominal_m3_nm']/1e9:.1f} | {capacity['expanded_percent_change']:+.1f}% |",
         f"| Mean nominal capacity-distance/voyage (million m3-nm) | {capacity['expanded_pre_mean_nominal_m3_nm_per_voyage']/1e6:.1f} | {capacity['expanded_post_mean_nominal_m3_nm_per_voyage']/1e6:.1f} | {capacity['expanded_mean_per_voyage_percent_change']:+.1f}% |",
         f"| Modeled sailing vessel-days at 15 kn | {vessel['pre_total_modeled_sailing_vessel_days']:.0f} | {vessel['post_total_modeled_sailing_vessel_days']:.0f} | {vessel['total_modeled_sailing_vessel_days_percent_change']:+.1f}% |",
+        "",
+        "## Route shift-share decomposition",
+        "",
+        f"Across **{capacity_decomposition['n_common_routes']}** terminal pairs observed in both periods, the common-route mean change is **{capacity_decomposition['common_route_total_change']/1e6:.1f} million m3-nm**: **{capacity_decomposition['common_route_composition_change']/1e6:.1f} million** from route-share composition and **{capacity_decomposition['common_route_within_change']/1e6:.1f} million** within pairs. Entry/exit routes contribute a separate **{capacity_decomposition['entry_exit_route_residual']/1e6:.1f} million m3-nm** residual.",
+        "",
+        "Modeled distance is fixed within a terminal pair, so the within-pair term reflects vessel-capacity mix, not route elongation. The +10.2% headline is predominantly compositional.",
         "",
         "## Highest importer exposures",
         "",

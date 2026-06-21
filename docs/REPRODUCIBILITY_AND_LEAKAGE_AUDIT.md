@@ -17,10 +17,10 @@ environment from scratch.
 
 ```
 PYTHONHASHSEED=0 OMP_NUM_THREADS=1 .venv-claude/bin/python -m pytest -q
-161 passed
+163 passed
 ```
 
-All 161 tests pass with no network access. No code changes were needed to make
+All 163 tests pass with no network access. No code changes were needed to make
 the suite green in a clean environment.
 
 ## 2. TSFM run frozen into a manifest — DONE (isolated)
@@ -73,7 +73,7 @@ finished with:
 INPUT HASH CHECK PASSED: 9 core raw files match.
 INPUT HASH CHECK PASSED: 11 vessel raw files match.
 INPUT HASH CHECK PASSED: 1 interim inputs match.
-161 passed
+163 passed
 ARTIFACT VERIFICATION PASSED: 87 regenerated artifacts match.
 END-TO-END RUN COMPLETED CLEANLY
 ```

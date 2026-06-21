@@ -55,7 +55,8 @@ throughput", ranked by feasibility:
 
 Transit **count** is the headline DV; deadweight **capacity** is its robustness
 twin (a result that holds on both is far stronger). A log or pre-period-normalized
-transform is a modeling choice deferred to the baseline step, not a new data need.
+transform remains an optional modeling choice; the implemented headline stays in
+auditable level units.
 
 ### Research framing — what kind of question this is
 
@@ -67,8 +68,8 @@ counterfactual shortfalls rather than causal treatment effects.
 - **Primary identification = within-unit interrupted time series.** Baselines
   forecast the *counterfactual* Hormuz throughput — what traffic would have been
   absent the disruption — trained on **pre-treatment data only** via the
-  rolling-origin harness (`src/lngfreight/validation.py`, cutoff = earliest
-  treatment candidate 2026-02-28). The effect is the contrast (observed −
+  rolling-origin harness (`src/lngfreight/validation.py`, cutoff = locked
+  `study_window.primary_treatment_cutoff`, 2026-02-28). The gap is the contrast (observed −
   counterfactual) over the post-period. The credibility of this association rests on
   pre-treatment fit quality and placebo behaviour, not on which model forecasts
   best. The AR-only model is the working primary because it consumes no observed
@@ -88,7 +89,7 @@ counterfactual shortfalls rather than causal treatment effects.
   corroboration of the ITS counterfactual rather than the primary estimate.
 - **Energy covariates are conditional sensitivities and are never interpreted
   causally.** Henry Hub and Brent (both free, in panel) can help forecast fit,
-  fit, but contemporaneous post-shock energy prices are likely *mediators* of the
+  but contemporaneous post-shock energy prices are likely *mediators* of the
   Hormuz effect (shock → Brent → shipping behaviour), so feeding them into the
   post-period counterfactual would absorb part of the effect (post-treatment
   bias). Rule: AR-only carries the primary estimate; report models **with and
@@ -101,17 +102,15 @@ fully intact while resting it on a target we can observe.
 
 ## Safe-now vs. access-gated
 
-**Safe to build now (no proprietary access, cannot be invalidated by the Spark
-decision):** the rolling-origin validation harness (done), evaluation metrics,
-seasonal-naive and dependency-free ARX baselines on the throughput DV, the within-unit ITS
-counterfactual with placebo/permutation inference, and the donor-pool synthetic
-control as a robustness check. Layers 1–4 of the roadmap, in full, on the
-chokepoint DV.
+**Completed without proprietary access:** rolling-origin validation, transparent
+baselines, the within-unit counterfactual, temporal/spatial inference, BSTS and
+synthetic-control corroboration, and the open-data GFW/WTO mechanism branch.
 
-**Still access-gated (reframed descriptive under the fallback):** the freight-rate
-magnitude (Spark25S/30S) and the AIS laden-ton-mile *mechanism* test (Layer 5),
-which needs vessel-level Kpler/Spire AIS. These become qualitative/contextual
-unless proprietary access arrives.
+**Still access-gated:** the freight-rate magnitude (Spark25S/30S) and the
+proposal's original observed laden-cargo ton-mile mechanism. The completed free
+branch is a weaker inferred nominal capacity-nautical-mile measure from terminal
+sequences and modeled routes; it is empirical but descriptive, not qualitative
+and not a substitute for proprietary cargo/track data.
 
 ## Still do this — the free test that could upgrade the target for free
 
@@ -168,8 +167,8 @@ granularity. Outcomes:
    scale-confounding objection. See [INFERENCE_NOTES.md](INFERENCE_NOTES.md).
 9. **(Done)** Donor-weighted synthetic control, leave-one-donor-out sensitivity,
    block-residual intervals, and horizon-matched placebo-window intervals.
-10. Re-run `scripts/make_event_study.py` so figure markers reflect the corrected
-   treatment dates (open item carried from Phase 1).
+10. **(Done 2026-06-20)** Event-study figures regenerated with the locked cutoff
+    and audited milestone labels; hashes are covered by `run_all.py`.
 
 ## Limitations to state plainly in the thesis
 
@@ -180,10 +179,9 @@ granularity. Outcomes:
   legally or physically defined closure, the treatment is labelled a *Hormuz
   disruption episode* / *military-escalation shock*. "Closure" is a stronger claim
   that fails if traffic did not literally reach zero or if vessels transited dark.
-- **Throughput is the route/cause side, not the price side.** The thesis answers
-  "did the disruption causally reduce observable chokepoint throughput, and how did
-  energy prices respond," not "what was the freight-rate multiplier." The latter is
-  descriptive under this branch.
+- **Throughput is the route/cause side, not the price side.** The working study
+  estimates a disruption-associated observable throughput shortfall; it does not
+  claim a causal freight-rate multiplier or a causal energy-price response.
 - **Measurement error under treatment is non-random and directional.** In a
   conflict zone, AIS dark activity, GPS jamming and spoofing (flagged by the IEA
   for this specific Middle East context) are *correlated with the treatment*, not

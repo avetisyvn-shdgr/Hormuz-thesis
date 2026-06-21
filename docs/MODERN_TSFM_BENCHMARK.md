@@ -202,3 +202,9 @@ python scripts/run_tsfm_counterfactual.py --model stub --acknowledge-benchmark-o
 This benchmark is deliberately excluded from `scripts/run_all.py` and the frozen
 core requirements because model weights and the PyTorch stack are optional
 external artifacts.
+
+**Outcome hierarchy:** transit count remains the locked primary. Its Chronos-2
+shortfall differs from AR-only by only +2.4%. Deadweight capacity is a
+directional secondary and model-sensitive outcome: it is a heavier-tailed count
+× per-vessel-capacity product, and Chronos-2 changes its shortfall magnitude by
+−5.2% (196.1M versus 206.9M). Do not lean on the precise capacity magnitude.

@@ -5,6 +5,8 @@ from lngfreight.capacity_miles import (
     attach_capacity_nautical_miles,
     capacity_period_summary,
     capacity_pre_post_comparison,
+    cluster_bootstrap_mean_change,
+    route_shift_share_decomposition,
     validate_carrier_capacity_frame,
 )
 from lngfreight.routes import PAIR_COLUMNS
@@ -71,3 +73,32 @@ def test_period_and_comparison_summaries_keep_pre_post_separate():
     assert comparison.loc[0, "expanded_percent_change"] == 0.0
     assert comparison.loc[0, "expanded_mean_per_voyage_percent_change"] == 0.0
     assert comparison.loc[0, "strict_pre_routed_voyages"] == 1
+
+
+def test_carrier_cluster_bootstrap_returns_reproducible_interval():
+    frame = pd.DataFrame({
+        "imo": ["a", "a", "b", "b", "c", "c"],
+        "sample_period": ["pre", "post"] * 3,
+        "value": [10.0, 12.0, 20.0, 22.0, 30.0, 36.0],
+    })
+    result = cluster_bootstrap_mean_change(frame, "value", n_draws=200, seed=7)
+    assert result["point_estimate_percent_change"] == pytest.approx(70 / 60 * 100 - 100)
+    assert result["n_clusters"] == 3
+    assert result["ci_lower"] <= result["point_estimate_percent_change"] <= result["ci_upper"]
+    assert result["interval_method"] == "carrier_cluster_bca_bootstrap"
+    assert result["n_jackknife_clusters"] == 3
+    assert result["bca_ci_lower"] == result["ci_lower"]
+    assert result["percentile_ci_lower"] <= result["percentile_ci_upper"]
+
+
+def test_route_decomposition_has_exact_common_support_identity():
+    frame = pd.DataFrame({
+        "sample_period": ["pre", "pre", "post", "post"],
+        "project_id": ["a", "b", "a", "b"],
+        "destination_project_id": ["x", "y", "x", "y"],
+        "value": [10.0, 20.0, 12.0, 30.0],
+    })
+    result = route_shift_share_decomposition(frame, "value")
+    assert result["n_common_routes"] == 2
+    assert result["identity_error"] == pytest.approx(0.0)
+    assert result["entry_exit_route_residual"] == pytest.approx(0.0)

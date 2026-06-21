@@ -1,6 +1,7 @@
 """Run the corroborative Bayesian structural time-series counterfactual."""
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -14,13 +15,30 @@ import matplotlib.pyplot as plt
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config  # noqa: E402
-from lngfreight.bsts import fit_bsts_forecast, posterior_shortfall  # noqa: E402
+from lngfreight.bsts import (  # noqa: E402
+    fit_bsts_forecast,
+    posterior_predictive_check,
+    posterior_shortfall,
+)
 from lngfreight.metrics import score_forecast  # noqa: E402
 from lngfreight.specification import working_specification  # noqa: E402
 from lngfreight.validation import resolve_cutoff, rolling_origin_splits  # noqa: E402
 
 
 SEED = int(config.settings()["reproducibility"]["random_seed"])
+BSTS_POLICY = config.settings()["bsts"]
+
+
+def _prior_arguments() -> dict[str, float]:
+    return {
+        "observation_prior_scale_multiplier": float(
+            BSTS_POLICY["observation_prior_scale_multiplier"]
+        ),
+        "level_prior_scale_multiplier": float(
+            BSTS_POLICY["level_prior_scale_multiplier"]
+        ),
+        "variance_prior_shape": float(BSTS_POLICY["variance_prior_shape"]),
+    }
 
 
 def _validation(panel: pd.DataFrame, target: str) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -38,6 +56,7 @@ def _validation(panel: pd.DataFrame, target: str) -> tuple[pd.DataFrame, pd.Data
             burn=80,
             thin=1,
             seed=SEED + i,
+            **_prior_arguments(),
         )
         prediction = pd.Series(
             np.median(result.predictive_draws, axis=0), index=test.index
@@ -81,6 +100,8 @@ def main() -> None:
         burn=750,
         thin=2,
         seed=SEED,
+        retain_training_predictive_draws=True,
+        **_prior_arguments(),
     )
     daily = result.forecast_frame()
     daily["target"] = target
@@ -90,6 +111,38 @@ def main() -> None:
     daily["cumulative_shortfall"] = daily["shortfall"].cumsum()
 
     effect = posterior_shortfall(result.predictive_draws, observed)
+    ppc, ppc_summary = posterior_predictive_check(result, train)
+    sensitivity_rows = []
+    scales = [float(x) for x in BSTS_POLICY["prior_sensitivity_scale_multipliers"]]
+    for obs_scale in scales:
+        for level_scale in scales:
+            sensitivity_fit = fit_bsts_forecast(
+                train,
+                observed.index,
+                n_draws=int(BSTS_POLICY["prior_sensitivity_draws"]),
+                burn=int(BSTS_POLICY["prior_sensitivity_burn"]),
+                thin=2,
+                seed=SEED,
+                observation_prior_scale_multiplier=obs_scale,
+                level_prior_scale_multiplier=level_scale,
+                variance_prior_shape=float(BSTS_POLICY["variance_prior_shape"]),
+            )
+            sensitivity_effect = posterior_shortfall(
+                sensitivity_fit.predictive_draws, observed
+            )
+            sensitivity_rows.append({
+                "observation_prior_scale_multiplier": obs_scale,
+                "level_prior_scale_multiplier": level_scale,
+                "variance_prior_shape": float(BSTS_POLICY["variance_prior_shape"]),
+                "posterior_observation_sd_median": float(np.median(
+                    np.sqrt(sensitivity_fit.observation_variance_draws)
+                )),
+                "posterior_level_innovation_sd_median": float(np.median(
+                    np.sqrt(sensitivity_fit.level_variance_draws)
+                )),
+                **sensitivity_effect,
+            })
+    sensitivity = pd.DataFrame(sensitivity_rows)
     validation, validation_forecasts = _validation(panel.loc[panel.index < cutoff], target)
     summary = pd.DataFrame([{
         "model": "bsts_local_level_weekly",
@@ -108,6 +161,16 @@ def main() -> None:
         "posterior_level_innovation_sd_median": float(
             np.median(np.sqrt(result.level_variance_draws))
         ),
+        "prior_sensitivity_median_shortfall_min": float(
+            sensitivity["posterior_median_shortfall"].min()
+        ),
+        "prior_sensitivity_median_shortfall_max": float(
+            sensitivity["posterior_median_shortfall"].max()
+        ),
+        "prior_sensitivity_lower_endpoint_min": float(sensitivity["lower_95"].min()),
+        "prior_sensitivity_upper_endpoint_max": float(sensitivity["upper_95"].max()),
+        "pre_period_ppc_pointwise_95_coverage": ppc_summary["pointwise_95_coverage"],
+        "pre_period_ppc_bayesian_p_sd": ppc_summary["bayesian_p_sd"],
         **effect,
     }])
 
@@ -116,6 +179,18 @@ def main() -> None:
     summary.to_csv(out_dir / "bsts_counterfactual_summary.csv", index=False)
     validation.to_csv(out_dir / "bsts_validation_scores.csv", index=False)
     validation_forecasts.to_csv(out_dir / "bsts_validation_forecasts.csv", index=False)
+    sensitivity.to_csv(
+        config.ROOT / config.settings()["paths"]["bsts_prior_sensitivity_csv"],
+        index=False,
+    )
+    ppc.to_csv(
+        config.ROOT / config.settings()["paths"]["bsts_pre_period_ppc_csv"],
+        index=False,
+    )
+    ppc_summary_path = config.ROOT / config.settings()["paths"][
+        "bsts_pre_period_ppc_summary_json"
+    ]
+    ppc_summary_path.write_text(json.dumps(ppc_summary, indent=2, sort_keys=True) + "\n")
 
     fig, ax = plt.subplots(figsize=(11, 5.5))
     ax.plot(panel.index, y, color="#202020", linewidth=1.0, label="Observed")
@@ -136,9 +211,32 @@ def main() -> None:
     fig.savefig(figure_path, dpi=180)
     plt.close(fig)
 
+    fig, ax = plt.subplots(figsize=(11, 5.5))
+    ax.plot(ppc["date"], ppc["y_true"], color="#202020", linewidth=0.8,
+            label="Observed pre-period")
+    ax.plot(ppc["date"], ppc["posterior_median"], color="#276FBF", linewidth=1.0,
+            label="Posterior predictive median")
+    ax.fill_between(ppc["date"], ppc["lower_95"], ppc["upper_95"],
+                    color="#276FBF", alpha=0.2, label="95% posterior predictive band")
+    ax.set(title="BSTS pre-period posterior predictive check",
+           ylabel="Daily tanker transit count", xlabel="Date")
+    ax.legend(frameon=False, ncol=2)
+    ax.grid(alpha=0.2)
+    fig.tight_layout()
+    ppc_figure_path = config.path("figures") / "bsts_pre_period_ppc.png"
+    fig.savefig(ppc_figure_path, dpi=180)
+    plt.close(fig)
+
     print("BSTS counterfactual summary:")
     print(summary.to_string(index=False))
+    print("\nPrior-sensitivity shortfall range:")
+    print(sensitivity[[
+        "observation_prior_scale_multiplier", "level_prior_scale_multiplier",
+        "posterior_median_shortfall", "lower_95", "upper_95",
+    ]].to_string(index=False))
+    print(f"\nPre-period PPC: {ppc_summary}")
     print(f"wrote {figure_path}")
+    print(f"wrote {ppc_figure_path}")
     print("Interpretation guard: posterior intervals are model-conditional; this is corroboration, not causal ATT.")
 
 

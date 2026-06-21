@@ -1,0 +1,33 @@
+{
+  "a_priori_contaminated": [
+    "bab_el_mandeb_strait",
+    "cape_of_good_hope",
+    "gibraltar_strait",
+    "panama_canal",
+    "suez_canal"
+  ],
+  "anchor_note": "Corroboration only; AR-only within-unit estimator remains primary.",
+  "containment_separation_floor": 2.0,
+  "data_driven_risen_suspects": [
+    "cape_of_good_hope",
+    "lombok_strait",
+    "mindoro_strait",
+    "mona_passage",
+    "panama_canal",
+    "sunda_strait",
+    "tsugaru_strait",
+    "yucatan_channel"
+  ],
+  "min_separation_under_pessimistic_screen": 2.0997299758073225,
+  "pessimistic_screen_size": 11,
+  "purpose": "SUTVA single-point-of-failure hardening (audit recs 1 and 2).",
+  "spof_contained": true,
+  "suspects_missed_by_a_priori_screen": [
+    "lombok_strait",
+    "mindoro_strait",
+    "mona_passage",
+    "sunda_strait",
+    "tsugaru_strait",
+    "yucatan_channel"
+  ]
+}
