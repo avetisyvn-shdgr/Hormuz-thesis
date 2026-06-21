@@ -58,77 +58,69 @@ config/sources.yaml  ──►  registry.get_variable(name)  ──►  provider
 
 ```mermaid
 flowchart TD
-    %% ===== INPUTS =====
-    subgraph INPUTS["Data inputs (registry-mediated)"]
+    subgraph INPUTS["Data inputs - registry mediated"]
         PW["IMF PortWatch<br/>tanker transits + capacity"]:::ok
         EIA["EIA / FRED<br/>Henry Hub, Brent"]:::ok
         WTO["WTO/AXSMarine<br/>LNG outbound index"]:::ok
         GFW["Global Fishing Watch<br/>identity + port visits"]:::ok
-        SPARK["Spark25S/30S freight<br/>(proprietary DV)"]:::missing
-        AIS["AIS laden ton-miles<br/>(proprietary mechanism)"]:::missing
+        SPARK["Spark25S/30S freight<br/>proprietary DV"]:::missing
+        AIS["AIS laden ton-miles<br/>proprietary mechanism"]:::missing
     end
 
-    REG{{"registry.get_variable()<br/>+ provenance SHA-256"}}:::ok
+    REG{{"registry.get_variable<br/>+ provenance SHA-256"}}:::ok
     PW --> REG
     EIA --> REG
     WTO --> REG
     GFW --> REG
-    SPARK -. dormant adapter, status:unavailable .-> REG
+    SPARK -. dormant adapter .-> REG
     AIS -. not accessible .-> REG
 
     REG --> CLEAN["clean.py / panel.py<br/>aligned daily panel"]:::ok
     CLEAN --> VAL["validation.py<br/>rolling-origin, cutoff 2026-02-28 LOCKED"]:::ok
 
-    %% ===== PRIMARY =====
-    subgraph PRIMARY["Primary estimate (load-bearing)"]
+    subgraph PRIMARY["Primary estimate - load-bearing"]
         VAL --> BASE["baselines.py<br/>AR-only PRIMARY"]:::ok
-        BASE --> CF["inference.py<br/>observed - counterfactual gap"]:::ok
-        CF --> RESULT["AR-only loss = 5,121 transits<br/>94-day band 3,934-5,722"]:::ok
+        BASE --> CF["inference.py<br/>observed minus counterfactual gap"]:::ok
+        CF --> RESULT["AR-only loss = 5,121 transits<br/>94-day band 3,934 to 5,722"]:::ok
     end
 
-    %% ===== CORROBORATION =====
-    subgraph CORROB["Corroboration layers (not the anchor)"]
+    subgraph CORROB["Corroboration layers - not the anchor"]
         CF --> PT["placebo-in-time<br/>sep 3.9x"]:::ok
         CF --> SP["spatial placebo<br/>28 chokepoints, sep 5.0x"]:::ok
         CF --> SC["synthetic control<br/>ratio 4.77, 3.87x placebo"]:::ok
         CF --> BSTS["BSTS univariate<br/>median 4,982"]:::ok
     end
 
-    %% ===== BENCHMARK (GATED) =====
-    subgraph BENCH["TSFM benchmark (isolated, excluded from run_all)"]
+    subgraph BENCH["TSFM benchmark - isolated, excluded from run_all"]
         VAL -. pre-cutoff only .-> TSFM["tsfm.py adapters"]:::gated
-        WEIGHTS["HF weights + .venv-bench / .venv-timesfm<br/>macOS-only, not in repo"]:::gated
+        WEIGHTS["HF weights + venvs<br/>macOS-only, not in repo"]:::gated
         WEIGHTS -. required .-> TSFM
         TSFM --> ADM["admission test<br/>Chronos-2 +2.4% transits"]:::gated
     end
 
-    %% ===== MECHANISM =====
-    subgraph MECH["Open-data LNG mechanism (descriptive)"]
+    subgraph MECH["Open-data LNG mechanism - descriptive"]
         GFW --> TM["terminal_matching.py"]:::ok
-        TM --> RT["routes.py (searoute)"]:::ok
-        RT --> CM["capacity_miles.py<br/>948->726 voyages, +10.2% m3-nm/voyage"]:::ok
+        TM --> RT["routes.py / searoute"]:::ok
+        RT --> CM["capacity_miles.py<br/>948 to 726 voyages, +10.2% per voyage"]:::ok
         CM --> VD["vessel_days.py"]:::ok
         CM --> WV["wto_validation.py<br/>-98.6% index agreement"]:::ok
         WV --> EXP["exposure.py<br/>importer/basin"]:::warn
     end
 
-    %% ===== EXPLORATORY / UNCOMMITTED =====
-    subgraph EXPL["Newest exploratory branch (UNCOMMITTED)"]
-        VAL -. .-> CTP["corridor_transmission.py<br/>+ corridor_panel / inference / admission"]:::uncommitted
+    subgraph EXPL["Newest exploratory branch - now committed"]
+        VAL -.-> CTP["corridor_transmission.py<br/>+ panel / inference / admission"]:::uncommitted
         CTP --> TC["transmission_chain.py<br/>5-layer cascade summary"]:::uncommitted
         SC -.-> DON["donor_screen.py<br/>contamination stress"]:::uncommitted
     end
 
-    %% ===== UNUSED FALLBACK =====
-    SIM["synthetic.py / run_basin_interval_simulation.py<br/>Phase-3B trade-network sim"]:::dormant
-    CLEAN -. built but UNUSED fallback .-> SIM
+    SIM["synthetic.py / basin simulation<br/>Phase-3B trade-network sim"]:::dormant
+    CLEAN -. unused fallback .-> SIM
 
-    %% ===== AGGREGATION =====
     RESULT --> RUNALL["run_all.py<br/>diff 94 hashes vs manifest"]:::warn
     PT --> RUNALL
     SC --> RUNALL
     CM --> RUNALL
-    RUNALL --> REP["reports/*.md + figures"]:::ok
+    RUNALL --> REP["reports markdown + figures"]:::ok
 
     classDef ok fill:#d4edda,stroke:#28a745,color:#155724;
     classDef warn fill:#fff3cd,stroke:#ffc107,color:#856404;

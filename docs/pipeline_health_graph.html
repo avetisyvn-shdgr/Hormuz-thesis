@@ -1,3 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LNG Freight Thesis — Pipeline Health Graph</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; color: #1a1a1a; }
+  h1 { font-size: 20px; }
+  .legend { font-size: 13px; line-height: 1.7; margin: 12px 0 20px; }
+  .legend span { display: inline-block; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
+  .ok { background:#d4edda; border:1px solid #28a745; color:#155724; }
+  .warn { background:#fff3cd; border:1px solid #ffc107; color:#856404; }
+  .gated { background:#cce5ff; border:1px solid #007bff; color:#004085; }
+  .dormant { background:#e2e3e5; border:1px solid #6c757d; color:#383d41; }
+  .uncommitted { background:#f8d7da; border:1px solid #dc3545; color:#721c24; }
+  .missing { background:#f5c6cb; border:1px dashed #dc3545; color:#491217; }
+  .mermaid { background:#fff; }
+  #err { color:#b00; font-family:monospace; white-space:pre-wrap; }
+</style>
+</head>
+<body>
+<h1>LNG Freight Thesis — Pipeline Dependency &amp; Health Graph</h1>
+<div class="legend">
+  <span class="ok">built &amp; tested</span>
+  <span class="warn">built, has caveat</span>
+  <span class="gated">gated benchmark</span>
+  <span class="dormant">built, unused fallback</span>
+  <span class="uncommitted">recent (now committed)</span>
+  <span class="missing">proprietary, unavailable</span>
+</div>
+
+<pre class="mermaid">
 flowchart TD
     subgraph INPUTS["Data inputs - registry mediated"]
         PW["IMF PortWatch<br/>tanker transits + capacity"]:::ok
@@ -69,3 +102,13 @@ flowchart TD
     classDef dormant fill:#e2e3e5,stroke:#6c757d,color:#383d41;
     classDef uncommitted fill:#f8d7da,stroke:#dc3545,color:#721c24;
     classDef missing fill:#f5c6cb,stroke:#dc3545,color:#491217,stroke-dasharray: 5 5;
+</pre>
+
+<div id="err"></div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, securityLevel: 'loose', flowchart: { useMaxWidth: true } });
+  mermaid.parseError = function (err) { document.getElementById('err').textContent = String(err); };
+</script>
+</body>
+</html>
