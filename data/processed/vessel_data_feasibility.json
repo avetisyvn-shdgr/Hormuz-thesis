@@ -66,6 +66,7 @@
         "T100000130594",
         "T100000130601"
       ],
+      "min_country_post_hormuz_exposed_voyages": 5,
       "route_specification": "expanded_60nm_snap",
       "terminal_match_radius_km": 30
     },

@@ -83,8 +83,16 @@ def searoute_router(
         "route_start_lat": float(coordinates[0][1]),
         "route_end_lon": float(coordinates[-1][0]),
         "route_end_lat": float(coordinates[-1][1]),
-        "passages": properties.get(
-            "traversed_passages", properties.get("passages", [])
+        # searoute returns traversed passages as an unordered set, so its list
+        # order follows Python's per-process string-hash seed. Sort it to a
+        # canonical order: route_passages is a descriptive set of crossings, not
+        # an ordered traversal sequence, so this changes no numeric result and
+        # makes the output reproducible independent of PYTHONHASHSEED.
+        "passages": sorted(
+            properties.get(
+                "traversed_passages", properties.get("passages", [])
+            )
+            or []
         ),
     }
 
