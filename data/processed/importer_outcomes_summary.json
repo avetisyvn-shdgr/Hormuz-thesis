@@ -1,0 +1,27 @@
+{
+  "interpretation": "Descriptive-grade outcomes for the by-source units only (Japan, EU27). Not an admissible confirmatory panel -- see the V1 NO_GO coverage report.",
+  "month_range": [
+    "2016-01",
+    "2026-04"
+  ],
+  "outcomes_built": [
+    "y1_gulf_share",
+    "y1_gulf_volume",
+    "y2_total_volume",
+    "y3_non_gulf_volume"
+  ],
+  "outcomes_deferred": [
+    "y4_composite_vulnerability"
+  ],
+  "row_count": 428,
+  "treatment_month": "2026-03",
+  "units": [
+    "EU27",
+    "Japan"
+  ],
+  "units_with_gulf_outcome": [
+    "EU27",
+    "Japan"
+  ],
+  "y4_deferral_reason": "Composite vulnerability needs storage-drawdown and delay components that are unsourced ([VERIFY]); not fabricated."
+}
