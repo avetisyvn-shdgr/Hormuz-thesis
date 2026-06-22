@@ -46,19 +46,16 @@ identification, variable spec, estimator hierarchy, falsification cascade).
 
 ## 2. Current baseline (verified facts, dated)
 
-- Branch: `exploratory/corridor-transmission`. Last commit `bfe15ba`
-  (2026-06-21): route_passages determinism fix + manifest re-freeze.
-- Test suite: **214 passed, re-verified 2026-06-22** (`.venv`, Python 3.14.4,
-  pytest 8.4.2, 10.77s; 214 collected = 214 passed, 0 failed). 35 test files.
-- Reproducibility manifest: **94 artifact hashes as last verified 2026-06-21**.
-  Deterministic-pipeline reproduction → remaining half of task P1. **Known benign
-  drift found 2026-06-22:** `run_all.py` halts at step 01 because the `vessel raw`
-  catch-all drifted — 8 EXTRA importer snapshots under
-  `data/raw/backup_pathway_probe_20260621/` (Option D data, self-frozen, never
-  registered in `SHA256SUMS.vessel`) + 1 CHANGED free index
-  (`wto_hormuz_lng_outbound_index`, refreshed to 2026-06-01). **Core raw (9) and
-  interim (1) PASS; not a regression and not from the doc commits.** Fix = Codex
-  regenerate-then-refreeze (task P1 holds the recipe).
+- Branch: `exploratory/corridor-transmission`. Last commit `1a81d3b`
+  (2026-06-22): log the WTO Hormuz index refresh from the verification run.
+- Test suite: **216 passed, re-verified 2026-06-22** (`.venv`, Python 3.14.4,
+  pytest 8.4.2, 12.80s; 216 collected = 216 passed, 0 failed). 35 test files.
+- Reproducibility manifest: **94 artifact hashes, re-verified 2026-06-22**.
+  `scripts/run_all.py` completed all 36 steps cleanly: 9 core raw, 20 vessel/raw
+  branch, and 1 interim input hashes passed; all 94 regenerated artifacts matched.
+  P1 also fixed the discovered provenance-window mutation: raw payloads with
+  different content now receive immutable content-addressed paths, and frozen
+  panel loading requires an exact query-window match plus SHA-256 verification.
 - Foundation assets that Option D reuses (the AR/PortWatch pipeline is now the
   anchor, not the thesis): Hormuz AR shortfall; GFW importer exposure
   (`importer_exposure_summary.csv`); Gulf departures −93% cross-validation; donor-
@@ -249,7 +246,7 @@ week). Each task: **ID · descriptive task · Lead · Depends on · Definition o
 
 ### Layer P — Reproducibility & integrity
 
-- **P1 · Re-verify pipeline & manifest.** Lead: Codex. Re-run the suite and the
+- **P1 · Re-verify pipeline & manifest. [DONE 2026-06-22]** Lead: Codex. Re-run the suite and the
   deterministic pipeline; confirm test count and the 94-hash manifest (or document
   drift). DoD: dated re-verification replacing the 2026-06-21 baseline.
 - **P2 · Claim-to-artifact ledger.** Lead: Joint. Every headline claim → file, field,
@@ -301,7 +298,8 @@ Dependency-aware order. Parallel tracks marked.
 4. **V1** — by-source coverage probe & panel assembly (Codex). Parallel; no gate.
 5. **V4 sourcing** — Mher decides Flexibility `[VERIFY]` sources; Claude specifies
    construction. Gates D2.
-6. **P1** — Codex re-verifies suite + manifest, refreshing the dated baseline.
+6. **P1 — DONE 2026-06-22** — suite + deterministic pipeline re-verified; dated
+   baseline refreshed in §2.
 7. **D1–D4 drafting** — begin freezing the spec sections as V1/V4 land (do not set
    D5 until G1 returns).
 
@@ -332,4 +330,7 @@ Everything in Layer E/M/C/R waits on **D5**. Writing W1–W2 may start now.
   mediation framing and the throughput-shortfall-as-destination plan (now the
   foundation layer). Added layered workstreams G/L/D/V/E/M/C/R/W/P. Prior plan
   preserved in git history (commit `bfe15ba` and earlier).
+- **2026-06-22** — Completed P1: fixed provenance snapshot immutability and exact-
+  window frozen loading, added two regression tests, regenerated/refroze the
+  pipeline, and verified 216 tests plus all 94 deterministic artifact hashes.
 - Earlier history: see git log and `PROJECT_POSTMORTEM_2026-06-21.md`.

@@ -293,7 +293,7 @@ def build_manifest(root: Path) -> dict[str, object]:
         "vessel_raw_sha256": vessel_raw_hashes(root),
         "interim_input_sha256": interim_input_hashes(root),
         "artifact_sha256": _artifact_hashes(root),
-        "test_command": ".venv-claude/bin/python -m pytest -q",
+        "test_command": ".venv/bin/python -m pytest -q",
     }
 
 

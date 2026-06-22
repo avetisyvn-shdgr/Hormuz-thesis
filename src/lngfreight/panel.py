@@ -22,6 +22,7 @@ Decisions (documented 2026-06, step 3 of the data-foundation phase):
 """
 from __future__ import annotations
 
+import hashlib
 import json
 
 import pandas as pd
@@ -93,22 +94,35 @@ def build_panel_from_frozen_raw(
     log_path = config.ROOT / config.settings()["paths"]["provenance_log"]
     if not log_path.exists():
         raise FileNotFoundError(f"Frozen provenance log not found: {log_path}")
-    latest: dict[str, dict] = {}
+    records: dict[str, list[dict]] = {}
     for line in log_path.read_text(encoding="utf-8").splitlines():
         if line.strip():
             record = json.loads(line)
-            latest[record["variable"]] = record
+            records.setdefault(record["variable"], []).append(record)
 
     index = pd.date_range(start, end, freq="D", name="date")
     cols: dict[str, pd.Series] = {}
     for name in names:
-        if name not in latest:
+        matching = [
+            record
+            for record in records.get(name, [])
+            if str(record.get("query", {}).get("start")) == str(start)
+            and str(record.get("query", {}).get("end")) == str(end)
+        ]
+        if not matching:
             raise FileNotFoundError(
-                f"No frozen provenance record for {name!r}; cannot run offline."
+                f"No frozen provenance record for {name!r} over "
+                f"[{start}, {end}]; cannot run offline."
             )
-        path = config.ROOT / latest[name]["file"]
+        record = matching[-1]
+        path = config.ROOT / record["file"]
         if not path.exists():
             raise FileNotFoundError(f"Frozen raw file for {name!r} not found: {path}")
+        actual_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+        if actual_sha256 != record.get("sha256"):
+            raise ValueError(
+                f"Frozen raw file hash mismatch for {name!r}: {path}"
+            )
         frame = pd.read_csv(path, parse_dates=["date"])
         if list(frame.columns) != ["date", "value"]:
             raise ValueError(

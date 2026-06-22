@@ -2,7 +2,7 @@
   "artifact_scope": "deterministic_outputs_regenerated_by_scripts/run_all.py",
   "artifact_sha256": {
     "data/interim/global_lng_carrier_frame.csv": "bfa5c896f98e59aeb55d3f438701478920d0469ba0bdf76cc151a8c9ca1e0fe7",
-    "data/interim/panel_free.csv": "a651918343a500328aa7f0b5fa358894f6cf3435e63e25c177edb5b44aa9c2ff",
+    "data/interim/panel_free.csv": "4583cf7c25116bcf994570843fe6a5cf20051e8fa73a5bfd06ae36b38ec2796a",
     "data/processed/ais_dark_bound_critical_rates.csv": "ca4a03de90f71f76e97bccfc93ce67e3a4ae50516ef1328ad2ceba45c35e3345",
     "data/processed/ais_dark_bound_sensitivity.csv": "523e0c870315cde13bcf896d95c99ceb29d8fb6341682a210a1693a258830565",
     "data/processed/alignment_audit.csv": "59b7ca618e76227fb48437fb7a3149ddeaff6abde7b2236ac657e9c5412e9567",
@@ -52,8 +52,8 @@
     "data/processed/maritime_route_distances_sensitivity.csv": "f14b9483d84c8cc7adccdce045ddeb9620c090ab00d75666763d1b26ed64e5be",
     "data/processed/mechanism_evidence_summary.csv": "c4189d9cd88f14d26408952943168056300a0c4986ed7458e569de56f39fac5d",
     "data/processed/model_information_sets.csv": "9194f385bf72e63cc77e1870f252db269c5fe40500b0fa7de1f1e07c76aa42f5",
-    "data/processed/model_input_coverage.csv": "bfad4bf44978403115bdb1995012b92dbbd79d08407bd875e500135e19d65db6",
-    "data/processed/panel_aligned.csv": "6aba7dc23a0651063f963a0b142cfc0912345eed1005a52ff150be03ba484bd5",
+    "data/processed/model_input_coverage.csv": "a8f975158d14906c0024ae88d1df735646344e8b7a1856d2a9eb5c86d3f2947f",
+    "data/processed/panel_aligned.csv": "1611c9e530b72c267013a0293e80b0e8614d904dbf91a49e948ed297ee6706e8",
     "data/processed/placebo_time_effects.csv": "98aa939ccefe9ad84ab205e7189168cb89c269c8db118259e9b8f12357bdf204",
     "data/processed/placebo_time_summary.csv": "81faefe5cbed4f6befab67975ddeeda26f6605dee3b0f89fed9a8ed83f256550",
     "data/processed/romano_wolf_stepdown.csv": "1844802c00d283cd201f224af696d1e03c5e278766fb245a2fc22254a653dd5c",
@@ -85,8 +85,8 @@
     "reports/figures/fig2_hormuz_robustness.png": "03fd690f472dd74b87ca80b094f945fbb929979d7cc21824cb3b46d846f4a7f5",
     "reports/figures/fig3_energy_response.pdf": "3849a7f4f029394ecfa9699e717294e849386a229e2e3ed80ea72224f13449a0",
     "reports/figures/fig3_energy_response.png": "46b2a9776d8c9d9967bc36c432fbfbd0fc46af2a0e3a6c0893450852ddddbc37",
-    "reports/figures/fig4_missingness_map.pdf": "7a44a1f71008c65371047dd161d0bc328d6205f1600edc1a4f0e949e6773fdb9",
-    "reports/figures/fig4_missingness_map.png": "3f556471bddf6dd3d2e992e52a72749dd5075ddf277d34ac89f29b33a975d5e3",
+    "reports/figures/fig4_missingness_map.pdf": "a3775632b61de7d75a7e2803a36258d67b247888b74e455fcab867040d6dc7e4",
+    "reports/figures/fig4_missingness_map.png": "514846539febe95b8e5a87a68656f2f2b66fe2f4e05150e220ffadda1f77865b",
     "reports/figures/lng_index_counterfactual.png": "e9de934882d384a8e0f191b386f4db625be31941381ab0892da58a4a585ccd8c",
     "reports/figures/mechanism_evidence_summary.pdf": "0bceb9f297cecb8bf64e02f320c65d9e071593b40ca5560a649ce52ee301f829",
     "reports/figures/mechanism_evidence_summary.png": "24569cb634e6179363bbca873c27f842684e14d2689f2a98c9104ac0885da307",
@@ -134,8 +134,16 @@
     "data/raw/portwatch/panama_tanker_transits__chokepoint_panama_canal_n_tanker.csv": "205c83f21918fb29de02303bad24e623d09de859412c0b2bc425c2e2564d497c",
     "data/raw/wto_hormuz/voy_intake_index_lng_export.csv": "5500461bcbb9f405f38fe255ee4ce6906fef4c75d3208d23b01b5430645f1a6f"
   },
-  "test_command": ".venv-claude/bin/python -m pytest -q",
+  "test_command": ".venv/bin/python -m pytest -q",
   "vessel_raw_sha256": {
+    "data/raw/backup_pathway_probe_20260621/MANIFEST.json": "d9d88e59d2debf82f58937e041af9f33e865ad42461dbbd7e2d2c801582902f8",
+    "data/raw/backup_pathway_probe_20260621/comtrade_japan_hs2711_2026_monthly.json": "b6de62dbe34cff9da9f0ef87f21fdfa352cb3a4992d2756fc3af919a0a5de5a6",
+    "data/raw/backup_pathway_probe_20260621/comtrade_japan_lng271111_bypartner.json": "e10f05d67316a001c16176df982488b28e92818a2c83420990ab3dcbb4f88cc0",
+    "data/raw/backup_pathway_probe_20260621/comtrade_usa_hs2711_2026_monthly.json": "37fb88601627c24cef2161d0d63c3255eddae6adf3b63daedc726c78cfcd4437",
+    "data/raw/backup_pathway_probe_20260621/eia_us_lng_exports_by_country_eng.json": "33da5b6bf580b69d13992d92522d3202b2e13ebf85d1d5c1598e9bcf9a15c7fd",
+    "data/raw/backup_pathway_probe_20260621/eurostat_nrg_ti_gasm_lng_eu27_by_partner.json": "7becf4ef1b67bd6f30dbf1bec81aef56b4d05e62ede3c05367f34284778c2cc5",
+    "data/raw/backup_pathway_probe_20260621/ppac_lng_import_current.xls": "06c87fc9d36a707d3757a81a25b9b10ef73d567c4826f760147a2c9346a2c9cf",
+    "data/raw/backup_pathway_probe_20260621/ppac_lng_import_historical.xlsx": "c2a47ca874d2043c0afba696ba18d39ddc7ba64272aa6ea74c9a34e680c87e29",
     "data/raw/gem/GEM-GGIT-LNG-Teminals-2025-09.xlsx": "20ae2b67c4f6ea73933c4b1ed3524bc2fee63f13d9ee6bdf36b8cdab3c23cdaa",
     "data/raw/gem/GEM-GGIT-LNG-Terminals-2025-09.geojson": "885904f0d69d2d7cd118eb339116ce589d6f2a10921759cf3b9c7e8ef43a6bc4",
     "data/raw/gem/LNG-Carrier-Tracker-December-2025-release.xlsx": "8c97426939c826232b1444958c0f0b68b2caa9297fe04b0c054c198d1c0612de",
@@ -146,7 +154,8 @@
     "data/raw/gfw/lng_vessel_benchmark.csv": "a78cb4f1c8478151e8023ec9b8c628bcb468abb2b4d7dac093c33fff9c80f99c",
     "data/raw/gfw/port_visits.csv": "e48d5af08d0a1efa64a4f6f088e70e111c1d175c660a8e5347803163a9ef2712",
     "data/raw/gfw/vessel_identity.csv": "b68b54f02ab157ff9cebe829affb8915f1210114875c0c240eb31fbf7ad56173",
-    "data/raw/wto_hormuz/wto_hormuz_lng_outbound_index__lng_outbound_volume_index.csv": "c25cefeb47a1e7e84a16b8b450f3a02886612a30899db52a6e8b75424ed3a6c2"
+    "data/raw/wto_hormuz/wto_hormuz_lng_outbound_index__lng_outbound_volume_index.csv": "c25cefeb47a1e7e84a16b8b450f3a02886612a30899db52a6e8b75424ed3a6c2",
+    "data/raw/wto_hormuz/wto_hormuz_lng_outbound_index__lng_outbound_volume_index__dba08401b24f.csv": "dba08401b24f35921b9c4b9996a0a8cdcea332a5460872988973ea61417c23db"
   },
   "working_specification": {
     "active_secondary_outcomes": [],

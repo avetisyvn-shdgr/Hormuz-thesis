@@ -17,6 +17,8 @@ All tests are NO-network / NO-key: build_panel's proxy guard fires before any
 fetch, and align_panel is a pure function over in-memory frames + the local
 registry. Run: pytest -q
 """
+import hashlib
+import json
 import sys
 from pathlib import Path
 
@@ -72,9 +74,15 @@ def test_build_panel_from_frozen_raw_is_offline_and_calendar_aligned(
         "date": ["2026-01-01", "2026-01-03"],
         "value": [1.0, 3.0],
     }).to_csv(source, index=False)
+    digest = hashlib.sha256(source.read_bytes()).hexdigest()
     provenance = tmp_path / "data" / "raw" / "provenance.jsonl"
     provenance.write_text(
-        '{"variable":"x","file":"data/raw/provider/x.csv"}\n',
+        json.dumps({
+            "variable": "x",
+            "file": "data/raw/provider/x.csv",
+            "query": {"start": "2026-01-01", "end": "2026-01-03"},
+            "sha256": digest,
+        }) + "\n",
         encoding="utf-8",
     )
     monkeypatch.setattr(config_mod, "ROOT", tmp_path)
@@ -86,6 +94,32 @@ def test_build_panel_from_frozen_raw_is_offline_and_calendar_aligned(
     assert out["x"].tolist()[0] == 1.0
     assert np.isnan(out["x"].tolist()[1])
     assert out["x"].tolist()[2] == 3.0
+
+    source.write_text("date,value\n2026-01-01,999\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="hash mismatch"):
+        panel_mod.build_panel_from_frozen_raw(variables=["x"])
+
+
+def test_build_panel_from_frozen_raw_rejects_wrong_window(tmp_path, monkeypatch):
+    raw = tmp_path / "data" / "raw" / "provider"
+    raw.mkdir(parents=True)
+    source = raw / "x.csv"
+    source.write_text("date,value\n2026-01-02,2\n", encoding="utf-8")
+    provenance = tmp_path / "data" / "raw" / "provenance.jsonl"
+    provenance.write_text(json.dumps({
+        "variable": "x",
+        "file": "data/raw/provider/x.csv",
+        "query": {"start": "2026-01-02", "end": "2026-01-02"},
+        "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+    }) + "\n", encoding="utf-8")
+    monkeypatch.setattr(config_mod, "ROOT", tmp_path)
+    monkeypatch.setattr(config_mod, "settings", lambda: {
+        "study_window": {"full_start": "2026-01-01", "full_end": "2026-01-03"},
+        "paths": {"provenance_log": "data/raw/provenance.jsonl"},
+    })
+
+    with pytest.raises(FileNotFoundError, match="2026-01-01"):
+        panel_mod.build_panel_from_frozen_raw(variables=["x"])
 
 
 # --------------------------------------------------------------------------

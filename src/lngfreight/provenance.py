@@ -39,11 +39,20 @@ def save_raw(
     raw_dir = config.path("data_raw") / provider
     raw_dir.mkdir(parents=True, exist_ok=True)
 
+    csv_text = df.to_csv(index=False)
+    digest = _sha256(csv_text)
     fname = filename or f"{variable}__{code.replace(':', '_').replace('.', '_')}.csv"
     out_path = raw_dir / fname
-
-    csv_text = df.to_csv(index=False)
-    out_path.write_text(csv_text)
+    if out_path.exists() and _sha256(out_path.read_text(encoding="utf-8")) != digest:
+        # A variable may be requested over several windows. Preserve the first
+        # snapshot and give different payloads content-addressed identities.
+        out_path = out_path.with_name(
+            f"{out_path.stem}__{digest[:12]}{out_path.suffix}"
+        )
+    if not out_path.exists():
+        out_path.write_text(csv_text, encoding="utf-8")
+    elif _sha256(out_path.read_text(encoding="utf-8")) != digest:
+        raise RuntimeError(f"raw snapshot hash collision: {out_path}")
 
     identity = {
         "variable": variable,
@@ -54,7 +63,7 @@ def save_raw(
         "columns": list(df.columns),
         "license": license_note,
         "file": str(out_path.relative_to(config.ROOT)),
-        "sha256": _sha256(csv_text),
+        "sha256": digest,
     }
 
     log_path = config.ROOT / config.settings()["paths"]["provenance_log"]

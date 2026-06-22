@@ -79,7 +79,7 @@ Full setup (PyCharm + Claude Code, macOS): `docs/SETUP_CLAUDE_PYCHARM.md`.
 | `CLAUDE.md` | Anti-hallucination rules for AI assistance |
 
 `scripts/run_all.py` regenerates the PortWatch and open-data LNG mechanism
-outputs, runs the full test suite, and compares 87 artifact hashes with the
+outputs, runs the full test suite, and compares 94 artifact hashes with the
 committed manifest through a temporary candidate manifest. It fails on output
 drift and never refreshes the reference manifest during verification. Isolated
 TSFM weights, Spark credential probes, and manually assembled presentation files
