@@ -51,8 +51,14 @@ identification, variable spec, estimator hierarchy, falsification cascade).
 - Test suite: **214 passed, re-verified 2026-06-22** (`.venv`, Python 3.14.4,
   pytest 8.4.2, 10.77s; 214 collected = 214 passed, 0 failed). 35 test files.
 - Reproducibility manifest: **94 artifact hashes as last verified 2026-06-21**.
-  Deterministic-pipeline reproduction NOT re-run today → remaining half of task
-  P1 (the suite half is done).
+  Deterministic-pipeline reproduction → remaining half of task P1. **Known benign
+  drift found 2026-06-22:** `run_all.py` halts at step 01 because the `vessel raw`
+  catch-all drifted — 8 EXTRA importer snapshots under
+  `data/raw/backup_pathway_probe_20260621/` (Option D data, self-frozen, never
+  registered in `SHA256SUMS.vessel`) + 1 CHANGED free index
+  (`wto_hormuz_lng_outbound_index`, refreshed to 2026-06-01). **Core raw (9) and
+  interim (1) PASS; not a regression and not from the doc commits.** Fix = Codex
+  regenerate-then-refreeze (task P1 holds the recipe).
 - Foundation assets that Option D reuses (the AR/PortWatch pipeline is now the
   anchor, not the thesis): Hormuz AR shortfall; GFW importer exposure
   (`importer_exposure_summary.csv`); Gulf departures −93% cross-validation; donor-
