@@ -48,10 +48,11 @@ identification, variable spec, estimator hierarchy, falsification cascade).
 
 - Branch: `exploratory/corridor-transmission`. Last commit `bfe15ba`
   (2026-06-21): route_passages determinism fix + manifest re-freeze.
-- Test suite: **214 passed as last verified 2026-06-21**; 35 test files present
-  2026-06-22. Suite NOT re-run today → re-verify (task P1).
-- Reproducibility manifest: **94 artifact hashes as last verified 2026-06-21**;
-  re-verify (task P1).
+- Test suite: **214 passed, re-verified 2026-06-22** (`.venv`, Python 3.14.4,
+  pytest 8.4.2, 10.77s; 214 collected = 214 passed, 0 failed). 35 test files.
+- Reproducibility manifest: **94 artifact hashes as last verified 2026-06-21**.
+  Deterministic-pipeline reproduction NOT re-run today → remaining half of task
+  P1 (the suite half is done).
 - Foundation assets that Option D reuses (the AR/PortWatch pipeline is now the
   anchor, not the thesis): Hormuz AR shortfall; GFW importer exposure
   (`importer_exposure_summary.csv`); Gulf departures −93% cross-validation; donor-
