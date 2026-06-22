@@ -9,7 +9,7 @@ An importer requires an official monthly total series, an official by-source
 series for predetermined exposure, at least
 12 contiguous pre-treatment months, and
 at least 3 post-treatment months. The proposed
-panel requires at least 10 admitted importers. GFW is
+panel requires at least 15 admitted importers. GFW is
 a cross-validation source only; suppressed country-level Gulf estimates cannot
 replace missing official observations.
 
@@ -29,7 +29,7 @@ replace missing official observations.
 ## Decision
 
 **Admitted importers: 0 of the required
-10.** Current frozen public data do not admit the proposed confirmatory importer panel. Do not freeze or estimate the Option D model.
+15.** Current frozen public data do not admit the proposed confirmatory importer panel. Do not freeze or estimate the Option D model.
 
 The current evidence supports a descriptive EU27/Japan/India comparison, not a
 confirmatory cross-importer 2WFE model. Re-run this report after additional

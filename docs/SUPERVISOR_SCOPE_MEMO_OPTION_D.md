@@ -60,9 +60,9 @@ Before asking you to bless the design, I ran a by-source coverage probe against 
 frozen public data and applied an explicit admission rule: an importer needs an
 official monthly **total** series, an official **by-source** series (for the
 predetermined exposure measure), ≥12 contiguous pre-treatment months, and ≥3
-post-treatment months; the panel needs ≥10 such importers.
+post-treatment months; the panel needs ≥15 such importers.
 
-**Result: 0 of 10 importers currently clear the rule.** Specifically:
+**Result: 0 of 15 importers currently clear the rule.** Specifically:
 
 - **EU27** (Eurostat) and **Japan** (Comtrade) have the by-source series but only
   2 and 1 post-shock months respectively — partly a *timing* problem, since the

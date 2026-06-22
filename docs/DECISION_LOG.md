@@ -39,7 +39,7 @@ Each entry: **date · decision · decision-maker · rationale · affected files 
 - **Decision-maker:** Determined by the coverage audit; recorded by Mher.
 - **Decision:** Do not freeze or estimate the Option D confirmatory panel on
   currently frozen public data. Pursue V-layer sourcing first.
-- **Rationale:** 0 of the required 10 importers clear the admission rule (official
+- **Rationale:** 0 of the required 15 importers clear the admission rule (official
   monthly total + official by-source series + ≥12 contiguous pre-months + ≥3 post
   months). EU27/Japan fail on post-months (data-lag), India is total-only,
   KR/CN/TW/PK/Bangladesh have no frozen official source.
