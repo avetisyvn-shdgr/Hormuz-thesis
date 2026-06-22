@@ -1,0 +1,10 @@
+{
+  "admitted_importer_count": 0,
+  "admitted_importers": [],
+  "interpretation": "Current frozen public data do not admit the proposed confirmatory importer panel. Do not freeze or estimate the Option D model.",
+  "minimum_contiguous_pre_months": 12,
+  "minimum_importers": 10,
+  "minimum_post_months": 3,
+  "status": "no_go",
+  "treatment_month": "2026-03"
+}
