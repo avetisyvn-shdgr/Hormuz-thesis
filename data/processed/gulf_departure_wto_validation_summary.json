@@ -7,7 +7,7 @@
       "gfw_departure_calls": 12,
       "gfw_nominal_departure_capacity_m3": 1840700.0,
       "gfw_nonzero_departure_days": 10,
-      "wto_mean_outbound_volume_index": 1.38135626009765,
+      "wto_mean_outbound_volume_index": 1.7401181888132047,
       "wto_nonzero_days": 4
     },
     "pre": {
@@ -15,7 +15,7 @@
       "gfw_departure_calls": 171,
       "gfw_nominal_departure_capacity_m3": 25518800.0,
       "gfw_nonzero_departure_days": 79,
-      "wto_mean_outbound_volume_index": 101.7763069492384,
+      "wto_mean_outbound_volume_index": 101.5293901683349,
       "wto_nonzero_days": 92
     }
   },
@@ -48,12 +48,12 @@
   "pre_post_changes": {
     "gfw_departure_calls_percent_change": -92.98245614035088,
     "gfw_nominal_capacity_percent_change": -92.78688653071461,
-    "wto_mean_index_percent_change": -98.64275261944157
+    "wto_mean_index_percent_change": -98.28609411922193
   },
   "scaling_or_calibration_applied": false,
   "zero_lag_correlations": [
     {
-      "correlation": 0.18254548828200684,
+      "correlation": 0.22547822582921564,
       "frequency": "daily",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_departure_calls",
@@ -62,7 +62,7 @@
       "sample_period": "post"
     },
     {
-      "correlation": 0.2615192906071259,
+      "correlation": 0.2650742218624237,
       "frequency": "daily",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_departure_calls",
@@ -71,7 +71,7 @@
       "sample_period": "post"
     },
     {
-      "correlation": 0.20430051486171208,
+      "correlation": 0.25631492030020625,
       "frequency": "daily",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_nominal_departure_capacity_m3",
@@ -80,7 +80,7 @@
       "sample_period": "post"
     },
     {
-      "correlation": 0.26863832388216724,
+      "correlation": 0.27238281553564764,
       "frequency": "daily",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_nominal_departure_capacity_m3",
@@ -89,7 +89,7 @@
       "sample_period": "post"
     },
     {
-      "correlation": 0.4244996964017415,
+      "correlation": 0.42449969640174157,
       "frequency": "daily",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_departure_calls",
@@ -107,7 +107,7 @@
       "sample_period": "pre"
     },
     {
-      "correlation": 0.43235044831724107,
+      "correlation": 0.4323504483172412,
       "frequency": "daily",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_nominal_departure_capacity_m3",
@@ -125,7 +125,7 @@
       "sample_period": "pre"
     },
     {
-      "correlation": 0.40764999034646565,
+      "correlation": 0.47070846279542294,
       "frequency": "complete_7d_bins",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_departure_calls",
@@ -143,7 +143,7 @@
       "sample_period": "post"
     },
     {
-      "correlation": 0.40872200382071133,
+      "correlation": 0.4710893929840129,
       "frequency": "complete_7d_bins",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_nominal_departure_capacity_m3",
@@ -161,7 +161,7 @@
       "sample_period": "post"
     },
     {
-      "correlation": 0.43971953160438665,
+      "correlation": 0.4397195316043869,
       "frequency": "complete_7d_bins",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_departure_calls",
@@ -179,7 +179,7 @@
       "sample_period": "pre"
     },
     {
-      "correlation": 0.46322347859490876,
+      "correlation": 0.46322347859490903,
       "frequency": "complete_7d_bins",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_nominal_departure_capacity_m3",

@@ -75,7 +75,7 @@ paths:
 # post-period is deliberately short (the proposal warns about overfitting here).
 study_window:
   full_start: "2022-01-01"     # generous pre-history for baselines/seasonality
-  full_end:   "2026-06-01"
+  full_end:   "2026-07-07"   # v2 extension: PortWatch max 2026-07-12 minus 5-day buffer (v1 primary window ended 2026-06-01)
   # Locked pre-treatment boundary for the working throughput estimand.
   # Training uses dates strictly before this date and post scoring includes it.
   # This is the operational onset, not a claim that every legal, military, and

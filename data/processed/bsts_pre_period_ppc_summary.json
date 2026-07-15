@@ -1,8 +1,8 @@
 {
-  "bayesian_p_max": 0.8226666666666667,
-  "bayesian_p_mean": 0.9746666666666667,
-  "bayesian_p_sd": 0.4653333333333333,
+  "bayesian_p_max": 0.672,
+  "bayesian_p_mean": 0.9693333333333334,
+  "bayesian_p_sd": 0.6906666666666667,
   "n_pre_days": 1519,
-  "pointwise_95_coverage": 0.9651086240947993,
-  "posterior_median_rmse": 7.45881632865181
+  "pointwise_95_coverage": 0.9710335747202107,
+  "posterior_median_rmse": 10.342900312048751
 }

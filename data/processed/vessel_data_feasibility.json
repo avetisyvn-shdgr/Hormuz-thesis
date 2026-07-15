@@ -297,7 +297,7 @@
       "missing_columns": [],
       "path": "data/raw/portwatch/Daily_Chokepoints_Data.csv",
       "present": true,
-      "rows": 76020,
+      "rows": 77000,
       "schema_valid": true
     },
     "wto_lng_outbound_index": {
@@ -305,11 +305,11 @@
         "voy_load_date",
         "voy_intake_index"
       ],
-      "end": "2026-06-18",
+      "end": "2026-07-15",
       "missing_columns": [],
       "path": "data/raw/wto_hormuz/voy_intake_index_lng_export.csv",
       "present": true,
-      "rows": 534,
+      "rows": 561,
       "schema_valid": true,
       "start": "2025-01-01"
     }

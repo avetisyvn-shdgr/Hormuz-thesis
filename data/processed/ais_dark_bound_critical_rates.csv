@@ -1,5 +1,5 @@
 model,target,reference_reduction,critical_dark_rate,exceeds_total_blackout,feasible
-ar_lag1_7,hormuz_tanker_transits,0.5,0.9086893308546956,False,True
-ar_lag1_7,hormuz_tanker_transits,0.75,0.8173786617093912,False,True
-ar_lag1_7,hormuz_tanker_transits,0.9,0.5434466542734779,False,True
-ar_lag1_7,hormuz_tanker_transits,0.95,0.08689330854695687,False,True
+ar_lag1_7,hormuz_tanker_transits,0.5,0.8569882980295841,False,True
+ar_lag1_7,hormuz_tanker_transits,0.75,0.7139765960591682,False,True
+ar_lag1_7,hormuz_tanker_transits,0.9,0.28494149014792036,False,True
+ar_lag1_7,hormuz_tanker_transits,0.95,0.0,False,False

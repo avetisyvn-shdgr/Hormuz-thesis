@@ -1,2 +1,2 @@
 actual_post_pre_rmspe_ratio,n_requested_donor_time_placebos,n_computed_donor_time_placebos,n_independent_time_windows,n_placebo_units,donor_time_placebo_p_value,donor_time_ratio_p95,actual_to_donor_time_p95_ratio
-4.765577811175608,198,198,9,22,0.005025125628140704,1.362876562131668,3.496705383003867
+3.2535343762431035,154,154,7,22,0.0064516129032258064,1.4392496550784049,2.260576797613242

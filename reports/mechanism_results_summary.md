@@ -4,7 +4,7 @@
 
 ## Evidence chain
 
-1. The independent WTO/AXSMarine LNG outbound index falls **98.6%**.
+1. The independent WTO/AXSMarine LNG outbound index falls **98.3%**.
 2. Inferred Qatar/UAE departure calls fall **93.0%**, providing independent directional agreement.
 3. At the 30 km terminal radius with expanded route QA, routed voyages fall **23.4%**, while mean capacity-distance per voyage rises **10.2%** (carrier-cluster BCa 95% interval **4.4% to 17.0%**; percentile comparison **4.1% to 16.7%**).
 4. At 15 knots, mean modeled sailing days per voyage rise **8.1%**, equivalent to **656 descriptive excess post sailing days** versus the pre mean.

@@ -1,4 +1,4 @@
 model,target,scheme,n_independent_placebo_blocks,placebo_p_value_greater,placebo_p_value_floor,actual_to_placebo_p95_ratio,point_effect,interval_lower,interval_upper,nominal_coverage,radius,n_calibration_blocks,order_statistic_rank,finite_interval_supported,maximum_finite_coverage
-ar_lag1_7,hormuz_tanker_transits,non_overlapping_horizon_block_rank,9,0.1,0.1,6.293838119022757,5121.295139292581,4703.7021612278695,5538.888117357292,0.8,417.59297806471153,9,8,True,0.9
-ar_lag1_7,hormuz_tanker_transits,non_overlapping_horizon_block_rank,9,0.1,0.1,6.293838119022757,5121.295139292581,4016.956659927448,6225.633618657714,0.9,1104.3384793651326,9,9,True,0.9
-ar_lag1_7,hormuz_tanker_transits,non_overlapping_horizon_block_rank,9,0.1,0.1,6.293838119022757,5121.295139292581,-inf,inf,0.95,inf,9,10,False,0.9
+ar_lag1_7,hormuz_tanker_transits,non_overlapping_horizon_block_rank,7,0.125,0.125,4.16100974067717,6868.996006081118,5198.82465987997,8539.167352282268,0.8,1670.1713462011485,7,7,True,0.875
+ar_lag1_7,hormuz_tanker_transits,non_overlapping_horizon_block_rank,7,0.125,0.125,4.16100974067717,6868.996006081118,-inf,inf,0.9,inf,7,8,False,0.875
+ar_lag1_7,hormuz_tanker_transits,non_overlapping_horizon_block_rank,7,0.125,0.125,4.16100974067717,6868.996006081118,-inf,inf,0.95,inf,7,8,False,0.875
