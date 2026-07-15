@@ -185,12 +185,17 @@ def core_raw_hashes(root: Path) -> dict[str, str]:
 
 def vessel_raw_hashes(root: Path) -> dict[str, str]:
     """Hashes of vessel-branch raw inputs: everything under data/raw that is not a
-    core input or a transient download archive (.zip)."""
+    core input or a transient download archive (.zip). OS junk files (.DS_Store,
+    Finder metadata) are excluded: macOS recreates them on browse, they carry no
+    data, and they must never break the input-hash gate."""
     core = set(CORE_RAW_INPUTS)
     return {
         rel: digest
         for rel, digest in raw_hashes(root).items()
-        if rel not in core and not rel.endswith(".zip")
+        if rel not in core
+        and not rel.endswith(".zip")
+        and Path(rel).name != ".DS_Store"
+        and not Path(rel).name.startswith("._")
     }
 
 
