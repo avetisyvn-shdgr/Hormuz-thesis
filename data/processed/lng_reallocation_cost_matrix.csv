@@ -1,0 +1,58 @@
+source_project_id,source_terminal_name,source_country,destination_basin,route_nm,route_cost_note
+T100000130212,Calcasieu Pass LNG Terminal,United States,Atlantic,1473.1379794773543,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130212,Calcasieu Pass LNG Terminal,United States,Middle East,6727.373059625707,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130212,Calcasieu Pass LNG Terminal,United States,Pacific,4174.912912489382,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130214,Cameron LNG Terminal,United States,Atlantic,1496.1606324644924,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130214,Cameron LNG Terminal,United States,Middle East,6750.395712612845,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130214,Cameron LNG Terminal,United States,Pacific,4197.9355654765195,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130216,Corpus Christi LNG Terminal,United States,Atlantic,1565.6901741789752,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130216,Corpus Christi LNG Terminal,United States,Middle East,6880.517279506708,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130216,Corpus Christi LNG Terminal,United States,Pacific,4267.465107191002,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130217,Cove Point LNG Terminal,United States,Atlantic,3258.411541560501,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130217,Cove Point LNG Terminal,United States,Middle East,5476.316549688158,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130217,Cove Point LNG Terminal,United States,Pacific,8496.07003176597,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130221,Elba Island LNG Terminal,United States,Atlantic,1840.5051401545863,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130224,Freeport LNG Terminal,United States,Atlantic,1247.2655558699364,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130224,Freeport LNG Terminal,United States,Middle East,6813.958491151054,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130224,Freeport LNG Terminal,United States,Pacific,9491.850398681208,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130240,Sabine Pass LNG Terminal,United States,Atlantic,1489.181089703437,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130240,Sabine Pass LNG Terminal,United States,Middle East,6743.41616985179,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130240,Sabine Pass LNG Terminal,United States,Pacific,4190.956022715463,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130242,Plaquemines LNG Terminal,United States,Atlantic,1377.4798578827551,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130242,Plaquemines LNG Terminal,United States,Middle East,6565.896658499696,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130242,Plaquemines LNG Terminal,United States,Pacific,9585.650140577503,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130243,Arzew-Bethioua LNG Terminal,Algeria,Atlantic,182.22542175214951,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130243,Arzew-Bethioua LNG Terminal,Algeria,Pacific,9569.988966245748,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130245,Angola LNG Terminal,Angola,Atlantic,3815.793595535393,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130245,Angola LNG Terminal,Angola,Pacific,6352.723857961249,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130247,Cameroon FLNG Terminal,Cameroon,Atlantic,4550.180537426184,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130247,Cameroon FLNG Terminal,Cameroon,Pacific,7307.759963387214,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130249,Damietta SEGAS LNG Terminal,Egypt,Atlantic,1556.7864469927003,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130252,Punta Europa LNG Terminal,Equatorial Guinea,Atlantic,4211.890503305674,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130252,Punta Europa LNG Terminal,Equatorial Guinea,Middle East,5542.7386024193465,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130252,Punta Europa LNG Terminal,Equatorial Guinea,Pacific,7264.089524091521,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130259,Nigeria LNG Terminal,Nigeria,Atlantic,3397.8439170059655,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130259,Nigeria LNG Terminal,Nigeria,Middle East,7747.441104174801,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130259,Nigeria LNG Terminal,Nigeria,Pacific,7019.533469075512,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130273,Brunei LNG Terminal,Brunei,Pacific,793.3589898111143,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130278,Bontang LNG Terminal,Indonesia,Pacific,935.006844134126,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130292,Dua Malaysia LNG Terminal,Malaysia,Pacific,906.2395420591076,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130294,Satu Malaysia Terminal,Malaysia,Pacific,607.4663065890173,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130304,Papua New Guinea LNG Terminal,Papua New Guinea,Pacific,3020.5455442237994,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130333,Gladstone LNG Terminal,Australia,Pacific,3213.962734756763,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130334,Gorgon LNG Terminal,Australia,Pacific,1865.2167543207097,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130337,North West Shelf LNG Terminal,Australia,Pacific,1712.0318808957245,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130344,Wheatstone LNG Terminal,Australia,Pacific,1912.4611352361824,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130358,LNG Canada Terminal,Canada,Pacific,3915.4110503725433,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130494,Hammerfest LNG Snohvit Terminal,Norway,Atlantic,1382.7887687941382,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130494,Hammerfest LNG Snohvit Terminal,Norway,Middle East,4676.583846141436,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130494,Hammerfest LNG Snohvit Terminal,Norway,Pacific,7696.337328219248,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130512,Sakhalin II LNG Terminal,Russia,Pacific,655.361445059239,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130518,Yamal LNG Terminal,Russia,Atlantic,2612.1212961280385,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130576,Peru LNG Terminal,Peru,Atlantic,6385.0391695191365,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130576,Peru LNG Terminal,Peru,Pacific,1267.2378506044,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130579,Atlantic LNG Terminal,Trinidad and Tobago,Atlantic,965.2491457154084,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130579,Atlantic LNG Terminal,Trinidad and Tobago,Middle East,5521.032778865704,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130579,Atlantic LNG Terminal,Trinidad and Tobago,Pacific,2118.855560565626,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130593,Oman Qalhat LNG Terminal,Oman,Middle East,853.6807651660275,minimum expanded-accepted terminal route to any observed basin terminal
+T100000130593,Oman Qalhat LNG Terminal,Oman,Pacific,645.7547214715499,minimum expanded-accepted terminal route to any observed basin terminal

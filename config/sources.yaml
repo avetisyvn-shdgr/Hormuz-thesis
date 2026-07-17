@@ -20,6 +20,8 @@
 #   energy      - energy-price confounder set
 #   route       - route-capacity / chokepoint covariate
 #   mechanism   - operational ton-mile mechanism proxy
+#   importer    - importer-side LNG outcome series (Option D / propagation
+#                 finding; monthly national-customs by-origin data)
 # =====================================================================
 
 variables:
@@ -160,6 +162,108 @@ variables:
       provider: wto_hormuz
       code: "lng_outbound_volume_index"
       license: "WTO Strait of Hormuz Trade Tracker; underlying voyage intelligence by AXSMarine"
+
+  # ---- IMPORTER: monthly national-customs LNG imports by origin ----
+  # V-layer snapshots captured 2026-07-17 (see data/raw/importer_customs/
+  # originals/README.md for capture provenance). Values are metric tonnes
+  # except India, which is value-basis because public quantity is unavailable.
+  # `gulf` = Hormuz-dependent exporter set of the captivity design doc 6.3
+  # (Qatar, UAE, Kuwait, Iraq, Saudi Arabia, Bahrain, Iran; Oman EXCLUDED —
+  # Qalhat/Sur loads outside the Strait). Japan was upgraded on 2026-07-17
+  # from the earlier UN Comtrade fallback to source-native Japan Customs/e-Stat
+  # monthly HS 271111000 data.
+  korea_lng_import_total:
+    role: importer
+    description: "Korea monthly LNG imports, all origins (KCS, HS 2711110000, tonnes)."
+    status: free
+    primary:
+      provider: importer_customs
+      code: "kr:total"
+      license: "Korea Open Government Data (tradedata.go.kr)"
+
+  korea_lng_import_gulf:
+    role: importer
+    description: "Korea monthly LNG imports from Hormuz-dependent exporters (tonnes)."
+    status: free
+    primary:
+      provider: importer_customs
+      code: "kr:gulf"
+      license: "Korea Open Government Data (tradedata.go.kr)"
+
+  taiwan_lng_import_total:
+    role: importer
+    description: "Taiwan monthly LNG imports, all origins (MOF Customs, HS 271111, tonnes)."
+    status: free
+    primary:
+      provider: importer_customs
+      code: "tw:total"
+      license: "Taiwan Open Government Data License (portal.sw.nat.gov.tw)"
+
+  taiwan_lng_import_gulf:
+    role: importer
+    description: "Taiwan monthly LNG imports from Hormuz-dependent exporters (tonnes)."
+    status: free
+    primary:
+      provider: importer_customs
+      code: "tw:gulf"
+      license: "Taiwan Open Government Data License (portal.sw.nat.gov.tw)"
+
+  china_lng_import_total:
+    role: importer
+    description: "China monthly LNG imports, all origins (GACC, HS 27111100, tonnes)."
+    status: free
+    primary:
+      provider: importer_customs
+      code: "cn:total"
+      license: "GACC public customs statistics (stats.customs.gov.cn)"
+
+  china_lng_import_gulf:
+    role: importer
+    description: "China monthly LNG imports from Hormuz-dependent exporters (tonnes)."
+    status: free
+    primary:
+      provider: importer_customs
+      code: "cn:gulf"
+      license: "GACC public customs statistics (stats.customs.gov.cn)"
+
+  # India is VALUE-basis (thousand USD): Tradestat's HS-6 monthly Quantity
+  # field is unpopulated/zero (verified 2026-07-17). Its Gulf share embeds
+  # origin price differentials — flag this wherever the share is reported.
+  india_lng_import_total:
+    role: importer
+    description: "India monthly LNG imports, all origins (DGCI&S Tradestat, HS 271111, thousand USD)."
+    status: free
+    primary:
+      provider: importer_customs
+      code: "in:total"
+      license: "Government of India open data (tradestat.commerce.gov.in)"
+
+  india_lng_import_gulf:
+    role: importer
+    description: "India monthly LNG imports from Hormuz-dependent exporters (thousand USD)."
+    status: free
+    primary:
+      provider: importer_customs
+      code: "in:gulf"
+      license: "Government of India open data (tradestat.commerce.gov.in)"
+
+  japan_lng_import_total:
+    role: importer
+    description: "Japan monthly LNG imports, all origins (Trade Statistics of Japan/e-Stat, HS 271111000, tonnes)."
+    status: free
+    primary:
+      provider: importer_customs
+      code: "jp:total"
+      license: "Trade Statistics of Japan / e-Stat public statistics portal"
+
+  japan_lng_import_gulf:
+    role: importer
+    description: "Japan monthly LNG imports from Hormuz-dependent exporters (tonnes)."
+    status: free
+    primary:
+      provider: importer_customs
+      code: "jp:gulf"
+      license: "Trade Statistics of Japan / e-Stat public statistics portal"
 
   # ---- MECHANISM: ton-mile / fleet-vacuum operational proxies ----
   # The proposal's PRIMARY mechanism proxy is AIS-derived laden ton-miles

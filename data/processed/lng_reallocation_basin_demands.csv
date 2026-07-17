@@ -1,0 +1,3 @@
+destination_basin,pre_hormuz_exposed_capacity_m3,post_hormuz_exposed_capacity_m3,lost_hormuz_capacity_m3,lost_hormuz_k_m3,baseline_hormuz_route_nm,baseline_route_note
+Atlantic,1166300.0,0.0,1166300.0,1166.3,5872.15706573518,pre_hormuz_exposed_weighted_route
+Pacific,20532400.0,273300.0,20259100.0,20259.1,3399.2759120320325,pre_hormuz_exposed_weighted_route

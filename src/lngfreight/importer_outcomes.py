@@ -2,14 +2,21 @@
 
 Builds the pre-registered outcomes from the *frozen, hash-verified* coverage-probe
 snapshots only. No network access: provenance is the snapshot SHA-256 recorded per
-series. A live `registry.get_variable()` path is intentionally NOT used here because
-no Comtrade/Eurostat/PPAC provider exists yet (`src/lngfreight/sources/`); wiring
-those providers is a separate V-layer task. Building on the frozen snapshot keeps
-this deterministic and consistent with the `--frozen-raw` pipeline.
+series. Building on frozen snapshots keeps this deterministic and consistent with
+the `--frozen-raw` pipeline.
+
+2026-07-17 extension (V-layer increment): the national-customs by-origin
+snapshots (Korea, Taiwan, China, India, Japan — served by the `importer_customs`
+provider registered in config/sources.yaml) can be ADDED to the frame by
+passing `customs_dir`. The original probe-only behaviour (Comtrade Japan + EU27) is
+unchanged when `customs_dir` is None, preserving the V2 increment-1 output
+byte-for-byte. India is VALUE-basis (kUSD): Tradestat's HS-6 monthly quantity
+field is unpopulated, so its Gulf share embeds origin price differentials —
+carry that caveat wherever the India share is reported.
 
 Scope honesty (mirrors the V1 NO_GO finding):
-- Only by-source units carry the Gulf outcome: Japan (Comtrade) and EU27 (Eurostat).
-- India (PPAC) is total-volume only and is added in a later increment (Y2 only).
+- The confirmatory panel admission rule is still not met (15 importers); these
+  outcomes remain DESCRIPTIVE grade.
 - Y4 (composite vulnerability) is DEFERRED: its storage-drawdown and delay
   components are unsourced ([VERIFY]); they are not fabricated here.
 
@@ -18,14 +25,31 @@ is Y1 because the estimand names it, not because of any fitted result.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
 import pandas as pd
 
-from .importer_coverage import _jsonstat_frame, verify_probe_manifest
+from .importer_coverage import _jsonstat_frame, sha256_file, verify_probe_manifest
+from .sources.importer_customs import (
+    GULF_BY_UNIT,
+    MEASURE_BY_UNIT,
+    SNAPSHOT_FILES,
+    SOURCE_LABELS,
+    load_by_origin,
+)
 
 TREATMENT_MONTH = "2026-03"
+
+#: Presentation metadata for the customs units (keys = provider unit codes).
+CUSTOMS_UNITS: dict[str, dict[str, str]] = {
+    "kr": {"unit": "Korea", "unit_of_measure": "t"},
+    "tw": {"unit": "Taiwan", "unit_of_measure": "t"},
+    "cn": {"unit": "China", "unit_of_measure": "t"},
+    "in": {"unit": "India", "unit_of_measure": "kUSD"},
+    "jp": {"unit": "Japan", "unit_of_measure": "t"},
+}
 
 # Hormuz-dependent LNG exporters (design doc 6.3). Oman is deliberately EXCLUDED:
 # Omani LNG ships from Sur on the Gulf of Oman, outside the Strait of Hormuz, so it
@@ -166,18 +190,69 @@ def eu27_outcomes(path: Path, snapshot_sha256: str) -> list[dict]:
     )
 
 
-def build_outcomes(probe_dir: Path) -> pd.DataFrame:
-    """Assemble the long-format outcome frame from the verified frozen snapshots."""
+def customs_outcomes(unit_key: str, customs_dir: Path) -> list[dict]:
+    """Y1-Y3 for one national-customs unit from its frozen by-origin snapshot.
+
+    Reuses the provider's loader (schema + Gulf-mapping guards) and measure
+    choice, so the outcome frame and the registry serve identical numbers."""
+    frame = load_by_origin(unit_key, base_dir=customs_dir)
+    snapshot = customs_dir / SNAPSHOT_FILES[unit_key]
+    sha = hashlib.sha256(snapshot.read_bytes()).hexdigest()
+    measure = MEASURE_BY_UNIT[unit_key]
+    gulf_set = GULF_BY_UNIT[unit_key]
+    grouped = frame.groupby("period")[measure].sum()
+    gulf_grouped = (
+        frame[frame["country"].isin(gulf_set)].groupby("period")[measure].sum()
+    )
+    monthly_total = {m: float(v) for m, v in grouped.items()}
+    monthly_gulf = {
+        m: float(v) for m, v in gulf_grouped.items() if m in monthly_total
+    }
+    meta = CUSTOMS_UNITS[unit_key]
+    return _outcome_rows(
+        unit=meta["unit"],
+        unit_type="importer",
+        source=SOURCE_LABELS[unit_key],
+        unit_of_measure=meta["unit_of_measure"],
+        snapshot_sha256=sha,
+        monthly_total=monthly_total,
+        monthly_gulf=monthly_gulf,
+    )
+
+
+def build_outcomes(
+    probe_dir: Path,
+    customs_dir: Path | None = None,
+    eurostat_path: Path | None = None,
+) -> pd.DataFrame:
+    """Assemble the long-format outcome frame from the verified frozen snapshots.
+
+    With `customs_dir=None` this reproduces the V2 increment-1 frame exactly
+    (Comtrade Japan + EU27). Passing the importer-customs snapshot directory
+    upgrades Japan to source-native e-Stat/Japan Customs and appends Korea,
+    Taiwan, China and India."""
     hashes = verify_probe_manifest(probe_dir)
     rows: list[dict] = []
-    rows += japan_outcomes(
-        probe_dir / "comtrade_japan_lng271111_bypartner.json",
-        hashes["comtrade_japan_lng271111_bypartner.json"],
+    if customs_dir is None:
+        rows += japan_outcomes(
+            probe_dir / "comtrade_japan_lng271111_bypartner.json",
+            hashes["comtrade_japan_lng271111_bypartner.json"],
+        )
+    eu_path = eurostat_path or (
+        probe_dir / "eurostat_nrg_ti_gasm_lng_eu27_by_partner.json"
+    )
+    eu_sha = (
+        sha256_file(eu_path)
+        if eurostat_path is not None
+        else hashes["eurostat_nrg_ti_gasm_lng_eu27_by_partner.json"]
     )
     rows += eu27_outcomes(
-        probe_dir / "eurostat_nrg_ti_gasm_lng_eu27_by_partner.json",
-        hashes["eurostat_nrg_ti_gasm_lng_eu27_by_partner.json"],
+        eu_path,
+        eu_sha,
     )
+    if customs_dir is not None:
+        for unit_key in CUSTOMS_UNITS:
+            rows += customs_outcomes(unit_key, customs_dir)
     frame = pd.DataFrame(rows, columns=FRAME_COLUMNS)
     return frame.sort_values(["unit", "outcome", "month"]).reset_index(drop=True)
 
@@ -199,7 +274,10 @@ def outcomes_summary(frame: pd.DataFrame) -> dict[str, object]:
         "treatment_month": TREATMENT_MONTH,
         "row_count": int(len(frame)),
         "interpretation": (
-            "Descriptive-grade outcomes for the by-source units only (Japan, EU27). "
-            "Not an admissible confirmatory panel -- see the V1 NO_GO coverage report."
+            "Descriptive-grade outcomes for the by-source units "
+            f"({', '.join(sorted(frame['unit'].unique()))}). "
+            "Not an admissible confirmatory panel -- see the V1 NO_GO coverage "
+            "report. India is value-basis (kUSD): its Gulf share embeds origin "
+            "price differentials."
         ),
     }

@@ -13,7 +13,13 @@ from lngfreight.importer_outcomes import build_outcomes, outcomes_summary  # noq
 
 def main() -> None:
     probe_dir = config.path("data_raw") / "backup_pathway_probe_20260621"
-    frame = build_outcomes(probe_dir)
+    customs_dir = config.path("importer_customs_dir")
+    eurostat_path = config.ROOT / config.settings()["paths"][
+        "eurostat_lng_eu27_by_partner_json"
+    ]
+    frame = build_outcomes(
+        probe_dir, customs_dir=customs_dir, eurostat_path=eurostat_path
+    )
     summary = outcomes_summary(frame)
 
     frame_path = config.path("data_processed") / "importer_outcomes.csv"

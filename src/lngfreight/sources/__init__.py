@@ -5,6 +5,7 @@ from __future__ import annotations
 from .base import BaseSource
 from .eia import EIASource
 from .fred import FREDSource
+from .importer_customs import ImporterCustomsSource
 from .portwatch import PortWatchSource
 from .spark import SparkSource
 from .wto_hormuz import WTOHormuzLNGSource
@@ -21,6 +22,8 @@ _PROVIDERS: dict[str, type[BaseSource] | None] = {
     # it requires OAuth2 credentials and fails loudly without them.
     "spark": SparkSource,
     "wto_hormuz": WTOHormuzLNGSource,
+    # V-layer national customs snapshots (Korea/Taiwan/China/India by-origin).
+    "importer_customs": ImporterCustomsSource,
     # not yet wired / require paid access (no verified free historical feed):
     "ice_settlement": None,
     "eex_settlement": None,

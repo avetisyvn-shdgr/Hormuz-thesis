@@ -15,10 +15,10 @@ Decisions (documented 2026-06, step 3 of the data-foundation phase):
    downstream. This keeps the missingness map meaningful and avoids
    smuggling forward-fill (and its leakage discussions) into the data layer.
 
-3. FREE-ONLY by default. Only registry variables with status free/primary
-   are included unless `allow_proxies=True`; proxy-resolved columns are
-   renamed `<name>__proxy` so they can never masquerade as the real series
-   (CLAUDE.md rule 8).
+3. DAILY-PANEL scope by default. Only registry variables with status
+   free/primary and a daily modeling role are included. Descriptive monthly
+   outputs (for example role=importer customs outcomes) remain registry
+   variables but are not part of the PortWatch daily panel.
 """
 from __future__ import annotations
 
@@ -32,9 +32,13 @@ from .registry import get_variable, _resolve_entry
 
 
 def free_variables() -> list[str]:
-    """Registry variables whose primary backend is genuinely free."""
-    return [n for n, s in config.registry().items()
-            if s.get("status") in ("free", "primary")]
+    """Free/primary registry variables eligible for the daily modeling panel."""
+    daily_roles = {"target", "energy", "route", "mechanism"}
+    return [
+        n for n, s in config.registry().items()
+        if s.get("status") in ("free", "primary")
+        and s.get("role") in daily_roles
+    ]
 
 
 def build_panel(

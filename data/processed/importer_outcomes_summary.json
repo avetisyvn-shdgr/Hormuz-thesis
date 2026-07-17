@@ -1,8 +1,8 @@
 {
-  "interpretation": "Descriptive-grade outcomes for the by-source units only (Japan, EU27). Not an admissible confirmatory panel -- see the V1 NO_GO coverage report.",
+  "interpretation": "Descriptive-grade outcomes for the by-source units (China, EU27, India, Japan, Korea, Taiwan). Not an admissible confirmatory panel -- see the V1 NO_GO coverage report. India is value-basis (kUSD): its Gulf share embeds origin price differentials.",
   "month_range": [
     "2016-01",
-    "2026-04"
+    "2026-06"
   ],
   "outcomes_built": [
     "y1_gulf_share",
@@ -13,15 +13,23 @@
   "outcomes_deferred": [
     "y4_composite_vulnerability"
   ],
-  "row_count": 428,
+  "row_count": 980,
   "treatment_month": "2026-03",
   "units": [
+    "China",
     "EU27",
-    "Japan"
+    "India",
+    "Japan",
+    "Korea",
+    "Taiwan"
   ],
   "units_with_gulf_outcome": [
+    "China",
     "EU27",
-    "Japan"
+    "India",
+    "Japan",
+    "Korea",
+    "Taiwan"
   ],
   "y4_deferral_reason": "Composite vulnerability needs storage-drawdown and delay components that are unsourced ([VERIFY]); not fabricated."
 }

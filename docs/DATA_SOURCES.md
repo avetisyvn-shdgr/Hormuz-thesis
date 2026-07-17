@@ -92,6 +92,39 @@ locked working primary.
 
 ---
 
+## Importer customs source decision -- Japan upgrade, 2026-07-17
+
+Japan's importer-origin outcome is upgraded from the earlier UN Comtrade fallback
+to the source-native Trade Statistics of Japan / e-Stat feed. This is a
+methodological source upgrade under the free/proprietary honesty rule, not a
+silent proxy swap: both sources describe HS 271111 LNG imports by partner, but
+the e-Stat/Japan Customs snapshot is the national statistical source and extends
+the public post-onset window through May 2026 at the time of capture.
+
+Implementation consequence: `japan_lng_import_total` and
+`japan_lng_import_gulf` now use provider `importer_customs` with codes
+`jp:total` and `jp:gulf`. The canonical registry series is weight-basis
+(`weight_ton`). The source e-Stat files also include value in JPY thousand; that
+value is preserved in
+`data/raw/importer_customs/originals/jp_original_lng271111_with_jpy.csv` and is
+not relabeled as USD in the canonical snapshot. Oman remains explicitly excluded
+from the Gulf/Hormuz-dependent set because Qalhat/Sur load outside the Strait of
+Hormuz.
+
+The previous UN Comtrade Japan snapshot remains in
+`data/raw/backup_pathway_probe_20260621/` as provenance for the earlier coverage
+probe, but it is no longer the active Japan source when the importer-customs
+provider is used.
+
+## Refreshed EU27 snapshot, 2026-07-17
+
+EU27 remains an aggregate comparator, not an importer. The active Eurostat
+`nrg_ti_gasm` JSON-stat snapshot now points to the 2026-07-17 public capture in
+`data/raw/public_snapshots_20260717/eurostat/`. The returned time dimension runs
+through 2026-06, and the last month with any non-null partner value is 2026-05.
+
+---
+
 ## Registration / API-key requirements (flagged)
 
 | Source | Key needed? | Cost | Where |

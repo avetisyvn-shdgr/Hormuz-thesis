@@ -17,6 +17,13 @@ paths:
   # optional robustness outcome, not a replacement for the locked PortWatch
   # primary and not a freight-rate measure.
   wto_hormuz_lng_csv: "data/raw/wto_hormuz/voy_intake_index_lng_export.csv"
+  # National-customs LNG imports by origin (V-layer, captured 2026-07-17).
+  # Normalized snapshots written by scripts/ingest_importer_customs_snapshots.py;
+  # unmodified source downloads live in originals/ (see its README.md).
+  importer_customs_dir: "data/raw/importer_customs"
+  # Refreshed public Eurostat JSON-stat snapshot for EU27 LNG imports by
+  # partner, captured 2026-07-17. Last non-null month in the payload: 2026-05.
+  eurostat_lng_eu27_by_partner_json: "data/raw/public_snapshots_20260717/eurostat/eurostat_nrg_ti_gasm_lng_eu27_by_partner_20260717.json"
   # Optional GFW feasibility inputs. Raw files remain ignored by Git; the audit
   # records presence/schema only and never stores an API token.
   gfw_lng_vessel_benchmark_csv: "data/raw/gfw/lng_vessel_benchmark.csv"
@@ -55,6 +62,18 @@ paths:
   importer_exposure_summary_csv: "data/processed/importer_exposure_summary.csv"
   basin_exposure_summary_csv: "data/processed/basin_exposure_summary.csv"
   importer_basin_exposure_diagnostics_json: "data/processed/importer_basin_exposure_diagnostics.json"
+  lng_rewiring_network_csv: "data/processed/lng_rewiring_network.csv"
+  lng_rewiring_monthly_metrics_csv: "data/processed/lng_rewiring_monthly_metrics.csv"
+  lng_rewiring_summary_csv: "data/processed/lng_rewiring_summary.csv"
+  lng_rewiring_graph_metrics_csv: "data/processed/lng_rewiring_graph_metrics.csv"
+  lng_network_anomaly_monthly_csv: "data/processed/lng_network_anomaly_monthly.csv"
+  lng_network_anomaly_summary_csv: "data/processed/lng_network_anomaly_summary.csv"
+  lng_resilience_typology_csv: "data/processed/lng_resilience_typology.csv"
+  lng_reallocation_basin_demands_csv: "data/processed/lng_reallocation_basin_demands.csv"
+  lng_reallocation_supply_nodes_csv: "data/processed/lng_reallocation_supply_nodes.csv"
+  lng_reallocation_cost_matrix_csv: "data/processed/lng_reallocation_cost_matrix.csv"
+  lng_reallocation_solution_csv: "data/processed/lng_reallocation_solution.csv"
+  lng_reallocation_summary_csv: "data/processed/lng_reallocation_summary.csv"
   vessel_day_voyage_diagnostics_csv: "data/processed/vessel_day_voyage_diagnostics.csv"
   vessel_day_period_summary_csv: "data/processed/vessel_day_period_summary.csv"
   vessel_day_comparison_csv: "data/processed/vessel_day_comparison.csv"

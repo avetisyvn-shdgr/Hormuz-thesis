@@ -50,6 +50,10 @@ def test_free_variables_excludes_proxy_and_unavailable():
     # genuinely-free series are in:
     assert "henry_hub_spot" in free
     assert "hormuz_tanker_transits" in free
+    # descriptive monthly importer outcomes are registry-accessible but not
+    # part of the daily PortWatch modeling panel:
+    assert "korea_lng_import_total" not in free
+    assert "india_lng_import_gulf" not in free
     # proxy-status and unavailable series are NOT:
     assert "ttf_gas" not in free            # status: proxy
     assert "jkm_lng" not in free            # status: proxy
