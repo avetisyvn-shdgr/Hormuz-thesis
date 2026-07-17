@@ -77,6 +77,8 @@ ORCHESTRATED_ARTIFACTS = (
     "data/processed/lng_network_anomaly_monthly.csv",
     "data/processed/lng_network_anomaly_summary.csv",
     "data/processed/lng_resilience_typology.csv",
+    "data/processed/lng_rewiring_post_month_sensitivity.csv",
+    "data/processed/lng_typology_threshold_sensitivity.csv",
     "data/processed/lng_reallocation_basin_demands.csv",
     "data/processed/lng_reallocation_cost_matrix.csv",
     "data/processed/lng_reallocation_solution.csv",

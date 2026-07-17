@@ -66,6 +66,17 @@ def _markdown_table(rows: list[list[object]], headers: list[str]) -> list[str]:
     ]
 
 
+def _fmt_interval(lower: object, upper: object, digits: int = 1) -> str:
+    try:
+        lower_value = float(lower)
+        upper_value = float(upper)
+    except (TypeError, ValueError):
+        return "NA"
+    if not np.isfinite(lower_value) or not np.isfinite(upper_value):
+        return "unbounded (-inf to inf)"
+    return f"{_fmt(lower_value, digits)} to {_fmt(upper_value, digits)}"
+
+
 def _save_figure(fig: plt.Figure, name: str) -> Path:
     out = config.path("figures") / name
     fig.savefig(out, dpi=180, bbox_inches="tight")
@@ -128,8 +139,12 @@ def main() -> None:
             **residual,
             "point_shortfall": float(effect["actual_cumulative_throughput_loss"]),
             "mean_daily_shortfall": float(effect["actual_mean_daily_throughput_loss"]),
-            "interval_94d_lower": float(interval["interval_94dhorizon_lower"]),
-            "interval_94d_upper": float(interval["interval_94dhorizon_upper"]),
+            "interval_horizon_matched_lower": float(
+                interval["interval_horizon_matched_lower"]
+            ),
+            "interval_horizon_matched_upper": float(
+                interval["interval_horizon_matched_upper"]
+            ),
             "interval_circular_bootstrap_lower": float(
                 interval["interval_circular_bootstrap_lower"]
             ),
@@ -180,8 +195,8 @@ def main() -> None:
         "residual_acf_lag7": float(synth_pre_errors.autocorr(lag=7)),
         "point_shortfall": float(synth["cumulative_scaled_throughput_loss"] * scale),
         "mean_daily_shortfall": float(synth["mean_daily_scaled_throughput_loss"] * scale),
-        "interval_94d_lower": np.nan,
-        "interval_94d_upper": np.nan,
+        "interval_horizon_matched_lower": np.nan,
+        "interval_horizon_matched_upper": np.nan,
         "placebo_metric": "post_pre_rmspe_ratio",
         "placebo_reference_p95": float(synth["placebo_ratio_p95"]),
         "placebo_separation": float(synth["ratio_vs_placebo_p95"]),
@@ -201,8 +216,8 @@ def main() -> None:
         **bsts_residual,
         "point_shortfall": float(bsts["posterior_median_shortfall"]),
         "mean_daily_shortfall": float(bsts["posterior_median_shortfall"] / bsts["n_post_days"]),
-        "interval_94d_lower": float(bsts["lower_95"]),
-        "interval_94d_upper": float(bsts["upper_95"]),
+        "interval_horizon_matched_lower": float(bsts["lower_95"]),
+        "interval_horizon_matched_upper": float(bsts["upper_95"]),
         "placebo_metric": "not_run_for_bsts",
         "placebo_reference_p95": np.nan,
         "placebo_separation": np.nan,
@@ -292,7 +307,8 @@ def main() -> None:
         comparison_md.append([
             row["specification"], row["role"], _fmt(row["pre_mase"]),
             _fmt(row["pre_rmse"]), _fmt(row["point_shortfall"], 1),
-            _fmt(row["interval_94d_lower"], 1), _fmt(row["interval_94d_upper"], 1),
+            _fmt(row["interval_horizon_matched_lower"], 1),
+            _fmt(row["interval_horizon_matched_upper"], 1),
             _fmt(row["placebo_separation"]), _fmt(row["placebo_p_value"]),
         ])
 
@@ -300,9 +316,15 @@ def main() -> None:
         (capacity_diag["capacity_column"] == "hormuz_tanker_capacity")
         & (capacity_diag["period"] == "post")
     ].iloc[0]
-    conformal90 = block_conformal.loc[
-        np.isclose(block_conformal["nominal_coverage"], 0.90)
+    primary_long = long_intervals[
+        (long_intervals["model"] == spec.primary_estimator)
+        & (long_intervals["target"] == target)
     ].iloc[0]
+    primary_placebo = placebo_summary[
+        (placebo_summary["model"] == spec.primary_estimator)
+        & (placebo_summary["target"] == target)
+    ].iloc[0]
+    honest_rank = block_conformal.iloc[0]
     conformal95 = block_conformal.loc[
         np.isclose(block_conformal["nominal_coverage"], 0.95)
     ].iloc[0]
@@ -317,6 +339,84 @@ def main() -> None:
     lng_bsts = lng_summary.loc[
         lng_summary["model"] == "bsts_local_level_weekly"
     ].iloc[0]
+    placebo_floor_denominator = int(primary_placebo["n_placebos"]) + 1
+    block_floor_denominator = int(honest_rank["n_independent_placebo_blocks"]) + 1
+    horizon_calendar_days = int(primary_long["horizon_calendar_days"])
+    n_horizon_windows = int(primary_long["n_horizon_windows"])
+    n_effective_horizon_windows = int(primary_long["effective_non_overlapping_windows"])
+    n_overlapping_placebos = int(primary_placebo["n_placebos"])
+    approx_non_overlapping_placebos = int(
+        primary_placebo["approx_non_overlapping_placebos"]
+    )
+    n_independent_blocks = int(honest_rank["n_independent_placebo_blocks"])
+    layer1_inference_rows = [
+        [
+            "Horizon-matched 95% interval",
+            _fmt_interval(
+                primary_long["interval_horizon_matched_lower"],
+                primary_long["interval_horizon_matched_upper"],
+            ),
+            (
+                f"{horizon_calendar_days}-calendar-day horizon; "
+                f"{n_horizon_windows} placebo windows; "
+                f"{n_effective_horizon_windows} non-overlapping horizon windows"
+            ),
+            "`data/processed/long_horizon_intervals_summary.csv`",
+        ],
+        [
+            "14-day block-bootstrap band",
+            _fmt_interval(
+                primary_long["interval_circular_bootstrap_lower"],
+                primary_long["interval_circular_bootstrap_upper"],
+            ),
+            (
+                f"{int(primary_long['circular_bootstrap_block_length'])}-day "
+                f"circular blocks; {int(primary_long['circular_bootstrap_draws'])} "
+                "draws"
+            ),
+            "`data/processed/long_horizon_intervals_summary.csv`",
+        ],
+        [
+            "Temporal-placebo separation",
+            (
+                f"{primary_placebo['loss_vs_placebo_p95_ratio']:.3f}x; "
+                f"p={primary_placebo['p_loss_ge_actual']:.4f}"
+            ),
+            (
+                f"Floor-censored at 1/{placebo_floor_denominator}; "
+                f"{n_overlapping_placebos} overlapping placebo windows and "
+                f"about {approx_non_overlapping_placebos} non-overlapping "
+                "horizon windows"
+            ),
+            "`data/processed/placebo_time_summary.csv`",
+        ],
+        [
+            "Independent-block honest rank",
+            (
+                f"{honest_rank['actual_to_placebo_p95_ratio']:.3f}x; "
+                f"p={honest_rank['placebo_p_value_greater']:.3f}"
+            ),
+            (
+                f"{n_independent_blocks} disjoint "
+                f"blocks; floor 1/{block_floor_denominator}="
+                f"{honest_rank['placebo_p_value_floor']:.3f}"
+            ),
+            "`data/processed/block_conformal_summary.csv`",
+        ],
+        [
+            "95% conformal interval",
+            _fmt_interval(
+                conformal95["interval_lower"],
+                conformal95["interval_upper"],
+            ),
+            (
+                "Finite interval unsupported at 95%; maximum finite coverage "
+                f"{conformal95['maximum_finite_coverage']:.1%} with "
+                f"{int(conformal95['n_calibration_blocks'])} calibration blocks"
+            ),
+            "`data/processed/block_conformal_summary.csv`",
+        ],
+    ]
     lines = [
         "# End-to-End PortWatch Fallback Run",
         "",
@@ -331,12 +431,19 @@ def main() -> None:
         "## Headline AR-only result",
         "",
         f"- Point shortfall: **{primary['point_shortfall']:,.1f} tanker transits** ({primary['mean_daily_shortfall']:.2f}/day).",
-        f"- Horizon-matched 95% interval: **{primary['interval_94d_lower']:,.1f} to {primary['interval_94d_upper']:,.1f} transits**.",
+        f"- Horizon-matched 95% interval over **{horizon_calendar_days} calendar days**: **{primary['interval_horizon_matched_lower']:,.1f} to {primary['interval_horizon_matched_upper']:,.1f} transits**.",
         f"- Independent 14-day circular-block bootstrap band: **{primary['interval_circular_bootstrap_lower']:,.1f} to {primary['interval_circular_bootstrap_upper']:,.1f} transits**; narrower than the placebo-window band, so width is method-sensitive.",
         f"- Temporal-placebo p95: **{primary['placebo_reference_p95']:,.1f}**; separation: **{primary['placebo_separation']:.3f}x**.",
-        f"- One-sided placebo p-value: **{primary['placebo_p_value']:.6f}**, floor-censored with 36 overlapping / about 9 non-overlapping windows.",
+        f"- One-sided placebo p-value: **{primary['placebo_p_value']:.6f}**, floor-censored at 1/{placebo_floor_denominator} with {n_overlapping_placebos} overlapping and about {approx_non_overlapping_placebos} non-overlapping horizon windows.",
         f"- BSTS posterior median shortfall: **{bsts['posterior_median_shortfall']:,.1f}**; 95% posterior predictive interval: **{bsts['lower_95']:,.1f} to {bsts['upper_95']:,.1f}**.",
         f"- BSTS prior-grid median range: **{bsts['prior_sensitivity_median_shortfall_min']:,.1f} to {bsts['prior_sensitivity_median_shortfall_max']:,.1f}**; interval-envelope endpoints: **{bsts['prior_sensitivity_lower_endpoint_min']:,.1f} to {bsts['prior_sensitivity_upper_endpoint_max']:,.1f}**; pre-period PPC pointwise coverage: **{bsts['pre_period_ppc_pointwise_95_coverage']:.1%}**.",
+        "",
+        "## Layer-1 Inference Table",
+        "",
+        *_markdown_table(
+            layer1_inference_rows,
+            ["Inference layer", "Reported value", "Support / note", "Source artifact"],
+        ),
         "",
         "## Pre-treatment validation and residual fidelity",
         "",
@@ -351,20 +458,20 @@ def main() -> None:
         "",
         *_markdown_table(
             comparison_md,
-            ["Specification", "Role", "Pre MASE", "Pre RMSE", "Point shortfall", "94d lower", "94d upper", "Placebo separation", "p-value"],
+            ["Specification", "Role", "Pre MASE", "Pre RMSE", "Point shortfall", "Horizon lower", "Horizon upper", "Placebo separation", "p-value"],
         ),
         "",
         f"Full machine-readable table: [`data/processed/{COMPARISON}`](../data/processed/{COMPARISON})",
         "",
-        "Synthetic-control shortfall is converted from mean-scaled units to a transit-equivalent magnitude for comparison. Its placebo metric is the post/pre RMSPE ratio, not the temporal cumulative-shortfall distribution, and no 94-day interval is asserted for it.",
+        "Synthetic-control shortfall is converted from mean-scaled units to a transit-equivalent magnitude for comparison. Its placebo metric is the post/pre RMSPE ratio, not the temporal cumulative-shortfall distribution, and no horizon-matched interval is asserted for it.",
         "BSTS is an independent state-space corroboration. Its interval is posterior predictive conditional on the local-level model; it is not a causal posterior.",
         "",
         "## Independent-block inference",
         "",
-        f"- Disjoint 94-day placebo blocks: **{int(conformal90['n_independent_placebo_blocks'])}**; honest rank p-value: **{conformal90['placebo_p_value_greater']:.3f}** (floor **{conformal90['placebo_p_value_floor']:.3f}**).",
-        f"- Actual / independent-placebo p95 separation: **{conformal90['actual_to_placebo_p95_ratio']:.3f}x**.",
-        f"- 90% block-conformal interval: **{conformal90['interval_lower']:,.1f} to {conformal90['interval_upper']:,.1f}**.",
-        f"- 95% block-conformal interval: **unbounded**; nine independent blocks support at most **{conformal95['maximum_finite_coverage']:.0%}** finite-sample coverage.",
+        f"- Disjoint horizon-matched placebo blocks: **{n_independent_blocks}**; honest rank p-value: **{honest_rank['placebo_p_value_greater']:.3f}** (floor **{honest_rank['placebo_p_value_floor']:.3f}**).",
+        f"- Actual / independent-placebo p95 separation: **{honest_rank['actual_to_placebo_p95_ratio']:.3f}x**.",
+        f"- 95% block-conformal interval: **unbounded**; {int(conformal95['n_calibration_blocks'])} calibration blocks support at most **{conformal95['maximum_finite_coverage']:.0%}** finite-sample coverage.",
+        "- The same facts are reported side by side in the Layer-1 inference table above so conformal support is not treated as a footnote.",
         "",
         "## Synthetic-control corroboration",
         "",
@@ -379,12 +486,12 @@ def main() -> None:
         "## LNG-specific robustness outcome",
         "",
         "The public WTO/AXSMarine series is an LNG-only outbound shipment volume index (2025 average = 100) and excludes LPG. It is not a carrier count, physical volume, or freight rate.",
-        f"- AR 94-day index-point shortfall: **{lng_ar['cumulative_throughput_loss']:,.1f}**.",
+        f"- AR LNG-index shortfall over the current post window: **{lng_ar['cumulative_throughput_loss']:,.1f} index-points**.",
         f"- BSTS posterior median: **{lng_bsts['posterior_median_shortfall']:,.1f}**; 95% interval **{lng_bsts['lower_95']:,.1f} to {lng_bsts['upper_95']:,.1f}**.",
         "",
         "## Data-quality checks",
         "",
-        f"- Primary transit outcome has complete post-period coverage (94/94 days).",
+        f"- Primary transit outcome has complete post-period coverage ({int(primary_long['n_post_days'])}/{horizon_calendar_days} valid days).",
         f"- Capacity is a directional secondary, model-sensitive outcome. It has `{int(cap_post['missing_capacity'])}` masked post-period values; all `{int(cap_post['audit_confirmed_artifact_masks'])}` are audit-confirmed zero-capacity/positive-transit artifacts and `{int(cap_post['unexplained_missing_capacity'])}` are unexplained. Do not lean on its precise magnitude.",
         "",
         "## Figures",

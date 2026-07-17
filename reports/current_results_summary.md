@@ -17,16 +17,16 @@
 | AR-only working primary, transit count | 6,869 transits | 52.8/day | 0.028 | 2,124 | 3.2x |
 | Route-only ARX, transit count | 7,056 transits | 54.3/day | 0.028 | 2,171 | 3.3x |
 
-Information-set sensitivity: AR-only uses no observed post-treatment covariates and gives a 94-day interval of **5,430 to 8,089 transits**. Its close agreement with route ARX indicates that contemporaneous Panama controls are not driving the estimated gap. Route ARX remains a conditional sensitivity because Panama traffic is observed post-treatment.
+Information-set sensitivity: AR-only uses no observed post-treatment covariates and gives a horizon-matched interval over 130 calendar days of **5,430 to 8,089 transits**. Its close agreement with route ARX indicates that contemporaneous Panama controls are not driving the estimated gap. Route ARX remains a conditional sensitivity because Panama traffic is observed post-treatment.
 
-Residual-calibrated 95% aggregate interval for the AR-only working-primary transit loss: **6,305 to 7,410 tanker transits**, or 48.5 to 57.0 per day. This band is calibrated on <=30-day folds and understates a 94-day horizon.
+Residual-calibrated 95% aggregate interval for the AR-only working-primary transit loss: **6,305 to 7,410 tanker transits**, or 48.5 to 57.0 per day. This band is calibrated on <=30-day folds and understates the current 130-calendar-day horizon.
 
-Honest 94-day-horizon interval (recalibrated on the placebo-in-time windows, which are full 94-day forecast errors): **5,430 to 8,089 tanker transits** — about 2.4x wider than the short-fold band, and still excluding zero by a wide margin. Use this as the reported interval; the short-fold band is a lower bound. The band is coarse/conservative (~9 effective windows).
+Honest horizon-matched interval (recalibrated on the placebo-in-time windows, which are full-horizon forecast errors): **5,430 to 8,089 tanker transits** — about 2.4x wider than the short-fold band, and still excluding zero by a wide margin. Use this as the reported interval; the short-fold band is a lower bound. The band is coarse/conservative (7 non-overlapping horizon windows).
 Independent circular-block cross-check (10,000 draws, 14-day blocks from the ordered out-of-fold residual path): **6,180 to 7,550 transits**. It is materially narrower than the placebo-window band, so interval width is method-sensitive even though both bands exclude zero.
 
 Chronos-2 changes the locked-primary transit shortfall by only **+2.4%**, but changes the capacity shortfall by **-5.2%** (206.9M AR-only versus 196.1M Chronos-2). Capacity is therefore a directional secondary, model-sensitive outcome; its precise magnitude is not load-bearing.
 
-The time-placebo p-value is floor-censored because 36 overlapping placebo windows provide only about 9 non-overlapping 94-day windows. Report the separation ratio alongside the p-value.
+The time-placebo p-value is floor-censored because 35 overlapping placebo windows provide only about 7 non-overlapping horizon windows. Report the separation ratio alongside the p-value.
 
 ## Treatment-window Robustness
 

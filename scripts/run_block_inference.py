@@ -35,6 +35,7 @@ def main() -> None:
     ].copy()
     actual = subset.loc[subset["is_actual"].astype(str).str.lower() == "true"].iloc[0]
     placebo = subset.loc[subset["is_actual"].astype(str).str.lower() != "true"]
+    horizon_calendar_days = int((actual["test_end"] - actual["test_start"]).days + 1)
     independent = _select_disjoint_rows(placebo)
     values = independent["cumulative_throughput_loss"].to_numpy(dtype="float64")
     point = float(actual["cumulative_throughput_loss"])
@@ -48,6 +49,8 @@ def main() -> None:
             "model": "ar_lag1_7",
             "target": target,
             "scheme": "non_overlapping_horizon_block_rank",
+            "horizon_calendar_days": horizon_calendar_days,
+            "n_overlapping_placebo_windows": len(placebo),
             "n_independent_placebo_blocks": len(independent),
             "placebo_p_value_greater": p_value,
             "placebo_p_value_floor": 1.0 / (len(independent) + 1),
@@ -61,7 +64,11 @@ def main() -> None:
     independent.to_csv(out_dir / "block_placebo_effects.csv", index=False)
     print("Block placebo and conformal summary:")
     print(summary.to_string(index=False))
-    print("Interpretation guard: only disjoint 94-day windows enter the rank p-value and conformal calibration.")
+    print(
+        "Interpretation guard: only disjoint "
+        f"{horizon_calendar_days}-calendar-day windows enter the rank p-value "
+        "and conformal calibration."
+    )
 
 
 if __name__ == "__main__":

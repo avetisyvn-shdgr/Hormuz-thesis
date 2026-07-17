@@ -11,12 +11,22 @@
 ## Headline AR-only result
 
 - Point shortfall: **6,869.0 tanker transits** (52.84/day).
-- Horizon-matched 95% interval: **5,430.3 to 8,088.9 transits**.
+- Horizon-matched 95% interval over **130 calendar days**: **5,430.3 to 8,088.9 transits**.
 - Independent 14-day circular-block bootstrap band: **6,179.5 to 7,549.5 transits**; narrower than the placebo-window band, so width is method-sensitive.
 - Temporal-placebo p95: **2,124.3**; separation: **3.234x**.
-- One-sided placebo p-value: **0.027778**, floor-censored with 36 overlapping / about 9 non-overlapping windows.
+- One-sided placebo p-value: **0.027778**, floor-censored at 1/36 with 35 overlapping and about 7 non-overlapping horizon windows.
 - BSTS posterior median shortfall: **6,437.9**; 95% posterior predictive interval: **1,754.6 to 11,709.6**.
 - BSTS prior-grid median range: **6,457.6 to 6,751.9**; interval-envelope endpoints: **878.6 to 13,836.2**; pre-period PPC pointwise coverage: **97.1%**.
+
+## Layer-1 Inference Table
+
+| Inference layer | Reported value | Support / note | Source artifact |
+|---|---|---|---|
+| Horizon-matched 95% interval | 5,430.3 to 8,088.9 | 130-calendar-day horizon; 35 placebo windows; 7 non-overlapping horizon windows | `data/processed/long_horizon_intervals_summary.csv` |
+| 14-day block-bootstrap band | 6,179.5 to 7,549.5 | 14-day circular blocks; 10000 draws | `data/processed/long_horizon_intervals_summary.csv` |
+| Temporal-placebo separation | 3.234x; p=0.0278 | Floor-censored at 1/36; 35 overlapping placebo windows and about 7 non-overlapping horizon windows | `data/processed/placebo_time_summary.csv` |
+| Independent-block honest rank | 4.161x; p=0.125 | 7 disjoint blocks; floor 1/8=0.125 | `data/processed/block_conformal_summary.csv` |
+| 95% conformal interval | unbounded (-inf to inf) | Finite interval unsupported at 95%; maximum finite coverage 87.5% with 7 calibration blocks | `data/processed/block_conformal_summary.csv` |
 
 ## Pre-treatment validation and residual fidelity
 
@@ -31,7 +41,7 @@ For the primary AR-only model, `1140` rolling-origin residuals have median `-5.8
 
 ## Specification comparison
 
-| Specification | Role | Pre MASE | Pre RMSE | Point shortfall | 94d lower | 94d upper | Placebo separation | p-value |
+| Specification | Role | Pre MASE | Pre RMSE | Point shortfall | Horizon lower | Horizon upper | Placebo separation | p-value |
 |---|---|---|---|---|---|---|---|---|
 | ar_lag1_7 | working_primary | 0.920 | 14.862 | 6,869.0 | 5,430.3 | 8,088.9 | 3.234 | 0.028 |
 | arx_lag1_7_route | conditional_sensitivity | 0.916 | 14.829 | 7,056.4 | 5,502.4 | 8,528.0 | 3.251 | 0.028 |
@@ -41,15 +51,15 @@ For the primary AR-only model, `1140` rolling-origin residuals have median `-5.8
 
 Full machine-readable table: [`data/processed/run_spec_comparison.csv`](../data/processed/run_spec_comparison.csv)
 
-Synthetic-control shortfall is converted from mean-scaled units to a transit-equivalent magnitude for comparison. Its placebo metric is the post/pre RMSPE ratio, not the temporal cumulative-shortfall distribution, and no 94-day interval is asserted for it.
+Synthetic-control shortfall is converted from mean-scaled units to a transit-equivalent magnitude for comparison. Its placebo metric is the post/pre RMSPE ratio, not the temporal cumulative-shortfall distribution, and no horizon-matched interval is asserted for it.
 BSTS is an independent state-space corroboration. Its interval is posterior predictive conditional on the local-level model; it is not a causal posterior.
 
 ## Independent-block inference
 
-- Disjoint 94-day placebo blocks: **7**; honest rank p-value: **0.125** (floor **0.125**).
+- Disjoint horizon-matched placebo blocks: **7**; honest rank p-value: **0.125** (floor **0.125**).
 - Actual / independent-placebo p95 separation: **4.161x**.
-- 90% block-conformal interval: **-inf to inf**.
-- 95% block-conformal interval: **unbounded**; nine independent blocks support at most **88%** finite-sample coverage.
+- 95% block-conformal interval: **unbounded**; 7 calibration blocks support at most **88%** finite-sample coverage.
+- The same facts are reported side by side in the Layer-1 inference table above so conformal support is not treated as a footnote.
 
 ## Synthetic-control corroboration
 
@@ -64,12 +74,12 @@ BSTS is an independent state-space corroboration. Its interval is posterior pred
 ## LNG-specific robustness outcome
 
 The public WTO/AXSMarine series is an LNG-only outbound shipment volume index (2025 average = 100) and excludes LPG. It is not a carrier count, physical volume, or freight rate.
-- AR 94-day index-point shortfall: **12,923.5**.
+- AR LNG-index shortfall over the current post window: **12,923.5 index-points**.
 - BSTS posterior median: **12,759.9**; 95% interval **3,105.6 to 25,066.1**.
 
 ## Data-quality checks
 
-- Primary transit outcome has complete post-period coverage (94/94 days).
+- Primary transit outcome has complete post-period coverage (130/130 valid days).
 - Capacity is a directional secondary, model-sensitive outcome. It has `12` masked post-period values; all `12` are audit-confirmed zero-capacity/positive-transit artifacts and `0` are unexplained. Do not lean on its precise magnitude.
 
 ## Figures

@@ -192,6 +192,16 @@ def _plot_source_structure(summary: pd.DataFrame, graph: pd.DataFrame, anomaly: 
         .set_index("destination_unit")
         .loc[units]
     )
+    flagged_count = int(anomaly["anomaly_flag"].astype(bool).sum())
+    floor_denominator = int(anomaly["pre_calibration_months"].min()) + 1
+    all_percentile_one = np.isclose(
+        anomaly["post_max_empirical_percentile"].astype(float), 1.0
+    ).all()
+    percentile_text = (
+        "empirical percentile 1.000 for each flagged unit"
+        if all_percentile_one
+        else "empirical percentiles vary by unit"
+    )
     x = np.arange(len(merged))
     width = 0.28
 
@@ -237,7 +247,11 @@ def _plot_source_structure(summary: pd.DataFrame, graph: pd.DataFrame, anomaly: 
     fig.text(
         0.5,
         0.015,
-        "Asterisks mark units passing the exploratory anomaly coverage gate. These scores are diagnostics, not causal estimates.",
+        (
+            f"Asterisks mark anomaly flags: {flagged_count}/{len(anomaly)} units "
+            f"flag, {percentile_text}, tail-p floor-censored at "
+            f"1/{floor_denominator}; diagnostics, not causal estimates."
+        ),
         ha="center",
         fontsize=9,
         color="#444444",
@@ -255,12 +269,180 @@ def _markdown_table(rows: list[list[object]], headers: list[str]) -> str:
     return "\n".join(lines)
 
 
+def _display_unit(unit: object, unit_type: object) -> str:
+    if str(unit_type) == "aggregate_comparator":
+        return f"{unit} (aggregate comparator)"
+    return str(unit)
+
+
+def _source_note(*paths: str) -> str:
+    joined = ", ".join(f"`{path}`" for path in paths)
+    return f"Source artifact(s): {joined}."
+
+
+def _quantity_basis_rows(merged: pd.DataFrame) -> list[list[object]]:
+    order = ["China", "Korea", "Taiwan", "Japan", "EU27"]
+    frame = (
+        merged[merged["destination_unit"].isin(order)]
+        .set_index("destination_unit")
+        .loc[order]
+        .reset_index()
+    )
+    rows = []
+    for _, row in frame.iterrows():
+        rows.append([
+            _display_unit(row["destination_unit"], row["destination_unit_type"]),
+            row["primary_typology"],
+            row["evidence_strength"],
+            row["unit_of_measure"],
+            f"{_fmt(row['pre_gulf_share_mean'] * 100)}%",
+            f"{_fmt_signed(row['gulf_share_change_pp'])} pp",
+            f"{_fmt_signed(row['edge_total_pct_change'])}%",
+            f"{_fmt_signed(row['same_calendar_edge_total_pct_change'])}%",
+            _fmt(row["jensen_shannon_distance"], 2),
+            _fmt(row["post_max_zscore"], 2),
+            row["typology_total_change_basis"],
+            str(row["coverage_note"]),
+        ])
+    return rows
+
+
+def _india_value_basis_rows(merged: pd.DataFrame) -> list[list[object]]:
+    india = merged[merged["destination_unit"] == "India"]
+    if india.empty:
+        return []
+    row = india.iloc[0]
+    return [[
+        row["destination_unit"],
+        row["primary_typology"],
+        row["evidence_strength"],
+        row["unit_of_measure"],
+        row["caution_flags"],
+        f"{_fmt(row['pre_gulf_share_mean'] * 100)}%",
+        f"{_fmt_signed(row['gulf_share_change_pp'])} pp",
+        f"{_fmt_signed(row['edge_total_pct_change'])}%",
+        f"{_fmt_signed(row['same_calendar_edge_total_pct_change'])}%",
+        _fmt(row["jensen_shannon_distance"], 2),
+        _fmt(row["post_max_zscore"], 2),
+        str(row["coverage_note"]),
+    ]]
+
+
+def _threshold_sensitivity_rows(threshold_sensitivity: pd.DataFrame) -> list[list[object]]:
+    rows = []
+    summary = threshold_sensitivity.drop_duplicates("destination_unit").set_index(
+        "destination_unit"
+    )
+    for unit in ["China", "Korea", "Taiwan", "Japan", "EU27", "India"]:
+        if unit not in summary.index:
+            continue
+        unit_rows = threshold_sensitivity[
+            threshold_sensitivity["destination_unit"] == unit
+        ]
+        row = summary.loc[unit]
+        alternatives = sorted(
+            set(unit_rows["grid_primary_typology"]) - {row["headline_primary_typology"]}
+        )
+        rows.append([
+            _display_unit(unit, row["destination_unit_type"]),
+            row["headline_primary_typology"],
+            f"{_fmt(row['unit_grid_agreement_share'] * 100)}%",
+            f"{int(row['unit_grid_agreement_count'])}/{int(row['unit_grid_points'])}",
+            "; ".join(alternatives) if alternatives else "none",
+        ])
+    return rows
+
+
+def _post_month_sensitivity_rows(post_month_sensitivity: pd.DataFrame) -> list[list[object]]:
+    rows = []
+    for unit in ["China", "Korea", "Taiwan", "Japan", "EU27", "India"]:
+        group = post_month_sensitivity[
+            post_month_sensitivity["destination_unit"] == unit
+        ]
+        if group.empty:
+            continue
+        first = group.iloc[0]
+        available = group[group["unit_had_dropped_month"].astype(bool)]
+        flips = available[available["changed_under_drop"].astype(bool)]
+        if str(first["destination_unit_type"]) == "aggregate_comparator":
+            result = "aggregate comparator"
+            detail = "context row; not interpreted as importer typology stability"
+        elif flips.empty:
+            result = "stable under deletion"
+            detail = "no admissible dropped-month label changes"
+        else:
+            coverage_flips = flips[
+                (flips["dropped_primary_typology"] == "not_estimable_coverage_limited")
+                | (flips["post_months_after_drop"].astype(int) < 3)
+            ]
+            substantive_flips = flips.drop(index=coverage_flips.index)
+            if not substantive_flips.empty and coverage_flips.empty:
+                result = "admissible substantive change"
+            elif not coverage_flips.empty and substantive_flips.empty:
+                result = "coverage-induced non-estimability"
+            else:
+                result = "mixed coverage/substantive changes"
+            parts = []
+            for _, row in coverage_flips.iterrows():
+                parts.append(
+                    f"{row['dropped_month']} -> below three-post-month gate"
+                )
+            for _, row in substantive_flips.iterrows():
+                parts.append(
+                    f"{row['dropped_month']} -> {row['dropped_primary_typology']}"
+                )
+            detail = "; ".join(parts)
+        rows.append([
+            _display_unit(first["destination_unit"], first["destination_unit_type"]),
+            first["headline_primary_typology"],
+            result,
+            detail,
+        ])
+    return rows
+
+
+def _anomaly_diagnostic_text(anomaly: pd.DataFrame) -> str:
+    flagged = anomaly[anomaly["anomaly_flag"].astype(bool)]
+    all_flag = len(flagged) == len(anomaly)
+    all_percentile_one = np.isclose(
+        anomaly["post_max_empirical_percentile"].astype(float), 1.0
+    ).all()
+    weakest = anomaly.sort_values("post_max_zscore").head(2)
+    weakest_text = " and ".join(
+        f"{row['destination_unit']} (z {_fmt(row['post_max_zscore'], 2)})"
+        for _, row in weakest.iterrows()
+    )
+    eu27 = anomaly[anomaly["destination_unit"] == "EU27"].iloc[0]
+    floor_denominator = int(anomaly["pre_calibration_months"].min()) + 1
+    flag_sentence = (
+        f"All {len(anomaly)} units flag"
+        if all_flag
+        else f"{len(flagged)} of {len(anomaly)} units flag"
+    )
+    percentile_sentence = (
+        "post_max_empirical_percentile = 1.000 for all units"
+        if all_percentile_one
+        else "post_max_empirical_percentile differs across units"
+    )
+    return (
+        f"{flag_sentence}, and {percentile_sentence}. The weakest flagged "
+        f"post-shock portfolio z-scores in the current artifact are "
+        f"{weakest_text}. EU27 is z {_fmt(eu27['post_max_zscore'], 2)} and "
+        "remains an aggregate comparator rather than a single importer. The "
+        f"empirical tail-p is floor-censored at 1/{floor_denominator} because "
+        "the pre-period calibration uses leave-one-month-out distances over "
+        "the available pre months."
+    )
+
+
 def _write_report(
     summary: pd.DataFrame,
     graph: pd.DataFrame,
     anomaly: pd.DataFrame,
     typology: pd.DataFrame,
     reallocation: pd.DataFrame,
+    post_month_sensitivity: pd.DataFrame,
+    threshold_sensitivity: pd.DataFrame,
     figures: list[Path],
 ) -> Path:
     merged = (
@@ -287,22 +469,6 @@ def _write_report(
             how="left",
         )
     )
-    table_rows = []
-    for _, row in merged.sort_values("destination_unit").iterrows():
-        table_rows.append([
-            row["destination_unit"],
-            row["primary_typology"],
-            row["evidence_strength"],
-            f"{_fmt(row['pre_gulf_share_mean'] * 100)}%",
-            f"{_fmt_signed(row['gulf_share_change_pp'])} pp",
-            f"{_fmt_signed(row['edge_total_pct_change'])}%",
-            f"{_fmt_signed(row['same_calendar_edge_total_pct_change'])}%",
-            _fmt(row["jensen_shannon_distance"], 2),
-            _fmt(row["post_max_zscore"], 1),
-            row["typology_total_change_basis"],
-            str(row["coverage_note"]),
-        ])
-
     realloc_rows = []
     for _, row in reallocation.iterrows():
         realloc_rows.append([
@@ -330,14 +496,15 @@ replacement.
 
 {figure_lines}
 
-## Importer and comparator summary
+## Quantity-basis importer and comparator summary
 
 {_markdown_table(
-    table_rows,
+    _quantity_basis_rows(merged),
     [
         "Unit",
         "Typology",
         "Strength",
+        "Basis",
         "Pre Gulf share",
         "Gulf-share change",
         "Total change vs 12m pre",
@@ -348,6 +515,75 @@ replacement.
         "Coverage",
     ],
 )}
+
+{_source_note(
+    "data/processed/lng_rewiring_summary.csv",
+    "data/processed/lng_rewiring_graph_metrics.csv",
+    "data/processed/lng_resilience_typology.csv",
+    "data/processed/lng_network_anomaly_summary.csv",
+)}
+
+## India — customs-value evidence
+
+{_markdown_table(
+    _india_value_basis_rows(merged),
+    [
+        "Unit",
+        "Typology",
+        "Strength",
+        "Basis",
+        "Caution",
+        "Pre Gulf share",
+        "Gulf-share change",
+        "Total change vs 12m pre",
+        "Total change vs same months",
+        "JS distance",
+        "Anomaly z",
+        "Coverage",
+    ],
+)}
+
+India is retained as descriptive customs-value evidence only. Its `kUSD` basis
+means the origin mix can embed price differentials as well as quantity changes;
+do not pool this row with the physical weight/volume-basis table above.
+{_source_note("data/processed/lng_resilience_typology.csv")}
+
+## Typology sensitivity
+
+Threshold-grid agreement with the headline typology:
+
+{_markdown_table(
+    _threshold_sensitivity_rows(threshold_sensitivity),
+    [
+        "Unit",
+        "Headline typology",
+        "Grid agreement share",
+        "Agreement count",
+        "Alternative grid labels",
+    ],
+)}
+
+Leave-one-post-month interpretation:
+
+{_markdown_table(
+    _post_month_sensitivity_rows(post_month_sensitivity),
+    [
+        "Unit",
+        "Headline typology",
+        "Leave-one-post-month result",
+        "Dropped-month detail",
+    ],
+)}
+
+{_source_note(
+    "data/processed/lng_typology_threshold_sensitivity.csv",
+    "data/processed/lng_rewiring_post_month_sensitivity.csv",
+)}
+
+## Anomaly diagnostics
+
+{_anomaly_diagnostic_text(anomaly)}
+{_source_note("data/processed/lng_network_anomaly_summary.csv")}
 
 ## Reallocation stress scenarios
 
@@ -369,16 +605,21 @@ replacement.
 - China and Korea are classified as high-exposure constrained: their Gulf shares
   fell sharply and non-Gulf growth did not offset the lost Gulf edge value in
   the observed origin-split table.
-- India and Taiwan are classified as high-exposure high-offset. India remains
-  value-basis, so its substitution pattern should be read as customs-value
-  evidence, not physical quantity evidence.
+- Evidence strength follows the transparent typology rubric: `high` is reserved
+  for unflagged high-exposure high-offset cases; constrained cases,
+  low-exposure stable cases, and flagged high-offset cases are `medium`;
+  aggregate comparators are `context_only`.
+- India and Taiwan are classified as high-exposure high-offset. Taiwan is the
+  unflagged high-strength case; India remains value-basis, so its substitution
+  pattern should be read as customs-value evidence, not physical quantity
+  evidence.
 - EU27 is retained only as an aggregate comparator. Japan now has enough
   source-native e-Stat/Japan Customs support for the descriptive typology and
   is classified as a low-exposure stable comparator in this vintage.
-- Graph-distance anomaly scores are exploratory mechanism diagnostics. They
-  use leave-one-month-out pre-period calibration and help describe unusual
-  post-shock portfolio movement, but they are not part of the primary causal
-  inference family.
+- Graph-distance anomaly scores are exploratory mechanism diagnostics. The
+  current artifact flags all six units at the empirical percentile ceiling, but
+  this is floor-censored by the 12-month pre-calibration support and remains
+  outside the primary causal inference family.
 - The reallocation model is a transparent stress test over observed route
   costs. The `post_non_gulf_pool` case is a lower-bound routing exercise, not an
   observed replacement-cargo reconstruction; when flagged as a short-route pool,
@@ -399,13 +640,24 @@ def main() -> None:
     anomaly = _read("lng_network_anomaly_summary_csv")
     typology = _read("lng_resilience_typology_csv")
     reallocation = _read("lng_reallocation_summary_csv")
+    post_month_sensitivity = _read("lng_rewiring_post_month_sensitivity_csv")
+    threshold_sensitivity = _read("lng_typology_threshold_sensitivity_csv")
 
     figures = [
         _plot_origin_composition(summary),
         _plot_gulf_vs_total(summary),
         _plot_source_structure(summary, graph, anomaly),
     ]
-    _write_report(summary, graph, anomaly, typology, reallocation, figures)
+    _write_report(
+        summary,
+        graph,
+        anomaly,
+        typology,
+        reallocation,
+        post_month_sensitivity,
+        threshold_sensitivity,
+        figures,
+    )
 
 
 if __name__ == "__main__":

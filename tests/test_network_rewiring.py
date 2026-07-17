@@ -10,13 +10,20 @@ from lngfreight.network_rewiring import (  # noqa: E402
     GRAPH_METRIC_COLUMNS,
     MONTHLY_METRIC_COLUMNS,
     NETWORK_COLUMNS,
+    POST_MONTH_SENSITIVITY_COLUMNS,
     RESILIENCE_TYPOLOGY_COLUMNS,
     REWIRING_SUMMARY_COLUMNS,
+    TREATMENT_MONTH,
+    TYPOLOGY_THRESHOLD_SENSITIVITY_COLUMNS,
+    TYPOLOGY_THRESHOLD_SENSITIVITY_GRID,
+    TYPOLOGY_THRESHOLD_SENSITIVITY_GRID_SIZE,
     build_rewiring_network,
     dynamic_network_graph_metrics,
     graph_anomaly_scores,
     monthly_rewiring_metrics,
+    post_month_typology_sensitivity,
     resilience_typology,
+    typology_threshold_sensitivity,
     rewiring_prepost_summary,
 )
 
@@ -197,6 +204,164 @@ def test_resilience_typology_preserves_cautions_and_thresholds():
     assert pd.notna(
         typology.loc["China", "seasonality_adjusted_edge_total_pct_change"]
     )
+
+
+def test_resilience_evidence_strength_rubric_is_not_caution_only():
+    monthly = monthly_rewiring_metrics(_network())
+    typology = resilience_typology(
+        rewiring_prepost_summary(monthly),
+        dynamic_network_graph_metrics(_network()),
+    ).set_index("destination_unit")
+
+    assert typology.loc["Taiwan", "primary_typology"] == "high_exposure_high_offset"
+    assert typology.loc["Taiwan", "caution_flags"] == "none"
+    assert typology.loc["Taiwan", "evidence_strength"] == "high"
+
+    assert typology.loc["India", "primary_typology"] == "high_exposure_high_offset"
+    assert "value_basis_caution" in typology.loc["India", "caution_flags"]
+    assert typology.loc["India", "evidence_strength"] == "medium"
+
+    assert typology.loc["China", "primary_typology"] == "high_exposure_constrained"
+    assert typology.loc["China", "caution_flags"] == "none"
+    assert typology.loc["China", "evidence_strength"] == "medium"
+
+    assert typology.loc["Japan", "primary_typology"] == "low_exposure_stable"
+    assert typology.loc["Japan", "caution_flags"] == "none"
+    assert typology.loc["Japan", "evidence_strength"] == "medium"
+
+    assert typology.loc["EU27", "evidence_strength"] == "context_only"
+
+
+def test_post_month_typology_sensitivity_contract_and_unit_month_grid():
+    network = _network()
+    monthly = monthly_rewiring_metrics(network)
+    sensitivity = post_month_typology_sensitivity(network)
+
+    assert list(sensitivity.columns) == POST_MONTH_SENSITIVITY_COLUMNS
+    units = sorted(monthly["destination_unit"].unique())
+    post_months = sorted(
+        monthly.loc[monthly["period"] >= TREATMENT_MONTH, "period"].unique()
+    )
+    assert len(sensitivity) == len(units) * len(post_months)
+    assert sorted(sensitivity["destination_unit"].unique()) == units
+    assert sorted(sensitivity["dropped_month"].unique()) == post_months
+    assert (
+        sensitivity.groupby("destination_unit")["dropped_month"].nunique()
+        == len(post_months)
+    ).all()
+    assert (
+        sensitivity.groupby("dropped_month")["destination_unit"].nunique()
+        == len(units)
+    ).all()
+
+
+def test_post_month_typology_sensitivity_flags_are_structural():
+    network = _network()
+    monthly = monthly_rewiring_metrics(network)
+    sensitivity = post_month_typology_sensitivity(network)
+
+    base_post_counts = (
+        monthly[monthly["period"] >= TREATMENT_MONTH]
+        .groupby("destination_unit")["period"]
+        .nunique()
+    )
+    for row in sensitivity.to_dict("records"):
+        expected = base_post_counts.loc[row["destination_unit"]] - int(
+            row["unit_had_dropped_month"]
+        )
+        assert row["post_months_after_drop"] == expected
+
+    expected_any = sensitivity.groupby("destination_unit")[
+        "changed_under_drop"
+    ].transform("any")
+    assert (
+        sensitivity["any_primary_typology_change"].reset_index(drop=True)
+        == expected_any.reset_index(drop=True)
+    ).all()
+
+
+def test_post_month_typology_sensitivity_separates_coverage_from_substance():
+    sensitivity = post_month_typology_sensitivity(_network())
+    available_changes = sensitivity[
+        sensitivity["unit_had_dropped_month"].astype(bool)
+        & sensitivity["changed_under_drop"].astype(bool)
+    ]
+
+    for unit in ["China", "India", "Japan"]:
+        rows = available_changes[available_changes["destination_unit"] == unit]
+        assert set(rows["dropped_primary_typology"]) == {
+            "not_estimable_coverage_limited"
+        }
+        assert set(rows["post_months_after_drop"]) == {2}
+
+    taiwan = available_changes[
+        available_changes["destination_unit"] == "Taiwan"
+    ].reset_index(drop=True)
+    assert len(taiwan) == 1
+    assert taiwan.loc[0, "dropped_month"] == "2026-03"
+    assert taiwan.loc[0, "dropped_primary_typology"] == "intermediate_rewiring"
+    assert taiwan.loc[0, "post_months_after_drop"] == 3
+
+    assert "Korea" not in set(available_changes["destination_unit"])
+    assert "EU27" not in set(available_changes["destination_unit"])
+
+
+def test_typology_threshold_sensitivity_contract_and_grid_size():
+    monthly = monthly_rewiring_metrics(_network())
+    summary = rewiring_prepost_summary(monthly)
+    graph = dynamic_network_graph_metrics(_network())
+    sensitivity = typology_threshold_sensitivity(summary, graph)
+
+    assert list(sensitivity.columns) == TYPOLOGY_THRESHOLD_SENSITIVITY_COLUMNS
+    assert TYPOLOGY_THRESHOLD_SENSITIVITY_GRID_SIZE == 81
+    assert sensitivity["grid_id"].nunique() == TYPOLOGY_THRESHOLD_SENSITIVITY_GRID_SIZE
+    assert (
+        sensitivity.groupby("destination_unit")["grid_id"].nunique()
+        == TYPOLOGY_THRESHOLD_SENSITIVITY_GRID_SIZE
+    ).all()
+    assert set(sensitivity["high_exposure_pre_gulf_share_min"]) == set(
+        TYPOLOGY_THRESHOLD_SENSITIVITY_GRID["high_exposure_pre_gulf_share_min"]
+    )
+    assert set(sensitivity["high_offset_ratio_min"]) == set(
+        TYPOLOGY_THRESHOLD_SENSITIVITY_GRID["high_offset_ratio_min"]
+    )
+    assert set(sensitivity["constrained_total_pct_max"]) == set(
+        TYPOLOGY_THRESHOLD_SENSITIVITY_GRID["constrained_total_pct_max"]
+    )
+    assert set(sensitivity["stable_band_abs"]) == set(
+        TYPOLOGY_THRESHOLD_SENSITIVITY_GRID["stable_band_abs"]
+    )
+
+
+def test_typology_threshold_sensitivity_stability_summary_is_per_unit():
+    monthly = monthly_rewiring_metrics(_network())
+    summary = rewiring_prepost_summary(monthly)
+    graph = dynamic_network_graph_metrics(_network())
+    sensitivity = typology_threshold_sensitivity(summary, graph)
+
+    assert (
+        (sensitivity["unit_grid_agreement_share"] >= 0)
+        & (sensitivity["unit_grid_agreement_share"] <= 1)
+    ).all()
+    for unit, group in sensitivity.groupby("destination_unit"):
+        assert group["unit_grid_points"].nunique() == 1
+        assert group["unit_grid_agreement_count"].nunique() == 1
+        assert group["unit_grid_agreement_share"].nunique() == 1
+        assert group["unit_grid_points"].iloc[0] == len(group)
+        assert group["unit_grid_agreement_count"].iloc[0] == int(
+            group["agrees_with_headline"].sum()
+        )
+
+    headline_grid = sensitivity[
+        (sensitivity["high_exposure_pre_gulf_share_min"] == 0.15)
+        & (sensitivity["high_offset_ratio_min"] == 0.8)
+        & (sensitivity["constrained_total_pct_max"] == -5.0)
+        & (sensitivity["stable_band_abs"] == 10.0)
+    ]
+    assert sorted(headline_grid["destination_unit"].unique()) == sorted(
+        sensitivity["destination_unit"].unique()
+    )
+    assert headline_grid["agrees_with_headline"].all()
 
 
 def test_graph_anomaly_scores_contract_bounds_and_coverage():

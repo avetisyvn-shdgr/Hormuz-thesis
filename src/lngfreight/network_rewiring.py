@@ -8,9 +8,10 @@ matching.
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
-from pathlib import Path
 import math
+from pathlib import Path
 
 import pandas as pd
 
@@ -175,6 +176,65 @@ RESILIENCE_TYPOLOGY_COLUMNS = [
     "admissibility_note",
 ]
 
+POST_MONTH_SENSITIVITY_COLUMNS = [
+    "dropped_month",
+    "destination_unit",
+    "destination_unit_type",
+    "unit_had_dropped_month",
+    "headline_primary_typology",
+    "dropped_primary_typology",
+    "changed_under_drop",
+    "any_primary_typology_change",
+    "headline_evidence_strength",
+    "dropped_evidence_strength",
+    "pre_months",
+    "post_months_after_drop",
+    "pre_gulf_share",
+    "post_gulf_share",
+    "gulf_share_change_pp",
+    "edge_total_pct_change",
+    "seasonality_adjusted_edge_total_pct_change",
+    "non_gulf_edge_pct_change",
+    "non_gulf_offset_ratio",
+    "jensen_shannon_distance",
+    "edge_turnover_rate",
+    "rule_thresholds",
+    "coverage_note",
+    "admissibility_note",
+]
+
+TYPOLOGY_THRESHOLD_SENSITIVITY_COLUMNS = [
+    "grid_id",
+    "high_exposure_pre_gulf_share_min",
+    "high_offset_ratio_min",
+    "constrained_total_pct_max",
+    "stable_band_abs",
+    "destination_unit",
+    "destination_unit_type",
+    "headline_primary_typology",
+    "grid_primary_typology",
+    "agrees_with_headline",
+    "unit_grid_points",
+    "unit_grid_agreement_count",
+    "unit_grid_agreement_share",
+    "evidence_strength",
+    "caution_flags",
+    "pre_months",
+    "post_months",
+    "pre_gulf_share",
+    "post_gulf_share",
+    "gulf_share_change_pp",
+    "edge_total_pct_change",
+    "seasonality_adjusted_edge_total_pct_change",
+    "non_gulf_edge_pct_change",
+    "non_gulf_offset_ratio",
+    "jensen_shannon_distance",
+    "edge_turnover_rate",
+    "rule_thresholds",
+    "coverage_note",
+    "admissibility_note",
+]
+
 ANOMALY_MONTHLY_COLUMNS = [
     "period",
     "destination_unit",
@@ -226,6 +286,17 @@ TYPOLOGY_THRESHOLDS = {
     "min_pre_months": 12,
     "min_post_months": 3,
 }
+
+TYPOLOGY_THRESHOLD_SENSITIVITY_GRID = {
+    "high_exposure_pre_gulf_share_min": (0.10, 0.15, 0.20),
+    "high_offset_ratio_min": (0.7, 0.8, 0.9),
+    "constrained_total_pct_max": (-3.0, -5.0, -10.0),
+    "stable_band_abs": (8.0, 10.0, 12.0),
+}
+
+TYPOLOGY_THRESHOLD_SENSITIVITY_GRID_SIZE = math.prod(
+    len(values) for values in TYPOLOGY_THRESHOLD_SENSITIVITY_GRID.values()
+)
 
 ANOMALY_THRESHOLDS = {
     "min_pre_calibration_months": 12,
@@ -1102,3 +1173,182 @@ def resilience_typology(
     return pd.DataFrame(rows, columns=RESILIENCE_TYPOLOGY_COLUMNS).sort_values(
         "destination_unit"
     ).reset_index(drop=True)
+
+
+def post_month_typology_sensitivity(
+    network: pd.DataFrame,
+    pre_start: str = "2025-03",
+    pre_end: str = "2026-02",
+    post_start: str = TREATMENT_MONTH,
+) -> pd.DataFrame:
+    """Leave-one-post-month sensitivity for the descriptive typology.
+
+    For each available post-treatment month, the function drops that month from
+    the network edge list, recomputes the pre/post summary, recomputes graph
+    movement metrics, and then reruns the rule-based typology. The result is a
+    long unit-by-dropped-month table. It is a coverage and classification
+    stability diagnostic, not a new estimator.
+    """
+    network = network.copy()
+    network["period"] = network["period"].astype(str)
+    monthly = monthly_rewiring_metrics(network)
+    post_months = sorted(
+        monthly.loc[monthly["period"].astype(str) >= post_start, "period"]
+        .astype(str)
+        .unique()
+    )
+    if not post_months:
+        return pd.DataFrame(columns=POST_MONTH_SENSITIVITY_COLUMNS)
+
+    headline_summary = rewiring_prepost_summary(monthly, pre_start, pre_end, post_start)
+    headline_graph = dynamic_network_graph_metrics(network, pre_start, pre_end, post_start)
+    headline_typology = resilience_typology(headline_summary, headline_graph)
+    headline = headline_typology.set_index("destination_unit")
+    unit_months = set(
+        monthly.loc[monthly["period"].astype(str) >= post_start, [
+            "destination_unit",
+            "period",
+        ]]
+        .astype({"period": str})
+        .itertuples(index=False, name=None)
+    )
+
+    rows: list[dict[str, object]] = []
+    for dropped_month in post_months:
+        filtered = network[network["period"] != dropped_month].copy()
+        dropped_monthly = monthly_rewiring_metrics(filtered)
+        dropped_summary = rewiring_prepost_summary(
+            dropped_monthly, pre_start, pre_end, post_start
+        )
+        dropped_graph = dynamic_network_graph_metrics(
+            filtered, pre_start, pre_end, post_start
+        )
+        dropped_typology = resilience_typology(dropped_summary, dropped_graph)
+        for row in dropped_typology.to_dict("records"):
+            unit = row["destination_unit"]
+            headline_row = headline.loc[unit]
+            changed = row["primary_typology"] != headline_row["primary_typology"]
+            rows.append({
+                "dropped_month": dropped_month,
+                "destination_unit": unit,
+                "destination_unit_type": row["destination_unit_type"],
+                "unit_had_dropped_month": (unit, dropped_month) in unit_months,
+                "headline_primary_typology": headline_row["primary_typology"],
+                "dropped_primary_typology": row["primary_typology"],
+                "changed_under_drop": bool(changed),
+                "any_primary_typology_change": False,
+                "headline_evidence_strength": headline_row["evidence_strength"],
+                "dropped_evidence_strength": row["evidence_strength"],
+                "pre_months": int(row["pre_months"]),
+                "post_months_after_drop": int(row["post_months"]),
+                "pre_gulf_share": row["pre_gulf_share"],
+                "post_gulf_share": row["post_gulf_share"],
+                "gulf_share_change_pp": row["gulf_share_change_pp"],
+                "edge_total_pct_change": row["edge_total_pct_change"],
+                "seasonality_adjusted_edge_total_pct_change": row[
+                    "seasonality_adjusted_edge_total_pct_change"
+                ],
+                "non_gulf_edge_pct_change": row["non_gulf_edge_pct_change"],
+                "non_gulf_offset_ratio": row["non_gulf_offset_ratio"],
+                "jensen_shannon_distance": row["jensen_shannon_distance"],
+                "edge_turnover_rate": row["edge_turnover_rate"],
+                "rule_thresholds": row["rule_thresholds"],
+                "coverage_note": row["coverage_note"],
+                "admissibility_note": row["admissibility_note"],
+            })
+
+    frame = pd.DataFrame(rows, columns=POST_MONTH_SENSITIVITY_COLUMNS)
+    frame["any_primary_typology_change"] = frame.groupby("destination_unit")[
+        "changed_under_drop"
+    ].transform("any")
+    return frame.sort_values(["destination_unit", "dropped_month"]).reset_index(
+        drop=True
+    )
+
+
+def _iter_typology_threshold_grid() -> list[tuple[str, dict[str, float], float]]:
+    rows: list[tuple[str, dict[str, float], float]] = []
+    keys = list(TYPOLOGY_THRESHOLD_SENSITIVITY_GRID)
+    values = [TYPOLOGY_THRESHOLD_SENSITIVITY_GRID[key] for key in keys]
+    for index, combo in enumerate(itertools.product(*values), start=1):
+        params = dict(zip(keys, combo))
+        stable_band = float(params.pop("stable_band_abs"))
+        thresholds = {
+            **params,
+            "stable_total_abs_pct_max": stable_band,
+            "stable_gulf_share_abs_pp_max": stable_band,
+        }
+        rows.append((f"grid_{index:03d}", thresholds, stable_band))
+    return rows
+
+
+def typology_threshold_sensitivity(
+    summary: pd.DataFrame,
+    graph_metrics: pd.DataFrame,
+) -> pd.DataFrame:
+    """Typology sensitivity over the pre-declared threshold grid.
+
+    The grid varies only the published typology thresholds declared in
+    TYPOLOGY_THRESHOLD_SENSITIVITY_GRID. It repeats per-unit stability summaries
+    on each row so the CSV remains a single long-format artifact.
+    """
+    headline_typology = resilience_typology(summary, graph_metrics)
+    headline = headline_typology.set_index("destination_unit")
+    rows: list[dict[str, object]] = []
+    for grid_id, thresholds, stable_band in _iter_typology_threshold_grid():
+        typology = resilience_typology(summary, graph_metrics, thresholds=thresholds)
+        for row in typology.to_dict("records"):
+            unit = row["destination_unit"]
+            headline_label = headline.loc[unit, "primary_typology"]
+            agrees = row["primary_typology"] == headline_label
+            rows.append({
+                "grid_id": grid_id,
+                "high_exposure_pre_gulf_share_min": thresholds[
+                    "high_exposure_pre_gulf_share_min"
+                ],
+                "high_offset_ratio_min": thresholds["high_offset_ratio_min"],
+                "constrained_total_pct_max": thresholds[
+                    "constrained_total_pct_max"
+                ],
+                "stable_band_abs": stable_band,
+                "destination_unit": unit,
+                "destination_unit_type": row["destination_unit_type"],
+                "headline_primary_typology": headline_label,
+                "grid_primary_typology": row["primary_typology"],
+                "agrees_with_headline": bool(agrees),
+                "unit_grid_points": 0,
+                "unit_grid_agreement_count": 0,
+                "unit_grid_agreement_share": float("nan"),
+                "evidence_strength": row["evidence_strength"],
+                "caution_flags": row["caution_flags"],
+                "pre_months": int(row["pre_months"]),
+                "post_months": int(row["post_months"]),
+                "pre_gulf_share": row["pre_gulf_share"],
+                "post_gulf_share": row["post_gulf_share"],
+                "gulf_share_change_pp": row["gulf_share_change_pp"],
+                "edge_total_pct_change": row["edge_total_pct_change"],
+                "seasonality_adjusted_edge_total_pct_change": row[
+                    "seasonality_adjusted_edge_total_pct_change"
+                ],
+                "non_gulf_edge_pct_change": row["non_gulf_edge_pct_change"],
+                "non_gulf_offset_ratio": row["non_gulf_offset_ratio"],
+                "jensen_shannon_distance": row["jensen_shannon_distance"],
+                "edge_turnover_rate": row["edge_turnover_rate"],
+                "rule_thresholds": row["rule_thresholds"],
+                "coverage_note": row["coverage_note"],
+                "admissibility_note": row["admissibility_note"],
+            })
+
+    frame = pd.DataFrame(rows, columns=TYPOLOGY_THRESHOLD_SENSITIVITY_COLUMNS)
+    if frame.empty:
+        return frame
+    frame["unit_grid_points"] = frame.groupby("destination_unit")[
+        "grid_id"
+    ].transform("nunique").astype(int)
+    frame["unit_grid_agreement_count"] = frame.groupby("destination_unit")[
+        "agrees_with_headline"
+    ].transform("sum").astype(int)
+    frame["unit_grid_agreement_share"] = (
+        frame["unit_grid_agreement_count"] / frame["unit_grid_points"]
+    )
+    return frame.sort_values(["destination_unit", "grid_id"]).reset_index(drop=True)

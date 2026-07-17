@@ -63,3 +63,41 @@ Each entry: **date · decision · decision-maker · rationale · affected files 
   blocks D5 (pre-registration freeze) and the final-result status of Layers
   E/M/C/R. Record Prof. Li's written decision here when it arrives, then check the
   `[ ] Confirm scope with Prof. Li` box in `CAPTIVITY_EVENT_STUDY_DESIGN.md`.
+
+---
+
+## 2026-07-17 · No-third-layer integration plan accepted
+
+- **Decision-maker:** Mher (researcher), accepting the implementation
+  recommendation.
+- **Decision:** Do not build a third empirical layer before thesis integration.
+  Preserve the completed PortWatch and open-data LNG mechanism results, add only
+  pre-declared Layer-2 sensitivity checks, upgrade the generated reports, and
+  draft thesis-integration text from existing artifacts.
+- **Rationale:** The current evidence is strongest as a measurement and mechanism
+  chain. Additional GEM capacity, Baltic freight, or persistence/recovery work
+  would not strengthen identification before the thesis analysis freeze unless
+  each clears a strict admission gate. The next highest-value work is therefore
+  integrate, sensitivity-check, and write while keeping Spark as a dormant
+  optional secondary-outcome path.
+- **Candidate-extension kill criteria:**
+  - **GEM:** workbook before analysis freeze + nameplate mapped to >=90% of
+    observed non-Gulf supply + headroom grid, never nameplate-as-available.
+  - **Baltic:** >=52 pre / >=12 post weeks of one consistently-defined series,
+    <=10% missing, reproducible extraction, no subjective text coding.
+  - **Persistence:** 6 complete post months for >=4 quantity-basis importers —
+    currently **NO_GO**.
+- **Accepted work plan:**
+  - **Phase 1:** add Layer-2 sensitivity code for leave-one-post-month typology
+    stability and pre-declared typology-threshold grids.
+  - **Phase 2:** upgrade generated reporting once Phase-1 artifacts exist,
+    including quantity-basis table separation, sensitivity reporting, balanced
+    Layer-1 inference table, and anomaly-language cleanup.
+  - **Phase 3:** draft manuscript-integration markdown only after checking for an
+    existing manuscript directory, with artifact-path citations for every
+    empirical number.
+- **Affected files:** `docs/DECISION_LOG.md`, `docs/CURRENT_PLAN.md`; future
+  Phase-1 through Phase-3 changes to be recorded when implemented.
+- **Status:** Done for implementation planning. This entry does not record
+  Prof. Li's formal proposal/RQ/estimand approval; the G1 gate above remains
+  separate until written supervisor approval is logged.

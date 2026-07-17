@@ -50,6 +50,14 @@ STEPS = [
     ("Build LNG network anomaly scores", ["scripts/build_lng_network_anomaly_scores.py"]),
     ("Build LNG reallocation stress model", ["scripts/build_lng_reallocation_model.py"]),
     ("Build LNG resilience typology", ["scripts/build_lng_resilience_typology.py"]),
+    (
+        "Build LNG rewiring post-month sensitivity",
+        ["scripts/build_lng_rewiring_post_month_sensitivity.py"],
+    ),
+    (
+        "Build LNG typology threshold sensitivity",
+        ["scripts/build_lng_typology_threshold_sensitivity.py"],
+    ),
     ("Render LNG network rewiring summary", ["scripts/make_network_rewiring_summary.py"]),
     ("Build modeled vessel-day estimates", ["scripts/build_vessel_day_estimates.py"]),
     ("Refresh vessel-data feasibility audit", ["scripts/run_vessel_data_feasibility.py"]),

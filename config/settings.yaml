@@ -69,6 +69,8 @@ paths:
   lng_network_anomaly_monthly_csv: "data/processed/lng_network_anomaly_monthly.csv"
   lng_network_anomaly_summary_csv: "data/processed/lng_network_anomaly_summary.csv"
   lng_resilience_typology_csv: "data/processed/lng_resilience_typology.csv"
+  lng_rewiring_post_month_sensitivity_csv: "data/processed/lng_rewiring_post_month_sensitivity.csv"
+  lng_typology_threshold_sensitivity_csv: "data/processed/lng_typology_threshold_sensitivity.csv"
   lng_reallocation_basin_demands_csv: "data/processed/lng_reallocation_basin_demands.csv"
   lng_reallocation_supply_nodes_csv: "data/processed/lng_reallocation_supply_nodes.csv"
   lng_reallocation_cost_matrix_csv: "data/processed/lng_reallocation_cost_matrix.csv"

@@ -1,7 +1,77 @@
 # Current thesis implementation plan
 
-**Status:** Phase 3A implementation complete as of 2026-06-20. This document
-records the completed branch and the remaining non-blocking Spark option.
+**Status:** Phase 3A implementation complete as of 2026-06-20. As of
+2026-07-17, the active implementation path is the accepted no-third-layer plan:
+integrate the existing results, add only pre-declared sensitivity checks, and
+write thesis-facing drafts from committed artifacts. This document records the
+completed branch, the current integration phases, and the remaining non-blocking
+Spark option.
+
+## Active implementation decision
+
+The accepted implementation decision is **no third layer before thesis
+integration**. The current evidence is strongest as a measurement and mechanism
+chain: preserve the PortWatch counterfactual foundation, preserve the open-data
+LNG mechanism branch, sensitivity-check the Layer-2 network-rewiring typology,
+and then write.
+
+This plan deliberately does not change the operational-onset cutoff
+(`2026-02-28`), the estimand family, the raw-data freeze, the reproducibility
+manifests, or the claim vocabulary in `NETWORK_REWIRING_EXTENSION.md`. Spark
+remains a dormant optional secondary-outcome path, not a blocker.
+
+## Candidate extensions and kill criteria
+
+These extensions are not active work under the no-third-layer plan. They may be
+reopened only if the stated admission criteria are met before the relevant
+analysis freeze.
+
+| Candidate | Admission / kill criterion | Current status |
+|---|---|---|
+| GEM capacity | Workbook before analysis freeze + nameplate mapped to >=90% of observed non-Gulf supply + headroom grid, never nameplate-as-available | Gated; do not start under the active plan |
+| Baltic freight | >=52 pre / >=12 post weeks of one consistently-defined series, <=10% missing, reproducible extraction, no subjective text coding | Gated; defer until source admissibility is established |
+| Persistence / recovery | 6 complete post months for >=4 quantity-basis importers | **NO_GO** under current support |
+
+## Current accepted work plan
+
+No phase begins until the prior phase is confirmed. The human runs the pipeline;
+implementation phases end with a stop-and-report block rather than a claim that
+new outputs work.
+
+### Phase 1 - Layer-2 sensitivity code
+
+Add pre-declared network-rewiring sensitivity artifacts:
+
+- Leave-one-post-month sensitivity for the pre/post summary and typology.
+- Typology-threshold sensitivity over the declared threshold grid.
+- Structural tests for column contracts and invariants, not result labels.
+- Build scripts registered before report generation in `scripts/run_all.py`.
+
+### Phase 2 - reporting upgrades
+
+After Phase-1 artifacts exist and have been pasted back from a real run:
+
+- Separate the quantity-basis headline table from India's value-basis customs
+  evidence.
+- Report per-unit typology stability, separating coverage-induced
+  non-estimability from admissible substantive label changes.
+- Add a side-by-side Layer-1 inference table with equal prominence for the
+  interval, bootstrap, placebo, honest-rank, and conformal rows.
+- State anomaly evidence with the required caveats and aggregate-comparator
+  language.
+
+### Phase 3 - manuscript drafts
+
+After Phase-2 regeneration is confirmed, search for any existing manuscript
+directory. If none exists, draft markdown under `docs/thesis_drafts/` only:
+
+- `estimand_ladder.md`
+- `construct_renaming.md`
+- `population_boundary.md`
+- `research_integrity.md`
+- `future_work.md`
+
+Every empirical number in those drafts must carry an artifact-path citation.
 
 ## Research direction
 
@@ -89,13 +159,13 @@ does not invalidate the existing throughput result.
 7. Treat discrepancies as measurement uncertainty, not values to be forced into
    agreement.
 
-## Phase 3B - unused simulation fallback
+## Phase 3B - retained inactive simulation fallback
 
-Build a constrained LNG trade-network model using public bilateral flows,
-liquefaction capacity, regasification capacity, route distances, and explicit
-vessel assumptions. Simulate partial and complete removal of Hormuz-dependent
-exports and report additional vessel-days, unmet demand, and importer exposure.
-Label these outputs scenario simulation, not observed rerouting or causal effects.
+Do not start this branch under the active no-third-layer plan. If it is ever
+reopened, it remains a constrained LNG trade-network model using public
+bilateral flows, liquefaction capacity, regasification capacity, route
+distances, and explicit vessel assumptions. Any outputs must be labelled
+scenario simulation, not observed rerouting or causal effects.
 
 ## Spark remains open through the end
 
@@ -117,6 +187,7 @@ finalized.
 
 ## Remaining action
 
-Keep pursuing Spark access in parallel. Formal estimand/title/RQ approval is the
-separate thesis-governance decision recorded in
-`ESTIMAND_PROPOSAL_RECONCILIATION.md`.
+Complete the accepted Phase-1 through Phase-3 integration path one phase at a
+time, stopping for pasted real output where required. Keep pursuing Spark access
+in parallel. Formal estimand/title/RQ approval is the separate
+thesis-governance decision recorded in `ESTIMAND_PROPOSAL_RECONCILIATION.md`.

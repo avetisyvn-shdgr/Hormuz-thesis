@@ -112,6 +112,14 @@ def main() -> None:
         (long_horizon["model"] == spec.primary_estimator)
         & (long_horizon["target"] == spec.primary_outcome)
     ].iloc[0]
+    horizon_calendar_days = int(ar_long_horizon["horizon_calendar_days"])
+    n_overlapping_placebos = int(ar_transit["n_placebos"])
+    approx_non_overlapping_placebos = int(
+        ar_transit["approx_non_overlapping_placebos"]
+    )
+    effective_horizon_windows = int(
+        ar_long_horizon["effective_non_overlapping_windows"]
+    )
     chronos_transit = tsfm_counterfactual[
         (tsfm_counterfactual["model"] == "chronos2")
         & (tsfm_counterfactual["target"] == spec.primary_outcome)
@@ -184,9 +192,10 @@ def main() -> None:
         "",
         (
             "Information-set sensitivity: AR-only uses no observed post-treatment "
-            "covariates and gives a 94-day interval of "
-            f"**{_num(ar_long_horizon['interval_94dhorizon_lower'])} to "
-            f"{_num(ar_long_horizon['interval_94dhorizon_upper'])} transits**. "
+            f"covariates and gives a horizon-matched interval over "
+            f"{horizon_calendar_days} calendar days of "
+            f"**{_num(ar_long_horizon['interval_horizon_matched_lower'])} to "
+            f"{_num(ar_long_horizon['interval_horizon_matched_upper'])} transits**. "
             "Its close agreement with route ARX indicates that contemporaneous "
             "Panama controls are not driving the estimated gap. Route ARX remains "
             "a conditional sensitivity because Panama traffic is observed post-treatment."
@@ -198,18 +207,20 @@ def main() -> None:
             f"{_num(route_interval['loss_interval_upper'])} tanker transits**, "
             f"or {route_interval['mean_daily_loss_interval_lower']:.1f} to "
             f"{route_interval['mean_daily_loss_interval_upper']:.1f} per day. This "
-            "band is calibrated on <=30-day folds and understates a 94-day horizon."
+            "band is calibrated on <=30-day folds and understates the current "
+            f"{horizon_calendar_days}-calendar-day horizon."
         ),
         "",
         (
-            "Honest 94-day-horizon interval (recalibrated on the placebo-in-time "
-            "windows, which are full 94-day forecast errors): "
-            f"**{_num(route_long_horizon['interval_94dhorizon_lower'])} to "
-            f"{_num(route_long_horizon['interval_94dhorizon_upper'])} tanker "
+            "Honest horizon-matched interval (recalibrated on the placebo-in-time "
+            "windows, which are full-horizon forecast errors): "
+            f"**{_num(route_long_horizon['interval_horizon_matched_lower'])} to "
+            f"{_num(route_long_horizon['interval_horizon_matched_upper'])} tanker "
             f"transits** — about {route_long_horizon['widening_factor_vs_30dfold']:.1f}x "
             "wider than the short-fold band, and still excluding zero by a wide "
             "margin. Use this as the reported interval; the short-fold band is a "
-            "lower bound. The band is coarse/conservative (~9 effective windows)."
+            "lower bound. The band is coarse/conservative "
+            f"({effective_horizon_windows} non-overlapping horizon windows)."
         ),
         (
             "Independent circular-block cross-check (10,000 draws, 14-day blocks "
@@ -230,9 +241,10 @@ def main() -> None:
             "its precise magnitude is not load-bearing."
         ),
         "",
-        "The time-placebo p-value is floor-censored because 36 overlapping placebo "
-        "windows provide only about 9 non-overlapping 94-day windows. Report the "
-        "separation ratio alongside the p-value.",
+        f"The time-placebo p-value is floor-censored because {n_overlapping_placebos} "
+        f"overlapping placebo windows provide only about "
+        f"{approx_non_overlapping_placebos} non-overlapping horizon windows. "
+        "Report the separation ratio alongside the p-value.",
         "",
         "## Treatment-window Robustness",
         "",
