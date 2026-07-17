@@ -37,6 +37,7 @@ core model-code redesign.
 ```bash
 python3.11 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+pip install -e .
 cp .env.example .env          # add free EIA + FRED keys
 python scripts/fetch_baseline.py   # pulls the free energy confounders
 pytest -q                     # full no-network test suite
