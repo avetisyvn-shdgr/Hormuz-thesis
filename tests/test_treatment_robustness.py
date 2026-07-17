@@ -1,10 +1,6 @@
-import sys
-from pathlib import Path
 
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from lngfreight.validation import resolve_cutoff
 from run_treatment_robustness import _post_windows

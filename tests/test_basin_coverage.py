@@ -1,11 +1,8 @@
 """Tests for the basin-interval coverage simulation backing the point-only decision."""
-import sys
-from pathlib import Path
 
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight.basin_coverage import (
     BASIN_INTERVAL_METHODS,

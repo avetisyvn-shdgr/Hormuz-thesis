@@ -4,13 +4,10 @@ Value pins below are from the frozen 2026-07-17 snapshot vintage; if a
 snapshot is legitimately re-captured, re-pin with a comment (same policy as
 the spatial-panel pins in test_spatial.py).
 """
-import sys
-from pathlib import Path
 
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config  # noqa: E402
 from lngfreight.importer_outcomes import build_outcomes, outcomes_summary  # noqa: E402

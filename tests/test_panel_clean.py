@@ -19,14 +19,11 @@ registry. Run: pytest -q
 """
 import hashlib
 import json
-import sys
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import panel as panel_mod
 from lngfreight import config as config_mod

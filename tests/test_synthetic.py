@@ -1,12 +1,8 @@
-import sys
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from lngfreight.synthetic import (  # noqa: E402
     fit_simplex_weights,

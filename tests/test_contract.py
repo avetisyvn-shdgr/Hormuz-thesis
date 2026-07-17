@@ -1,13 +1,10 @@
 """Tests that need NO network and NO API key. These guard the contract that
 keeps the provider abstraction honest. Run: pytest -q
 """
-import sys
-from pathlib import Path
 
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight.sources.base import BaseSource
 

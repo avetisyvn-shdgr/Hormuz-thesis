@@ -1,12 +1,9 @@
 """Tests for the AR-only corridor-transmission outputs."""
-import sys
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight.corridor_transmission import (
     ar_window_statistic,

@@ -1,12 +1,10 @@
 """Contracts for the basin-keyed corridor input panel and audit."""
 import hashlib
 import json
-import sys
 from pathlib import Path
 
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight.corridor_panel import (
     build_corridor_panel,

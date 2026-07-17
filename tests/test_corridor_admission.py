@@ -1,12 +1,9 @@
 """Contract tests for the frozen corridor-panel admission gate."""
-import sys
 from dataclasses import replace
-from pathlib import Path
 
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight.corridor_admission import (
     CorridorAdmissionProtocol,

@@ -6,14 +6,11 @@ aggregation and admission-test logic. They do NOT validate the three real
 foundation-model adapters — those require the isolated benchmark env and a human
 run (CLAUDE.md rule 4).
 """
-import sys
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight.tsfm import (
     FOUNDATION_MODELS,

@@ -1,10 +1,7 @@
-import sys
-from pathlib import Path
 
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight.baselines import seasonal_naive_forecast
 from lngfreight.inference import counterfactual_effect, post_treatment_fold

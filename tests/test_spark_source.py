@@ -5,14 +5,11 @@ the adapter's contract — require credentials, fail loudly, never fabricate a
 freight value, enforce the (date, value) shape, and refuse a silently
 truncated history. Run: pytest -q
 """
-import sys
 import types
-from pathlib import Path
 
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight.sources import spark as spark_mod
 from lngfreight.sources.spark import SparkSource, business_day_coverage

@@ -1,13 +1,10 @@
 """Contract tests for shared-placebo corridor inference."""
-import sys
 from dataclasses import replace
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight.corridor_inference import (
     CorridorInferenceProtocol,

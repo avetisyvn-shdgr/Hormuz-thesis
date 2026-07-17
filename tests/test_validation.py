@@ -13,14 +13,11 @@ rather than silently returning zero folds.
 All tests are NO-network / NO-key: rolling_origin_splits is a pure function over
 an in-memory DatetimeIndex + an explicit settings dict. Run: pytest -q
 """
-import sys
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight.validation import (
     rolling_origin_splits,
