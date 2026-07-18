@@ -115,9 +115,9 @@
     "reports/figures/run_actual_vs_counterfactual.png": "8f3155140ec3c4e466e20b089d5c3bbfe104679b2dd210a3136f40ce1942360f",
     "reports/figures/run_placebo_distribution.png": "d15fc0f4f90f70bfddd9a72cac9a6aa49a939a800a6243d1214e1d8f6057fd9f",
     "reports/figures/run_synthetic_control_path.png": "e8c1ca9729839ed7373a97cdec988099bc38ec5f28280bf594395c68ab5d2815",
-    "reports/mechanism_results_summary.md": "20eb9dc466735883c5476a906a364e83a44a59c53f83e3f0dfd2ce45d2dfe57d",
+    "reports/mechanism_results_summary.md": "3359e744deaeb4d2c085c6e82d2f08718a71bd8f340141aefb9586e3ce8267e9",
     "reports/network_rewiring_summary.md": "85c5594dd214453a59e174ec9659b1e2123d9bf58e015c5448c3e021f44c207f",
-    "reports/run_output.md": "9a77555c13e0801f46174ee85029729323ef12e5fb05f53551df1c46b289a5de"
+    "reports/run_output.md": "c5eddb3d4fd58750777925c4e98f5d2d0b4ae834c45ed417d77d117a05b3a3a0"
   },
   "config_sha256": {
     "config/settings.yaml": "576caa63cc7194d330183caabbe3e2f24d79a44333da9862f787f6f1531ac0c2",

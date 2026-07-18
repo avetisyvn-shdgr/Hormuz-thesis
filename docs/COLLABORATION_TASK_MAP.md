@@ -1,7 +1,7 @@
 # Thesis collaboration task map — SINGLE SOURCE OF TRUTH
 
 **Owner of this file:** Mher Avetisyan (researcher).
-**Last rewritten:** 2026-06-22.
+**Last rewritten:** 2026-06-22. **Baseline facts last updated:** 2026-07-18.
 **Authority:** This document is the **single source of truth** for the thesis
 work plan. If any other doc, chat message, or task tracker disagrees with this
 file, this file wins until it is edited. The in-app task tracker mirrors only the
@@ -46,13 +46,13 @@ identification, variable spec, estimator hierarchy, falsification cascade).
 
 ## 2. Current baseline (verified facts, dated)
 
-- Branch: `exploratory/corridor-transmission`. Last commit `1a81d3b`
-  (2026-06-22): log the WTO Hormuz index refresh from the verification run.
-- Test suite: **216 passed, re-verified 2026-06-22** (`.venv`, Python 3.14.4,
-  pytest 8.4.2, 12.80s; 216 collected = 216 passed, 0 failed). 35 test files.
-- Reproducibility manifest: **94 artifact hashes, re-verified 2026-06-22**.
-  `scripts/run_all.py` completed all 36 steps cleanly: 9 core raw, 20 vessel/raw
-  branch, and 1 interim input hashes passed; all 94 regenerated artifacts matched.
+- Branch/worktree: `main` at commit `0c3f665`, with 2026-07-18 consistency edits
+  currently uncommitted in the working tree.
+- Test suite: **262 passed, re-verified 2026-07-18** (`.venv`, Python 3.14.4,
+  full `pytest -q`, 16.09s; 262 collected = 262 passed, 0 failed).
+- Reproducibility manifest: **117 artifact hashes, re-verified 2026-07-18**.
+  `scripts/freeze_reproducibility.py --verify` passed: 9 core raw, 145 vessel/raw
+  branch, 1 interim input, and all 117 regenerated artifact hashes matched.
   P1 also fixed the discovered provenance-window mutation: raw payloads with
   different content now receive immutable content-addressed paths, and frozen
   panel loading requires an exact query-window match plus SHA-256 verification.

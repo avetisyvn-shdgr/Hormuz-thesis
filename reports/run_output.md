@@ -69,7 +69,7 @@ BSTS is an independent state-space corroboration. Its interval is posterior pred
 - Donor-placebo p95 ratio: **1.250**; separation: **2.602x**; p-value: **0.043478**.
 - Donors: **22**; effective donors: **7.44**; largest weight: `korea_strait` (0.216).
 - Donor-pool stress: clean ratio **3.254**, broad-pool ratio **3.378**.
-- Donor-by-time placebos: **154** fits across **7** disjoint windows; p-value **0.006452**, actual/p95 **2.261x**.
+- Donor-by-time placebos: **154** fits across **7** disjoint windows; p-value **0.006452** (floor-censored at 1/155), actual/p95 **2.261x**.
 
 ## LNG-specific robustness outcome
 

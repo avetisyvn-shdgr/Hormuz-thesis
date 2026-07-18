@@ -1,8 +1,10 @@
 """Package the cross-source evidence cascade into one table + narrative.
 
 Reads only frozen processed artifacts (no recomputation) and assembles the
-five-link transmission chain that is the thesis's headline argument. Outputs a
-tidy CSV and a short markdown narrative. Kept outside run_all.py.
+five-link transmission chain for the mechanism/corridor-aligned 94-day window.
+The active primary PortWatch counterfactual is the 130-day result in
+reports/run_output.md and reports/current_results_summary.md. Outputs a tidy CSV
+and a short markdown narrative. Kept outside run_all.py.
 """
 from __future__ import annotations
 
@@ -70,17 +72,21 @@ def _load():
 
 NARRATIVE = """# Transmission chain — cross-source evidence cascade
 
-**Status:** Exploratory synthesis, 2026-06-21. Packages frozen results; computes
-nothing new. The chain is **descriptive triangulation**, not a causal ton-mile
-multiplier. The within-unit AR-only estimator remains the anchor.
+**Status:** Exploratory synthesis, updated 2026-07-18. Packages frozen results;
+computes nothing new. This chain uses the **94-day mechanism/corridor-aligned
+window** so Layer 1 lines up with the GFW/WTO and corridor-validation branches.
+It is **descriptive triangulation**, not a causal ton-mile multiplier. The active
+primary PortWatch headline remains the 130-day AR-only counterfactual in
+`reports/run_output.md` and `reports/current_results_summary.md`.
 
 ## The one-paragraph argument
 
 A Strait-of-Hormuz disruption shows up as a **cascade across five independent
-evidence layers**. (1) Hormuz tanker throughput collapses ~95% below its own
-pre-treatment counterfactual, and the gap separates from a clean donor pool even
-under a pessimistic contamination screen. (2) The collapse is **commodity-
-specific and cross-validated**: GFW-inferred Gulf LNG departures and the
+evidence layers** in the 94-day mechanism-aligned window. (1) Hormuz tanker
+throughput collapses ~95% below its own pre-treatment counterfactual, and the
+gap separates from a clean donor pool even under a pessimistic contamination
+screen. (2) The collapse is **commodity-specific and cross-validated**:
+GFW-inferred Gulf LNG departures and the
 independent WTO/AXSMarine outbound index both fall ~93–99% with no calibration.
 (3) The LNG fleet **contracts**: resolved Gulf voyages and aggregate inferred
 capacity-distance both decline. (4) Among voyages that still complete, mean
@@ -97,6 +103,9 @@ supported on free data and is explicitly retired.
 
 ## Interpretation boundaries (load-bearing)
 
+- Window discipline matters: this table is the 94-day corridor/GFW-WTO-aligned
+  synthesis window. Do not cite its 5,366 counterfactual or 245 observed transits
+  as the active 130-day primary headline.
 - Every layer is descriptive; none establishes a causal ATT or observed cargo
   ton-miles or freight rates (those need proprietary access that is unavailable).
 - Layers 2–4 rest on terminal-sequence inference (laden state not observed) and

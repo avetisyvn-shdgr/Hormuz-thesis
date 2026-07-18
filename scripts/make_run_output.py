@@ -341,6 +341,9 @@ def main() -> None:
     ].iloc[0]
     placebo_floor_denominator = int(primary_placebo["n_placebos"]) + 1
     block_floor_denominator = int(honest_rank["n_independent_placebo_blocks"]) + 1
+    donor_time_placebos = int(synth_time["n_computed_donor_time_placebos"])
+    donor_time_windows = int(synth_time["n_independent_time_windows"])
+    donor_time_floor_denominator = donor_time_placebos + 1
     horizon_calendar_days = int(primary_long["horizon_calendar_days"])
     n_horizon_windows = int(primary_long["n_horizon_windows"])
     n_effective_horizon_windows = int(primary_long["effective_non_overlapping_windows"])
@@ -481,7 +484,13 @@ def main() -> None:
         f"- Donor-placebo p95 ratio: **{synth['placebo_ratio_p95']:.3f}**; separation: **{synth['ratio_vs_placebo_p95']:.3f}x**; p-value: **{synth['p_ratio_ge_actual']:.6f}**.",
         f"- Donors: **{int(synth['n_donors'])}**; effective donors: **{synth['effective_n_weights']:.2f}**; largest weight: `{synth['top_weight_slug']}` ({synth['top_weight']:.3f}).",
         f"- Donor-pool stress: clean ratio **{clean_pool['post_pre_rmspe_ratio']:.3f}**, broad-pool ratio **{broad_pool['post_pre_rmspe_ratio']:.3f}**.",
-        f"- Donor-by-time placebos: **{int(synth_time['n_computed_donor_time_placebos'])}** fits across **{int(synth_time['n_independent_time_windows'])}** disjoint windows; p-value **{synth_time['donor_time_placebo_p_value']:.6f}**, actual/p95 **{synth_time['actual_to_donor_time_p95_ratio']:.3f}x**.",
+        (
+            f"- Donor-by-time placebos: **{donor_time_placebos}** fits across "
+            f"**{donor_time_windows}** disjoint windows; p-value "
+            f"**{synth_time['donor_time_placebo_p_value']:.6f}** "
+            f"(floor-censored at 1/{donor_time_floor_denominator}), actual/p95 "
+            f"**{synth_time['actual_to_donor_time_p95_ratio']:.3f}x**."
+        ),
         "",
         "## LNG-specific robustness outcome",
         "",

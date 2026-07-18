@@ -1,9 +1,10 @@
 # A number on the AIS-dark-vessel bound
 
-**Status:** 2026-06-20. Turns the previously qualitative "observed throughput is
-an upper bound on the true reduction" caveat (FALLBACK_STRATEGY.md,
-INFERENCE_NOTES.md) into an auditable bound. Reproduced by
-`scripts/run_ais_dark_bound.py` from the frozen counterfactual summary; outputs
+**Status:** Updated 2026-07-18 for the active v2 130-day primary window. Turns
+the previously qualitative "observed throughput is an upper bound on the true
+reduction" caveat (FALLBACK_STRATEGY.md, INFERENCE_NOTES.md) into an auditable
+bound. Reproduced by `scripts/run_ais_dark_bound.py` from the frozen
+counterfactual summary; outputs
 `data/processed/ais_dark_bound_{sensitivity,critical_rates}.csv`.
 
 ## Why a bound, not a point correction
@@ -20,19 +21,19 @@ qualitative conclusion.
 ## The identity
 
 For the primary estimator (`ar_lag1_7`, no post-treatment covariates) on
-`hormuz_tanker_transits`, post-period 2026-02-28 → 2026-06-01:
+`hormuz_tanker_transits`, post-period 2026-02-28 to 2026-07-07:
 
-- Observed transits `O = 245`
-- Counterfactual transits `C = 5,366`
-- Naive observed reduction `R_obs = 1 − O/C = 95.4%`  ← the upper bound (dark rate `d = 0`)
+- Observed transits `O = 529`
+- Counterfactual transits `C = 7,398`
+- Naive observed reduction `R_obs = 1 - O/C = 92.8%`, the upper bound (dark rate `d = 0`)
 
 Let `d` = the **incremental** treatment-period dark rate: the fraction of the
 period's *true* transits that PortWatch fails to observe, **over and above** the
 baseline AIS gap-fill already embedded in the pre-treatment counterfactual. Then
-true transits `T(d) = O/(1−d)` and the true reduction is
+true transits `T(d) = O/(1 - d)` and the true reduction is
 
 ```
-R_true(d) = 1 − O / ((1 − d) · C),   with R_true(0) = R_obs.
+R_true(d) = 1 - O / ((1 - d) * C),   with R_true(0) = R_obs.
 ```
 
 ## The numbers
@@ -41,42 +42,48 @@ R_true(d) = 1 − O / ((1 − d) · C),   with R_true(0) = R_obs.
 
 | Assumed dark rate `d` | Implied true transits | True reduction |
 |---:|---:|---:|
-| 0.00 (naive) | 245 | **95.4%** |
-| 0.10 | 272 | 94.9% |
-| 0.20 | 306 | 94.3% |
-| 0.30 | 350 | 93.5% |
-| 0.50 | 490 | 90.9% |
-| 0.70 | 817 | 84.8% |
-| 0.90 | 2,450 | 54.3% |
+| 0.00 (naive) | 529 | **92.8%** |
+| 0.10 | 588 | 92.1% |
+| 0.20 | 661 | 91.1% |
+| 0.30 | 756 | 89.8% |
+| 0.40 | 882 | 88.1% |
+| 0.50 | 1,058 | 85.7% |
+| 0.70 | 1,763 | 76.2% |
+| 0.90 | 5,290 | 28.5% |
 
 **Critical dark rate `d*` needed to pull the true reduction down to `R`:**
 
 | Target reduction `R` | Required dark rate `d*` |
 |---:|---:|
-| 95% | 8.7% |
-| 90% | 54.3% |
-| 75% | 81.7% |
-| 50% | **90.9%** |
+| 95% | infeasible: above the naive upper bound |
+| 90% | 28.5% |
+| 75% | 71.4% |
+| 50% | **85.7%** |
 
 ## Headline for the thesis
 
-The observed **95.4%** transit collapse is an upper bound on the true reduction.
-Under any defensible incremental dark rate the conclusion is unchanged:
+The observed **92.8%** transit collapse is an upper bound on the true reduction.
+AIS-dark measurement error can change threshold wording, so the thesis should not
+claim a 95% true collapse in the active 130-day window, and a claim of a true
+reduction of at least 90% requires an external dark-rate bound below about
+28.5%. The severe-collapse conclusion is still difficult to erase:
 
 - Even at an extreme **d = 50%** — half of all tankers truly transiting Hormuz
-  going dark, beyond the normal gap-fill — the true reduction is still **≥ 91%**.
-- To make the true collapse *merely 50%*, **≈ 91% of all tankers actually
-  transiting Hormuz would have had to be simultaneously AIS-dark** for ~3 months —
+  going dark, beyond the normal gap-fill — the true reduction is still **85.7%**.
+- To make the true collapse *merely 50%*, **about 86% of all tankers actually
+  transiting Hormuz would have had to be simultaneously AIS-dark** for the
+  130-day post window,
   a near-total blackout that would itself be a separately detectable anomaly
   (PortWatch deadweight capacity, third-party satellite/Kpler-LSEG trackers, port-
   call records), and which no source reports.
 
-So AIS-dark measurement error moves the *magnitude* by a few percentage points
-within any plausible range and cannot touch the *qualitative* finding of a severe
-throughput collapse. Report the result as a **range with 95.4% as the upper
-bound**, and set the lower bound by anchoring `d` to a cited external dark-fleet
-figure via `--plausible-dark-rate` (e.g. IEA / UNCTAD / Kpler-LSEG reporting),
-not by assuming `d` internally.
+So AIS-dark measurement error moves the exact magnitude and threshold labels, but
+it cannot by itself turn the event into an ordinary fluctuation unless the
+incremental treatment-period dark rate is extraordinarily large. Report the
+result as a **range with 92.8% as the upper bound**, and set the lower bound by
+anchoring `d` to a cited external dark-fleet figure via
+`--plausible-dark-rate` (e.g. IEA / UNCTAD / Kpler-LSEG reporting), not by
+assuming `d` internally.
 
 ## What this does and does not do
 

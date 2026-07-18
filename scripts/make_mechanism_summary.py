@@ -284,9 +284,29 @@ def main() -> None:
         "",
         "## Route shift-share decomposition",
         "",
-        f"Across **{capacity_decomposition['n_common_routes']}** terminal pairs observed in both periods, the common-route mean change is **{capacity_decomposition['common_route_total_change']/1e6:.1f} million m3-nm**: **{capacity_decomposition['common_route_composition_change']/1e6:.1f} million** from route-share composition and **{capacity_decomposition['common_route_within_change']/1e6:.1f} million** within pairs. Entry/exit routes contribute a separate **{capacity_decomposition['entry_exit_route_residual']/1e6:.1f} million m3-nm** residual.",
+        (
+            f"Across **{capacity_decomposition['n_common_routes']}** terminal "
+            "pairs observed in both periods, the common-route mean change is "
+            f"**{capacity_decomposition['common_route_total_change']/1e6:.1f} "
+            "million m3-nm**: "
+            f"**{capacity_decomposition['common_route_composition_change']/1e6:.1f} "
+            "million** from route-share composition and "
+            f"**{capacity_decomposition['common_route_within_change']/1e6:.1f} "
+            "million** within pairs. Entry/exit routes contribute a separate "
+            f"**{capacity_decomposition['entry_exit_route_residual']/1e6:.1f} "
+            "million m3-nm** residual to the full-sample mean increase of "
+            f"**{capacity_decomposition['overall_absolute_change']/1e6:.1f} "
+            "million m3-nm**."
+        ),
         "",
-        "Modeled distance is fixed within a terminal pair, so the within-pair term reflects vessel-capacity mix, not route elongation. The +10.2% headline is predominantly compositional.",
+        (
+            "Modeled distance is fixed within a terminal pair, so the within-pair "
+            "term reflects vessel-capacity mix, not route elongation. Within "
+            "common terminal pairs, the change is overwhelmingly route-share "
+            "composition; for the full-sample +10.2% headline, entry/exit is a "
+            "separate sample-composition residual and should be named alongside "
+            "the common-route decomposition."
+        ),
         "",
         "## Highest importer exposures",
         "",

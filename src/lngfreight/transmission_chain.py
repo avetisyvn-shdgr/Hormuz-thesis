@@ -2,9 +2,11 @@
 
 This module does not compute new estimates. It packages results that already
 exist in frozen artifacts into one ordered transmission chain so the thesis reads
-as a single triangulated argument rather than four disconnected analyses. Each
-link names its independent data source and its interpretation boundary, so the
-cascade cannot be mistaken for a causal ton-mile multiplier.
+as a single triangulated argument rather than four disconnected analyses. The
+first link intentionally uses the 94-day mechanism/corridor-aligned window, not
+the active 130-day primary PortWatch headline. Each link names its independent
+data source and its interpretation boundary, so the cascade cannot be mistaken
+for a causal ton-mile multiplier.
 """
 from __future__ import annotations
 
@@ -53,15 +55,21 @@ def build_evidence_cascade(
             "step": 1,
             "layer": "Chokepoint disruption",
             "independent_source": "IMF PortWatch (satellite AIS)",
-            "metric": "Strait of Hormuz tanker transits, 94-day window",
+            "metric": "Strait of Hormuz tanker transits, 94-day mechanism-aligned window",
             "pre_value": round(hormuz_counterfactual, 1),
             "post_value": round(hormuz_observed, 1),
-            "percent_change": round(hormuz_signed_deviation * 100.0, 1),
+            "percent_change": round(
+                percent_change(hormuz_counterfactual, hormuz_observed), 1
+            ),
             "corroboration": (
+                f"mean-scaled corridor statistic {hormuz_signed_deviation * 100.0:+.1f}%; "
                 f"donor synthetic control {donor_separation_pessimistic:.1f}x "
                 f"separation (survives pessimistic screen); Romano-Wolf p={hormuz_rw_p:.2f}"
             ),
-            "interpretation_boundary": "AR counterfactual, not an identified ATT",
+            "interpretation_boundary": (
+                "94-day corridor synthesis; not the 130-day primary headline "
+                "or an identified ATT"
+            ),
         },
         {
             "step": 2,
@@ -101,9 +109,13 @@ def build_evidence_cascade(
             "percent_change": round(mean_per_voyage_pct, 1),
             "corroboration": (
                 f"BCa 95% CI [{mean_bca_lower:+.1f}%, {mean_bca_upper:+.1f}%]; "
-                f"{composition_share_pct:.0f}% from route composition, not elongation"
+                f"{composition_share_pct:.0f}% of common-route change from "
+                "route composition; entry/exit residual separate"
             ),
-            "interpretation_boundary": "composition effect; NOT observed laden ton-miles",
+            "interpretation_boundary": (
+                "common-route composition effect plus entry/exit residual; "
+                "NOT observed laden ton-miles"
+            ),
         },
         {
             "step": 5,

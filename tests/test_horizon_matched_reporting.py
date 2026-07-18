@@ -63,3 +63,9 @@ def test_active_primary_reports_do_not_reintroduce_stale_94_day_labels():
         text = Path(path).read_text(encoding="utf-8")
         for phrase in stale_phrases:
             assert phrase not in text
+
+
+def test_run_output_labels_donor_time_placebo_floor():
+    text = (config.ROOT / "reports" / "run_output.md").read_text(encoding="utf-8")
+    assert "Donor-by-time placebos" in text
+    assert "floor-censored at 1/155" in text

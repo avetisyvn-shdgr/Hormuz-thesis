@@ -9,7 +9,7 @@ documentation.
 
 | Old construct | Replacement | Integration caveat |
 |---|---|---|
-| `ton-mile multiplier` | `nominal capacity-distance per routed LNG voyage` | Use only for the GFW terminal-sequence mechanism branch. Add the compositional shift-share caveat whenever interpreting the per-voyage increase: route composition, not necessarily elongation, drives the retained-voyage pattern (`reports/transmission_chain_summary.md`). |
+| `ton-mile multiplier` | `nominal capacity-distance per routed LNG voyage` | Use only for the GFW terminal-sequence mechanism branch. Add the compositional shift-share caveat whenever interpreting the per-voyage increase: common-route route-share composition, plus a separate entry/exit residual, drives the retained-voyage pattern (`reports/transmission_chain_summary.md`). |
 | `adaptation cost` | `conditional distance burden` | Use when discussing modeled distance or vessel-time burdens, and pair it with the scenario label. Do not imply welfare cost, freight-rate incidence, or observed cargo replacement. |
 | `LNG freight markets` framing | `Hormuz tanker throughput and LNG shipping-network adaptation` | Use for the thesis frame unless Spark freight access is actually admitted later. The current generated run report states the working estimand as disruption-associated counterfactual shortfall, not freight-rate effect (`reports/run_output.md`). |
 

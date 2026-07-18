@@ -45,9 +45,13 @@ monthly customs data. The network table covers `5` importer cases plus the
 EU27, India, and Japan, and `4` months for Korea and Taiwan
 (`data/processed/lng_rewiring_summary.csv`). At this rung, the thesis claims
 descriptive network rewiring: Gulf-origin shares, source concentration, and
-origin portfolios moved after the shock in the observed by-origin tables. It
-does not claim that one non-Gulf cargo physically replaced one Gulf cargo, and
-it does not pool India's value-basis customs evidence with physical
+origin portfolios moved after the shock in the observed by-origin tables. The
+manuscript should use the artifact-backed anomaly statement: all `6` units flag,
+including Japan and the EU27 aggregate comparator, with
+`post_max_empirical_percentile = 1.000` in
+`data/processed/lng_network_anomaly_summary.csv`. At this rung, it does not
+claim that one non-Gulf cargo physically replaced one Gulf cargo, and it does
+not pool India's value-basis customs evidence with physical
 weight/volume-basis import evidence.
 
 ## Scenario-conditional feasibility

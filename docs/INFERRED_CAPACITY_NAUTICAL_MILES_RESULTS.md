@@ -41,7 +41,9 @@ within the same terminal pair. Entry and exit of routes contribute a separate
 29.6 million `m3-nm` residual to the full-sample 67.6 million increase. Because
 modeled distance is fixed within a terminal pair, the small within-pair term is
 vessel-capacity mix, **not evidence that a given route became longer**. The
-headline increase is therefore predominantly a composition result.
+common-route component is therefore predominantly route-share composition; the
+full-sample headline combines that common-route shift with a separate entry/exit
+sample-composition residual.
 
 ## Coverage and censoring
 

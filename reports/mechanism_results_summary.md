@@ -21,9 +21,9 @@
 
 ## Route shift-share decomposition
 
-Across **189** terminal pairs observed in both periods, the common-route mean change is **38.0 million m3-nm**: **37.1 million** from route-share composition and **0.8 million** within pairs. Entry/exit routes contribute a separate **29.6 million m3-nm** residual.
+Across **189** terminal pairs observed in both periods, the common-route mean change is **38.0 million m3-nm**: **37.1 million** from route-share composition and **0.8 million** within pairs. Entry/exit routes contribute a separate **29.6 million m3-nm** residual to the full-sample mean increase of **67.6 million m3-nm**.
 
-Modeled distance is fixed within a terminal pair, so the within-pair term reflects vessel-capacity mix, not route elongation. The +10.2% headline is predominantly compositional.
+Modeled distance is fixed within a terminal pair, so the within-pair term reflects vessel-capacity mix, not route elongation. Within common terminal pairs, the change is overwhelmingly route-share composition; for the full-sample +10.2% headline, entry/exit is a separate sample-composition residual and should be named alongside the common-route decomposition.
 
 ## Highest importer exposures
 

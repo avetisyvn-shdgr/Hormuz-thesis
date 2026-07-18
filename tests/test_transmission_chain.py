@@ -58,3 +58,18 @@ def test_every_link_states_an_interpretation_boundary():
     assert df["interpretation_boundary"].str.len().gt(0).all()
     # The strongest claim (layer 2) must name the second, independent source.
     assert "WTO" in df.loc[df["step"].eq(2), "corroboration"].iloc[0]
+
+
+def test_hormuz_link_declares_mechanism_window_not_primary_headline():
+    df = _cascade().set_index("step")
+    assert "94-day mechanism-aligned" in df.loc[1, "metric"]
+    assert "130-day primary headline" in df.loc[1, "interpretation_boundary"]
+
+
+def test_hormuz_percent_change_matches_displayed_cumulative_pair():
+    df = _cascade().set_index("step")
+    expected = round(
+        percent_change(df.loc[1, "pre_value"], df.loc[1, "post_value"]), 1
+    )
+    assert df.loc[1, "percent_change"] == pytest.approx(expected)
+    assert "mean-scaled corridor statistic" in df.loc[1, "corroboration"]
