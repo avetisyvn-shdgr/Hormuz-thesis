@@ -1,0 +1,48 @@
+{
+  "aggregate_capacity_distance_bn_m3_nm": {
+    "post": 530.1910773338246,
+    "pre": 628.2448695294609
+  },
+  "basemap": {
+    "file": "data/raw/natural_earth/ne_110m_land.geojson",
+    "license": "Natural Earth public domain",
+    "sha256": "9e0729ee253ca7d7a5c4ae9395fb1902264c5377c52e224d13dd85010e2835d9"
+  },
+  "figure": "reports/figures/modeled_route_network_change.png",
+  "limitations": [
+    "Route geometry is modeled shortest-sea-route output, not sailed AIS tracks.",
+    "Terminal-sequence inference and right-censoring propagate into the drawn network.",
+    "Line width represents nominal capacity-distance change, not cargo.",
+    "PortWatch markers are an independent observed corridor layer and do not trace the routed voyages."
+  ],
+  "line_width_cap_bn_m3_nm": 3.1904717714167283,
+  "max_recomputed_route_distance_difference_nm": 1.8189894035458565e-12,
+  "observed_marker_source": "data/processed/corridor_transmission_results.csv",
+  "route_engine": "searoute",
+  "route_engine_version": "1.6.0",
+  "route_restrictions": [
+    "northwest"
+  ],
+  "route_units": "naut",
+  "sample_filter": {
+    "post_window": [
+      "2026-02-28",
+      "2026-06-01"
+    ],
+    "pre_window": [
+      "2025-02-28",
+      "2025-06-01"
+    ],
+    "route_qa": "inferred_nominal_m3_nm_expanded is non-null",
+    "terminal_match_radius_km": 30
+  },
+  "union_unique_pairs": 578,
+  "unique_pair_counts": {
+    "post": 362,
+    "pre": 405
+  },
+  "voyage_counts": {
+    "post": 726,
+    "pre": 948
+  }
+}

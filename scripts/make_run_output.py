@@ -10,11 +10,24 @@ os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
 import matplotlib  # noqa: E402
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.dates as mdates  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from figure_style import (  # noqa: E402
+    DECREASE_COLOR,
+    FIGURE_WIDTH_IN,
+    INCREASE_COLOR,
+    NEUTRAL_DARK,
+    NEUTRAL_LIGHT,
+    NEUTRAL_MID,
+    apply_publication_style,
+    save_pdf_and_png,
+    style_axes,
+)
 from lngfreight import config  # noqa: E402
 from lngfreight.specification import working_specification  # noqa: E402
 from lngfreight.validation import resolve_cutoff  # noqa: E402
@@ -79,13 +92,15 @@ def _fmt_interval(lower: object, upper: object, digits: int = 1) -> str:
 
 def _save_figure(fig: plt.Figure, name: str) -> Path:
     out = config.path("figures") / name
-    fig.savefig(out, dpi=180, bbox_inches="tight")
+    pdf_out, _ = save_pdf_and_png(fig, out)
     plt.close(fig)
     print(f"wrote {out}")
+    print(f"wrote {pdf_out}")
     return out
 
 
 def main() -> None:
+    apply_publication_style()
     spec = working_specification()
     cutoff = resolve_cutoff()
     target = spec.primary_outcome
@@ -245,18 +260,136 @@ def main() -> None:
         (point_intervals["model"] == spec.primary_estimator)
         & (point_intervals["target"] == target)
     ].sort_values("date")
-    fig, ax = plt.subplots(figsize=(14, 6))
-    ax.plot(actual.index, actual, color="#1f2937", linewidth=0.8, alpha=0.75, label="Observed")
-    ax.plot(validation_primary["date"], validation_primary["y_pred"], color="#2563eb", linewidth=1.0, label="Pre-period rolling-origin forecast")
-    ax.plot(post_primary["date"], post_primary["y_pred"], color="#dc2626", linewidth=1.8, label="AR-only counterfactual")
-    ax.fill_between(
-        band["date"], band["counterfactual_lower"], band["counterfactual_upper"],
-        color="#fca5a5", alpha=0.35, label="95% pointwise residual band",
+    actual_7d = actual.rolling(window=7, min_periods=1).mean()
+    fig, (ax, ax_post) = plt.subplots(
+        1,
+        2,
+        figsize=(FIGURE_WIDTH_IN, 4.15),
+        sharey=True,
+        gridspec_kw={"width_ratios": [3.05, 1.15]},
     )
-    ax.axvline(cutoff, color="black", linestyle="--", linewidth=1.2, label=f"Treatment cutoff {cutoff.date()}")
-    ax.set(title="Hormuz Tanker Transits: Observed vs AR-only Counterfactual", ylabel="Daily tanker transits", xlabel="Date")
-    ax.legend(ncol=2, frameon=False)
-    ax.grid(alpha=0.2)
+    fig.subplots_adjust(
+        left=0.09,
+        right=0.985,
+        bottom=0.28,
+        top=0.80,
+        wspace=0.08,
+    )
+
+    def _counterfactual_panel(
+        panel_ax: plt.Axes,
+        *,
+        post_detail: bool,
+    ) -> None:
+        observed = actual.loc[actual.index >= cutoff] if post_detail else actual
+        observed_7d = (
+            actual_7d.loc[actual_7d.index >= cutoff]
+            if post_detail
+            else actual_7d
+        )
+        panel_ax.plot(
+            observed.index,
+            observed,
+            color=NEUTRAL_MID,
+            linewidth=0.45,
+            alpha=0.24,
+            label="Observed, daily",
+            zorder=2,
+        )
+        panel_ax.plot(
+            observed_7d.index,
+            observed_7d,
+            color=NEUTRAL_DARK,
+            linewidth=1.35,
+            label="Observed, 7-day mean",
+            zorder=3,
+        )
+        if not post_detail:
+            panel_ax.plot(
+                validation_primary["date"],
+                validation_primary["y_pred"],
+                color=INCREASE_COLOR,
+                linewidth=1.05,
+                linestyle=(0, (4, 1.8)),
+                label="Pre-period rolling-origin forecast",
+                zorder=4,
+            )
+        panel_ax.fill_between(
+            band["date"],
+            band["counterfactual_lower"],
+            band["counterfactual_upper"],
+            color="#F4A582",
+            alpha=0.30,
+            linewidth=0,
+            label="Short-fold residual band (pointwise)",
+            zorder=1,
+        )
+        panel_ax.plot(
+            post_primary["date"],
+            post_primary["y_pred"],
+            color=DECREASE_COLOR,
+            linewidth=1.8,
+            label="AR-only counterfactual",
+            zorder=5,
+        )
+        panel_ax.axvline(
+            cutoff,
+            color="#111111",
+            linestyle=(0, (2.4, 1.7)),
+            linewidth=1.05,
+            label=f"Treatment cutoff {cutoff.date()}",
+            zorder=6,
+        )
+        style_axes(panel_ax, grid_axis="y")
+        panel_ax.set_xlabel("Date")
+
+    _counterfactual_panel(ax, post_detail=False)
+    _counterfactual_panel(ax_post, post_detail=True)
+    ax.axvspan(
+        cutoff,
+        actual.index.max(),
+        color=NEUTRAL_LIGHT,
+        alpha=0.22,
+        linewidth=0,
+        zorder=0,
+    )
+    ax.set_ylabel("Daily tanker transits")
+    ax.set_title("Full series", loc="left", pad=6)
+    ax_post.set_title("Post-period detail", loc="left", pad=6)
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+    ax_post.set_xlim(cutoff, actual.index.max())
+    ax_post.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+    ax_post.xaxis.set_major_formatter(mdates.DateFormatter("%b\n%Y"))
+    ax_post.tick_params(labelleft=False)
+    fig.suptitle(
+        "Hormuz tanker throughput: observed and AR-only counterfactual",
+        x=0.09,
+        y=0.95,
+        ha="left",
+        fontsize=13.0,
+        fontweight="semibold",
+        color=NEUTRAL_DARK,
+    )
+    handles, labels = ax.get_legend_handles_labels()
+    legend_order = [
+        labels.index("Observed, daily"),
+        labels.index("Observed, 7-day mean"),
+        labels.index("Pre-period rolling-origin forecast"),
+        labels.index("AR-only counterfactual"),
+        labels.index("Short-fold residual band (pointwise)"),
+        labels.index(f"Treatment cutoff {cutoff.date()}"),
+    ]
+    fig.legend(
+        [handles[index] for index in legend_order],
+        [labels[index] for index in legend_order],
+        loc="lower center",
+        bbox_to_anchor=(0.53, 0.03),
+        ncol=3,
+        frameon=False,
+        handlelength=2.6,
+        columnspacing=1.3,
+    )
     fig_actual = _save_figure(fig, FIG_ACTUAL)
 
     # Figure 2: temporal placebo distribution.
@@ -265,23 +398,113 @@ def main() -> None:
         & (placebo_effects["target"] == target)
         & (~placebo_effects["is_actual"].astype(bool))
     ]["cumulative_throughput_loss"].dropna()
-    fig, ax = plt.subplots(figsize=(10, 5.5))
-    ax.hist(placebo, bins=14, color="#93c5fd", edgecolor="white")
-    ax.axvline(primary["placebo_reference_p95"], color="#d97706", linestyle="--", linewidth=2, label=f"Placebo p95 = {primary['placebo_reference_p95']:.0f}")
-    ax.axvline(primary["point_shortfall"], color="#b91c1c", linewidth=2.5, label=f"Actual = {primary['point_shortfall']:.0f}")
-    ax.set(title="Placebo-in-time Distribution vs Actual AR-only Shortfall", xlabel="Cumulative throughput shortfall", ylabel="Placebo windows")
-    ax.legend(frameon=False)
-    ax.grid(axis="y", alpha=0.2)
+    fig, ax = plt.subplots(figsize=(FIGURE_WIDTH_IN, 3.95))
+    fig.subplots_adjust(left=0.11, right=0.98, bottom=0.24, top=0.80)
+    counts, _, _ = ax.hist(
+        placebo,
+        bins=14,
+        color="#92C5DE",
+        edgecolor="white",
+        linewidth=0.65,
+    )
+    placebo_p95 = float(primary["placebo_reference_p95"])
+    actual_shortfall = float(primary["point_shortfall"])
+    ax.axvline(
+        placebo_p95,
+        color=NEUTRAL_DARK,
+        linestyle=(0, (4, 2)),
+        linewidth=1.4,
+        zorder=4,
+    )
+    ax.axvline(
+        actual_shortfall,
+        color=DECREASE_COLOR,
+        linewidth=2.0,
+        zorder=5,
+    )
+    y_top = max(float(np.max(counts)), 1.0)
+    ax.annotate(
+        f"Placebo p95 = {placebo_p95:,.0f}",
+        xy=(placebo_p95, y_top * 0.86),
+        xytext=(-7, 0),
+        textcoords="offset points",
+        ha="right",
+        va="center",
+        fontsize=9.5,
+        color=NEUTRAL_DARK,
+    )
+    ax.annotate(
+        f"Actual shortfall = {actual_shortfall:,.0f}",
+        xy=(actual_shortfall, y_top * 0.76),
+        xytext=(-7, 0),
+        textcoords="offset points",
+        ha="right",
+        va="center",
+        fontsize=9.5,
+        fontweight="semibold",
+        color=DECREASE_COLOR,
+    )
+    ax.set(
+        title="Actual cumulative shortfall exceeds all temporal placebos",
+        xlabel="Cumulative throughput shortfall",
+        ylabel="Overlapping placebo windows",
+    )
+    ax.title.set_position((0.0, 1.02))
+    ax.title.set_ha("left")
+    style_axes(ax, grid_axis="y")
+    fig.text(
+        0.11,
+        0.06,
+        (
+            "Note: placebo windows overlap; this is a reference distribution, "
+            "not an independent sampling distribution."
+        ),
+        ha="left",
+        va="bottom",
+        fontsize=9.0,
+        color=NEUTRAL_MID,
+    )
     fig_placebo = _save_figure(fig, FIG_PLACEBO)
 
     # Figure 3: synthetic-control path in transit-equivalent units.
-    fig, ax = plt.subplots(figsize=(14, 6))
-    ax.plot(synth_path["date"], synth_path["y_scaled"] * scale, color="#1f2937", linewidth=1.0, label="Observed Hormuz")
-    ax.plot(synth_path["date"], synth_path["synthetic_scaled"] * scale, color="#7c3aed", linewidth=1.4, label="Synthetic control")
-    ax.axvline(cutoff, color="black", linestyle="--", linewidth=1.2, label=f"Treatment cutoff {cutoff.date()}")
-    ax.set(title="Hormuz Tanker Transits: Actual vs Donor-weighted Synthetic Control", ylabel="Daily transit-equivalent units", xlabel="Date")
-    ax.legend(frameon=False)
-    ax.grid(alpha=0.2)
+    fig, ax = plt.subplots(figsize=(FIGURE_WIDTH_IN, 3.8))
+    fig.subplots_adjust(left=0.10, right=0.98, bottom=0.22, top=0.82)
+    ax.plot(
+        synth_path["date"],
+        synth_path["y_scaled"] * scale,
+        color=NEUTRAL_DARK,
+        linewidth=1.15,
+        label="Observed Hormuz",
+    )
+    ax.plot(
+        synth_path["date"],
+        synth_path["synthetic_scaled"] * scale,
+        color=INCREASE_COLOR,
+        linewidth=1.35,
+        linestyle=(0, (4, 1.8)),
+        label="Synthetic control",
+    )
+    ax.axvline(
+        cutoff,
+        color="#111111",
+        linestyle=(0, (2.4, 1.7)),
+        linewidth=1.05,
+        label=f"Treatment cutoff {cutoff.date()}",
+    )
+    ax.set(
+        title="Hormuz tanker throughput: observed and donor-weighted synthetic control",
+        ylabel="Daily transit-equivalent units",
+        xlabel="Date",
+    )
+    ax.title.set_position((0.0, 1.02))
+    ax.title.set_ha("left")
+    style_axes(ax, grid_axis="y")
+    ax.legend(
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.18),
+        ncol=3,
+        frameon=False,
+    )
     fig_synth = _save_figure(fig, FIG_SYNTH)
 
     validation_rows = []

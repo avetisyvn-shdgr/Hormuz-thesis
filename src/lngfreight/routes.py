@@ -83,6 +83,10 @@ def searoute_router(
         "route_start_lat": float(coordinates[0][1]),
         "route_end_lon": float(coordinates[-1][0]),
         "route_end_lat": float(coordinates[-1][1]),
+        "coordinates": [
+            [float(longitude), float(latitude)]
+            for longitude, latitude in coordinates
+        ],
         # searoute returns traversed passages as an unordered set, so its list
         # order follows Python's per-process string-hash seed. Sort it to a
         # canonical order: route_passages is a descriptive set of crossings, not

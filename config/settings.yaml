@@ -91,6 +91,11 @@ paths:
   donor_contamination_stress_csv: "data/processed/donor_contamination_stress.csv"
   donor_contamination_verdict_json: "data/processed/donor_contamination_verdict.json"
   transmission_chain_csv: "data/processed/transmission_chain_cascade.csv"
+  natural_earth_land_geojson: "data/raw/natural_earth/ne_110m_land.geojson"
+  modeled_route_network_change_csv: "data/processed/modeled_route_network_change_pairs.csv"
+  modeled_route_network_change_manifest_json: "data/processed/modeled_route_network_change_manifest.json"
+  modeled_route_network_change_png: "reports/figures/modeled_route_network_change.png"
+  modeled_route_network_change_pdf: "reports/figures/modeled_route_network_change.pdf"
 
 # Study window. Pre-period must be long enough for rolling-origin validation;
 # post-period is deliberately short (the proposal warns about overfitting here).

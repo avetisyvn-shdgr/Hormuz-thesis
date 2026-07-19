@@ -9,6 +9,9 @@ data/interim/*
 # Keep provenance and the frozen raw snapshot identities under version control.
 !data/raw/provenance.jsonl
 !data/raw/SHA256SUMS
+# The route-map basemap is a small public-domain pipeline dependency.
+!data/raw/natural_earth/
+!data/raw/natural_earth/ne_110m_land.geojson
 
 # Python
 __pycache__/
