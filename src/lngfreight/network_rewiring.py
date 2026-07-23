@@ -728,10 +728,17 @@ def _origin_period_matrix(network: pd.DataFrame) -> pd.DataFrame:
 
 
 def _portfolio_vector(group: pd.DataFrame, all_origins: list[str]) -> pd.Series:
+    """Mean monthly origin shares with absent origin-months represented by zero."""
     if group.empty:
         return pd.Series(0.0, index=all_origins)
-    shares = group.groupby("origin_code")["origin_share"].mean()
-    shares = shares.reindex(all_origins, fill_value=0.0)
+    shares_by_month = group.pivot_table(
+        index="period",
+        columns="origin_code",
+        values="origin_share",
+        aggfunc="sum",
+        fill_value=0.0,
+    ).reindex(columns=all_origins, fill_value=0.0)
+    shares = shares_by_month.mean(axis="index").astype("float64")
     total = shares.sum()
     if total > 0:
         shares = shares / total
@@ -739,11 +746,17 @@ def _portfolio_vector(group: pd.DataFrame, all_origins: list[str]) -> pd.Series:
 
 
 def _mean_edges_by_origin(group: pd.DataFrame, all_origins: list[str]) -> pd.Series:
+    """Mean monthly edges with absent origin-months represented by zero."""
     if group.empty:
         return pd.Series(0.0, index=all_origins)
-    return group.groupby("origin_code")["edge_value"].mean().reindex(
-        all_origins, fill_value=0.0
-    )
+    edges_by_month = group.pivot_table(
+        index="period",
+        columns="origin_code",
+        values="edge_value",
+        aggfunc="sum",
+        fill_value=0.0,
+    ).reindex(columns=all_origins, fill_value=0.0)
+    return edges_by_month.mean(axis="index").astype("float64")
 
 
 def dynamic_network_graph_metrics(

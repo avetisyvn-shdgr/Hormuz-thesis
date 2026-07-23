@@ -166,7 +166,8 @@ granularity. Outcomes:
    only 20.3% of its own expected flow, so normalized severity dissolves the
    scale-confounding objection. See [INFERENCE_NOTES.md](INFERENCE_NOTES.md).
 9. **(Done)** Donor-weighted synthetic control, leave-one-donor-out sensitivity,
-   block-residual intervals, and horizon-matched placebo-window intervals.
+   block-residual intervals, descriptive full-horizon overlapping-placebo
+   quantile bands, and disjoint-block rank/conformal inference.
 10. **(Done 2026-06-20)** Event-study figures regenerated with the locked cutoff
     and audited milestone labels; hashes are covered by `run_all.py`.
 

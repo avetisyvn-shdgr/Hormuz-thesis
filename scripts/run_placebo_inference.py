@@ -124,6 +124,8 @@ def _summarize(effects: pd.DataFrame, effective_placebos: int) -> pd.DataFrame:
             "actual_n_train": int(actual["n_train"]),
             "n_placebos": int(placebos.notna().sum()),
             "approx_non_overlapping_placebos": int(effective_placebos),
+            "overlapping_windows": True,
+            "nominal_p_value_supported": False,
             "placebo_train_min": int(placebo_rows["n_train"].min()),
             "placebo_train_median": float(placebo_rows["n_train"].median()),
             "placebo_train_max": int(placebo_rows["n_train"].max()),
@@ -146,17 +148,17 @@ def _summarize(effects: pd.DataFrame, effective_placebos: int) -> pd.DataFrame:
                 actual["mean_daily_throughput_loss"],
                 placebo_daily_p95,
             ),
-            "p_loss_ge_actual": empirical_p_value(
+            "overlapping_reference_rank_loss_ge_actual": empirical_p_value(
                 actual["cumulative_throughput_loss"],
                 placebos,
                 alternative="greater",
             ),
-            "p_mean_daily_loss_ge_actual": empirical_p_value(
+            "overlapping_reference_rank_mean_daily_loss_ge_actual": empirical_p_value(
                 actual["mean_daily_throughput_loss"],
                 placebo_daily,
                 alternative="greater",
             ),
-            "p_abs_loss_ge_actual": empirical_p_value(
+            "overlapping_reference_rank_abs_loss_ge_actual": empirical_p_value(
                 actual["cumulative_throughput_loss"],
                 placebos,
                 alternative="two-sided",
@@ -206,8 +208,9 @@ def main() -> None:
     print(f"wrote {summary_out}")
 
     print("\nInterpretation guard:")
-    print(" - Placebo windows overlap; p-values are design-floor diagnostics, not independent-tail estimates.")
-    print(" - Report separation ratios vs placebo p95 alongside p-values.")
+    print(" - Placebo windows overlap; their reference ranks are not p-values.")
+    print(" - Report separation ratios and state when the loss exceeds all windows.")
+    print(" - Use disjoint blocks for rank p-values and conformal calibration.")
     print(" - Use mean-daily loss for capacity comparisons because valid day counts differ.")
     print(" - This tests whether the observed gap is unusual vs earlier forecast errors.")
     print(" - It does not solve AIS measurement bias or donor contamination by itself.")

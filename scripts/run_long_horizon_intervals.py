@@ -1,16 +1,16 @@
-"""Phase 4, step 8: honest horizon-matched counterfactual intervals.
+"""Phase 4, step 8: full-horizon empirical placebo quantile bands.
 
 The block-bootstrap intervals in ``run_interval_calibration.py`` are calibrated
 on rolling-origin residuals from <=30-day folds, so they understate uncertainty
 for a counterfactual that runs far beyond those validation folds. This script
-recalibrates the interval at the current post-window horizon by reusing the
-placebo-in-time windows, which are full-horizon pre-treatment recursive
-forecasts. Each placebo window's cumulative gap is a realised horizon-matched
-cumulative forecast error; their spread is the honest forecast-error band.
+uses the placebo-in-time windows, which are full-horizon pre-treatment recursive
+forecasts, to construct a descriptive empirical quantile band. Each placebo
+window's cumulative gap is a realised horizon-matched cumulative forecast error.
 
-It does not refit anything post-treatment and adds no new model. It compares the
-old (<=30-day-fold) interval with the horizon-matched interval so the magnitude
-of the previous understatement is explicit.
+The placebo windows overlap, so the 2.5/97.5% quantiles do not have nominal 95%
+coverage and are not a confidence, prediction, or conformal interval. Disjoint
+block-rank and block-conformal inference is generated separately by
+``run_block_inference.py``.
 
 Run from the repo root:
     python scripts/run_placebo_inference.py        # produces full-horizon errors
@@ -29,10 +29,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from lngfreight import config  # noqa: E402
 from lngfreight.inference import (  # noqa: E402
     circular_block_bootstrap_loss_interval,
-    long_horizon_loss_interval,
+    overlapping_placebo_quantile_band,
 )
 
-ALPHA = 0.05
+LOWER_QUANTILE = 0.025
+UPPER_QUANTILE = 0.975
+BOOTSTRAP_ALPHA = 0.05
 
 
 def _read_processed(name: str) -> pd.DataFrame:
@@ -92,11 +94,17 @@ def main() -> None:
         cum_errors = -windows["cumulative_throughput_loss"]
         daily_errors = -windows["mean_daily_throughput_loss"]
 
-        cum = long_horizon_loss_interval(
-            base["point_cumulative_throughput_loss"], cum_errors, alpha=ALPHA
+        cum = overlapping_placebo_quantile_band(
+            base["point_cumulative_throughput_loss"],
+            cum_errors,
+            lower_quantile=LOWER_QUANTILE,
+            upper_quantile=UPPER_QUANTILE,
         )
-        daily = long_horizon_loss_interval(
-            base["mean_daily_loss"], daily_errors, alpha=ALPHA
+        daily = overlapping_placebo_quantile_band(
+            base["mean_daily_loss"],
+            daily_errors,
+            lower_quantile=LOWER_QUANTILE,
+            upper_quantile=UPPER_QUANTILE,
         )
         residual_path = validation_forecasts.loc[
             validation_forecasts["model"].eq(model)
@@ -111,14 +119,16 @@ def main() -> None:
             block_length=int(crosscheck["circular_block_length_days"]),
             n_draws=int(crosscheck["bootstrap_draws"]),
             seed=seed + row_number,
-            alpha=ALPHA,
+            alpha=BOOTSTRAP_ALPHA,
         )
 
         width_30d = base["loss_interval_upper"] - base["loss_interval_lower"]
         rows.append({
             "model": model,
             "target": target,
-            "alpha": ALPHA,
+            "lower_reference_quantile": LOWER_QUANTILE,
+            "upper_reference_quantile": UPPER_QUANTILE,
+            "nominal_coverage_supported": False,
             "horizon_calendar_days": horizon_calendar_days,
             "n_post_days": int(base["n_post_days"]),
             "n_horizon_windows": cum["n_horizon_windows"],
@@ -128,14 +138,16 @@ def main() -> None:
             "interval_30dfold_lower": float(base["loss_interval_lower"]),
             "interval_30dfold_upper": float(base["loss_interval_upper"]),
             "interval_30dfold_width": float(width_30d),
-            # Honest horizon-matched interval.
-            "interval_horizon_matched_lower": cum["interval_lower"],
-            "interval_horizon_matched_upper": cum["interval_upper"],
-            "interval_horizon_matched_width": cum["interval_width"],
+            # Descriptive overlapping-window quantile band; no nominal coverage.
+            "overlapping_placebo_quantile_band_lower": cum["band_lower"],
+            "overlapping_placebo_quantile_band_upper": cum["band_upper"],
+            "overlapping_placebo_quantile_band_width": cum["band_width"],
             "widening_factor_vs_30dfold": (
-                cum["interval_width"] / width_30d if width_30d else float("nan")
+                cum["band_width"] / width_30d if width_30d else float("nan")
             ),
-            "excludes_zero_horizon_matched": cum["excludes_zero"],
+            "overlapping_placebo_band_excludes_zero_descriptively": cum[
+                "band_excludes_zero_descriptively"
+            ],
             "pre_period_bias_centered_out": cum["pre_period_mean_error_centered_out"],
             # Independent cross-check from the ordered OOF residual path.
             "interval_circular_bootstrap_lower": circular["interval_lower"],
@@ -144,11 +156,13 @@ def main() -> None:
             "circular_bootstrap_block_length": circular["block_length"],
             "circular_bootstrap_draws": circular["n_bootstrap_draws"],
             "circular_bootstrap_n_oof_residuals": circular["n_residuals"],
-            # Mean-daily band (robust to differing valid-day counts, esp. capacity).
+            # Descriptive mean-daily band (especially useful for missing capacity days).
             "mean_daily_loss": daily["point_loss"],
-            "mean_daily_horizon_matched_lower": daily["interval_lower"],
-            "mean_daily_horizon_matched_upper": daily["interval_upper"],
-            "mean_daily_excludes_zero": daily["excludes_zero"],
+            "mean_daily_overlapping_placebo_quantile_band_lower": daily["band_lower"],
+            "mean_daily_overlapping_placebo_quantile_band_upper": daily["band_upper"],
+            "mean_daily_overlapping_placebo_band_excludes_zero_descriptively": daily[
+                "band_excludes_zero_descriptively"
+            ],
         })
 
     summary = pd.DataFrame(rows).sort_values(["target", "model"]).reset_index(drop=True)
@@ -158,9 +172,11 @@ def main() -> None:
     show = [
         "model", "target", "point_cumulative_throughput_loss",
         "interval_30dfold_lower", "interval_30dfold_upper",
-        "interval_horizon_matched_lower", "interval_horizon_matched_upper",
+        "overlapping_placebo_quantile_band_lower",
+        "overlapping_placebo_quantile_band_upper",
         "interval_circular_bootstrap_lower", "interval_circular_bootstrap_upper",
-        "widening_factor_vs_30dfold", "excludes_zero_horizon_matched",
+        "widening_factor_vs_30dfold",
+        "overlapping_placebo_band_excludes_zero_descriptively",
         "horizon_calendar_days", "n_horizon_windows",
         "effective_non_overlapping_windows",
     ]
@@ -171,16 +187,16 @@ def main() -> None:
         else ", ".join(f"{int(value)} calendar days" for value in horizons)
     )
     print(
-        "Horizon-matched vs short-fold (<=30-day) counterfactual intervals "
+        "Full-horizon empirical placebo quantile bands vs short-fold intervals "
         f"({horizon_text}):"
     )
     print(summary[show].to_string(index=False))
     print(f"\nwrote {out}")
     print("\nInterpretation guard:")
-    print(" - The horizon-matched interval reuses placebo-in-time windows = realised full-horizon forecast errors.")
-    print(" - It is wider than the 30-day-fold interval; that gap is the previous understatement.")
-    print(" - Placebo windows overlap and use expanding training, so the band is")
-    print("   coarse and conservative (wider), not a precise tail.")
+    print(" - The band uses realised full-horizon placebo forecast errors.")
+    print(" - The windows overlap: 2.5/97.5% are descriptive quantiles only.")
+    print(" - Do not label this band a 95% confidence, prediction, or conformal interval.")
+    print(" - Use the disjoint-block rank and block-conformal outputs for inference.")
     print(" - The circular-block band independently resamples the chronological OOF residual path.")
     print(" - It does not fix AIS measurement bias, donor contamination, or energy mediation.")
 

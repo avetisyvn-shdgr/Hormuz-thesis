@@ -2,9 +2,11 @@ import json
 
 
 import freeze_reproducibility as freeze
+import run_all
 from freeze_reproducibility import (
     CORE_RAW_INPUTS,
     ORCHESTRATED_ARTIFACTS,
+    QUARANTINED_RAW_INPUTS,
     core_raw_hashes,
     raw_hashes,
     sha256_file,
@@ -48,6 +50,7 @@ def test_vessel_scope_excludes_core_and_archives():
     core = set(CORE_RAW_INPUTS)
     vessel = vessel_raw_hashes(config.ROOT)
     assert core.isdisjoint(vessel)
+    assert set(QUARANTINED_RAW_INPUTS).isdisjoint(vessel)
     assert not any(rel.endswith(".zip") for rel in vessel)
 
 
@@ -56,6 +59,23 @@ def test_orchestrated_artifact_scope_excludes_optional_outputs():
     assert not any("tsfm_" in rel for rel in ORCHESTRATED_ARTIFACTS)
     assert not any("/presentation/" in rel for rel in ORCHESTRATED_ARTIFACTS)
     assert "reports/Hormuz_Thesis_Supervisor_Review.pptx" not in ORCHESTRATED_ARTIFACTS
+
+
+def test_run_all_regenerates_reported_tsfm_comparison_in_isolated_env():
+    matching = [
+        args
+        for label, args in run_all.STEPS
+        if label == "Run matched-horizon admitted Chronos-2 counterfactual"
+    ]
+    assert len(matching) == 1
+    command = run_all._step_command(matching[0])
+    assert command[0].endswith(".venv-bench/bin/python")
+    assert command[1:] == [
+        "scripts/run_tsfm_counterfactual.py",
+        "--model",
+        "chronos2",
+        "--acknowledge-benchmark-only",
+    ]
 
 
 def test_verify_manifest_compares_without_overwriting(tmp_path, monkeypatch):

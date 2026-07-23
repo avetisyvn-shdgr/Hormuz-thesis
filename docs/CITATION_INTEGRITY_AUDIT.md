@@ -26,12 +26,12 @@ Status: **VERIFIED** = existence + metadata confirmed live. **VERIFIED (metadata
 |---|---|---|
 | Pratson 2023 | VERIFIED | Crossref `10.1016/j.commtr.2022.100083` |
 | Verschuur, Lumma & Hall 2025 | VERIFIED | Crossref `10.1038/s41467-025-65403-w` |
-| Nguyen et al. 2023 | VERIFIED (metadata) | Crossref `10.1108/MABR-09-2021-0072` (online-first 2022; issue vol 8(2) 2023) |
+| Nguyen et al. 2023 | VERIFIED (abstract-aligned claim) | Publisher abstract for `10.1108/MABR-09-2021-0072` (online-first 2022; issue vol 8(2) 2023) |
 | Wan et al. 2023 | VERIFIED (metadata) | Crossref `10.1016/j.ocecoaman.2023.106868` |
 | Xiao et al. 2024 | VERIFIED | Crossref `10.1016/j.ocecoaman.2024.107102` |
 | Meza et al. 2022 | VERIFIED | Crossref `10.1016/j.martra.2022.100071` |
 | Meza et al. 2026 | VERIFIED | Crossref `10.1007/s12198-026-00350-1` |
-| Polemis & Bentsos 2025 | VERIFIED (metadata) | Crossref `10.1186/s41072-025-00205-3` |
+| Polemis & Bentsos 2025 | VERIFIED (full text) | Open-access publisher PDF `10.1186/s41072-025-00205-3`, especially pp. 5–6 and 8–10 |
 | Neumann 2009 | VERIFIED | Crossref `10.5547/ISSN0195-6574-EJ-Vol30-NoSI-12` |
 | Farag, Jeddi & Kopp 2025 | VERIFIED | Crossref `10.1111/twec.13699` (48(6)) |
 | An, Ren, Liu & Cui 2026 | VERIFIED | Crossref `10.3390/en19112719` (Energies 19(11):2719) |
@@ -58,17 +58,20 @@ No entry rated UNVERIFIED or HIGH HALLUCINATION RISK — the truthful outcome.
 The reference is real in each case; the flagged risk is that the draft's specific
 claim may outrun what the source states. Resolve before submission (plan task L2).
 
-1. **Nguyen et al. 2023 — fabricated-specificity risk.** Draft attributes a four-
-   category response taxonomy (rerouting, capacity management, collaboration,
-   technological monitoring). The exact categories are not confirmed from full
-   text. Action: quote the paper's actual taxonomy or soften.
-2. **Wan et al. 2023 — dimension mismatch.** Draft says effects are "spatially
-   heterogeneous"; the verified record describes heterogeneity **by ship type**.
-   Action: confirm which, fix the adjective.
-3. **Polemis & Bentsos 2025 — detailed method attribution.** Draft attributes
-   "weekly commercial shipping data … event-study abnormal returns and ARFIMA."
-   This is the closest methodological competitor; an inaccurate method description
-   here is the most damaging possible error. Action: attach page citations.
+1. **Nguyen et al. 2023 — resolved 2026-07-23 by softening.** The unverified
+   four-category taxonomy was removed. The draft now makes only the
+   abstract-aligned claim that the systematic review catalogs maritime
+   disruption-management measures and examines links to resilience and
+   organizational performance.
+2. **Wan et al. 2023 — resolved 2026-07-23.** The official publisher highlights
+   report both uneven regional impacts (Africa most affected) and heterogeneity
+   by ship type (container ships and petrochemical tankers most disrupted). The
+   draft and matrices now state both dimensions explicitly.
+3. **Polemis & Bentsos 2025 — resolved 2026-07-23 by full-text screening.**
+   The publisher PDF confirms weekly Clarksons Shipping Intelligence Network
+   data on pp. 5–6, event-study abnormal returns on pp. 8–9, and the ARFIMA
+   specification on p. 10. Page citations are now attached in the literature
+   draft and matrix.
 4. **Caldara & Iacoviello 2022 — analogical stretch.** A news-text macro index used
    to support "observable signals carry measurable economic content." Keep as event
    context, not as evidence about maritime/satellite measurement.

@@ -43,12 +43,22 @@ def main() -> None:
     spatial_loo = _read_processed("spatial_placebo_leave_one_out.csv")
     treatment_robustness = _read_processed("treatment_robustness_summary.csv")
     intervals = _read_processed("counterfactual_intervals_summary.csv")
+    block_conformal = _read_processed("block_conformal_summary.csv")
     synthetic = _read_processed("synthetic_control_summary.csv")
+    synthetic_prefit = _read_processed(
+        "synthetic_control_prefit_sensitivity.csv"
+    )
     tsfm_counterfactual = _read_processed("tsfm_counterfactual_summary.csv")
 
     synth_transit = synthetic[
         (synthetic["value_col"] == "n_tanker")
         & (synthetic["is_actual"])
+    ].iloc[0]
+    synth_transit_prefit = synthetic_prefit[
+        synthetic_prefit["value_col"].eq("n_tanker")
+    ]
+    synth_transit_unscreened = synth_transit_prefit[
+        synth_transit_prefit["screen"].eq("unscreened")
     ].iloc[0]
 
     route_transit = placebo_time[
@@ -120,6 +130,10 @@ def main() -> None:
     effective_horizon_windows = int(
         ar_long_horizon["effective_non_overlapping_windows"]
     )
+    honest_rank = block_conformal.iloc[0]
+    conformal95 = block_conformal.loc[
+        block_conformal["nominal_coverage"].round(2).eq(0.95)
+    ].iloc[0]
     chronos_transit = tsfm_counterfactual[
         (tsfm_counterfactual["model"] == "chronos2")
         & (tsfm_counterfactual["target"] == spec.primary_outcome)
@@ -173,29 +187,39 @@ def main() -> None:
         "",
         "## Post-treatment Counterfactual Gap",
         "",
-        "| Model | Cumulative loss | Mean daily loss | Placebo p-value | Placebo p95 | Separation |",
+        (
+            f"Lead inference: {int(honest_rank['n_independent_placebo_blocks'])} "
+            "disjoint horizon blocks give a one-sided rank p-value of "
+            f"**{honest_rank['placebo_p_value_greater']:.3f}**. The nominal 95% "
+            "block-conformal interval is **unbounded**, and the maximum finite "
+            f"coverage is **{conformal95['maximum_finite_coverage']:.1%}**."
+        ),
+        "",
+        "| Model | Cumulative loss | Mean daily loss | Overlapping-window reference rank (not p) | Placebo p95 | Separation |",
         "|---|---:|---:|---:|---:|---:|",
         (
             f"| AR-only working primary, transit count | {_num(ar_transit['actual_cumulative_throughput_loss'])} "
             f"transits | {ar_transit['actual_mean_daily_throughput_loss']:.1f}/day | "
-            f"{ar_transit['p_loss_ge_actual']:.3f} | "
+            f"{ar_transit['overlapping_reference_rank_loss_ge_actual']:.3f} | "
             f"{_num(ar_transit['placebo_loss_p95'])} | "
             f"{ar_transit['loss_vs_placebo_p95_ratio']:.1f}x |"
         ),
         (
             f"| Route-only ARX, transit count | {_num(route_transit['actual_cumulative_throughput_loss'])} "
             f"transits | {route_transit['actual_mean_daily_throughput_loss']:.1f}/day | "
-            f"{route_transit['p_loss_ge_actual']:.3f} | "
+            f"{route_transit['overlapping_reference_rank_loss_ge_actual']:.3f} | "
             f"{_num(route_transit['placebo_loss_p95'])} | "
             f"{route_transit['loss_vs_placebo_p95_ratio']:.1f}x |"
         ),
         "",
         (
             "Information-set sensitivity: AR-only uses no observed post-treatment "
-            f"covariates and gives a horizon-matched interval over "
+            f"covariates and gives an empirical overlapping-placebo 2.5/97.5% "
+            f"quantile band over "
             f"{horizon_calendar_days} calendar days of "
-            f"**{_num(ar_long_horizon['interval_horizon_matched_lower'])} to "
-            f"{_num(ar_long_horizon['interval_horizon_matched_upper'])} transits**. "
+            f"**{_num(ar_long_horizon['overlapping_placebo_quantile_band_lower'])} to "
+            f"{_num(ar_long_horizon['overlapping_placebo_quantile_band_upper'])} "
+            "transits**, with no nominal coverage claim. "
             "Its close agreement with route ARX indicates that contemporaneous "
             "Panama controls are not driving the estimated gap. Route ARX remains "
             "a conditional sensitivity because Panama traffic is observed post-treatment."
@@ -212,28 +236,32 @@ def main() -> None:
         ),
         "",
         (
-            "Honest horizon-matched interval (recalibrated on the placebo-in-time "
-            "windows, which are full-horizon forecast errors): "
-            f"**{_num(route_long_horizon['interval_horizon_matched_lower'])} to "
-            f"{_num(route_long_horizon['interval_horizon_matched_upper'])} tanker "
+            "Empirical overlapping-placebo 2.5/97.5% quantile band, using "
+            "full-horizon forecast errors: "
+            f"**{_num(route_long_horizon['overlapping_placebo_quantile_band_lower'])} to "
+            f"{_num(route_long_horizon['overlapping_placebo_quantile_band_upper'])} tanker "
             f"transits** — about {route_long_horizon['widening_factor_vs_30dfold']:.1f}x "
-            "wider than the short-fold band, and still excluding zero by a wide "
-            "margin. Use this as the reported interval; the short-fold band is a "
-            "lower bound. The band is coarse/conservative "
-            f"({effective_horizon_windows} non-overlapping horizon windows)."
+            "wider than the short-fold band. This is a descriptive scale "
+            "diagnostic, not a confidence, prediction, or conformal interval "
+            f"({effective_horizon_windows} disjoint windows are available for "
+            "separate rank inference)."
         ),
         (
             "Independent circular-block cross-check (10,000 draws, 14-day blocks "
             "from the ordered out-of-fold residual path): "
             f"**{_num(ar_long_horizon['interval_circular_bootstrap_lower'])} to "
             f"{_num(ar_long_horizon['interval_circular_bootstrap_upper'])} transits**. "
-            "It is materially narrower than the placebo-window band, so interval "
-            "width is method-sensitive even though both bands exclude zero."
+            "It is materially narrower than the placebo-window band, so band "
+            "width is method-sensitive."
         ),
         "",
         (
-            "Chronos-2 changes the locked-primary transit shortfall by only "
-            f"**{chronos_transit['pct_diff_vs_ar']:+.1f}%**, but changes the capacity "
+            "Matched-horizon TSFM sensitivity: Chronos-2 and AR-only use the "
+            "same scored dates and observations through 2026-07-07 "
+            f"({int(chronos_transit['n_days'])} transit days; "
+            f"{int(chronos_capacity['n_days'])} valid capacity days). Chronos-2 "
+            "changes the locked-primary transit shortfall by "
+            f"**{chronos_transit['pct_diff_vs_ar']:+.1f}%** and the capacity "
             f"shortfall by **{chronos_capacity['pct_diff_vs_ar']:+.1f}%** "
             f"({chronos_capacity['ar_cumulative_throughput_loss']/1e6:.1f}M AR-only "
             f"versus {chronos_capacity['cumulative_throughput_loss']/1e6:.1f}M Chronos-2). "
@@ -241,10 +269,13 @@ def main() -> None:
             "its precise magnitude is not load-bearing."
         ),
         "",
-        f"The time-placebo p-value is floor-censored because {n_overlapping_placebos} "
-        f"overlapping placebo windows provide only about "
-        f"{approx_non_overlapping_placebos} non-overlapping horizon windows. "
-        "Report the separation ratio alongside the p-value.",
+        (
+            f"The loss exceeds all {n_overlapping_placebos} overlapping placebo "
+            f"windows. Their 1/{n_overlapping_placebos + 1} reference rank is "
+            "descriptive, not a p-value; the separation ratio is reported alongside it. "
+            f"Only about {approx_non_overlapping_placebos} disjoint horizon windows "
+            "are available."
+        ),
         "",
         "## Treatment-window Robustness",
         "",
@@ -333,18 +364,28 @@ def main() -> None:
         f"| Pre-period RMSPE (fit quality) | {synth_transit['pre_rmspe']:.3f} |",
         f"| Post-period RMSPE | {synth_transit['post_rmspe']:.3f} |",
         f"| Post/pre RMSPE ratio | {synth_transit['post_pre_rmspe_ratio']:.2f} |",
-        f"| Placebo ratio p95 | {synth_transit['placebo_ratio_p95']:.2f} |",
-        f"| Hormuz ratio / placebo p95 | {synth_transit['ratio_vs_placebo_p95']:.2f}x |",
-        f"| Abadie placebo p-value | {synth_transit['p_ratio_ge_actual']:.3f} |",
+        f"| Primary pre-fit screen | placebo pre-RMSPE <= {synth_transit['primary_prefit_rmspe_multiplier']:.1f}x treated |",
+        f"| Eligible / total placebos | {int(synth_transit['n_placebos_eligible'])} / {int(synth_transit['n_placebos_total'])} ({int(synth_transit['n_placebos_excluded'])} excluded) |",
+        f"| Screened placebo ratio p95 | {synth_transit['placebo_ratio_p95']:.3f} |",
+        f"| Hormuz ratio / screened placebo p95 | {synth_transit['ratio_vs_placebo_p95']:.3f}x |",
+        f"| Screened rank p-value | {synth_transit['p_ratio_ge_actual']:.6f} |",
+        f"| Screened rank floor | 1/{int(synth_transit['n_placebos_eligible']) + 1} = {synth_transit['p_value_floor']:.6f} |",
         f"| Effective donors (1/sum w^2) | {synth_transit['effective_n_weights']:.1f} |",
         f"| Largest single weight | {synth_transit['top_weight_slug']} ({synth_transit['top_weight']:.2f}) |",
         "",
         "Synthetic-control interpretation: the pre-period fit is credible "
         f"(RMSPE {synth_transit['pre_rmspe']:.3f} on mean-scaled units, "
         f"{synth_transit['effective_n_weights']:.1f} effective donors, no single donor "
-        "dominating), and Hormuz's post/pre RMSPE ratio is far larger than any clean "
-        "donor placebo. This is independent corroboration of the throughput collapse, "
-        "consistent with the placebo-in-time and spatial-placebo layers. It remains a "
+        "dominating), and Hormuz's post/pre RMSPE ratio exceeds every placebo that "
+        "passes the remediation-primary 2x pre-fit screen. Across the 1.5x, 2x, "
+        "5x, 10x, and unscreened specifications, the rank p-value ranges from "
+        f"{synth_transit_prefit['p_ratio_ge_actual'].min():.6f} to "
+        f"{synth_transit_prefit['p_ratio_ge_actual'].max():.6f}; the unscreened "
+        f"value is {synth_transit_unscreened['p_ratio_ge_actual']:.6f}. The 2x "
+        "rule is the remediation-primary convention, and the grid prevents the "
+        "interpretation from depending on that single choice. This is a "
+        "corroborating diagnostic consistent with the other falsification layers, "
+        "not an independent design. It remains a "
         "scaled, shape-based diagnostic, not an LNG freight-rate estimate.",
         "",
         "## Guardrails",

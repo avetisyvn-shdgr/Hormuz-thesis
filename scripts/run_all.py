@@ -22,12 +22,22 @@ STEPS = [
     ("Export model diagnostics", ["scripts/run_model_diagnostics.py"]),
     ("Run chronological validation", ["scripts/run_baseline.py"]),
     ("Run AR-only and sensitivity counterfactuals", ["scripts/run_counterfactual.py"]),
+    (
+        "Run matched-horizon admitted Chronos-2 counterfactual",
+        [
+            ".venv-bench/bin/python",
+            "scripts/run_tsfm_counterfactual.py",
+            "--model",
+            "chronos2",
+            "--acknowledge-benchmark-only",
+        ],
+    ),
     ("Quantify AIS-dark-vessel bound", ["scripts/run_ais_dark_bound.py"]),
     ("Run Bayesian structural counterfactual", ["scripts/run_bsts_counterfactual.py"]),
     ("Run temporal placebos", ["scripts/run_placebo_inference.py"]),
     ("Run independent-block and conformal inference", ["scripts/run_block_inference.py"]),
     ("Calibrate residual intervals", ["scripts/run_interval_calibration.py"]),
-    ("Calibrate horizon-matched intervals", ["scripts/run_long_horizon_intervals.py"]),
+    ("Build full-horizon empirical placebo bands", ["scripts/run_long_horizon_intervals.py"]),
     ("Run treatment-window robustness", ["scripts/run_treatment_robustness.py"]),
     ("Run spatial placebos", ["scripts/run_spatial_placebo.py"]),
     ("Apply Romano-Wolf multiplicity correction", ["scripts/run_multiplicity_correction.py"]),
@@ -73,6 +83,17 @@ STEPS = [
 ]
 
 
+def _step_command(args: list[str]) -> list[str]:
+    if args and args[0].endswith("/bin/python"):
+        interpreter = ROOT / args[0]
+        if not interpreter.exists():
+            raise FileNotFoundError(
+                f"Required isolated interpreter not found: {interpreter}"
+            )
+        return [str(interpreter), *args[1:]]
+    return [sys.executable, *args]
+
+
 def main() -> int:
     env = os.environ.copy()
     env["PYTHONHASHSEED"] = "0"
@@ -81,9 +102,11 @@ def main() -> int:
     env["MKL_NUM_THREADS"] = "1"
     env["NUMEXPR_NUM_THREADS"] = "1"
     env.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
+    env.setdefault("HF_HUB_OFFLINE", "1")
+    env.setdefault("TRANSFORMERS_OFFLINE", "1")
     for number, (label, args) in enumerate(STEPS, start=1):
         print(f"\n{'=' * 72}\n[{number:02d}/{len(STEPS):02d}] {label}\n{'=' * 72}", flush=True)
-        subprocess.run([sys.executable, *args], cwd=ROOT, env=env, check=True)
+        subprocess.run(_step_command(args), cwd=ROOT, env=env, check=True)
     print("\nEND-TO-END RUN COMPLETED CLEANLY", flush=True)
     print(f"Report: {ROOT / 'reports' / 'run_output.md'}", flush=True)
     print(f"Comparison: {ROOT / 'data' / 'processed' / 'run_spec_comparison.csv'}", flush=True)

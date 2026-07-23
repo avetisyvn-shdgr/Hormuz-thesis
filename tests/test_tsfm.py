@@ -12,6 +12,7 @@ import pandas as pd
 import pytest
 
 
+from lngfreight import config
 from lngfreight.tsfm import (
     FOUNDATION_MODELS,
     MODEL_REGISTRY,
@@ -176,6 +177,63 @@ def test_counterfactual_shortfall_is_leakage_safe_and_signed():
     daily2, _ = counterfactual_shortfall(altered, "target", StubAdapter(7), cutoff=cutoff)
     # Forecast (counterfactual) is unchanged by post-cutoff observed values.
     np.testing.assert_allclose(daily["y_pred"], daily2["y_pred"])
+
+
+def test_frozen_tsfm_counterfactual_matches_active_ar_dates_and_observations():
+    out_dir = config.path("data_processed")
+    tsfm_summary = pd.read_csv(out_dir / "tsfm_counterfactual_summary.csv")
+    tsfm_daily = pd.read_csv(
+        out_dir / "tsfm_counterfactual_daily.csv", parse_dates=["date"]
+    )
+    ar_summary = pd.read_csv(out_dir / "counterfactual_post_treatment_summary.csv")
+    ar_daily = pd.read_csv(
+        out_dir / "counterfactual_post_treatment.csv", parse_dates=["date"]
+    )
+
+    for target in tsfm_summary["target"]:
+        tsfm_row = tsfm_summary.loc[tsfm_summary["target"].eq(target)].iloc[0]
+        ar_row = ar_summary.loc[
+            ar_summary["model"].eq("ar_lag1_7")
+            & ar_summary["target"].eq(target)
+        ].iloc[0]
+        assert tsfm_row["start"] == ar_row["start"]
+        assert tsfm_row["end"] == ar_row["end"]
+        assert tsfm_row["n_days"] == ar_row["n_days"]
+        assert tsfm_row["observed_sum"] == pytest.approx(ar_row["observed_sum"])
+        assert bool(tsfm_row["matched_ar_dates"])
+        assert bool(tsfm_row["matched_ar_observed"])
+
+        tsfm_valid = (
+            tsfm_daily.loc[tsfm_daily["target"].eq(target)]
+            .dropna(subset=["y_true", "y_pred"])
+            .sort_values("date")
+            .reset_index(drop=True)
+        )
+        ar_valid = (
+            ar_daily.loc[
+                ar_daily["model"].eq("ar_lag1_7")
+                & ar_daily["target"].eq(target)
+            ]
+            .dropna(subset=["y_true", "y_pred"])
+            .sort_values("date")
+            .reset_index(drop=True)
+        )
+        pd.testing.assert_series_equal(tsfm_valid["date"], ar_valid["date"])
+        np.testing.assert_allclose(tsfm_valid["y_true"], ar_valid["y_true"])
+
+
+def test_current_results_report_uses_matched_horizon_tsfm_values():
+    text = (
+        config.ROOT / "reports" / "current_results_summary.md"
+    ).read_text(encoding="utf-8")
+    assert "Matched-horizon TSFM sensitivity" in text
+    assert "130 transit days" in text
+    assert "118 valid capacity days" in text
+    assert "**-3.7%**" in text
+    assert "**-10.6%**" in text
+    assert "+2.4%" not in text
+    assert "196.1M" not in text
+    assert "206.9M" not in text
 
 
 def test_counterfactual_requires_pre_and_post_rows():

@@ -11,10 +11,12 @@
 ## Headline AR-only result
 
 - Point shortfall: **6,869.0 tanker transits** (52.84/day).
-- Horizon-matched 95% interval over **130 calendar days**: **5,430.3 to 8,088.9 transits**.
+- Disjoint-block rank inference: **p=0.125** from **7** blocks (minimum attainable **1/8**).
+- Nominal 95% block-conformal interval: **unbounded**; maximum finite coverage is **87.5%**.
+- Descriptive overlapping-placebo 2.5/97.5% quantile band over **130 calendar days**: **5,430.3 to 8,088.9 transits**; no nominal coverage.
 - Independent 14-day circular-block bootstrap band: **6,179.5 to 7,549.5 transits**; narrower than the placebo-window band, so width is method-sensitive.
 - Temporal-placebo p95: **2,124.3**; separation: **3.234x**.
-- One-sided placebo p-value: **0.027778**, floor-censored at 1/36 with 35 overlapping and about 7 non-overlapping horizon windows.
+- The loss exceeds all **35** overlapping placebo windows; the resulting **1/36** reference rank is descriptive, not a p-value.
 - BSTS posterior median shortfall: **6,437.9**; 95% posterior predictive interval: **1,754.6 to 11,709.6**.
 - BSTS prior-grid median range: **6,457.6 to 6,751.9**; interval-envelope endpoints: **878.6 to 13,836.2**; pre-period PPC pointwise coverage: **97.1%**.
 
@@ -22,11 +24,11 @@
 
 | Inference layer | Reported value | Support / note | Source artifact |
 |---|---|---|---|
-| Horizon-matched 95% interval | 5,430.3 to 8,088.9 | 130-calendar-day horizon; 35 placebo windows; 7 non-overlapping horizon windows | `data/processed/long_horizon_intervals_summary.csv` |
+| Disjoint-block rank inference | 4.161x; p=0.125 | 7 disjoint blocks; floor 1/8=0.125 | `data/processed/block_conformal_summary.csv` |
+| 95% block-conformal interval | unbounded (-inf to inf) | Finite interval unsupported at 95%; maximum finite coverage 87.5% with 7 calibration blocks | `data/processed/block_conformal_summary.csv` |
+| Overlapping-placebo 2.5/97.5% quantile band | 5,430.3 to 8,088.9 | Descriptive only; no nominal coverage. 130-calendar-day horizon; 35 placebo windows; 7 non-overlapping horizon windows | `data/processed/long_horizon_intervals_summary.csv` |
 | 14-day block-bootstrap band | 6,179.5 to 7,549.5 | 14-day circular blocks; 10000 draws | `data/processed/long_horizon_intervals_summary.csv` |
-| Temporal-placebo separation | 3.234x; p=0.0278 | Floor-censored at 1/36; 35 overlapping placebo windows and about 7 non-overlapping horizon windows | `data/processed/placebo_time_summary.csv` |
-| Independent-block honest rank | 4.161x; p=0.125 | 7 disjoint blocks; floor 1/8=0.125 | `data/processed/block_conformal_summary.csv` |
-| 95% conformal interval | unbounded (-inf to inf) | Finite interval unsupported at 95%; maximum finite coverage 87.5% with 7 calibration blocks | `data/processed/block_conformal_summary.csv` |
+| Temporal-placebo separation | 3.234x; loss exceeds all overlapping windows | Reference rank 1/36 (not a p-value); 35 overlapping placebo windows and about 7 non-overlapping horizon windows | `data/processed/placebo_time_summary.csv` |
 
 ## Pre-treatment validation and residual fidelity
 
@@ -41,17 +43,17 @@ For the primary AR-only model, `1140` rolling-origin residuals have median `-5.8
 
 ## Specification comparison
 
-| Specification | Role | Pre MASE | Pre RMSE | Point shortfall | Horizon lower | Horizon upper | Placebo separation | p-value |
-|---|---|---|---|---|---|---|---|---|
-| ar_lag1_7 | working_primary | 0.920 | 14.862 | 6,869.0 | 5,430.3 | 8,088.9 | 3.234 | 0.028 |
-| arx_lag1_7_route | conditional_sensitivity | 0.916 | 14.829 | 7,056.4 | 5,502.4 | 8,528.0 | 3.251 | 0.028 |
-| arx_lag1_7_route_energy | conditional_sensitivity | 0.859 | 14.012 | 8,171.5 | 6,520.0 | 9,319.0 | 5.301 | 0.028 |
-| synthetic_control | corroboration | NA | 14.739 | 6,174.6 | NA | NA | 2.602 | 0.043 |
-| bsts_local_level_weekly | state_space_corroboration | 0.837 | 13.797 | 6,437.9 | 1,754.6 | 11,709.6 | NA | NA |
+| Specification | Role | Pre MASE | Pre RMSE | Point shortfall | Reported lower | Reported upper | Band label | Placebo separation | Diagnostic |
+|---|---|---|---|---|---|---|---|---|---|
+| ar_lag1_7 | working_primary | 0.920 | 14.862 | 6,869.0 | 5,430.3 | 8,088.9 | overlapping_placebo_2.5_97.5_quantile_band_no_nominal_coverage | 3.234 | 0.028 (overlapping_window_reference_rank_not_p_value) |
+| arx_lag1_7_route | conditional_sensitivity | 0.916 | 14.829 | 7,056.4 | 5,502.4 | 8,528.0 | overlapping_placebo_2.5_97.5_quantile_band_no_nominal_coverage | 3.251 | 0.028 (overlapping_window_reference_rank_not_p_value) |
+| arx_lag1_7_route_energy | conditional_sensitivity | 0.859 | 14.012 | 8,171.5 | 6,520.0 | 9,319.0 | overlapping_placebo_2.5_97.5_quantile_band_no_nominal_coverage | 5.301 | 0.028 (overlapping_window_reference_rank_not_p_value) |
+| synthetic_control | corroboration | NA | 14.739 | 6,174.6 | NA | NA | not_reported | 2.166 | 0.067 (synthetic_control_donor_placebo_p_value) |
+| bsts_local_level_weekly | state_space_corroboration | 0.837 | 13.797 | 6,437.9 | 1,754.6 | 11,709.6 | 95%_posterior_predictive_interval_conditional_on_model | NA | NA |
 
 Full machine-readable table: [`data/processed/run_spec_comparison.csv`](../data/processed/run_spec_comparison.csv)
 
-Synthetic-control shortfall is converted from mean-scaled units to a transit-equivalent magnitude for comparison. Its placebo metric is the post/pre RMSPE ratio, not the temporal cumulative-shortfall distribution, and no horizon-matched interval is asserted for it.
+Synthetic-control shortfall is converted from mean-scaled units to a transit-equivalent magnitude for comparison. Its placebo metric is the post/pre RMSPE ratio, not the temporal cumulative-shortfall distribution, and no overlapping-placebo quantile band is asserted for it.
 BSTS is an independent state-space corroboration. Its interval is posterior predictive conditional on the local-level model; it is not a causal posterior.
 
 ## Independent-block inference
@@ -66,10 +68,12 @@ BSTS is an independent state-space corroboration. Its interval is posterior pred
 - Pre-period RMSPE: **0.258158 scaled units** (**14.739 transit-equivalent RMSE**).
 - Post-period RMSPE: **0.839927**; post/pre ratio: **3.254**.
 - Transit-equivalent cumulative gap: **6,174.6**.
-- Donor-placebo p95 ratio: **1.250**; separation: **2.602x**; p-value: **0.043478**.
+- Primary pre-fit screen: placebo pre-RMSPE <= **2.0x** treated; **14/22** placebos eligible and **8** excluded.
+- Screened donor-placebo p95 ratio: **1.502**; separation: **2.166x**; rank p-value: **0.066667** (floor **1/15 = 0.066667**).
+- Pre-fit threshold sensitivity: p-values range from **0.043478** to **0.083333**; unscreened p=**0.043478**. The 2x rule is the remediation-primary design convention; the full grid is reported so the conclusion does not rest on that single screen.
 - Donors: **22**; effective donors: **7.44**; largest weight: `korea_strait` (0.216).
 - Donor-pool stress: clean ratio **3.254**, broad-pool ratio **3.378**.
-- Donor-by-time placebos: **154** fits across **7** disjoint windows; p-value **0.006452** (floor-censored at 1/155), actual/p95 **2.261x**.
+- Donor-by-time stress: **154** fits summarized as **7** disjoint-window maxima; max-statistic rank p-value **0.125** (floor 1/8), actual/block-max-p95 **1.506x**. The individual donor fits are not pooled as independent draws.
 
 ## LNG-specific robustness outcome
 
@@ -89,6 +93,8 @@ The public WTO/AXSMarine series is an LNG-only outbound shipment volume index (2
 ![Temporal placebo distribution](figures/run_placebo_distribution.png)
 
 ![Actual vs synthetic control](figures/run_synthetic_control_path.png)
+
+![Treated and eligible synthetic-control placebo gaps](figures/run_synthetic_control_placebo_paths.png)
 
 ![BSTS counterfactual](figures/bsts_counterfactual.png)
 

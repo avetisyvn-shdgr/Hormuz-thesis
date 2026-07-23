@@ -199,12 +199,16 @@ placebo-horizon job of `run_long_horizon_intervals.py`).
 python scripts/run_tsfm_counterfactual.py --model stub --acknowledge-benchmark-only
 ```
 
-This benchmark is deliberately excluded from `scripts/run_all.py` and the frozen
-core requirements because model weights and the PyTorch stack are optional
-external artifacts.
+The broader three-model admission benchmark remains excluded from
+`scripts/run_all.py` and the frozen core requirements because model weights and
+the PyTorch stacks are optional external artifacts. Because the active results
+report consumes the admitted Chronos-2 counterfactual, that single cross-check
+is now regenerated inside `run_all.py` through `.venv-bench` in offline mode.
+The run fails loudly if the isolated environment or cached checkpoint is absent.
 
 **Outcome hierarchy:** transit count remains the locked primary. Its Chronos-2
-shortfall differs from AR-only by only +2.4%. Deadweight capacity is a
-directional secondary and model-sensitive outcome: it is a heavier-tailed count
-× per-vessel-capacity product, and Chronos-2 changes its shortfall magnitude by
-−5.2% (196.1M versus 206.9M). Do not lean on the precise capacity magnitude.
+shortfall is 6,614.9 versus 6,869.0 for AR-only on the same 130 dates and
+observations (−3.7%). Deadweight capacity is a directional secondary and
+model-sensitive outcome: on the same 118 valid dates, Chronos-2 gives 260.0M
+versus 291.0M for AR-only (−10.6%). Do not lean on the precise capacity
+magnitude.

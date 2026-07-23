@@ -36,6 +36,8 @@ VALUE_COLS = [
 
 TREATED = "strait_of_hormuz"
 MIN_PRE_ROWS = 365
+PRIMARY_PREFIT_RMSPE_MULTIPLIER = 2.0
+PREFIT_RMSPE_SENSITIVITY_MULTIPLIERS = (1.5, 2.0, 5.0, 10.0, np.inf)
 
 
 def _clean_donor_slugs(meta: pd.DataFrame) -> list[str]:
@@ -121,7 +123,67 @@ def _fit_unit(
     return summary, weights, daily
 
 
-def _run_value_col(value_col: str, meta: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def _prefit_screen_sensitivity(
+    *,
+    value_col: str,
+    actual_ratio: float,
+    treated_pre_rmspe: float,
+    placebos: pd.DataFrame,
+) -> pd.DataFrame:
+    """Evaluate donor-placebo inference across pre-fit RMSPE screens."""
+    required = {"pre_rmspe", "post_pre_rmspe_ratio"}
+    missing = required - set(placebos.columns)
+    if missing:
+        raise ValueError(f"Missing placebo fit columns: {sorted(missing)}")
+    rows = []
+    for multiplier in PREFIT_RMSPE_SENSITIVITY_MULTIPLIERS:
+        if np.isinf(multiplier):
+            eligible = placebos.copy()
+            screen = "unscreened"
+            max_pre_rmspe = float("inf")
+        else:
+            max_pre_rmspe = float(multiplier * treated_pre_rmspe)
+            eligible = placebos.loc[placebos["pre_rmspe"] <= max_pre_rmspe].copy()
+            screen = f"pre_rmspe_le_{multiplier:g}x_treated"
+        ratios = eligible["post_pre_rmspe_ratio"].dropna()
+        p_value = (
+            empirical_p_value(actual_ratio, ratios, alternative="greater")
+            if len(ratios)
+            else float("nan")
+        )
+        p95 = float(ratios.quantile(0.95)) if len(ratios) else float("nan")
+        rows.append(
+            {
+                "value_col": value_col,
+                "screen": screen,
+                "is_primary_screen": bool(
+                    not np.isinf(multiplier)
+                    and multiplier == PRIMARY_PREFIT_RMSPE_MULTIPLIER
+                ),
+                "pre_rmspe_multiplier": (
+                    float(multiplier) if not np.isinf(multiplier) else np.nan
+                ),
+                "treated_pre_rmspe": float(treated_pre_rmspe),
+                "maximum_eligible_pre_rmspe": max_pre_rmspe,
+                "actual_post_pre_rmspe_ratio": float(actual_ratio),
+                "n_placebos_total": int(len(placebos)),
+                "n_placebos_eligible": int(len(ratios)),
+                "n_placebos_excluded": int(len(placebos) - len(ratios)),
+                "p_ratio_ge_actual": p_value,
+                "p_value_floor": 1.0 / (len(ratios) + 1) if len(ratios) else np.nan,
+                "placebo_ratio_p95": p95,
+                "ratio_vs_placebo_p95": (
+                    float(actual_ratio / p95) if p95 and np.isfinite(p95) else np.nan
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _run_value_col(
+    value_col: str,
+    meta: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     cutoff = resolve_cutoff()
     wide = wide_chokepoint_panel(value_col=value_col)
     pre_mask = pd.Series(wide.index < cutoff, index=wide.index)
@@ -222,25 +284,47 @@ def _run_value_col(value_col: str, meta: pd.DataFrame) -> tuple[pd.DataFrame, pd
     placebo_summary = pd.DataFrame(placebo_summaries)
     computed_placebos = placebo_summary[placebo_summary["fit_status"] == "computed"]
     if actual_summary["fit_status"] == "computed":
-        actual_summary["n_placebos"] = int(len(computed_placebos))
-        actual_summary["p_ratio_ge_actual"] = empirical_p_value(
-            actual_summary["post_pre_rmspe_ratio"],
-            computed_placebos["post_pre_rmspe_ratio"],
-            alternative="greater",
-        ) if len(computed_placebos) else float("nan")
-        actual_summary["placebo_ratio_p95"] = (
-            float(computed_placebos["post_pre_rmspe_ratio"].quantile(0.95))
-            if len(computed_placebos)
-            else float("nan")
+        sensitivity = _prefit_screen_sensitivity(
+            value_col=value_col,
+            actual_ratio=float(actual_summary["post_pre_rmspe_ratio"]),
+            treated_pre_rmspe=float(actual_summary["pre_rmspe"]),
+            placebos=computed_placebos,
         )
-        actual_summary["ratio_vs_placebo_p95"] = (
-            actual_summary["post_pre_rmspe_ratio"] / actual_summary["placebo_ratio_p95"]
-            if actual_summary["placebo_ratio_p95"]
-            else float("nan")
+        primary = sensitivity.loc[sensitivity["is_primary_screen"]].iloc[0]
+        primary_max = float(primary["maximum_eligible_pre_rmspe"])
+        placebo_summary["pre_rmspe_multiple_of_treated"] = (
+            placebo_summary["pre_rmspe"] / float(actual_summary["pre_rmspe"])
+        )
+        placebo_summary["eligible_primary_prefit_screen"] = (
+            placebo_summary["fit_status"].eq("computed")
+            & placebo_summary["pre_rmspe"].le(primary_max)
+        )
+        actual_summary["primary_prefit_rmspe_multiplier"] = (
+            PRIMARY_PREFIT_RMSPE_MULTIPLIER
+        )
+        actual_summary["primary_prefit_max_pre_rmspe"] = primary_max
+        actual_summary["n_placebos_total"] = int(primary["n_placebos_total"])
+        actual_summary["n_placebos_eligible"] = int(primary["n_placebos_eligible"])
+        actual_summary["n_placebos_excluded"] = int(primary["n_placebos_excluded"])
+        actual_summary["p_ratio_ge_actual"] = float(primary["p_ratio_ge_actual"])
+        actual_summary["p_value_floor"] = float(primary["p_value_floor"])
+        actual_summary["placebo_ratio_p95"] = float(primary["placebo_ratio_p95"])
+        actual_summary["ratio_vs_placebo_p95"] = float(
+            primary["ratio_vs_placebo_p95"]
         )
     else:
-        actual_summary["n_placebos"] = int(len(computed_placebos))
+        sensitivity = pd.DataFrame()
+        placebo_summary["pre_rmspe_multiple_of_treated"] = np.nan
+        placebo_summary["eligible_primary_prefit_screen"] = False
+        actual_summary["primary_prefit_rmspe_multiplier"] = (
+            PRIMARY_PREFIT_RMSPE_MULTIPLIER
+        )
+        actual_summary["primary_prefit_max_pre_rmspe"] = float("nan")
+        actual_summary["n_placebos_total"] = int(len(computed_placebos))
+        actual_summary["n_placebos_eligible"] = 0
+        actual_summary["n_placebos_excluded"] = int(len(computed_placebos))
         actual_summary["p_ratio_ge_actual"] = float("nan")
+        actual_summary["p_value_floor"] = float("nan")
         actual_summary["placebo_ratio_p95"] = float("nan")
         actual_summary["ratio_vs_placebo_p95"] = float("nan")
 
@@ -254,7 +338,7 @@ def _run_value_col(value_col: str, meta: pd.DataFrame) -> tuple[pd.DataFrame, pd
     weights = pd.concat(weight_parts, ignore_index=True) if weight_parts else pd.DataFrame()
     scale_frame = scale.rename("pre_period_scale").rename_axis("slug").reset_index()
     scale_frame["value_col"] = value_col
-    return summary, daily, weights, scale_frame
+    return summary, daily, weights, scale_frame, sensitivity
 
 
 def main() -> None:
@@ -263,41 +347,60 @@ def main() -> None:
     all_daily = []
     all_weights = []
     all_scales = []
+    all_sensitivity = []
     for value_col in VALUE_COLS:
-        summary, daily, weights, scales = _run_value_col(value_col, meta)
+        summary, daily, weights, scales, sensitivity = _run_value_col(value_col, meta)
         all_summary.append(summary)
         all_daily.append(daily)
         all_weights.append(weights)
         all_scales.append(scales)
+        all_sensitivity.append(sensitivity)
 
     summary = pd.concat(all_summary, ignore_index=True)
     daily = pd.concat(all_daily, ignore_index=True)
     weights = pd.concat(all_weights, ignore_index=True)
     scales = pd.concat(all_scales, ignore_index=True)
+    sensitivity = pd.concat(all_sensitivity, ignore_index=True)
 
     out_dir = config.path("data_processed")
     summary_out = out_dir / "synthetic_control_summary.csv"
     daily_out = out_dir / "synthetic_control_daily.csv"
     weights_out = out_dir / "synthetic_control_weights.csv"
     scales_out = out_dir / "synthetic_control_scales.csv"
+    sensitivity_out = out_dir / "synthetic_control_prefit_sensitivity.csv"
     summary.to_csv(summary_out, index=False)
     daily.to_csv(daily_out, index=False)
     weights.to_csv(weights_out, index=False)
     scales.to_csv(scales_out, index=False)
+    sensitivity.to_csv(sensitivity_out, index=False)
 
     actual = summary[summary["is_actual"]].copy()
     print("Synthetic-control corroboration summary:")
     print(actual.to_string(index=False))
+    print("\nPre-fit RMSPE screen sensitivity:")
+    print(sensitivity.to_string(index=False))
     print(f"\nwrote {summary_out}")
     print(f"wrote {daily_out}")
     print(f"wrote {weights_out}")
     print(f"wrote {scales_out}")
+    print(f"wrote {sensitivity_out}")
     print("\nInterpretation guard:")
     print(" - This is corroboration, not the anchor estimator.")
     print(" - Donors exclude Panama, Suez, Bab el-Mandeb, Cape of Good Hope, and Gibraltar.")
     print(" - Matching is on pre-period mean-scaled throughput, not raw levels.")
     print(" - Pre-period RMSPE is the fit-credibility metric; weak fit limits interpretation.")
-    print(" - Abadie-style inference uses post/pre RMSPE-ratio placebos over clean donors.")
+    print(
+        " - The remediation-primary eligibility rule is placebo pre-RMSPE <= "
+        f"{PRIMARY_PREFIT_RMSPE_MULTIPLIER:g}x the treated pre-RMSPE."
+    )
+    print(
+        " - Threshold sensitivity at 1.5x, 2x, 5x, 10x, and unscreened is "
+        "reported so interpretation does not depend on one screen."
+    )
+    print(
+        " - Abadie-style rank inference compares the treated post/pre RMSPE ratio "
+        "only with eligible clean-donor placebos."
+    )
 
 
 if __name__ == "__main__":

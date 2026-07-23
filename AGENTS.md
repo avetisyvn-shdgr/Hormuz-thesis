@@ -9,8 +9,12 @@ Read these rules at the start of every session and follow them.
 
 - Prof. Li authorized proceeding with the free PortWatch dataset as the working
   primary. The locked engineering specification is in `config/settings.yaml`.
-- Formal title/RQ/hypothesis and estimand realignment is **not yet approved**.
-  Do not edit the formal proposal. Proposed language is staged only in
+- On 2026-07-23, Zhenyu Wang explicitly confirmed that the revised title,
+  research question, estimand, claim strength, and completed empirical scope are
+  acceptable. This is recorded as written advisor-side acceptance, but it is not
+  attributed to Prof. Li because no direct Prof. Li confirmation is on record.
+  Do not edit the formal proposal until that governance distinction is resolved.
+  Proposed language remains staged in
   `docs/PENDING_ESTIMAND_REALIGNMENT_DRAFT.md`.
 - Spark remains dormant and optional. Follow `docs/SPARK_REENTRY.md`; never make
   it a blocker or silently replace a working-primary result.

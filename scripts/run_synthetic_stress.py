@@ -1,4 +1,10 @@
-"""Stress synthetic control across donor pools and donor-by-time placebos."""
+"""Stress synthetic control across donor pools and donor-by-time placebos.
+
+Donor fits within one time window share the same shock and are not independent
+resampling draws. Inference therefore reduces each disjoint time window to the
+maximum pseudo-unit post/pre RMSPE ratio, then ranks the actual treated ratio
+against the seven block maxima. The 154 individual fits remain descriptive.
+"""
 from __future__ import annotations
 
 import sys
@@ -34,6 +40,38 @@ def _actual_pool_fit(
     summary, _, _ = _fit_unit(scaled, TREATED, donors, pre, post)
     summary.update({"donor_pool": label, "placebo_type": "actual_pool_stress"})
     return summary
+
+
+def _aggregate_donor_time_blocks(valid: pd.DataFrame) -> pd.DataFrame:
+    """Return one conservative max statistic per disjoint time block."""
+    required = {
+        "placebo_fold",
+        "placebo_start",
+        "placebo_end",
+        "unit",
+        "post_pre_rmspe_ratio",
+    }
+    missing = required - set(valid.columns)
+    if missing:
+        raise ValueError(f"Missing donor-time columns: {sorted(missing)}")
+    if valid.empty:
+        raise ValueError("Need at least one computed donor-time placebo.")
+
+    blocks = (
+        valid.groupby(
+            ["placebo_fold", "placebo_start", "placebo_end"],
+            as_index=False,
+        )
+        .agg(
+            n_pseudo_units=("unit", "nunique"),
+            mean_post_pre_rmspe_ratio=("post_pre_rmspe_ratio", "mean"),
+            median_post_pre_rmspe_ratio=("post_pre_rmspe_ratio", "median"),
+            max_post_pre_rmspe_ratio=("post_pre_rmspe_ratio", "max"),
+        )
+        .sort_values("placebo_start")
+        .reset_index(drop=True)
+    )
+    return blocks
 
 
 def main() -> None:
@@ -84,33 +122,43 @@ def main() -> None:
     actual = pd.DataFrame(actual_rows)
     placebos = pd.DataFrame(placebo_rows)
     valid = placebos.loc[placebos["fit_status"] == "computed"]
+    block_maxima = _aggregate_donor_time_blocks(valid)
     anchor_ratio = float(actual.loc[
         actual["donor_pool"] == "low_contamination_donors",
         "post_pre_rmspe_ratio",
     ].iloc[0])
+    block_p_value = empirical_p_value(
+        anchor_ratio,
+        block_maxima["max_post_pre_rmspe_ratio"],
+        alternative="greater",
+    )
+    block_p95 = float(block_maxima["max_post_pre_rmspe_ratio"].quantile(0.95))
     inference = pd.DataFrame([{
         "actual_post_pre_rmspe_ratio": anchor_ratio,
-        "n_requested_donor_time_placebos": len(placebos),
-        "n_computed_donor_time_placebos": len(valid),
-        "n_independent_time_windows": len(folds),
+        "inference_unit": "disjoint_time_block",
+        "within_block_statistic": "maximum_post_pre_rmspe_ratio_across_pseudo_units",
+        "n_requested_donor_time_fits": len(placebos),
+        "n_computed_donor_time_fits": len(valid),
+        "n_disjoint_time_blocks": len(block_maxima),
         "n_placebo_units": valid["unit"].nunique(),
-        "donor_time_placebo_p_value": empirical_p_value(
-            anchor_ratio, valid["post_pre_rmspe_ratio"], alternative="greater"
-        ),
-        "donor_time_ratio_p95": valid["post_pre_rmspe_ratio"].quantile(0.95),
-        "actual_to_donor_time_p95_ratio": (
-            anchor_ratio / valid["post_pre_rmspe_ratio"].quantile(0.95)
-        ),
+        "pooled_donor_time_p_value_supported": False,
+        "block_max_rank_p_value": block_p_value,
+        "block_max_rank_p_value_floor": 1.0 / (len(block_maxima) + 1),
+        "block_max_ratio_p95": block_p95,
+        "actual_to_block_max_p95_ratio": anchor_ratio / block_p95,
     }])
 
     out = config.path("data_processed")
     actual.to_csv(out / "synthetic_donor_pool_stress.csv", index=False)
     placebos.to_csv(out / "synthetic_donor_time_placebos.csv", index=False)
+    block_maxima.to_csv(out / "synthetic_donor_time_block_maxima.csv", index=False)
     inference.to_csv(out / "synthetic_donor_time_inference.csv", index=False)
     print("Synthetic donor-pool stress:")
     print(actual[["donor_pool", "n_donors", "pre_rmspe", "post_pre_rmspe_ratio",
                   "cumulative_scaled_throughput_loss"]].to_string(index=False))
-    print("\nDonor-by-time placebo inference:")
+    print("\nDonor-by-time block maxima:")
+    print(block_maxima.to_string(index=False))
+    print("\nDisjoint-time-block inference:")
     print(inference.to_string(index=False))
 
 

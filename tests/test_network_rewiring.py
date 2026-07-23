@@ -1,5 +1,6 @@
 
 import pandas as pd
+import pytest
 
 
 from lngfreight import config  # noqa: E402
@@ -17,6 +18,8 @@ from lngfreight.network_rewiring import (  # noqa: E402
     TYPOLOGY_THRESHOLD_SENSITIVITY_COLUMNS,
     TYPOLOGY_THRESHOLD_SENSITIVITY_GRID,
     TYPOLOGY_THRESHOLD_SENSITIVITY_GRID_SIZE,
+    _mean_edges_by_origin,
+    _portfolio_vector,
     build_rewiring_network,
     dynamic_network_graph_metrics,
     graph_anomaly_scores,
@@ -26,6 +29,24 @@ from lngfreight.network_rewiring import (  # noqa: E402
     typology_threshold_sensitivity,
     rewiring_prepost_summary,
 )
+
+
+def test_origin_period_averages_zero_fill_disappearing_origins():
+    group = pd.DataFrame(
+        {
+            "period": ["2025-03", "2025-03", "2025-04"],
+            "origin_code": ["A", "B", "A"],
+            "origin_share": [0.5, 0.5, 1.0],
+            "edge_value": [10.0, 10.0, 20.0],
+        }
+    )
+
+    shares = _portfolio_vector(group, ["A", "B", "C"])
+    edges = _mean_edges_by_origin(group, ["A", "B", "C"])
+
+    assert shares.to_dict() == {"A": 0.75, "B": 0.25, "C": 0.0}
+    assert edges.to_dict() == {"A": 15.0, "B": 5.0, "C": 0.0}
+    assert shares.sum() == 1.0
 
 
 def _network() -> pd.DataFrame:
@@ -169,6 +190,15 @@ def test_dynamic_network_graph_metrics_preserve_caution_flags_and_movement():
     assert graph.loc["India", "edge_turnover_rate"] > 0.45
     assert graph.loc["Taiwan", "jensen_shannon_distance"] > 0.25
     assert graph.loc["Japan", "jensen_shannon_distance"] > 0.15
+    assert graph.loc["China", "non_gulf_offset_ratio"] == pytest.approx(
+        -0.0840437791
+    )
+    assert graph.loc["EU27", "non_gulf_offset_ratio"] == pytest.approx(
+        2.0104270609
+    )
+    assert graph.loc["India", "edge_turnover_rate"] == pytest.approx(
+        0.5552862631
+    )
 
 
 def test_resilience_typology_contract_and_expected_categories():
@@ -294,14 +324,7 @@ def test_post_month_typology_sensitivity_separates_coverage_from_substance():
         }
         assert set(rows["post_months_after_drop"]) == {2}
 
-    taiwan = available_changes[
-        available_changes["destination_unit"] == "Taiwan"
-    ].reset_index(drop=True)
-    assert len(taiwan) == 1
-    assert taiwan.loc[0, "dropped_month"] == "2026-03"
-    assert taiwan.loc[0, "dropped_primary_typology"] == "intermediate_rewiring"
-    assert taiwan.loc[0, "post_months_after_drop"] == 3
-
+    assert "Taiwan" not in set(available_changes["destination_unit"])
     assert "Korea" not in set(available_changes["destination_unit"])
     assert "EU27" not in set(available_changes["destination_unit"])
 

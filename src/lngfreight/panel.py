@@ -87,13 +87,15 @@ def build_panel_from_frozen_raw(
 ) -> pd.DataFrame:
     """Rebuild the free panel from local immutable raw snapshots only.
 
-    The latest provenance record for each requested variable identifies its
-    tidy `(date, value)` raw file. No provider or network call is made.
+    A configured frozen-series pin identifies the exact tidy `(date, value)`
+    file when present; otherwise the latest matching provenance record is used.
+    No provider or network call is made.
     """
     win = config.settings()["study_window"]
     start = start or win["full_start"]
     end = end or win["full_end"]
     names = variables if variables is not None else free_variables()
+    pins = config.settings().get("frozen_raw_pins", {})
 
     log_path = config.ROOT / config.settings()["paths"]["provenance_log"]
     if not log_path.exists():
@@ -107,23 +109,44 @@ def build_panel_from_frozen_raw(
     index = pd.date_range(start, end, freq="D", name="date")
     cols: dict[str, pd.Series] = {}
     for name in names:
-        matching = [
+        window_records = [
             record
             for record in records.get(name, [])
             if str(record.get("query", {}).get("start")) == str(start)
             and str(record.get("query", {}).get("end")) == str(end)
         ]
-        if not matching:
+        if not window_records:
             raise FileNotFoundError(
                 f"No frozen provenance record for {name!r} over "
                 f"[{start}, {end}]; cannot run offline."
             )
-        record = matching[-1]
+        pin = pins.get(name)
+        if pin:
+            matching = [
+                record
+                for record in window_records
+                if record.get("file") == pin.get("file")
+            ]
+            if not matching:
+                raise FileNotFoundError(
+                    f"No frozen provenance record for {name!r} over "
+                    f"[{start}, {end}] matches configured pin "
+                    f"{pin.get('file')!r}."
+                )
+            record = matching[-1]
+            if record.get("sha256") != pin.get("sha256"):
+                raise ValueError(
+                    f"Frozen raw pin/provenance hash mismatch for {name!r}: "
+                    f"pin={pin.get('sha256')}, provenance={record.get('sha256')}"
+                )
+        else:
+            record = window_records[-1]
         path = config.ROOT / record["file"]
         if not path.exists():
             raise FileNotFoundError(f"Frozen raw file for {name!r} not found: {path}")
         actual_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
-        if actual_sha256 != record.get("sha256"):
+        expected_sha256 = pin["sha256"] if pin else record.get("sha256")
+        if actual_sha256 != expected_sha256:
             raise ValueError(
                 f"Frozen raw file hash mismatch for {name!r}: {path}"
             )

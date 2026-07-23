@@ -97,6 +97,14 @@ paths:
   modeled_route_network_change_png: "reports/figures/modeled_route_network_change.png"
   modeled_route_network_change_pdf: "reports/figures/modeled_route_network_change.pdf"
 
+# Explicit frozen-series pins. These prevent provenance-record ordering from
+# silently changing an active analysis vintage. See
+# docs/PORTWATCH_VINTAGE_REGISTER.md.
+frozen_raw_pins:
+  hormuz_tanker_transits:
+    file: "data/raw/portwatch/hormuz_tanker_transits__chokepoint_strait_of_hormuz_n_tanker__6631382171dc.csv"
+    sha256: "6631382171dc7f19450516a404138cf529647acf246be68c5c9f80dedfb5b3bb"
+
 # Study window. Pre-period must be long enough for rolling-origin validation;
 # post-period is deliberately short (the proposal warns about overfitting here).
 study_window:
@@ -108,13 +116,14 @@ study_window:
   # commercial component of the disruption began simultaneously.
   primary_treatment_cutoff: "2026-02-28"
   # Event milestones — re-audited 2026-06-19 (see docs/EVENT_CHRONOLOGY.md).
-  # Cross-checked vs the AIS transit collapse in the panel
-  # (Hormuz transits: Feb27=53, Feb28=44, Mar1=7, Mar2=2, Mar4=0).
+  # The cutoff follows the outcome-blind external kinetic-onset rule. The pinned
+  # PortWatch vintage is a measurement cross-check, not a date selector
+  # (Hormuz transits: Feb27=35, Feb28=35, Mar1=10, Mar2=2, Mar4=0).
   # These define sensitivity scoring windows. They do NOT move the fixed
   # pre-treatment training boundary above.
   treatment_candidates:
-    kinetic_trigger:       "2026-02-28"   # US operation begins; first observed
-                                          # break in Hormuz tanker throughput.
+    kinetic_trigger:       "2026-02-28"   # US operation begins (DoD fact sheet);
+                                          # external rule, not outcome-selected.
     closure_declaration:   "2026-03-02"   # Closure-confirmation milestone;
                                           # operational collapse already underway.
     force_majeure:         "2026-03-04"   # QatarEnergy primary announcement.

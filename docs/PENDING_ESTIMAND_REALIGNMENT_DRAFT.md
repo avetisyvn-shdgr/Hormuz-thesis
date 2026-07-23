@@ -1,10 +1,13 @@
-# PENDING PROF. LI CONFIRMATION
+# ADVISOR ACCEPTED — DIRECT PROF. LI RATIFICATION UNRECORDED
 
 ## Estimand change from LNG freight rates / ton-mile multiplier to tanker-throughput shortfall
 
-**This is a staged discussion draft only. It is not an approved thesis change.**
-The existing formal proposal, title, research question, and hypotheses remain in
-force until Prof. Li explicitly approves the outcome-variable realignment.
+**Governance update, 2026-07-23:** Zhenyu Wang explicitly confirmed in writing
+that the revised title, research question, estimand, claim strength, and
+completed empirical scope are acceptable. This is recorded as advisor-side
+acceptance. It is not attributed to Prof. Li because no direct confirmation from
+Prof. Li is on record. The existing formal proposal remains unchanged until that
+distinction is resolved.
 
 ## Proposed title
 

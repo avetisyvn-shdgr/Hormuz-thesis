@@ -5,7 +5,9 @@
 integrate the existing results, add only pre-declared sensitivity checks, and
 write thesis-facing drafts from committed artifacts. This document records the
 completed branch, the current integration phases, and the remaining non-blocking
-Spark option.
+Spark option. On 2026-07-23, Zhenyu Wang confirmed that the revised framing and
+completed empirical scope are acceptable. Direct Prof. Li ratification is not
+on record, so the formal proposal remains unchanged.
 
 ## Active implementation decision
 
@@ -189,5 +191,8 @@ finalized.
 
 Complete the accepted Phase-1 through Phase-3 integration path one phase at a
 time, stopping for pasted real output where required. Keep pursuing Spark access
-in parallel. Formal estimand/title/RQ approval is the separate
-thesis-governance decision recorded in `ESTIMAND_PROPOSAL_RECONCILIATION.md`.
+in parallel as an optional monetary-outcome extension, not a blocker. Prioritize
+content over formatting and use the supplied LaTeX template; introduction plus
+related work must remain within 30% of the main text. Total page-count rules
+remain unresolved. Advisor acceptance and the remaining direct-ratification
+distinction are recorded in `ESTIMAND_PROPOSAL_RECONCILIATION.md`.

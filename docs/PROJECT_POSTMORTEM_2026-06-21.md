@@ -164,11 +164,11 @@ Functional spot-checks of the load-bearing code:
 
 **Headline (working primary, AR-only interrupted-time-series counterfactual on PortWatch tanker transits through Hormuz):**
 - Observed post-window transits collapse to **245** vs an AR-only counterfactual of **5,366** over 94 days → **cumulative shortfall ≈ 5,121 transits (~54.5/day)**, i.e. the strait runs at roughly **4.5% of expected throughput**.
-- **Honest 94-day interval: 3,934–5,722 transits** (placebo-window recalibrated; the short-fold band 4,758–5,434 is a lower bound; circular-block cross-check 4,649–5,516). All exclude zero by a wide margin.
+- **Historical 94-day descriptive placebo quantile band: 3,934–5,722 transits** (overlapping windows; no nominal coverage; circular-block cross-check 4,649–5,516).
 - **Robust across treatment-window definitions** (kinetic trigger / closure declaration / force majeure / donut): mean daily loss stays ~54–55/day with the cutoff fixed at 2026-02-28.
 
 **Corroboration (consistent, not independent identification):**
-- **Placebo-in-time:** actual loss separates from the placebo p95 by **~3.9×**; p-value floor-censored at 0.027 (small-N design floor — report separation, not p).
+- **Placebo-in-time:** actual loss separates from the placebo p95 by **~3.9×**; the overlapping-window 0.027 value is a descriptive reference rank, not a p-value.
 - **Spatial placebo (28 chokepoints):** Hormuz first by raw *and* normalized loss; **95.5% of expected transits lost, ~5.0× the donor p95**; leave-one-out shows no single donor drives it (dropping Malacca *strengthens* it).
 - **Synthetic control (22 clean donors):** post/pre RMSPE ratio **4.77 vs placebo p95 1.23 (3.87×)**, Abadie p≈0.043, credible pre-fit (RMSPE 0.175, 8.7 effective donors).
 - **BSTS univariate:** posterior-median shortfall **4,982 [3,348, 6,711]**, P(>0)=1.0 — agrees in direction and magnitude.

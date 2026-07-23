@@ -93,7 +93,8 @@ descriptive results section. That is the highest-value writing task remaining.
 **#2 — The transferable identification protocol (the methodology-first
 headline).** Leakage-safe counterfactual forecasting + a falsification cascade
 (placebo-in-time, 28-chokepoint placebo-in-space, donut treatment-date, leave-
-one-donor-out, synthetic control, horizon-matched intervals, Romano-Wolf,
+one-donor-out, synthetic control, descriptive full-horizon placebo quantile
+bands, disjoint-block inference, Romano-Wolf,
 quantified dark-vessel bound) executed end-to-end on *entirely free data* with
 hash-frozen reproducibility. Your own gap matrix shows no screened study
 combines these elements. For a bachelor thesis this is the defensible

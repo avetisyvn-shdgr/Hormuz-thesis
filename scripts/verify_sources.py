@@ -43,11 +43,12 @@ GAP_FLAG_DAYS = 4
 # not prove an error - it prompts a manual look. Bands are deliberately wide
 # (2022 energy crisis included).
 UNIT_BANDS = {
-    # Upper bound raised 2026-06-14 after manual review: the 2026-01-23 ($30.72)
-    # and 2026-01-26 ($30.57) prints are VERIFIED EIA all-time daily records
-    # driven by Winter Storm Fern (record 360 Bcf storage draw), NOT bad data.
-    # Do not winsorise/remove them - they are a real pre-treatment energy
-    # confounder ~5 weeks before the Hormuz trigger. See docs/EVENT_CHRONOLOGY.md.
+    # Upper bound raised 2026-06-14 after manual review. The frozen EIA series
+    # records $30.72 on 2026-01-23, followed by $25.01 on 2026-01-26, $17.19 on
+    # 2026-01-27, and $9.34 on 2026-01-28. Do not winsorise the 23 January peak:
+    # it is a real pre-treatment observation, and contemporaneous EIA reporting
+    # identifies severe winter weather as the late-January market context. See
+    # docs/EVENT_CHRONOLOGY.md.
     "henry_hub_spot": (1.0, 60.0),     # USD/MMBtu
     "brent_spot": (40.0, 150.0),       # USD/bbl
 }

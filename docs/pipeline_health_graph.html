@@ -55,7 +55,7 @@ flowchart TD
     subgraph PRIMARY["Primary estimate - load-bearing"]
         VAL --> BASE["baselines.py<br/>AR-only PRIMARY"]:::ok
         BASE --> CF["inference.py<br/>observed minus counterfactual gap"]:::ok
-        CF --> RESULT["AR-only loss = 5,121 transits<br/>94-day band 3,934 to 5,722"]:::ok
+        CF --> RESULT["AR-only loss = 6,869 transits<br/>130-day descriptive band 5,430 to 8,089"]:::ok
     end
 
     subgraph CORROB["Corroboration layers - not the anchor"]
@@ -65,11 +65,11 @@ flowchart TD
         CF --> BSTS["BSTS univariate<br/>median 4,982"]:::ok
     end
 
-    subgraph BENCH["TSFM benchmark - isolated, excluded from run_all"]
+    subgraph BENCH["TSFM benchmark isolated; admitted cross-check regenerated"]
         VAL -. pre-cutoff only .-> TSFM["tsfm.py adapters"]:::gated
         WEIGHTS["HF weights + venvs<br/>macOS-only, not in repo"]:::gated
         WEIGHTS -. required .-> TSFM
-        TSFM --> ADM["admission test<br/>Chronos-2 +2.4% transits"]:::gated
+        TSFM --> ADM["matched-horizon cross-check<br/>Chronos-2 -3.7% transits"]:::gated
     end
 
     subgraph MECH["Open-data LNG mechanism - descriptive"]

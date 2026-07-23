@@ -123,6 +123,59 @@ def test_build_panel_from_frozen_raw_rejects_wrong_window(tmp_path, monkeypatch)
         panel_mod.build_panel_from_frozen_raw(variables=["x"])
 
 
+def test_build_panel_from_frozen_raw_honors_explicit_pin(tmp_path, monkeypatch):
+    raw = tmp_path / "data" / "raw" / "provider"
+    raw.mkdir(parents=True)
+    pinned = raw / "x__pinned.csv"
+    legacy = raw / "x.csv"
+    pinned.write_text("date,value\n2026-01-01,2\n", encoding="utf-8")
+    legacy.write_text("date,value\n2026-01-01,1\n", encoding="utf-8")
+    pinned_digest = hashlib.sha256(pinned.read_bytes()).hexdigest()
+    legacy_digest = hashlib.sha256(legacy.read_bytes()).hexdigest()
+    query = {"start": "2026-01-01", "end": "2026-01-01"}
+    provenance = tmp_path / "data" / "raw" / "provenance.jsonl"
+    provenance.write_text(
+        "\n".join([
+            json.dumps({
+                "variable": "x",
+                "file": "data/raw/provider/x__pinned.csv",
+                "query": query,
+                "sha256": pinned_digest,
+            }),
+            # Deliberately last: without a pin this legacy record would win.
+            json.dumps({
+                "variable": "x",
+                "file": "data/raw/provider/x.csv",
+                "query": query,
+                "sha256": legacy_digest,
+            }),
+        ]) + "\n",
+        encoding="utf-8",
+    )
+    settings = {
+        "study_window": {
+            "full_start": "2026-01-01",
+            "full_end": "2026-01-01",
+        },
+        "paths": {"provenance_log": "data/raw/provenance.jsonl"},
+        "frozen_raw_pins": {
+            "x": {
+                "file": "data/raw/provider/x__pinned.csv",
+                "sha256": pinned_digest,
+            },
+        },
+    }
+    monkeypatch.setattr(config_mod, "ROOT", tmp_path)
+    monkeypatch.setattr(config_mod, "settings", lambda: settings)
+
+    out = panel_mod.build_panel_from_frozen_raw(variables=["x"])
+    assert out["x"].tolist() == [2]
+
+    settings["frozen_raw_pins"]["x"]["sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="pin/provenance hash mismatch"):
+        panel_mod.build_panel_from_frozen_raw(variables=["x"])
+
+
 # --------------------------------------------------------------------------
 # clean.py : forward-fill only, bounded, no leakage
 # --------------------------------------------------------------------------

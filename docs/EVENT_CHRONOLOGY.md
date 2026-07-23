@@ -18,17 +18,22 @@ each event and locks the modeling rule separately.
   its production and force-majeure decisions.
 - Single-sourced or contested events remain labelled as such.
 - The internal PortWatch series is a measurement cross-check, not an independent
-  historical source. Hormuz tanker transits are 53 on 27 February, 44 on
-  28 February, 7 on 1 March, 2 on 2 March, and 0 on 4 March.
+  historical source or a treatment-date selector. In the pinned vintage, Hormuz
+  tanker transits are 35 on 27 February, 35 on 28 February, 10 on 1 March,
+  2 on 2 March, and 0 on 4 March. See `PORTWATCH_VINTAGE_REGISTER.md`.
 
 ## Locked modeling rule
 
 **Primary pre-treatment cutoff: 2026-02-28.** Models train on dates strictly
 before 28 February and score the post period beginning on 28 February. This is
 the earliest defensible operational onset for the current tanker-throughput
-estimand: the US operation began and the observed PortWatch series first breaks
-on that date. It does not assert that every later declaration, commercial
-decision, or physical damage event began simultaneously.
+estimand under the outcome-blind external rule: the US operation began at 01:15
+that day. The pinned PortWatch series is unchanged from 27 to 28 February and
+then falls sharply on 1 March, so it is not used to select the cutoff. The
+outcome was inspected during the chronology audit; the date is therefore not
+presented as an ex ante preregistered choice. It does not assert that every
+later declaration, commercial decision, or physical damage event began
+simultaneously.
 
 Later milestones define sensitivity scoring windows only. They never move
 disrupted observations into training.
@@ -37,7 +42,7 @@ disrupted observations into training.
 
 | Slot | Event | Date | Evidentiary role | Modeling role |
 |---|---|---|---|---|
-| `kinetic_trigger` | US CENTCOM operation begins; first observed throughput break | **2026-02-28** | DoD record plus internal PortWatch series | **Primary cutoff and anchored window** |
+| `kinetic_trigger` | US CENTCOM operation begins | **2026-02-28** | DoD fact sheet (external operational-onset rule) | **Primary cutoff and anchored window** |
 | `closure_declaration` | Public closure-confirmation milestone | **2026-03-02** | Authoritative reporting; operational collapse already underway | Anchored sensitivity window |
 | `force_majeure` | QatarEnergy declares force majeure after stopping LNG production | **2026-03-04** | QatarEnergy primary announcement | Anchored sensitivity and donut boundary |
 | `ras_laffan_damage` | Later attacks damage Ras Laffan facilities and reduce capacity | **2026-03-18/19** | QatarEnergy primary statements | Separate escalation; not force-majeure date |
@@ -46,10 +51,13 @@ disrupted observations into training.
 ## Date rationale
 
 **Kinetic and operational onset: 2026-02-28.** The US Department of Defense
-records CENTCOM commencing Operation Epic Fury at 01:15 on 28 February. The
-AIS-derived series is consistent: the first break is that day, followed by a
-near-total collapse on 1-4 March. Because the cutoff is exclusive for training,
-this prevents the first affected day from entering model fitting.
+records CENTCOM commencing Operation Epic Fury at 01:15 on 28 February. This
+external event rule fixes the training boundary independently of the outcome.
+The pinned AIS-derived series is 35 on both 27 and 28 February, then falls to
+10 on 1 March, 2 on 2 March, and 0 on 4 March. Because the cutoff is exclusive
+for training, no observation at or after the external operational onset enters
+model fitting. The outcome was inspected during the chronology audit, so the
+choice is disclosed as externally anchored rather than ex ante preregistered.
 
 **Closure-confirmation milestone: 2026-03-02.** This date is retained as a
 scoring-window sensitivity, not as the primary training boundary. Moving the
@@ -79,10 +87,14 @@ is evaluated with rolling post-period windows instead.
 
 ## Pre-treatment confounder: January 2026 Henry Hub spike
 
-Source verification flagged Henry Hub spot values of $30.72 on 23 January and
-$30.57 on 26 January. EIA reporting supports treating this as a real weather
-shock rather than a data error. It occurred roughly five weeks before the
-primary cutoff and must not be winsorized or attributed to the Hormuz event.
+The frozen EIA series records a local maximum of $30.72/MMBtu on 23 January,
+followed by $25.01 on 26 January, $17.19 on 27 January, and $9.34 on 28 January
+(`data/raw/eia/henry_hub_spot__NG_RNGWHHD_D.csv`). The sequence is therefore a
+sharp 23 January peak followed by a decline, not a 26 January spike.
+Contemporaneous EIA reporting identifies severe winter weather as the context
+for late-January natural-gas price pressure. This pre-treatment shock occurred
+roughly five weeks before the primary cutoff and must not be winsorized or
+attributed to the Hormuz event.
 
 ## Sources
 
@@ -90,4 +102,3 @@ primary cutoff and must not be winsorized or attributed to the Hormuz event.
 - [QatarEnergy news archive - production stop, force majeure, and Ras Laffan statements (primary)](https://www.qatarenergy.qa/en/Pages/vHome.aspx)
 - [International LNG prices rise amid Strait of Hormuz closure - EIA](https://www.eia.gov/todayinenergy/detail.php?id=67604)
 - [Severe winter weather and natural gas prices - EIA](https://www.eia.gov/todayinenergy/detail.php?id=67046)
-

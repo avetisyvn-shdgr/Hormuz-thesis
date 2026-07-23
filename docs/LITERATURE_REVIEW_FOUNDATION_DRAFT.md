@@ -25,10 +25,11 @@ events carry measurable economic content [@caldara2022]. These remain risk or sc
 estimands rather than an observed-throughput shortfall.
 
 The broader resilience literature asks how maritime systems absorb, adapt to, and
-recover from shocks. Reviews classify responses such as rerouting, capacity
-management, collaboration, and technological monitoring [@nguyen2023review]. AIS
-network studies show that disruption effects are spatially heterogeneous and that
-network structure can reorganize rather than simply contract [@wan2023suez;
+recover from shocks. A systematic review catalogs disruption-management measures
+in the maritime industry and examines how the literature connects them to
+resilience and organizational performance [@nguyen2023review]. AIS network studies
+report uneven regional impacts and differences by ship type, while also showing
+that network structure can reorganize rather than simply contract [@wan2023suez;
 @xiao2024lng]. These concepts are essential for interpreting post-event traffic.
 Nevertheless, resilience must not be inferred merely because aggregate volume is
 maintained: rerouting can preserve delivery while increasing time, cost, or exposure.
@@ -53,13 +54,14 @@ sharp contraction in Gulf-sourced volume — as "resilience through reallocation
 it cautions that maintained aggregate volume does not imply an absence of cost.
 
 The closest methodological precedent is the study of LNG transits through Suez by
-Polemis and Bentsos [@polemis2025]. Using weekly commercial shipping data, that study
-compares actual and anticipated LNG transits through event-study abnormal returns and
-ARFIMA models for several geopolitical episodes. It demonstrates that forecast-based
-event analysis of canal transit volumes already exists. The present thesis can only
-differentiate itself more narrowly: daily public observations, a longer pre-event
-validation design, horizon-matched cumulative forecast errors, explicit time and
-space placebos, and a deliberately non-causal estimand.
+Polemis and Bentsos [@polemis2025, pp. 5–6 and 8–10]. Using weekly Clarksons
+Shipping Intelligence Network data, that study compares actual and anticipated LNG
+transits through event-study abnormal returns and ARFIMA models for several
+geopolitical episodes. It demonstrates that forecast-based event analysis of canal
+transit volumes already exists. The present thesis can only differentiate itself
+more narrowly: daily public observations, a longer pre-event validation design,
+horizon-matched cumulative forecast errors, explicit time and space placebos, and a
+deliberately non-causal estimand.
 
 ## 3. AIS and satellite data as economic observation instruments
 

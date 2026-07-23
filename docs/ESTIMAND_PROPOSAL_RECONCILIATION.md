@@ -1,11 +1,14 @@
 # Estimand realignment — proposal-reconciliation note
 
-**Status:** Decision-ready reconciliation, 2026-06-20. **Pending Prof. Li
-approval.** This note does **not** edit the formal proposal (`Thesis_Proposal_MA`,
-unchanged) and does not enact a change. It maps the approved proposal item-by-item
-to the staged realignment in `PENDING_ESTIMAND_REALIGNMENT_DRAFT.md` so the
-outcome-variable change can be approved as one explicit decision. Until then the
-formal proposal remains in force (AGENTS.md).
+**Status:** Decision-ready reconciliation, 2026-06-20; updated 2026-07-23.
+Zhenyu Wang has accepted the revised title, research question, estimand, claim
+strength, and empirical sufficiency in writing. Direct Prof. Li ratification is
+not on record. The primary email-thread export and its checksum are archived in
+`docs/approvals/`. This note does **not** edit the formal proposal
+(`Thesis_Proposal_MA`, unchanged). It maps the approved proposal item-by-item to
+the staged realignment in `PENDING_ESTIMAND_REALIGNMENT_DRAFT.md`. The formal
+proposal remains unchanged until the remaining governance distinction is
+resolved (AGENTS.md).
 
 ## One-paragraph summary
 
@@ -54,7 +57,14 @@ simulation.
   weakened, LNG-specific version of the original ton-mile mechanism for free, and
   its simulation fallback — neither of which the original proposal had.
 
-## Decision items requiring Prof. Li's explicit sign-off
+## Items accepted by Zhenyu on 2026-07-23
+
+Zhenyu's written response accepted the revised title/RQ/estimand and claim
+strength, and confirmed that the completed empirical scope is sufficient for a
+Bachelor's thesis. This supports content-first manuscript integration and the
+existing no-third-layer plan.
+
+## Items still requiring direct Prof. Li ratification under the repository gate
 
 1. Approve the **outcome-variable change** (freight → throughput) and the title/RQ.
 2. Approve **"disruption-associated counterfactual shortfall"** as the reporting
@@ -64,6 +74,7 @@ simulation.
 4. Confirm the **updated TSFM roster** (2025 foundation models) satisfies the
    original PatchTST/iTransformer sub-question as a benchmark.
 
-On approval, transfer the staged language from
-`PENDING_ESTIMAND_REALIGNMENT_DRAFT.md` into the formal proposal; until then both
-documents remain non-binding drafts and the formal proposal is untouched.
+If direct ratification is obtained or Zhenyu's delegated approval authority is
+confirmed, transfer the staged language from
+`PENDING_ESTIMAND_REALIGNMENT_DRAFT.md` into the formal proposal. Until then the
+formal proposal is untouched.

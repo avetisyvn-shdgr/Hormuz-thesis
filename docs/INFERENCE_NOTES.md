@@ -17,31 +17,32 @@ clean headline target, `hormuz_tanker_transits`, the route-only ARX result is:
 | Actual mean daily throughput loss | 55.07 tanker transits/day |
 | Placebo loss p95 | 1,306.89 tanker transits |
 | Actual / placebo p95 | 3.96x |
-| Corrected one-sided placebo p-value | 0.027 |
+| Overlapping-window reference rank (not a p-value) | 0.027 |
 
 This supports the statement: **the observed Hormuz transit collapse is far
 outside the pre-treatment forecast-error distribution under the transparent
 baseline models.**
 
-## How to report the p-value
+## How to report the overlapping-window reference rank
 
-Do **not** over-read `p = 0.027` as a precise tail probability. The 36 placebo
+Do **not** report `0.027` as a p-value. The 36 placebo
 windows overlap heavily: the window length is 94 days and the step is 30 days, so
 adjacent placebo windows share 64 days. A greedy non-overlap count gives only
-about **9 effectively independent horizon-length windows**.
+about **9 disjoint horizon-length windows** in this historical 94-day run.
 
-The corrected empirical p-value is still a useful design-floor diagnostic:
+The overlapping-window reference rank is descriptive:
 
 ```text
-p = (number of placebo losses >= actual loss + 1) / (number of placebos + 1)
+r = (number of placebo losses >= actual loss + 1) / (number of placebos + 1)
   = 1 / 37
   = 0.027
 ```
 
-But because this is the smallest value the design can produce, it cannot
-distinguish "barely larger than all placebos" from "much larger than all
-placebos." Therefore the writeup must report **separation ratios** such as
-actual loss divided by placebo p95.
+Because the windows overlap, this is not an independent-sample tail probability.
+Formal rank inference must use disjoint blocks. In the active 130-day run, seven
+disjoint blocks give `p = 0.125`, and the nominal 95% block-conformal interval
+is unbounded. The writeup also reports **separation ratios** such as actual loss
+divided by placebo p95.
 
 ## Treatment-date robustness — donut design
 
@@ -172,10 +173,12 @@ use mean-daily capacity loss as the cleaner comparison when valid day counts
 differ.
 
 Capacity is a **directional secondary, model-sensitive outcome**, not a second
-co-primary. The AR-only shortfall is 206.9M and Chronos-2 gives 196.1M (−5.2%),
-whereas the transit shortfall changes only +2.4%. This is consistent with the
-heavier-tailed count × per-vessel-capacity construction. Report direction and
-separation, not a precise capacity effect magnitude.
+co-primary. On the exact same 118 valid post-treatment dates, the AR-only
+shortfall is 291.0M and Chronos-2 gives 260.0M (−10.6%). On the exact same 130
+transit dates, the corresponding comparison is 6,869.0 versus 6,614.9 (−3.7%).
+This is consistent with the heavier-tailed count × per-vessel-capacity
+construction. Report direction and separation, not a precise capacity effect
+magnitude.
 
 ## Leave-one-donor-out spatial sensitivity
 
@@ -253,54 +256,54 @@ error as the horizon lengthens. So treat the interval above as a **lower bound o
 true 94-day counterfactual uncertainty**. The long-horizon interval in the next
 section recalibrates at the true horizon and supersedes this band for reporting.
 
-## Long-horizon (94-day) intervals
+## Historical full-horizon (94-day) empirical quantile bands
 
 Updated 2026-06-17: `scripts/run_long_horizon_intervals.py` recalibrates the band
 at the **true ~94-day horizon**, resolving the caveat above. Rather than
 block-bootstrapping ≤30-day-fold residuals, it reuses the **placebo-in-time
 windows** — each is a full 94-day pre-treatment recursive forecast, so its
 cumulative gap is a realised 94-day cumulative forecast error that already
-includes long-horizon recursive compounding. The interval is the point loss plus
-the mean-centered empirical 2.5/97.5 quantiles of those errors
-(`long_horizon_loss_interval`). This was preferred over conformal prediction,
-whose finite-sample coverage guarantee assumes a pre/post exchangeability that an
-event study deliberately breaks.
+includes long-horizon recursive compounding. The descriptive band is the point
+loss plus the mean-centered empirical 2.5/97.5 quantiles of those errors
+(`overlapping_placebo_quantile_band`). Because the windows overlap, the band
+has no nominal coverage and is not a confidence, prediction, or conformal
+interval.
 
 For `hormuz_tanker_transits`, route-only ARX:
 
 | Statistic | ≤30-day-fold band | 94-day-horizon band |
 |---|---:|---:|
 | Point cumulative loss | 5,176 | 5,176 |
-| 95% interval | 4,816 to 5,497 | 3,960 to 5,762 |
+| Descriptive 2.5/97.5% band | 4,816 to 5,497 | 3,960 to 5,762 |
 | Width | 681 | 1,801 (≈2.6× wider) |
 | Excludes zero | yes | yes |
 
-The honest band is ~2.6× wider than the short-fold band — that gap is the
+The empirical band is ~2.6× wider than the short-fold band — that gap is the
 understatement the caveat warned about. Across all six model×target combinations
-the interval widens by 2.5–3.3× and **every one still excludes zero by a wide
-margin** (route-only transit lower bound 3,960 ≫ 0), so the throughput-collapse
-conclusion survives honest long-horizon uncertainty.
+the descriptive band widens by 2.5–3.3×. Its endpoints are scale diagnostics,
+not coverage statements.
 
 An independent 10,000-draw circular block bootstrap now resamples the ordered
 out-of-fold AR residual path in 14-day blocks. For the locked-primary AR transit
 shortfall it gives **[4,649, 5,516]**, compared with the preferred
 placebo-window **[3,934, 5,722]**. The cross-check is materially narrower, so the
-methods do not agree on width; both exclude zero. Retain the placebo-window band
-as the conservative headline and report the block-bootstrap band as interval-
-method sensitivity.
+methods do not agree on width. Report the placebo-window band descriptively and
+the block-bootstrap band as method sensitivity; neither replaces disjoint-block
+rank and conformal support limits.
 
 Limitations: the placebo windows overlap (94-day windows stepped by 30 days, ~9
 effectively independent), so the 2.5/97.5 quantiles are coarse, and the placebo
 models train on expanding windows smaller than the actual full-pre-period model,
-which widens the errors — i.e. the band is **conservative (wide), not precise**.
+which widens the observed error spread. Width alone does not establish
+conservative coverage.
 For capacity, read the mean-daily interval columns rather than cumulative, because
-valid-day counts differ (79 actual vs 94 placebo). This interval quantifies
-forecast-error uncertainty only; it does not fix measurement bias, donor
+valid-day counts differ (79 actual vs 94 placebo). This descriptive band
+summarizes observed forecast-error dispersion only; it does not fix measurement bias, donor
 contamination, or energy mediation.
 
 ## Donor-weighted synthetic control (corroboration)
 
-Updated 2026-06-17: `scripts/run_synthetic_control.py` (helpers in
+Updated 2026-07-23: `scripts/run_synthetic_control.py` (helpers in
 `src/lngfreight/synthetic.py`) fits a convex donor-weighted synthetic Hormuz on
 the **clean donor pool** (the five rerouting corridors — Panama, Suez,
 Bab-el-Mandeb, Cape of Good Hope, Gibraltar — are excluded for the same SUTVA
@@ -310,8 +313,11 @@ scale), every series is divided by its own pre-period mean, so the fit matches
 **shape, not size**. Weights are fit by Frank-Wolfe on the simplex over the
 pre-period; **pre-period RMSPE is the fit-credibility metric**. Inference is
 Abadie-style: each clean donor is re-treated as a placebo and its post/pre RMSPE
-ratio forms the reference distribution. This is **corroboration, not the anchor
-estimator** (consistent with `FALLBACK_STRATEGY.md`).
+ratio forms the reference distribution. The remediation-primary eligibility rule
+requires placebo pre-RMSPE no greater than **2x the treated pre-RMSPE**. Results
+are also reported at 1.5x, 5x, 10x, and with no screen so the interpretation does
+not depend on one threshold. This is **corroboration, not the anchor estimator**
+(consistent with `FALLBACK_STRATEGY.md`).
 
 For `hormuz_tanker_transits` (`n_tanker`):
 
@@ -319,40 +325,48 @@ For `hormuz_tanker_transits` (`n_tanker`):
 |---|---:|
 | Clean donors in fit | 22 |
 | Pre-period fit days | 1,519 |
-| Pre-period RMSPE (mean-scaled units) | 0.175 |
-| Post-period RMSPE | 0.835 |
-| Post/pre RMSPE ratio | 4.77 |
-| Placebo ratio p95 | 1.23 |
-| Hormuz ratio / placebo p95 | 3.87x |
-| Abadie placebo p-value | 0.043 (= 1/23, design floor) |
-| Effective donors (1/Σw²) | 8.8 |
-| Largest single weight | korea_strait (0.18) |
+| Pre-period RMSPE (mean-scaled units) | 0.258 |
+| Post-period RMSPE | 0.840 |
+| Post/pre RMSPE ratio | 3.254 |
+| Remediation-primary pre-fit screen | placebo pre-RMSPE <= 2x treated |
+| Eligible / total placebos | 14 / 22 (8 excluded) |
+| Eligible-placebo ratio p95 | 1.502 |
+| Hormuz ratio / eligible-placebo p95 | 2.166x |
+| Screened rank p-value | 0.066667 (= 1/15, design floor) |
+| Effective donors (1/Σw²) | 7.4 |
+| Largest single weight | korea_strait (0.22) |
 
-Interpretation: the pre-period fit is credible (RMSPE 0.175 on mean-scaled units,
-~8.8 effective donors, no single donor dominating), and Hormuz's post/pre RMSPE
-ratio (4.77) is far outside the clean-donor placebo distribution (p95 = 1.23).
-This independently corroborates the throughput collapse already seen in the
-placebo-in-time and spatial-placebo layers, via a genuine weighted counterfactual
-rather than an unweighted pool.
+Interpretation: the treated pre-period fit is usable (RMSPE 0.258 on mean-scaled
+units, 7.4 effective donors, no single donor dominating), and Hormuz's post/pre
+RMSPE ratio exceeds every placebo that passes the 2x pre-fit screen. Across the
+1.5x, 2x, 5x, 10x, and unscreened specifications, the rank p-value ranges from
+0.043478 to 0.083333; the unscreened value is 0.043478. The 2x rule is the
+remediation-primary convention, not evidence that the choice is uniquely
+correct. The threshold grid and treated-versus-eligible-placebo gap-path figure
+make that design dependence visible. This is a corroborating diagnostic
+consistent with the other falsification layers, not an independent design.
 
 Capacity (`capacity_tanker`) corroborates more weakly, as expected: fewer complete
-pre-period rows (428, after artifact masking) give a noisier fit (pre-RMSPE 0.282)
-and a smaller separation (ratio 3.01 vs placebo p95 1.45, 2.07x, p = 0.043). Treat
-the transit result as primary and capacity as supporting.
+pre-period rows (431, after artifact masking) give a noisier fit (pre-RMSPE 0.353).
+Under the 2x screen, 10/22 placebos are eligible; the treated ratio is 2.379
+versus an eligible-placebo p95 of 1.689 (1.408x, rank p = 0.090909, floor 1/11).
+Treat the transit result as primary and capacity as supporting.
 
 Limitations: this is a **scaled, shape-based** diagnostic, not a level effect and
-not an LNG-specific freight estimate. The p-value is again a small-N design floor,
-so report the ratio/p95 separation alongside it. Mean-scaling assumes a stable
-pre-period level, and the clean-donor pool, while contamination-screened, is still
-an imperfect control set.
+not an LNG-specific freight estimate. The screened p-value remains a small-N
+design floor, eligibility depends on a threshold convention, and retained
+placebos can still be cross-sectionally dependent. Report eligible counts,
+threshold sensitivity, and ratio/p95 separation alongside the rank. Mean-scaling
+assumes a stable pre-period level, and the clean-donor pool, while
+contamination-screened, is still an imperfect control set.
 
 ## Romano-Wolf multiplicity correction
 
 Updated 2026-06-20: `scripts/run_multiplicity_correction.py` applies a
 studentized Romano-Wolf max-statistic step-down to placebo families for which
 joint null draws are genuinely aligned. The placebo-in-time family contains 8
-generator-by-outcome hypotheses over 36 shared time windows; its adjusted
-p-values remain at the finite-design floor, 0.027. The low-contamination spatial
+generator-by-outcome hypotheses over seven shared disjoint time blocks; its
+adjusted p-values remain at the finite-design floor, 0.125. The low-contamination spatial
 family contains 2 outcomes over the 21 donors with complete joint statistics;
 both adjusted p-values are 0.045. These are still small-sample design floors and
 must be reported as corrected cross-outcome values rather than the earlier

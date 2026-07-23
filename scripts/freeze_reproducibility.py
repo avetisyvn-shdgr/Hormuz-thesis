@@ -109,10 +109,12 @@ ORCHESTRATED_ARTIFACTS = (
     "data/processed/spatial_placebo_leave_one_out.csv",
     "data/processed/spatial_placebo_summary.csv",
     "data/processed/synthetic_control_daily.csv",
+    "data/processed/synthetic_control_prefit_sensitivity.csv",
     "data/processed/synthetic_control_scales.csv",
     "data/processed/synthetic_control_summary.csv",
     "data/processed/synthetic_control_weights.csv",
     "data/processed/synthetic_donor_pool_stress.csv",
+    "data/processed/synthetic_donor_time_block_maxima.csv",
     "data/processed/synthetic_donor_time_inference.csv",
     "data/processed/synthetic_donor_time_placebos.csv",
     "data/processed/treatment_robustness_daily.csv",
@@ -145,6 +147,7 @@ ORCHESTRATED_ARTIFACTS = (
     "reports/figures/network_rewiring_source_structure.png",
     "reports/figures/run_actual_vs_counterfactual.png",
     "reports/figures/run_placebo_distribution.png",
+    "reports/figures/run_synthetic_control_placebo_paths.png",
     "reports/figures/run_synthetic_control_path.png",
     "reports/mechanism_results_summary.md",
     "reports/network_rewiring_summary.md",
@@ -161,10 +164,16 @@ CORE_RAW_INPUTS = (
     "data/raw/portwatch/Daily_Chokepoints_Data.csv",
     "data/raw/portwatch/ais_laden_tonmiles_usgc__chokepoint_panama_canal_capacity_tanker.csv",
     "data/raw/portwatch/hormuz_tanker_capacity__chokepoint_strait_of_hormuz_capacity_tanker.csv",
-    "data/raw/portwatch/hormuz_tanker_transits__chokepoint_strait_of_hormuz_n_tanker.csv",
+    "data/raw/portwatch/hormuz_tanker_transits__chokepoint_strait_of_hormuz_n_tanker__6631382171dc.csv",
     "data/raw/portwatch/panama_tanker_capacity__chokepoint_panama_canal_capacity_tanker.csv",
     "data/raw/portwatch/panama_tanker_transits__chokepoint_panama_canal_n_tanker.csv",
     "data/raw/wto_hormuz/voy_intake_index_lng_export.csv",
+)
+
+# Historical vintages preserved for audit but excluded from all active input
+# scopes. See docs/PORTWATCH_VINTAGE_REGISTER.md.
+QUARANTINED_RAW_INPUTS = (
+    "data/raw/portwatch/hormuz_tanker_transits__chokepoint_strait_of_hormuz_n_tanker.csv",
 )
 
 
@@ -212,10 +221,12 @@ def vessel_raw_hashes(root: Path) -> dict[str, str]:
     Finder metadata) are excluded: macOS recreates them on browse, they carry no
     data, and they must never break the input-hash gate."""
     core = set(CORE_RAW_INPUTS)
+    quarantined = set(QUARANTINED_RAW_INPUTS)
     return {
         rel: digest
         for rel, digest in raw_hashes(root).items()
         if rel not in core
+        and rel not in quarantined
         and not rel.endswith(".zip")
         and Path(rel).name != ".DS_Store"
         and not Path(rel).name.startswith("._")

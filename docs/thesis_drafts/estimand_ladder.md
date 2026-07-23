@@ -18,8 +18,11 @@ volume, not freight pricing, and not a vessel-level laden-state reconstruction.
 The second rung asks how much observed tanker throughput fell short of a
 pre-treatment counterfactual generated from the same series. The AR-only working
 primary estimates a shortfall of `6,869.0` tanker transits, with a
-horizon-matched `95%` interval from `5,430.3` to `8,088.9` transits
-(`reports/run_output.md`). At this rung, the thesis claims a
+descriptive overlapping-placebo 2.5/97.5% quantile band from `5,430.3` to
+`8,088.9` transits; this band has no nominal coverage
+(`reports/run_output.md`). Seven disjoint blocks give a one-sided rank
+`p = 0.125`, while the nominal 95% block-conformal interval is unbounded. At
+this rung, the thesis claims a
 disruption-associated counterfactual shortfall under explicit forecasting and
 placebo assumptions. It does not claim that forecast accuracy identifies a
 causal ATT, and it does not claim to price the disruption in LNG freight markets.

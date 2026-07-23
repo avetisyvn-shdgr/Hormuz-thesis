@@ -88,8 +88,9 @@ descriptive-measurement** contribution, stated without superlatives:
 > **disruption-associated shortfall in observable daily tanker throughput**
 > against a strictly pre-event, target-only forecast, and subjects that estimate
 > to a single integrated falsification protocol: chronological (rolling-origin)
-> validation, horizon-matched cumulative forecast-error calibration, temporal
-> placebos, same-date spatial placebos across other chokepoints, rerouting-aware
+> validation, descriptive full-horizon forecast-error quantile bands,
+> disjoint-block rank/conformal inference, temporal placebos, same-date spatial
+> placebos across other chokepoints, rerouting-aware
 > donor-contamination screening, LNG-specific cross-source corroboration, and
 > frozen public-data provenance — while reporting the result as explicitly
 > **non-causal**.

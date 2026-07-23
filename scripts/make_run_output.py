@@ -36,6 +36,7 @@ from lngfreight.validation import resolve_cutoff  # noqa: E402
 FIG_ACTUAL = "run_actual_vs_counterfactual.png"
 FIG_PLACEBO = "run_placebo_distribution.png"
 FIG_SYNTH = "run_synthetic_control_path.png"
+FIG_SYNTH_PLACEBOS = "run_synthetic_control_placebo_paths.png"
 COMPARISON = "run_spec_comparison.csv"
 REPORT = "run_output.md"
 
@@ -117,6 +118,7 @@ def main() -> None:
     synth_summary = _read("synthetic_control_summary.csv")
     synth_daily = _read("synthetic_control_daily.csv", ("date",))
     synth_scales = _read("synthetic_control_scales.csv")
+    synth_prefit = _read("synthetic_control_prefit_sensitivity.csv")
     capacity_diag = _read("capacity_missingness_diagnostics.csv")
     bsts_summary = _read("bsts_counterfactual_summary.csv")
     bsts_validation = _read("bsts_validation_forecasts.csv", ("date",))
@@ -154,11 +156,14 @@ def main() -> None:
             **residual,
             "point_shortfall": float(effect["actual_cumulative_throughput_loss"]),
             "mean_daily_shortfall": float(effect["actual_mean_daily_throughput_loss"]),
-            "interval_horizon_matched_lower": float(
-                interval["interval_horizon_matched_lower"]
+            "reported_band_lower": float(
+                interval["overlapping_placebo_quantile_band_lower"]
             ),
-            "interval_horizon_matched_upper": float(
-                interval["interval_horizon_matched_upper"]
+            "reported_band_upper": float(
+                interval["overlapping_placebo_quantile_band_upper"]
+            ),
+            "reported_band_label": (
+                "overlapping_placebo_2.5_97.5_quantile_band_no_nominal_coverage"
             ),
             "interval_circular_bootstrap_lower": float(
                 interval["interval_circular_bootstrap_lower"]
@@ -169,7 +174,12 @@ def main() -> None:
             "placebo_metric": "cumulative_shortfall",
             "placebo_reference_p95": float(effect["placebo_loss_p95"]),
             "placebo_separation": float(effect["loss_vs_placebo_p95_ratio"]),
-            "placebo_p_value": float(effect["p_loss_ge_actual"]),
+            "placebo_diagnostic_value": float(
+                effect["overlapping_reference_rank_loss_ge_actual"]
+            ),
+            "placebo_diagnostic_label": (
+                "overlapping_window_reference_rank_not_p_value"
+            ),
             "post_pre_rmspe_ratio": np.nan,
             "effective_donors": np.nan,
         })
@@ -210,12 +220,14 @@ def main() -> None:
         "residual_acf_lag7": float(synth_pre_errors.autocorr(lag=7)),
         "point_shortfall": float(synth["cumulative_scaled_throughput_loss"] * scale),
         "mean_daily_shortfall": float(synth["mean_daily_scaled_throughput_loss"] * scale),
-        "interval_horizon_matched_lower": np.nan,
-        "interval_horizon_matched_upper": np.nan,
+        "reported_band_lower": np.nan,
+        "reported_band_upper": np.nan,
+        "reported_band_label": "not_reported",
         "placebo_metric": "post_pre_rmspe_ratio",
         "placebo_reference_p95": float(synth["placebo_ratio_p95"]),
         "placebo_separation": float(synth["ratio_vs_placebo_p95"]),
-        "placebo_p_value": float(synth["p_ratio_ge_actual"]),
+        "placebo_diagnostic_value": float(synth["p_ratio_ge_actual"]),
+        "placebo_diagnostic_label": "synthetic_control_donor_placebo_p_value",
         "post_pre_rmspe_ratio": float(synth["post_pre_rmspe_ratio"]),
         "effective_donors": float(synth["effective_n_weights"]),
     })
@@ -231,12 +243,16 @@ def main() -> None:
         **bsts_residual,
         "point_shortfall": float(bsts["posterior_median_shortfall"]),
         "mean_daily_shortfall": float(bsts["posterior_median_shortfall"] / bsts["n_post_days"]),
-        "interval_horizon_matched_lower": float(bsts["lower_95"]),
-        "interval_horizon_matched_upper": float(bsts["upper_95"]),
+        "reported_band_lower": float(bsts["lower_95"]),
+        "reported_band_upper": float(bsts["upper_95"]),
+        "reported_band_label": (
+            "95%_posterior_predictive_interval_conditional_on_model"
+        ),
         "placebo_metric": "not_run_for_bsts",
         "placebo_reference_p95": np.nan,
         "placebo_separation": np.nan,
-        "placebo_p_value": np.nan,
+        "placebo_diagnostic_value": np.nan,
+        "placebo_diagnostic_label": "not_run_for_bsts",
         "post_pre_rmspe_ratio": np.nan,
         "effective_donors": np.nan,
     })
@@ -507,6 +523,65 @@ def main() -> None:
     )
     fig_synth = _save_figure(fig, FIG_SYNTH)
 
+    # Figure 4: treated gap against pre-fit-eligible placebo gap paths.
+    eligible_units = set(
+        synth_summary.loc[
+            synth_summary["value_col"].eq("n_tanker")
+            & ~synth_summary["is_actual"].astype(bool)
+            & synth_summary["eligible_primary_prefit_screen"]
+            .astype(str)
+            .str.lower()
+            .eq("true"),
+            "unit",
+        ]
+    )
+    eligible_daily = synth_daily.loc[
+        synth_daily["value_col"].eq("n_tanker")
+        & synth_daily["unit"].isin(eligible_units)
+    ].copy()
+    fig, ax = plt.subplots(figsize=(FIGURE_WIDTH_IN, 3.9))
+    fig.subplots_adjust(left=0.10, right=0.98, bottom=0.22, top=0.82)
+    for index, (_, path) in enumerate(eligible_daily.groupby("unit")):
+        ax.plot(
+            path["date"],
+            path["gap_observed_minus_synthetic"],
+            color=NEUTRAL_MID,
+            alpha=0.30,
+            linewidth=0.65,
+            label="Eligible placebo paths" if index == 0 else None,
+        )
+    ax.plot(
+        synth_path["date"],
+        synth_path["gap_observed_minus_synthetic"],
+        color=DECREASE_COLOR,
+        linewidth=1.8,
+        label="Hormuz treated path",
+        zorder=4,
+    )
+    ax.axhline(0, color=NEUTRAL_DARK, linewidth=0.8, alpha=0.7)
+    ax.axvline(
+        cutoff,
+        color="#111111",
+        linestyle=(0, (2.4, 1.7)),
+        linewidth=1.05,
+        label=f"Treatment cutoff {cutoff.date()}",
+    )
+    ax.set(
+        title="Synthetic-control gaps: Hormuz vs pre-fit-eligible placebos",
+        ylabel="Observed minus synthetic (mean-scaled)",
+        xlabel="Date",
+    )
+    ax.title.set_position((0.0, 1.02))
+    ax.title.set_ha("left")
+    style_axes(ax, grid_axis="y")
+    ax.legend(
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.18),
+        ncol=3,
+        frameon=False,
+    )
+    fig_synth_placebos = _save_figure(fig, FIG_SYNTH_PLACEBOS)
+
     validation_rows = []
     validation_models = [*spec.benchmark_estimators, spec.primary_estimator,
                          *spec.conditional_sensitivity_estimators]
@@ -527,12 +602,21 @@ def main() -> None:
 
     comparison_md = []
     for _, row in comparison.iterrows():
+        diagnostic = (
+            "NA"
+            if pd.isna(row["placebo_diagnostic_value"])
+            else (
+                f"{row['placebo_diagnostic_value']:.3f} "
+                f"({row['placebo_diagnostic_label']})"
+            )
+        )
         comparison_md.append([
             row["specification"], row["role"], _fmt(row["pre_mase"]),
             _fmt(row["pre_rmse"]), _fmt(row["point_shortfall"], 1),
-            _fmt(row["interval_horizon_matched_lower"], 1),
-            _fmt(row["interval_horizon_matched_upper"], 1),
-            _fmt(row["placebo_separation"]), _fmt(row["placebo_p_value"]),
+            _fmt(row["reported_band_lower"], 1),
+            _fmt(row["reported_band_upper"], 1),
+            row["reported_band_label"],
+            _fmt(row["placebo_separation"]), diagnostic,
         ])
 
     cap_post = capacity_diag[
@@ -558,15 +642,19 @@ def main() -> None:
         synth_pool_stress["donor_pool"] == "all_available_donors"
     ].iloc[0]
     synth_time = synth_time_inference.iloc[0]
+    synth_unscreened = synth_prefit.loc[
+        synth_prefit["value_col"].eq("n_tanker")
+        & synth_prefit["screen"].eq("unscreened")
+    ].iloc[0]
     lng_ar = lng_summary.loc[lng_summary["model"] == "ar_lag1_7"].iloc[0]
     lng_bsts = lng_summary.loc[
         lng_summary["model"] == "bsts_local_level_weekly"
     ].iloc[0]
     placebo_floor_denominator = int(primary_placebo["n_placebos"]) + 1
     block_floor_denominator = int(honest_rank["n_independent_placebo_blocks"]) + 1
-    donor_time_placebos = int(synth_time["n_computed_donor_time_placebos"])
-    donor_time_windows = int(synth_time["n_independent_time_windows"])
-    donor_time_floor_denominator = donor_time_placebos + 1
+    donor_time_fits = int(synth_time["n_computed_donor_time_fits"])
+    donor_time_blocks = int(synth_time["n_disjoint_time_blocks"])
+    donor_time_floor_denominator = donor_time_blocks + 1
     horizon_calendar_days = int(primary_long["horizon_calendar_days"])
     n_horizon_windows = int(primary_long["n_horizon_windows"])
     n_effective_horizon_windows = int(primary_long["effective_non_overlapping_windows"])
@@ -577,12 +665,39 @@ def main() -> None:
     n_independent_blocks = int(honest_rank["n_independent_placebo_blocks"])
     layer1_inference_rows = [
         [
-            "Horizon-matched 95% interval",
-            _fmt_interval(
-                primary_long["interval_horizon_matched_lower"],
-                primary_long["interval_horizon_matched_upper"],
+            "Disjoint-block rank inference",
+            (
+                f"{honest_rank['actual_to_placebo_p95_ratio']:.3f}x; "
+                f"p={honest_rank['placebo_p_value_greater']:.3f}"
             ),
             (
+                f"{n_independent_blocks} disjoint "
+                f"blocks; floor 1/{block_floor_denominator}="
+                f"{honest_rank['placebo_p_value_floor']:.3f}"
+            ),
+            "`data/processed/block_conformal_summary.csv`",
+        ],
+        [
+            "95% block-conformal interval",
+            _fmt_interval(
+                conformal95["interval_lower"],
+                conformal95["interval_upper"],
+            ),
+            (
+                "Finite interval unsupported at 95%; maximum finite coverage "
+                f"{conformal95['maximum_finite_coverage']:.1%} with "
+                f"{int(conformal95['n_calibration_blocks'])} calibration blocks"
+            ),
+            "`data/processed/block_conformal_summary.csv`",
+        ],
+        [
+            "Overlapping-placebo 2.5/97.5% quantile band",
+            _fmt_interval(
+                primary_long["overlapping_placebo_quantile_band_lower"],
+                primary_long["overlapping_placebo_quantile_band_upper"],
+            ),
+            (
+                "Descriptive only; no nominal coverage. "
                 f"{horizon_calendar_days}-calendar-day horizon; "
                 f"{n_horizon_windows} placebo windows; "
                 f"{n_effective_horizon_windows} non-overlapping horizon windows"
@@ -606,41 +721,15 @@ def main() -> None:
             "Temporal-placebo separation",
             (
                 f"{primary_placebo['loss_vs_placebo_p95_ratio']:.3f}x; "
-                f"p={primary_placebo['p_loss_ge_actual']:.4f}"
+                "loss exceeds all overlapping windows"
             ),
             (
-                f"Floor-censored at 1/{placebo_floor_denominator}; "
+                f"Reference rank 1/{placebo_floor_denominator} (not a p-value); "
                 f"{n_overlapping_placebos} overlapping placebo windows and "
                 f"about {approx_non_overlapping_placebos} non-overlapping "
                 "horizon windows"
             ),
             "`data/processed/placebo_time_summary.csv`",
-        ],
-        [
-            "Independent-block honest rank",
-            (
-                f"{honest_rank['actual_to_placebo_p95_ratio']:.3f}x; "
-                f"p={honest_rank['placebo_p_value_greater']:.3f}"
-            ),
-            (
-                f"{n_independent_blocks} disjoint "
-                f"blocks; floor 1/{block_floor_denominator}="
-                f"{honest_rank['placebo_p_value_floor']:.3f}"
-            ),
-            "`data/processed/block_conformal_summary.csv`",
-        ],
-        [
-            "95% conformal interval",
-            _fmt_interval(
-                conformal95["interval_lower"],
-                conformal95["interval_upper"],
-            ),
-            (
-                "Finite interval unsupported at 95%; maximum finite coverage "
-                f"{conformal95['maximum_finite_coverage']:.1%} with "
-                f"{int(conformal95['n_calibration_blocks'])} calibration blocks"
-            ),
-            "`data/processed/block_conformal_summary.csv`",
         ],
     ]
     lines = [
@@ -657,10 +746,12 @@ def main() -> None:
         "## Headline AR-only result",
         "",
         f"- Point shortfall: **{primary['point_shortfall']:,.1f} tanker transits** ({primary['mean_daily_shortfall']:.2f}/day).",
-        f"- Horizon-matched 95% interval over **{horizon_calendar_days} calendar days**: **{primary['interval_horizon_matched_lower']:,.1f} to {primary['interval_horizon_matched_upper']:,.1f} transits**.",
+        f"- Disjoint-block rank inference: **p={honest_rank['placebo_p_value_greater']:.3f}** from **{n_independent_blocks}** blocks (minimum attainable **1/{block_floor_denominator}**).",
+        f"- Nominal 95% block-conformal interval: **unbounded**; maximum finite coverage is **{conformal95['maximum_finite_coverage']:.1%}**.",
+        f"- Descriptive overlapping-placebo 2.5/97.5% quantile band over **{horizon_calendar_days} calendar days**: **{primary['reported_band_lower']:,.1f} to {primary['reported_band_upper']:,.1f} transits**; no nominal coverage.",
         f"- Independent 14-day circular-block bootstrap band: **{primary['interval_circular_bootstrap_lower']:,.1f} to {primary['interval_circular_bootstrap_upper']:,.1f} transits**; narrower than the placebo-window band, so width is method-sensitive.",
         f"- Temporal-placebo p95: **{primary['placebo_reference_p95']:,.1f}**; separation: **{primary['placebo_separation']:.3f}x**.",
-        f"- One-sided placebo p-value: **{primary['placebo_p_value']:.6f}**, floor-censored at 1/{placebo_floor_denominator} with {n_overlapping_placebos} overlapping and about {approx_non_overlapping_placebos} non-overlapping horizon windows.",
+        f"- The loss exceeds all **{n_overlapping_placebos}** overlapping placebo windows; the resulting **1/{placebo_floor_denominator}** reference rank is descriptive, not a p-value.",
         f"- BSTS posterior median shortfall: **{bsts['posterior_median_shortfall']:,.1f}**; 95% posterior predictive interval: **{bsts['lower_95']:,.1f} to {bsts['upper_95']:,.1f}**.",
         f"- BSTS prior-grid median range: **{bsts['prior_sensitivity_median_shortfall_min']:,.1f} to {bsts['prior_sensitivity_median_shortfall_max']:,.1f}**; interval-envelope endpoints: **{bsts['prior_sensitivity_lower_endpoint_min']:,.1f} to {bsts['prior_sensitivity_upper_endpoint_max']:,.1f}**; pre-period PPC pointwise coverage: **{bsts['pre_period_ppc_pointwise_95_coverage']:.1%}**.",
         "",
@@ -684,12 +775,16 @@ def main() -> None:
         "",
         *_markdown_table(
             comparison_md,
-            ["Specification", "Role", "Pre MASE", "Pre RMSE", "Point shortfall", "Horizon lower", "Horizon upper", "Placebo separation", "p-value"],
+            [
+                "Specification", "Role", "Pre MASE", "Pre RMSE",
+                "Point shortfall", "Reported lower", "Reported upper",
+                "Band label", "Placebo separation", "Diagnostic",
+            ],
         ),
         "",
         f"Full machine-readable table: [`data/processed/{COMPARISON}`](../data/processed/{COMPARISON})",
         "",
-        "Synthetic-control shortfall is converted from mean-scaled units to a transit-equivalent magnitude for comparison. Its placebo metric is the post/pre RMSPE ratio, not the temporal cumulative-shortfall distribution, and no horizon-matched interval is asserted for it.",
+        "Synthetic-control shortfall is converted from mean-scaled units to a transit-equivalent magnitude for comparison. Its placebo metric is the post/pre RMSPE ratio, not the temporal cumulative-shortfall distribution, and no overlapping-placebo quantile band is asserted for it.",
         "BSTS is an independent state-space corroboration. Its interval is posterior predictive conditional on the local-level model; it is not a causal posterior.",
         "",
         "## Independent-block inference",
@@ -704,15 +799,18 @@ def main() -> None:
         f"- Pre-period RMSPE: **{synth['pre_rmspe']:.6f} scaled units** (**{synth['pre_rmspe'] * scale:.3f} transit-equivalent RMSE**).",
         f"- Post-period RMSPE: **{synth['post_rmspe']:.6f}**; post/pre ratio: **{synth['post_pre_rmspe_ratio']:.3f}**.",
         f"- Transit-equivalent cumulative gap: **{synth['cumulative_scaled_throughput_loss'] * scale:,.1f}**.",
-        f"- Donor-placebo p95 ratio: **{synth['placebo_ratio_p95']:.3f}**; separation: **{synth['ratio_vs_placebo_p95']:.3f}x**; p-value: **{synth['p_ratio_ge_actual']:.6f}**.",
+        f"- Primary pre-fit screen: placebo pre-RMSPE <= **{synth['primary_prefit_rmspe_multiplier']:.1f}x** treated; **{int(synth['n_placebos_eligible'])}/{int(synth['n_placebos_total'])}** placebos eligible and **{int(synth['n_placebos_excluded'])}** excluded.",
+        f"- Screened donor-placebo p95 ratio: **{synth['placebo_ratio_p95']:.3f}**; separation: **{synth['ratio_vs_placebo_p95']:.3f}x**; rank p-value: **{synth['p_ratio_ge_actual']:.6f}** (floor **1/{int(synth['n_placebos_eligible']) + 1} = {synth['p_value_floor']:.6f}**).",
+        f"- Pre-fit threshold sensitivity: p-values range from **{synth_prefit.loc[synth_prefit['value_col'].eq('n_tanker'), 'p_ratio_ge_actual'].min():.6f}** to **{synth_prefit.loc[synth_prefit['value_col'].eq('n_tanker'), 'p_ratio_ge_actual'].max():.6f}**; unscreened p=**{synth_unscreened['p_ratio_ge_actual']:.6f}**. The 2x rule is the remediation-primary design convention; the full grid is reported so the conclusion does not rest on that single screen.",
         f"- Donors: **{int(synth['n_donors'])}**; effective donors: **{synth['effective_n_weights']:.2f}**; largest weight: `{synth['top_weight_slug']}` ({synth['top_weight']:.3f}).",
         f"- Donor-pool stress: clean ratio **{clean_pool['post_pre_rmspe_ratio']:.3f}**, broad-pool ratio **{broad_pool['post_pre_rmspe_ratio']:.3f}**.",
         (
-            f"- Donor-by-time placebos: **{donor_time_placebos}** fits across "
-            f"**{donor_time_windows}** disjoint windows; p-value "
-            f"**{synth_time['donor_time_placebo_p_value']:.6f}** "
-            f"(floor-censored at 1/{donor_time_floor_denominator}), actual/p95 "
-            f"**{synth_time['actual_to_donor_time_p95_ratio']:.3f}x**."
+            f"- Donor-by-time stress: **{donor_time_fits}** fits summarized as "
+            f"**{donor_time_blocks}** disjoint-window maxima; max-statistic rank "
+            f"p-value **{synth_time['block_max_rank_p_value']:.3f}** "
+            f"(floor 1/{donor_time_floor_denominator}), actual/block-max-p95 "
+            f"**{synth_time['actual_to_block_max_p95_ratio']:.3f}x**. "
+            "The individual donor fits are not pooled as independent draws."
         ),
         "",
         "## LNG-specific robustness outcome",
@@ -733,6 +831,8 @@ def main() -> None:
         f"![Temporal placebo distribution](figures/{fig_placebo.name})",
         "",
         f"![Actual vs synthetic control](figures/{fig_synth.name})",
+        "",
+        f"![Treated and eligible synthetic-control placebo gaps](figures/{fig_synth_placebos.name})",
         "",
         "![BSTS counterfactual](figures/bsts_counterfactual.png)",
         "",

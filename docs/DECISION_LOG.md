@@ -101,3 +101,44 @@ Each entry: **date · decision · decision-maker · rationale · affected files 
 - **Status:** Done for implementation planning. This entry does not record
   Prof. Li's formal proposal/RQ/estimand approval; the G1 gate above remains
   separate until written supervisor approval is logged.
+
+---
+
+## 2026-07-23 · Advisor acceptance, empirical sufficiency, and writing format
+
+- **Decision-maker:** Zhenyu Wang (written email response; primary PDF export and
+  checksum archived in `docs/approvals/`).
+- **Accepted:** The revised title, research question, estimand, and cautious
+  claim strength are acceptable. The completed empirical scope is sufficient
+  for a Bachelor's thesis.
+- **Scope consequence:** Continue the accepted no-third-layer integration plan:
+  preserve the PortWatch counterfactual and open-data LNG mechanism evidence,
+  complete only pre-declared corrections/sensitivity checks, and prioritize
+  manuscript writing, citations, and presentation. Additional work may be
+  reported selectively or placed in supplementary material; it is not a new
+  empirical requirement.
+- **Data consequence:** The thesis has reproducible public data for its two main
+  empirical parts: tanker-throughput counterfactual measurement and the
+  scope-limited LNG physical/network mechanism. No free, consistently defined
+  LNG freight-rate series with adequate coverage has been established. The
+  monetary freight-rate layer therefore remains a proprietary-access-dependent
+  optional extension, not a blocker.
+- **Writing/format decision:** Use the supplied LaTeX template. Do not select or
+  defend APA 6, APA 7, or IEEE as a separate thesis requirement, and do not spend
+  current effort on formatting adaptations. Draft content so it can be moved
+  into a revised template later if necessary.
+- **Length guidance:** Introduction plus related work should be no more than 30%
+  of the main text. Total main-text length and whether bibliography/appendices
+  are excluded remain unresolved because Prof. Li had not replied on that point.
+- **Reporting:** Organize material progress and encountered issues into concise
+  reports for Zhenyu.
+- **Governance status:** This is written advisor-side acceptance. Because the
+  response was authored by Zhenyu and expressly distinguished an unanswered
+  Prof. Li question, it is not recorded as direct Prof. Li ratification. The
+  formal proposal remains unchanged pending resolution of that distinction.
+- **Affected files:** `AGENTS.md`, `README.md`, `docs/DECISION_LOG.md`,
+  `docs/ESTIMAND_PROPOSAL_RECONCILIATION.md`,
+  `docs/PENDING_ESTIMAND_REALIGNMENT_DRAFT.md`, `docs/CURRENT_PLAN.md`, and the
+  manuscript planning notes.
+- **Status:** Advisor decision recorded; content-first writing authorized;
+  direct Prof. Li ratification remains unrecorded.

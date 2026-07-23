@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 
+from lngfreight import config
 from lngfreight.synthetic import (  # noqa: E402
     fit_simplex_weights,
     post_pre_ratio,
@@ -11,7 +12,11 @@ from lngfreight.synthetic import (  # noqa: E402
     rmspe,
     scale_by_pre_period_mean,
 )
-from run_synthetic_control import _clean_donor_slugs  # noqa: E402
+from run_synthetic_control import (  # noqa: E402
+    PRIMARY_PREFIT_RMSPE_MULTIPLIER,
+    _clean_donor_slugs,
+    _prefit_screen_sensitivity,
+)
 
 
 def test_project_to_simplex_is_nonnegative_and_sums_to_one():
@@ -62,3 +67,60 @@ def test_clean_donors_exclude_contaminated_and_treated():
     ])
 
     assert _clean_donor_slugs(meta) == ["malacca_strait"]
+
+
+def test_prefit_screen_sensitivity_uses_multiplier_and_finite_sample_floor():
+    placebos = pd.DataFrame(
+        {
+            "pre_rmspe": [0.5, 1.0, 3.0],
+            "post_pre_rmspe_ratio": [1.0, 4.0, 9.0],
+        }
+    )
+
+    out = _prefit_screen_sensitivity(
+        value_col="n_tanker",
+        actual_ratio=5.0,
+        treated_pre_rmspe=0.5,
+        placebos=placebos,
+    )
+    primary = out.loc[out["is_primary_screen"]].iloc[0]
+    unscreened = out.loc[out["screen"] == "unscreened"].iloc[0]
+
+    assert primary["pre_rmspe_multiplier"] == PRIMARY_PREFIT_RMSPE_MULTIPLIER
+    assert primary["maximum_eligible_pre_rmspe"] == pytest.approx(1.0)
+    assert primary["n_placebos_eligible"] == 2
+    assert primary["n_placebos_excluded"] == 1
+    assert primary["p_ratio_ge_actual"] == pytest.approx(1 / 3)
+    assert primary["p_value_floor"] == pytest.approx(1 / 3)
+    assert unscreened["n_placebos_eligible"] == 3
+
+
+def test_frozen_synthetic_control_primary_prefit_screen():
+    summary = pd.read_csv(
+        config.path("data_processed") / "synthetic_control_summary.csv"
+    )
+    actual = summary.loc[
+        summary["is_actual"].astype(str).str.lower().eq("true")
+        & summary["value_col"].eq("n_tanker")
+    ].iloc[0]
+    placebos = summary.loc[
+        ~summary["is_actual"].astype(str).str.lower().eq("true")
+        & summary["value_col"].eq("n_tanker")
+        & summary["fit_status"].eq("computed")
+    ]
+    sensitivity = pd.read_csv(
+        config.path("data_processed") / "synthetic_control_prefit_sensitivity.csv"
+    )
+    primary = sensitivity.loc[
+        sensitivity["value_col"].eq("n_tanker")
+        & sensitivity["is_primary_screen"].astype(bool)
+    ].iloc[0]
+
+    assert actual["primary_prefit_rmspe_multiplier"] == pytest.approx(2.0)
+    assert actual["n_placebos_total"] == 22
+    assert actual["n_placebos_eligible"] == 14
+    assert actual["n_placebos_excluded"] == 8
+    assert actual["p_ratio_ge_actual"] == pytest.approx(1 / 15)
+    assert actual["p_value_floor"] == pytest.approx(1 / 15)
+    assert placebos["eligible_primary_prefit_screen"].astype(bool).sum() == 14
+    assert primary["p_ratio_ge_actual"] == pytest.approx(actual["p_ratio_ge_actual"])

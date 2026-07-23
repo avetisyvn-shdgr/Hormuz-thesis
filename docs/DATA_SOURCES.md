@@ -48,6 +48,11 @@
 - **What PortWatch captures:** aggregate vessel-traffic intensity through a named chokepoint — a real, independent, public window onto the event.
 - **What it cannot capture:** laden vs ballast legs, vessel identity, commodity split per vessel, or per-voyage ton-miles. It is **chokepoint-aggregate**, not vessel-level.
 - **Bias / caveats:** AIS coverage gaps, gap-filling/modelling assumptions in PortWatch's own pipeline, and it is *not* LNG-specific at the transit-count level. Treat as media-of-observation data, not ground truth.
+- **Frozen vintage:** The active Hormuz transit series is explicitly checksum-
+  pinned to the July 2026 repository capture. PortWatch revised historical
+  values between captures; both versions and their roles are recorded in
+  `docs/PORTWATCH_VINTAGE_REGISTER.md`. The older version is preserved but
+  quarantined from active input scopes.
 
 ### LNG-specific public robustness outcome discovered 2026-06-18
 

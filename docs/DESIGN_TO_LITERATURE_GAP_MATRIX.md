@@ -13,7 +13,7 @@ the contribution; it does not yet prove exhaustive novelty.
 | Core data accessibility | Public inputs + replication package | Commercial Clarkson data | Public data + Zenodo code/data | Sentinel-1 public; full processing availability unconfirmed | Public/frozen PortWatch, WTO; GFW access and modeled branch documented |
 | Counterfactual construction | Closure scenarios | Event-study expected transits + ARFIMA | Hazard probability/risk model | Short pre/post comparison | Recursive AR(1,7), strictly pre-cutoff |
 | Pre-event validation | Scenario validation | ARFIMA model checks; exact fold discipline differs | Model/data validation | Detection validation against IMF data | Rolling-origin forecast validation |
-| Long-horizon forecast-error calibration | No | Not identified in screened methods | No | No in accessible abstract | Yes; horizon-matched placebo windows |
+| Long-horizon forecast-error diagnostics | No | Not identified in screened methods | No | No in accessible abstract | Yes; descriptive overlapping-window quantile bands plus disjoint-block inference |
 | Placebo dates | No | Not identified in screened methods | No | No in accessible abstract | Yes |
 | Same-date placebo locations | No | No | Cross-chokepoint risk comparison, not event placebo | Regional comparison, not formal placebo in accessible abstract | Yes; 28 chokepoints |
 | Donor synthetic control | No | No | No | No in accessible abstract | Yes, corroboration only |
@@ -39,7 +39,8 @@ The defensible hypothesis is a **protocol gap**, not a topic or algorithm gap:
 > network-resilience studies, and a weekly LNG event study with ARFIMA expected
 > transits. It has not yet revealed a same-event study that combines a daily,
 > target-only no-disruption forecast with chronological pre-event validation,
-> horizon-matched cumulative uncertainty, temporal and spatial falsification,
+> descriptive full-horizon quantile bands, disjoint-block inference, temporal
+> and spatial falsification,
 > donor-contamination stress, independent LNG corroboration, and end-to-end public
 > artifact provenance while explicitly limiting the result to an associated
 > throughput shortfall.
@@ -68,8 +69,9 @@ several narrow the framing.
 a search across six institutional fields, not one. The broadened search does not
 open a "first study" claim anywhere — on the contrary it adds precedent — but it
 also locates no prior work combining a daily target-only forecast counterfactual,
-chronological validation, horizon-matched cumulative uncertainty, temporal and
-spatial placebos, rerouting-aware donor stress, LNG cross-source corroboration, and
+chronological validation, descriptive full-horizon quantile bands,
+disjoint-block inference, temporal and spatial placebos, rerouting-aware donor
+stress, LNG cross-source corroboration, and
 frozen public-data provenance for the 2026 Hormuz episode. The contribution remains
 a disciplined integration for this measurement problem, now defensible against the
 fields most likely to have pre-empted it.
@@ -85,4 +87,3 @@ The gap must be weakened or abandoned if further screening finds a prior study t
 
 If only some elements are found, the contribution should be reframed as an
 application and extension rather than a previously absent protocol.
-

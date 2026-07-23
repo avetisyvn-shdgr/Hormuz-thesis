@@ -18,7 +18,7 @@ does not necessarily mean that the underlying AIS data or code are public.
 | Study | Type and setting | Data and outcome | Method | Relevance to this thesis | Gap left open / caution |
 |---|---|---|---|---|---|
 | *Assessing impacts to maritime shipping from marine chokepoint closures* (2023), DOI `10.1016/j.commtr.2022.100083` | Peer-reviewed; scenarios for 11 chokepoints | GIS shipping lanes + 2019 bilateral trade | Shortest-route closure scenarios | Establishes rerouting linkages and country dependence, including Hormuz | Scenario analysis, not an observed-event counterfactual or daily throughput shortfall |
-| *Analysis of the impact of Suez Canal blockage on the global shipping network* (2023), DOI `10.1016/j.ocecoaman.2023.106868` | Peer-reviewed; Ever Given blockage | AIS-derived global shipping network | Before/after network analysis | Demonstrates event-specific AIS measurement and heterogeneous ship-type impacts | Does not, from the available abstract, establish a pre-event forecast counterfactual with placebo inference |
+| *Analysis of the impact of Suez Canal blockage on the global shipping network* (2023), DOI `10.1016/j.ocecoaman.2023.106868` | Peer-reviewed; Ever Given blockage | AIS-derived global shipping network | Before/after network analysis | Demonstrates event-specific AIS measurement and uneven regional and ship-type impacts | Does not, from the available abstract, establish a pre-event forecast counterfactual with placebo inference |
 | *Modeling the dynamic impacts of maritime network blockage on global supply chains* (2024), DOI `10.1016/j.xinn.2024.100653` | Peer-reviewed/open access; maritime blockage simulation | Vessel movements + BACI cargo estimates | Adaptive multi-agent simulation | Connects vessel blockage to daily supply-chain consequences | Simulation estimand and inferred cargo losses differ from observed-minus-forecast throughput |
 | *Unrevealing the adaptivity of container shipping network during disruption events by AIS trajectory data* (2025), DOI `10.1016/j.ocecoaman.2025.107862` | Peer-reviewed; Russia-Ukraine conflict | Large proprietary/assembled AIS trajectory set; container network | Event-specific subnetwork and complex-network analysis | Direct precedent for measuring maritime-system adaptation during geopolitical disruption | Container-network adaptivity, not a transparent single-chokepoint counterfactual; data/code openness must be checked in full text |
 | *Resilience analysis from the perspective of global container shipping network evolution* (2025), DOI `10.1016/j.jtrangeo.2025.104415` | Peer-reviewed; COVID-19, Russia-Ukraine, Suez | AIS networks at weekly/monthly frequency | Complex-network resilience metrics | Strong resilience and temporal-network background | Measures network evolution rather than the missing throughput relative to a forecast baseline |
@@ -106,7 +106,8 @@ The most defensible working gap is narrower:
 > Existing studies establish chokepoint dependence, simulate closure consequences
 > and LNG substitution, or describe observed maritime-network reconfiguration using
 > AIS/SAR. A 2025 Suez study also estimates expected LNG transits with event-study
-> abnormal returns and ARFIMA models, so forecast-based maritime event analysis is
+> abnormal returns and ARFIMA models (pp. 8–10), using weekly Clarksons data
+> (pp. 5–6), so forecast-based maritime event analysis is
 > not itself new. The initial search has not yet located a study of the 2026 Hormuz
 > episode that estimates a
 > daily tanker-throughput shortfall against a strictly pre-event, target-only

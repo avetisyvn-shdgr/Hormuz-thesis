@@ -10,7 +10,7 @@ from lngfreight.inference import (
     counterfactual_effect,
     empirical_p_value,
     fixed_train_post_fold,
-    long_horizon_loss_interval,
+    overlapping_placebo_quantile_band,
     non_overlapping_fold_count,
     placebo_time_folds,
     post_treatment_fold,
@@ -178,35 +178,50 @@ def test_circular_block_bootstrap_interval_is_reproducible():
     assert first["interval_lower"] <= 100 <= first["interval_upper"]
 
 
-def test_long_horizon_interval_centers_on_point_loss_and_is_symmetric():
-    # Symmetric, mean-zero errors -> interval centered on the point loss.
+def test_overlapping_placebo_band_centers_on_point_loss_and_is_symmetric():
+    # Symmetric, mean-zero errors -> band centered on the point loss.
     errors = [-100.0, -50.0, 0.0, 50.0, 100.0]
-    out = long_horizon_loss_interval(5000.0, errors, alpha=0.2)
+    out = overlapping_placebo_quantile_band(
+        5000.0, errors, lower_quantile=0.1, upper_quantile=0.9
+    )
     assert out["pre_period_mean_error_centered_out"] == pytest.approx(0.0)
     # 10th/90th percentiles of centered errors are -80/+80.
-    assert out["interval_lower"] == pytest.approx(4920.0)
-    assert out["interval_upper"] == pytest.approx(5080.0)
+    assert out["band_lower"] == pytest.approx(4920.0)
+    assert out["band_upper"] == pytest.approx(5080.0)
+    assert out["nominal_coverage_supported"] is False
     assert out["n_horizon_windows"] == 5
 
 
-def test_long_horizon_interval_removes_pre_period_bias():
+def test_overlapping_placebo_band_removes_pre_period_bias():
     # All errors shifted by +200; the bias is centered out, not propagated.
     errors = [100.0, 150.0, 200.0, 250.0, 300.0]
-    out = long_horizon_loss_interval(5000.0, errors, alpha=0.2)
+    out = overlapping_placebo_quantile_band(
+        5000.0, errors, lower_quantile=0.1, upper_quantile=0.9
+    )
     assert out["pre_period_mean_error_centered_out"] == pytest.approx(200.0)
-    assert (out["interval_lower"] + out["interval_upper"]) / 2 == pytest.approx(5000.0)
+    assert (out["band_lower"] + out["band_upper"]) / 2 == pytest.approx(5000.0)
 
 
-def test_long_horizon_interval_wider_errors_widen_band():
-    narrow = long_horizon_loss_interval(5000.0, [-10, -5, 0, 5, 10], alpha=0.2)
-    wide = long_horizon_loss_interval(5000.0, [-1000, -500, 0, 500, 1000], alpha=0.2)
-    assert wide["interval_width"] > narrow["interval_width"]
+def test_overlapping_placebo_band_wider_errors_widen_band():
+    narrow = overlapping_placebo_quantile_band(
+        5000.0, [-10, -5, 0, 5, 10], lower_quantile=0.1, upper_quantile=0.9
+    )
+    wide = overlapping_placebo_quantile_band(
+        5000.0, [-1000, -500, 0, 500, 1000],
+        lower_quantile=0.1,
+        upper_quantile=0.9,
+    )
+    assert wide["band_width"] > narrow["band_width"]
 
 
-def test_long_horizon_interval_excludes_zero_flag_and_bad_inputs():
-    out = long_horizon_loss_interval(5000.0, [-100, 0, 100], alpha=0.2)
-    assert out["excludes_zero"] is True
-    with pytest.raises(ValueError, match="alpha"):
-        long_horizon_loss_interval(1.0, [1.0, 2.0], alpha=1.0)
+def test_overlapping_placebo_band_excludes_zero_flag_and_bad_inputs():
+    out = overlapping_placebo_quantile_band(
+        5000.0, [-100, 0, 100], lower_quantile=0.1, upper_quantile=0.9
+    )
+    assert out["band_excludes_zero_descriptively"] is True
+    with pytest.raises(ValueError, match="quantiles"):
+        overlapping_placebo_quantile_band(
+            1.0, [1.0, 2.0], lower_quantile=0.9, upper_quantile=0.1
+        )
     with pytest.raises(ValueError, match="finite"):
-        long_horizon_loss_interval(1.0, [float("nan")])
+        overlapping_placebo_quantile_band(1.0, [float("nan")])

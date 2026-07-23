@@ -314,12 +314,13 @@ def circular_block_bootstrap_loss_interval(
     }
 
 
-def long_horizon_loss_interval(
+def overlapping_placebo_quantile_band(
     point_loss: float,
     horizon_cumulative_errors,
-    alpha: float = 0.05,
+    lower_quantile: float = 0.025,
+    upper_quantile: float = 0.975,
 ) -> dict[str, float]:
-    """Interval on a cumulative loss, calibrated at the true forecast horizon.
+    """Descriptive loss band from overlapping full-horizon placebo errors.
 
     ``horizon_cumulative_errors`` are realised cumulative forecast errors,
     each summed over a full horizon-length window in the *pre-treatment* period
@@ -327,28 +328,37 @@ def long_horizon_loss_interval(
     residuals, this uses errors that already include long-horizon recursive
     compounding, so it does not understate uncertainty for a long counterfactual.
 
-    The error distribution is mean-centered (any pre-period forecast bias is
-    removed and reported separately), then its empirical ``alpha`` quantiles are
-    added to ``point_loss``. Empirical quantiles preserve asymmetry/skew in the
-    error distribution rather than assuming normality.
+    The windows may overlap and therefore are not independent calibration units.
+    The returned empirical quantile band has *no nominal coverage guarantee* and
+    must not be labeled a confidence, prediction, or conformal interval.
+
+    Errors are mean-centered (any pre-period forecast bias is removed and
+    reported separately), then the requested empirical quantiles are added to
+    ``point_loss``. This preserves asymmetry/skew without assuming normality.
     """
-    if not 0 < alpha < 1:
-        raise ValueError(f"alpha must be between 0 and 1, got {alpha}.")
+    if not 0 <= lower_quantile < upper_quantile <= 1:
+        raise ValueError(
+            "quantiles must satisfy 0 <= lower < upper <= 1, got "
+            f"{lower_quantile}, {upper_quantile}."
+        )
     err = pd.Series(horizon_cumulative_errors, dtype="float64").dropna().to_numpy()
     if len(err) == 0:
         raise ValueError("Need at least one finite horizon cumulative error.")
 
     mean_err = float(err.mean())
     centered = err - mean_err
-    q_lo, q_hi = np.quantile(centered, [alpha / 2, 1 - alpha / 2])
+    q_lo, q_hi = np.quantile(centered, [lower_quantile, upper_quantile])
     lower = float(point_loss + q_lo)
     upper = float(point_loss + q_hi)
     return {
         "point_loss": float(point_loss),
-        "interval_lower": lower,
-        "interval_upper": upper,
-        "interval_width": float(upper - lower),
-        "excludes_zero": bool(lower > 0 or upper < 0),
+        "band_lower": lower,
+        "band_upper": upper,
+        "band_width": float(upper - lower),
+        "band_excludes_zero_descriptively": bool(lower > 0 or upper < 0),
+        "lower_quantile": float(lower_quantile),
+        "upper_quantile": float(upper_quantile),
+        "nominal_coverage_supported": False,
         "n_horizon_windows": int(len(err)),
         "pre_period_mean_error_centered_out": mean_err,
         "error_sd": float(err.std(ddof=1)) if len(err) > 1 else float("nan"),

@@ -16,11 +16,11 @@ replacement.
 
 | Unit | Typology | Strength | Basis | Pre Gulf share | Gulf-share change | Total change vs 12m pre | Total change vs same months | JS distance | Anomaly z | Typology total basis | Coverage |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| China | high_exposure_constrained | medium | t | 30.4% | -21.6 pp | -25.7% | -13.9% | 0.21 | 7.48 | same_calendar_prior_year | descriptive_coverage_ok |
-| Korea | high_exposure_constrained | medium | t | 15.2% | -13.6 pp | -15.8% | -12.4% | 0.24 | 4.65 | same_calendar_prior_year | descriptive_coverage_ok |
-| Taiwan | high_exposure_high_offset | high | t | 34.9% | -29.7 pp | +1.4% | +2.5% | 0.27 | 6.86 | same_calendar_prior_year | descriptive_coverage_ok |
-| Japan | low_exposure_stable | medium | t | 6.5% | -5.1 pp | -13.1% | -7.7% | 0.17 | 3.11 | same_calendar_prior_year | descriptive_coverage_ok |
-| EU27 (aggregate comparator) | aggregate_comparator | context_only | MIO_M3 | 5.8% | -3.7 pp | +3.5% | -3.3% | 0.15 | 4.96 | same_calendar_prior_year | descriptive_coverage_ok; aggregate_comparator |
+| China | high_exposure_constrained | medium | t | 30.4% | -21.6 pp | -25.7% | -13.9% | 0.23 | 10.07 | same_calendar_prior_year | descriptive_coverage_ok |
+| Korea | high_exposure_constrained | medium | t | 15.2% | -13.6 pp | -15.8% | -12.4% | 0.25 | 5.20 | same_calendar_prior_year | descriptive_coverage_ok |
+| Taiwan | high_exposure_high_offset | high | t | 34.9% | -29.7 pp | +1.4% | +2.5% | 0.33 | 9.61 | same_calendar_prior_year | descriptive_coverage_ok |
+| Japan | low_exposure_stable | medium | t | 6.5% | -5.1 pp | -13.1% | -7.7% | 0.16 | 3.72 | same_calendar_prior_year | descriptive_coverage_ok |
+| EU27 (aggregate comparator) | aggregate_comparator | context_only | MIO_M3 | 5.8% | -3.7 pp | +3.5% | -3.3% | 0.14 | 4.11 | same_calendar_prior_year | descriptive_coverage_ok; aggregate_comparator |
 
 Source artifact(s): `data/processed/lng_rewiring_summary.csv`, `data/processed/lng_rewiring_graph_metrics.csv`, `data/processed/lng_resilience_typology.csv`, `data/processed/lng_network_anomaly_summary.csv`.
 
@@ -28,7 +28,7 @@ Source artifact(s): `data/processed/lng_rewiring_summary.csv`, `data/processed/l
 
 | Unit | Typology | Strength | Basis | Caution | Pre Gulf share | Gulf-share change | Total change vs 12m pre | Total change vs same months | JS distance | Anomaly z | Coverage |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| India | high_exposure_high_offset | medium | kUSD | value_basis_caution | 58.1% | -52.3 pp | +5.1% | +5.9% | 0.41 | 6.54 | descriptive_coverage_ok; value_basis |
+| India | high_exposure_high_offset | medium | kUSD | value_basis_caution | 58.1% | -52.3 pp | +5.1% | +5.9% | 0.47 | 8.60 | descriptive_coverage_ok; value_basis |
 
 India is retained as descriptive customs-value evidence only. Its `kUSD` basis
 means the origin mix can embed price differentials as well as quantity changes;
@@ -54,7 +54,7 @@ Leave-one-post-month interpretation:
 |---|---|---|---|
 | China | high_exposure_constrained | coverage-induced non-estimability | 2026-03 -> below three-post-month gate; 2026-04 -> below three-post-month gate; 2026-05 -> below three-post-month gate |
 | Korea | high_exposure_constrained | stable under deletion | no admissible dropped-month label changes |
-| Taiwan | high_exposure_high_offset | admissible substantive change | 2026-03 -> intermediate_rewiring |
+| Taiwan | high_exposure_high_offset | stable under deletion | no admissible dropped-month label changes |
 | Japan | low_exposure_stable | coverage-induced non-estimability | 2026-03 -> below three-post-month gate; 2026-04 -> below three-post-month gate; 2026-05 -> below three-post-month gate |
 | EU27 (aggregate comparator) | aggregate_comparator | aggregate comparator | context row; not interpreted as importer typology stability |
 | India | high_exposure_high_offset | coverage-induced non-estimability | 2026-03 -> below three-post-month gate; 2026-04 -> below three-post-month gate; 2026-05 -> below three-post-month gate |
@@ -63,7 +63,7 @@ Source artifact(s): `data/processed/lng_typology_threshold_sensitivity.csv`, `da
 
 ## Anomaly diagnostics
 
-All 6 units flag, and post_max_empirical_percentile = 1.000 for all units. The weakest flagged post-shock portfolio z-scores in the current artifact are Japan (z 3.11) and Korea (z 4.65). EU27 is z 4.96 and remains an aggregate comparator rather than a single importer. The empirical tail-p is floor-censored at 1/13 because the pre-period calibration uses leave-one-month-out distances over the available pre months.
+All 6 units flag, and post_max_empirical_percentile = 1.000 for all units. The weakest flagged post-shock portfolio z-scores in the current artifact are Japan (z 3.72) and EU27 (z 4.11). EU27 is z 4.11 and remains an aggregate comparator rather than a single importer. The empirical tail-p is floor-censored at 1/13 because the pre-period calibration uses leave-one-month-out distances over the available pre months.
 Source artifact(s): `data/processed/lng_network_anomaly_summary.csv`.
 
 ## Reallocation stress scenarios

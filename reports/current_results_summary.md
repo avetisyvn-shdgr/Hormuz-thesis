@@ -12,21 +12,23 @@
 
 ## Post-treatment Counterfactual Gap
 
-| Model | Cumulative loss | Mean daily loss | Placebo p-value | Placebo p95 | Separation |
+Lead inference: 7 disjoint horizon blocks give a one-sided rank p-value of **0.125**. The nominal 95% block-conformal interval is **unbounded**, and the maximum finite coverage is **87.5%**.
+
+| Model | Cumulative loss | Mean daily loss | Overlapping-window reference rank (not p) | Placebo p95 | Separation |
 |---|---:|---:|---:|---:|---:|
 | AR-only working primary, transit count | 6,869 transits | 52.8/day | 0.028 | 2,124 | 3.2x |
 | Route-only ARX, transit count | 7,056 transits | 54.3/day | 0.028 | 2,171 | 3.3x |
 
-Information-set sensitivity: AR-only uses no observed post-treatment covariates and gives a horizon-matched interval over 130 calendar days of **5,430 to 8,089 transits**. Its close agreement with route ARX indicates that contemporaneous Panama controls are not driving the estimated gap. Route ARX remains a conditional sensitivity because Panama traffic is observed post-treatment.
+Information-set sensitivity: AR-only uses no observed post-treatment covariates and gives an empirical overlapping-placebo 2.5/97.5% quantile band over 130 calendar days of **5,430 to 8,089 transits**, with no nominal coverage claim. Its close agreement with route ARX indicates that contemporaneous Panama controls are not driving the estimated gap. Route ARX remains a conditional sensitivity because Panama traffic is observed post-treatment.
 
 Residual-calibrated 95% aggregate interval for the AR-only working-primary transit loss: **6,305 to 7,410 tanker transits**, or 48.5 to 57.0 per day. This band is calibrated on <=30-day folds and understates the current 130-calendar-day horizon.
 
-Honest horizon-matched interval (recalibrated on the placebo-in-time windows, which are full-horizon forecast errors): **5,430 to 8,089 tanker transits** — about 2.4x wider than the short-fold band, and still excluding zero by a wide margin. Use this as the reported interval; the short-fold band is a lower bound. The band is coarse/conservative (7 non-overlapping horizon windows).
-Independent circular-block cross-check (10,000 draws, 14-day blocks from the ordered out-of-fold residual path): **6,180 to 7,550 transits**. It is materially narrower than the placebo-window band, so interval width is method-sensitive even though both bands exclude zero.
+Empirical overlapping-placebo 2.5/97.5% quantile band, using full-horizon forecast errors: **5,430 to 8,089 tanker transits** — about 2.4x wider than the short-fold band. This is a descriptive scale diagnostic, not a confidence, prediction, or conformal interval (7 disjoint windows are available for separate rank inference).
+Independent circular-block cross-check (10,000 draws, 14-day blocks from the ordered out-of-fold residual path): **6,180 to 7,550 transits**. It is materially narrower than the placebo-window band, so band width is method-sensitive.
 
-Chronos-2 changes the locked-primary transit shortfall by only **+2.4%**, but changes the capacity shortfall by **-5.2%** (206.9M AR-only versus 196.1M Chronos-2). Capacity is therefore a directional secondary, model-sensitive outcome; its precise magnitude is not load-bearing.
+Matched-horizon TSFM sensitivity: Chronos-2 and AR-only use the same scored dates and observations through 2026-07-07 (130 transit days; 118 valid capacity days). Chronos-2 changes the locked-primary transit shortfall by **-3.7%** and the capacity shortfall by **-10.6%** (291.0M AR-only versus 260.0M Chronos-2). Capacity is therefore a directional secondary, model-sensitive outcome; its precise magnitude is not load-bearing.
 
-The time-placebo p-value is floor-censored because 35 overlapping placebo windows provide only about 7 non-overlapping horizon windows. Report the separation ratio alongside the p-value.
+The loss exceeds all 35 overlapping placebo windows. Their 1/36 reference rank is descriptive, not a p-value; the separation ratio is reported alongside it. Only about 7 disjoint horizon windows are available.
 
 ## Treatment-window Robustness
 
@@ -70,13 +72,16 @@ Donor-weighted synthetic control on the clean donor pool (five rerouting corrido
 | Pre-period RMSPE (fit quality) | 0.258 |
 | Post-period RMSPE | 0.840 |
 | Post/pre RMSPE ratio | 3.25 |
-| Placebo ratio p95 | 1.25 |
-| Hormuz ratio / placebo p95 | 2.60x |
-| Abadie placebo p-value | 0.043 |
+| Primary pre-fit screen | placebo pre-RMSPE <= 2.0x treated |
+| Eligible / total placebos | 14 / 22 (8 excluded) |
+| Screened placebo ratio p95 | 1.502 |
+| Hormuz ratio / screened placebo p95 | 2.166x |
+| Screened rank p-value | 0.066667 |
+| Screened rank floor | 1/15 = 0.066667 |
 | Effective donors (1/sum w^2) | 7.4 |
 | Largest single weight | korea_strait (0.22) |
 
-Synthetic-control interpretation: the pre-period fit is credible (RMSPE 0.258 on mean-scaled units, 7.4 effective donors, no single donor dominating), and Hormuz's post/pre RMSPE ratio is far larger than any clean donor placebo. This is independent corroboration of the throughput collapse, consistent with the placebo-in-time and spatial-placebo layers. It remains a scaled, shape-based diagnostic, not an LNG freight-rate estimate.
+Synthetic-control interpretation: the pre-period fit is credible (RMSPE 0.258 on mean-scaled units, 7.4 effective donors, no single donor dominating), and Hormuz's post/pre RMSPE ratio exceeds every placebo that passes the remediation-primary 2x pre-fit screen. Across the 1.5x, 2x, 5x, 10x, and unscreened specifications, the rank p-value ranges from 0.043478 to 0.083333; the unscreened value is 0.043478. The 2x rule is the remediation-primary convention, and the grid prevents the interpretation from depending on that single choice. This is a corroborating diagnostic consistent with the other falsification layers, not an independent design. It remains a scaled, shape-based diagnostic, not an LNG freight-rate estimate.
 
 ## Guardrails
 
