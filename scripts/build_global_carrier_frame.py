@@ -11,12 +11,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config  # noqa: E402
 from lngfreight.carrier_frame import build_global_carrier_frame  # noqa: E402
+from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
 
 
 def main() -> None:
     settings = config.settings()
     policy = settings["vessel_data_feasibility"]["global_carrier_frame"]
-    tracker = pd.read_json(config.ROOT / settings["paths"]["gem_carrier_json"])
+    artifact = get_variable(
+        "gem_lng_carrier_source_snapshot",
+        query={"consumer": "build_global_carrier_frame"},
+    )
+    if not isinstance(artifact, RegisteredArtifact):
+        raise TypeError("gem_lng_carrier_source_snapshot must be an artifact")
+    tracker = pd.read_json(artifact.path)
     frame, diagnostics = build_global_carrier_frame(
         tracker,
         minimum_capacity_m3=float(policy["minimum_capacity_m3"]),

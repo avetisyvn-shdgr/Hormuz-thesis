@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from .base import BaseSource
+from .base import BaseSource, SourcePayload
 from .. import config
 
 
@@ -29,6 +29,11 @@ class WTOHormuzLNGSource(BaseSource):
                 f"WTO Hormuz LNG snapshot not found at {path}. "
                 "Run scripts/fetch_wto_hormuz_lng.py."
             )
+        self._capture_source_payload(SourcePayload(
+            filename=path.name,
+            media_type="text/csv",
+            path=path,
+        ))
         raw = pd.read_csv(path)
         if list(raw.columns) != EXPECTED_COLUMNS:
             raise ValueError(

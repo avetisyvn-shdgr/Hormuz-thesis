@@ -50,9 +50,16 @@ identification, variable spec, estimator hierarchy, falsification cascade).
   currently uncommitted in the working tree.
 - Test suite: **262 passed, re-verified 2026-07-18** (`.venv`, Python 3.14.4,
   full `pytest -q`, 16.09s; 262 collected = 262 passed, 0 failed).
-- Reproducibility manifest: **117 artifact hashes, re-verified 2026-07-18**.
-  `scripts/freeze_reproducibility.py --verify` passed: 9 core raw, 145 vessel/raw
-  branch, 1 interim input, and all 117 regenerated artifact hashes matched.
+- Reproducibility manifest: **REP-01 was human-verified at 123 artifacts**, and
+  **PROV-01 was subsequently human-verified at 125 artifacts / 49 stages /
+  285 tests**. DATA-02 was then human-verified at 49 stages / 125 artifacts /
+  287 tests and removes
+  one mislabeled duplicate from active inputs (8 core, 145 vessel, 1 interim),
+  while preserving its historical provenance. The DATA-03 candidate has
+  290 tests and the same input/artifact scopes and was human-verified on
+  2026-07-27. The PROV-02 candidate has 293 tests, 43/43 mapped free registry
+  entries, and unchanged input/artifact scopes; Mher verified it with a clean
+  49-stage run on 2026-07-27.
   P1 also fixed the discovered provenance-window mutation: raw payloads with
   different content now receive immutable content-addressed paths, and frozen
   panel loading requires an exact query-window match plus SHA-256 verification.

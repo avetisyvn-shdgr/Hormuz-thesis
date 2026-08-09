@@ -11,8 +11,26 @@ feeds later by editing config/sources.yaml alone.
 from __future__ import annotations
 
 import abc
+from dataclasses import dataclass
+from pathlib import Path
 
 import pandas as pd
+
+
+@dataclass(frozen=True)
+class SourcePayload:
+    """Unmodified source bytes or an existing file that contains them."""
+
+    filename: str
+    media_type: str
+    role: str = "original_source_payload"
+    source_url: str | None = None
+    content: bytes | None = None
+    path: Path | None = None
+
+    def __post_init__(self) -> None:
+        if (self.content is None) == (self.path is None):
+            raise ValueError("SourcePayload requires exactly one of content or path.")
 
 
 class BaseSource(abc.ABC):
@@ -28,11 +46,20 @@ class BaseSource(abc.ABC):
 
     #: short stable id used in config/sources.yaml `provider:` field
     name: str = "base"
+    _source_payload: SourcePayload | None = None
 
     @abc.abstractmethod
     def fetch(self, code: str, start: str, end: str) -> pd.DataFrame:
         """Pull one series. Must return the tidy (date, value) contract."""
         raise NotImplementedError
+
+    @property
+    def source_payload(self) -> SourcePayload | None:
+        """Original payload captured by the most recent ``fetch`` call."""
+        return self._source_payload
+
+    def _capture_source_payload(self, payload: SourcePayload) -> None:
+        self._source_payload = payload
 
     @staticmethod
     def _validate(df: pd.DataFrame) -> pd.DataFrame:

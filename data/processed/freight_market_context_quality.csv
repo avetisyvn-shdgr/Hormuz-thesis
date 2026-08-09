@@ -1,0 +1,3 @@
+logical_name,displayed_series_name,unit,currency,expected_sha256,expected_business_days,observed_business_days,missing_business_days,duplicate_dates,zero_observations,longest_calendar_gap_days,earliest_date,latest_date,pre_treatment_mean,pre_treatment_standard_deviation
+ttf_gas,Netherlands TTF Natural Gas Forward Day Ahead,EUR/MWh,EUR,9f430cfd34c37cb45a068a86e516807e9f910c1da78b6576727735e414d47f8a,1177,1176,1,0,0,3,2022-01-03,2026-07-07,57.807721402214014,46.351331697273565
+vlsfo_singapore,ClearLynx VLSFO Bunker Fuel Spot Price/Singapore,USD/metric tonne,USD,dac372540e55215a2a2c065d61cb77a169cb85b94f055c4e379da29fb6486cfc,1177,1177,0,0,0,3,2022-01-03,2026-07-07,626.1573732718894,136.04531517954075

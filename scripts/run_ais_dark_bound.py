@@ -4,9 +4,10 @@ Motivation (FALLBACK_STRATEGY.md, INFERENCE_NOTES.md):
     Under a Hormuz conflict episode, AIS dark activity / GPS jamming / spoofing is
     *correlated with the treatment*, not random noise. Observed transits therefore
     fall by MORE than true transits, concentrated in the treated window, so the
-    naive observed-minus-counterfactual loss is an UPPER BOUND on the true
-    throughput reduction. So far that has been stated only qualitatively. This
-    script puts an auditable number on it.
+    naive observed-minus-counterfactual loss is a CONDITIONAL UPPER BOUND on the
+    true throughput reduction under a one-sided undercount assumption. So far
+    that has been stated only qualitatively. This script puts an auditable
+    sensitivity number on it.
 
 Transparent identity (no new data, no model fit):
     O  = observed post-period transits (PortWatch, treated window)
@@ -20,8 +21,11 @@ Transparent identity (no new data, no model fit):
     True reduction under d:                   R_true(d) = 1 - O / ((1 - d) * C)
     Critical dark rate to reach a reduction R: d*(R)  = 1 - O / (C * (1 - R))
 
-The naive R_obs is recovered at d = 0 and is the largest possible R_true, i.e. the
-upper bound. d*(R) answers the decision-relevant question directly: "how much of
+The naive R_obs is recovered at d = 0 and is the largest possible R_true within
+this one-sided model, i.e. the conditional upper bound. This requires that the
+treatment-period measurement error adds missed true transits rather than false
+positive observed transits, and treats C as the reference counterfactual.
+d*(R) answers the decision-relevant sensitivity question directly: "how much of
 ALL tanker traffic truly transiting Hormuz would have had to go dark for the
 estimated collapse to actually be only R?"
 
@@ -143,7 +147,8 @@ def main(plausible_dark_rate: float | None) -> int:
     print(f"AIS-dark-vessel bound — primary estimator {model!r} on {target!r}")
     print(f"  observed post-period transits      O = {observed:,.0f}")
     print(f"  counterfactual post-period transits C = {counterfactual:,.0f}")
-    print(f"  naive observed reduction (UPPER BOUND, d=0): {r_obs:.4f} "
+    print(f"  naive observed reduction (CONDITIONAL UPPER BOUND under "
+          f"one-sided undercounting, d=0): {r_obs:.4f} "
           f"({r_obs * 100:.1f}%)")
     print("\nSensitivity — true reduction if a fraction d of true transits went dark:")
     print(sensitivity[["assumed_dark_rate", "implied_true_transits",
@@ -166,9 +171,11 @@ def main(plausible_dark_rate: float | None) -> int:
 
     print(f"\nwrote {sens_path}")
     print(f"wrote {crit_path}")
-    print("\nGuard: this is a directional measurement-error bound, not a causal "
-          "correction. d is the INCREMENTAL treatment-period dark rate above the "
-          "baseline gap-fill already in the pre-treatment counterfactual.")
+    print("\nGuard: this is a conditional directional measurement-error bound, "
+          "not a causal correction. It assumes one-sided undercounting: treatment-"
+          "period observability error adds missed true transits, not false-positive "
+          "observed transits. d is the INCREMENTAL treatment-period dark rate above "
+          "the baseline gap-fill already in the pre-treatment counterfactual.")
     return 0
 
 

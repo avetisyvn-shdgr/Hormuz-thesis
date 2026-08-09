@@ -35,7 +35,7 @@ thesis chapters or model code.
 | `src/lngfreight/` | The reusable calculation engine | Only with tests |
 | `scripts/` | The buttons that run one pipeline task at a time | Yes, with tests |
 | `tests/` | Automated checks that detect broken logic and data leakage | Add when logic changes |
-| `data/raw/` | Original source snapshots and provenance | No; treat as immutable |
+| `data/raw/` | Preserved source payloads, normalized snapshots, and provenance controls | No; append new snapshots rather than overwriting |
 | `data/interim/` | A mechanically combined but not fully aligned panel | Normally generated |
 | `data/processed/` | Model-ready tables, scores, forecasts, and audit outputs | Normally generated |
 | `reports/` | Human-readable summaries and figures | Normally generated |
@@ -60,9 +60,11 @@ validation -> forecasts -> counterfactual gaps -> robustness checks
 data/processed/ tables + reports/ figures and summaries
 ```
 
-The raw layer preserves what was received. The interim layer joins series. The
+The raw layer contains both preserved source payloads and normalized provider
+snapshots; the v2 ledger distinguishes them explicitly. Some historical HTTP
+bytes were not retained and are labeled as unavailable rather than reconstructed
+(see `docs/PROVENANCE_CONTRACT.md`). The interim layer joins series. The
 processed layer applies documented alignment rules and contains derived results.
-Keeping these layers separate makes it possible to audit where a value changed.
 
 ## The two configuration files
 
@@ -165,8 +167,10 @@ The repository audit on 2026-06-19 found:
 - the real Git repository is `lng_freight_thesis/`, not its parent folder;
 - the file `../Thesis_Proposal_MA` is a Word document without a `.docx` suffix;
 - Spark code, configuration, tests, documentation, and access reports are intact;
-- the identical Panama-capacity and mechanism-proxy raw files are intentional
-  provenance outputs with different logical names, so both were retained;
+- the cleanup initially retained two byte-identical Panama-capacity files under
+  different logical names; DATA-02 later established that the AIS-laden label
+  was false, truthfully renamed the duplicate, and quarantined it from active
+  input scopes while preserving its append-only provenance history;
 - macOS `.DS_Store`, Python `__pycache__`, and pytest cache files were removed;
 - user environments, raw snapshots, processed outputs, figures, IDE settings,
   the formal proposal, and all pre-existing uncommitted work were retained;

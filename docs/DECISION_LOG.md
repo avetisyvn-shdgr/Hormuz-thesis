@@ -142,3 +142,53 @@ Each entry: **date · decision · decision-maker · rationale · affected files 
   manuscript planning notes.
 - **Status:** Advisor decision recorded; content-first writing authorized;
   direct Prof. Li ratification remains unrecorded.
+
+## 2026-08-08 · Provenance-limited Bloomberg transcription branch authorized
+
+- **Decision-maker:** Mher (researcher); implementation by AI (Codex).
+- **Decision:** After the strict Phase 0 admission audit returned NO_GO
+  (0 admitted / 5 blocked: transcriptions rather than original exports; missing
+  Bloomberg identifiers, extraction receipts, methodology, definition history,
+  and rights), implement the five user-supplied workbooks (three weekly
+  Fearnleys LNG assessments, daily TTF, daily VLSFO) as a dormant
+  `provenance_limited_secondary` branch instead of activating them: provider
+  `bloomberg_transcription`, `status: restricted` in `config/sources.yaml`,
+  opt-in only via `ENABLE_BLOOMBERG_LAYER=1` + `BLOOMBERG_EXPORT_DIR`.
+- **Rationale:** The files are the complete evidence currently available and
+  supply the thesis's missing monetary freight-market layer; limited-use
+  processing preserves that evidence while the NO_GO gate, the locked PortWatch
+  primary, the 2026-02-28 cutoff, and the free-data default remain unchanged.
+  Permitted claim: disruption-associated counterfactual deviation in assessed
+  rates. Prohibited: ATT, causal freight effect, identified mediation.
+- **Affected files:** `config/bloomberg_exports.yaml`, `config/sources.yaml`,
+  `config/settings.yaml`, `src/lngfreight/bloomberg_admission.py`,
+  `src/lngfreight/bloomberg_market.py`, `src/lngfreight/freight_counterfactual.py`,
+  `src/lngfreight/freight_integration.py`,
+  `src/lngfreight/sources/bloomberg_transcription.py`, seven
+  `scripts/*bloomberg*` commands, generated `data/processed/*` artifacts,
+  `docs/BLOOMBERG_MARKET_LAYER_IMPLEMENTATION_PLAN.md`, `docs/INFERENCE_NOTES.md`,
+  `docs/DATA_SOURCES.md`.
+- **Status:** Recorded retroactively on 2026-08-09 (the implementation predated
+  this entry). Branch remains dormant pending original exports and rights
+  confirmation per `docs/BLOOMBERG_EXTRACTION_CHECKLIST.md`.
+
+## 2026-08-09 · Bloomberg raw-bearing artifacts quarantined from version control
+
+- **Decision-maker:** Mher (researcher); implementation by AI (Claude).
+- **Decision:** Gitignore the derived artifacts that embed verbatim licensed
+  assessment histories (`data/processed/lng_freight_weekly_panel.csv`,
+  `data/processed/lng_freight_descriptive_weekly.csv`,
+  `data/processed/freight_market_context.csv`, plus `.work/` inspection
+  screenshots) and add `tests/test_bloomberg_quarantine.py` as a regression
+  guard. Version control retains aggregates, QA tables, manifests, and
+  post-period derived artifacts only. Corrected the contradictory closing
+  paragraph of the implementation plan ("no proprietary values enter
+  modelling"), which misdescribed the limited-use branch.
+- **Rationale:** All `rights` fields in `config/bloomberg_exports.yaml` are
+  null/unverified; committing the full assessment histories would risk exactly
+  the redistribution the branch's own governance prohibits. The files remain
+  locally pinned by `scripts/freeze_bloomberg_layer.py`.
+- **Affected files:** `.gitignore`, `tests/test_bloomberg_quarantine.py`,
+  `docs/BLOOMBERG_MARKET_LAYER_IMPLEMENTATION_PLAN.md` (§8 correction, new §9),
+  `docs/DECISION_LOG.md`.
+- **Status:** Recorded; pending Mher's own verification run per guardrail G4.

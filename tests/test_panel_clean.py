@@ -51,18 +51,28 @@ def test_free_variables_excludes_proxy_and_unavailable():
     # part of the daily PortWatch modeling panel:
     assert "korea_lng_import_total" not in free
     assert "india_lng_import_gulf" not in free
-    # proxy-status and unavailable series are NOT:
-    assert "ttf_gas" not in free            # status: proxy
-    assert "jkm_lng" not in free            # status: proxy
+    # unavailable series are NOT:
+    assert "ttf_gas" not in free            # status: restricted opt-in
+    assert "jkm_lng" not in free            # status: unavailable
     assert "spark30s_atlantic_freight" not in free  # status: unavailable
     assert "ais_laden_tonmiles_usgc" not in free    # status: unavailable
 
 
 def test_build_panel_refuses_proxy_without_optin():
-    # ttf_gas resolves through its proxy backend; the guard must raise BEFORE
-    # any network fetch, so this needs no API key.
+    # The acquisition candidate is retained as proxy metadata, but the registry
+    # status remains unavailable and the guard fires before any provider call.
     with pytest.raises(ValueError, match="proxy"):
-        panel_mod.build_panel(variables=["ttf_gas"], allow_proxies=False)
+        panel_mod.build_panel(variables=["jkm_lng"], allow_proxies=False)
+
+
+def test_unimplemented_price_candidates_and_taiwan_terms_are_truthful():
+    registry = config_mod.registry()
+    assert registry["ttf_gas"]["status"] == "restricted"
+    assert registry["jkm_lng"]["status"] == "unavailable"
+    for variable in ("taiwan_lng_import_total", "taiwan_lng_import_gulf"):
+        license_note = registry[variable]["primary"]["license"]
+        assert "reuse terms unverified" in license_note
+        assert "Open Government Data License" not in license_note
 
 
 def test_build_panel_from_frozen_raw_is_offline_and_calendar_aligned(

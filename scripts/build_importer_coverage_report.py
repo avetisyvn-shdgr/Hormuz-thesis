@@ -12,6 +12,7 @@ from lngfreight.importer_coverage import (  # noqa: E402
     build_coverage_matrix,
     coverage_summary,
 )
+from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
 
 
 def _render_report(matrix, summary: dict[str, object]) -> str:
@@ -66,7 +67,26 @@ estimator is fitted.
 
 
 def main() -> None:
-    probe_dir = config.path("data_raw") / "backup_pathway_probe_20260621"
+    artifact_names = [
+        "backup_probe_manifest_snapshot",
+        "backup_comtrade_japan_by_partner_snapshot",
+        "backup_comtrade_japan_monthly_snapshot",
+        "backup_comtrade_usa_monthly_snapshot",
+        "backup_eia_us_lng_exports_snapshot",
+        "backup_eurostat_eu27_by_partner_snapshot",
+        "backup_ppac_lng_historical_snapshot",
+        "backup_ppac_lng_current_snapshot",
+    ]
+    artifacts = [
+        get_variable(name, query={"consumer": "build_importer_coverage_report"})
+        for name in artifact_names
+    ]
+    if not all(isinstance(item, RegisteredArtifact) for item in artifacts):
+        raise TypeError("coverage-probe inputs must resolve as artifacts")
+    probe_dirs = {item.path.parent for item in artifacts}
+    if len(probe_dirs) != 1:
+        raise ValueError("coverage-probe artifacts must share one directory")
+    probe_dir = probe_dirs.pop()
     matrix = build_coverage_matrix(
         probe_dir,
         config.path("data_processed") / "importer_exposure_summary.csv",

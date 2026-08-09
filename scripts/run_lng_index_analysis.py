@@ -17,15 +17,17 @@ from lngfreight import config  # noqa: E402
 from lngfreight.baselines import arx_forecast  # noqa: E402
 from lngfreight.bsts import fit_bsts_forecast, posterior_shortfall  # noqa: E402
 from lngfreight.inference import counterfactual_effect  # noqa: E402
-from lngfreight.sources.wto_hormuz import WTOHormuzLNGSource  # noqa: E402
+from lngfreight.registry import get_variable  # noqa: E402
 from lngfreight.validation import Fold, resolve_cutoff  # noqa: E402
 
 
 def main() -> None:
     cutoff = resolve_cutoff()
     study_end = pd.Timestamp(config.settings()["study_window"]["full_end"])
-    series = WTOHormuzLNGSource().fetch(
-        "lng_outbound_volume_index", "2025-01-01", str(study_end.date())
+    series = get_variable(
+        "wto_hormuz_lng_outbound_index",
+        "2025-01-01",
+        str(study_end.date()),
     ).set_index("date")["value"]
     panel = series.rename("wto_hormuz_lng_volume_index").to_frame()
     train_idx = np.flatnonzero(panel.index < cutoff)

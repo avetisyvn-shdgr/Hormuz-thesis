@@ -36,6 +36,7 @@ from lngfreight.tsfm import (  # noqa: E402
     DEFAULT_LOWER_Q,
     DEFAULT_UPPER_Q,
     MODEL_REGISTRY,
+    configure_deterministic_execution,
     counterfactual_shortfall,
 )
 from lngfreight.validation import resolve_cutoff  # noqa: E402
@@ -157,8 +158,14 @@ def main() -> None:
     panel = _load_panel()
     cut = resolve_cutoff()
     ar_summary, ar_daily = _ar_reference()
+    seed = int(config.settings()["reproducibility"]["random_seed"])
+    torch_deterministic = configure_deterministic_execution(seed)
 
     print(f"counterfactual cross-check: model={args.model}, cutoff={cut.date()}")
+    print(
+        f"determinism: seed={seed}, "
+        f"torch_configured={torch_deterministic}"
+    )
     print(f"train: < {cut.date()} (univariate, pre-treatment only)  "
           f"forecast: >= {cut.date()}\n")
 

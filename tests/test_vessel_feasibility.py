@@ -98,6 +98,12 @@ def test_complete_sample_is_ready_for_scoring_not_automatically_passed(tmp_path:
     coverage = report["gfw"]["coverage_diagnostics"]
     assert coverage["identity_match_rate"] == 1 / 30
     assert coverage["all_periods_pass"] is False
+    assert any(
+        "manually transcribed" in limitation
+        and "source PDFs" in limitation
+        and "not retained" in limitation
+        for limitation in report["gfw"]["documented_limitations"]
+    )
 
 
 def test_duplicate_and_invalid_imos_fail_roster_quality(tmp_path: Path):

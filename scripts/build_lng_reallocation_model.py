@@ -14,6 +14,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config  # noqa: E402
+from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
 from lngfreight.reallocation import (  # noqa: E402
     build_transport_inputs,
     solve_reallocation_scenarios,
@@ -24,7 +25,13 @@ def main() -> None:
     paths = config.settings()["paths"]
     voyages = pd.read_csv(config.ROOT / paths["importer_exposure_voyages_csv"])
     routes = pd.read_csv(config.ROOT / paths["maritime_route_distances_csv"])
-    terminals = pd.read_csv(config.ROOT / paths["global_gfw_lng_terminals_csv"])
+    terminal_artifact = get_variable(
+        "global_lng_terminal_crosswalk_snapshot",
+        query={"consumer": "build_lng_reallocation_model"},
+    )
+    if not isinstance(terminal_artifact, RegisteredArtifact):
+        raise TypeError("global terminal crosswalk must resolve as an artifact")
+    terminals = terminal_artifact.read_csv()
 
     inputs = build_transport_inputs(voyages, routes, terminals=terminals)
     solution, summary = solve_reallocation_scenarios(inputs)
@@ -45,8 +52,10 @@ def main() -> None:
     print(summary[[
         "scenario",
         "demand_k_m3",
-        "real_supply_k_m3",
-        "allocated_real_k_m3",
+        "gross_observed_post_k_m3",
+        "committed_observed_post_k_m3",
+        "residual_supply_k_m3",
+        "allocated_residual_k_m3",
         "unmet_k_m3",
         "unmet_share",
         "mean_route_nm",

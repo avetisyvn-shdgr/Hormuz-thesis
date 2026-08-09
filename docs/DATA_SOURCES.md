@@ -2,6 +2,12 @@
 
 **Purpose.** This is the load-bearing document for the data-access (go/no-go) decision in the proposal. It maps every variable in the proposal's *minimum viable dataset* to a concrete source, states honestly what is free vs proprietary, and records what each source can and **cannot** capture. Nothing here asserts access rights that have not been verified.
 
+Non-series external inputs use the same registry gate. Entries marked
+`kind: artifact` preserve their native CSV, JSON, GeoJSON, or workbook schema;
+`registry.get_variable()` verifies the frozen checksum and records the analysis
+consumer before returning a `RegisteredArtifact`. An input cannot bypass source
+status and provenance merely because it is not a one-dimensional time series.
+
 **The honest headline.** There is **no free, like-for-like replacement** for your dependent variable. Spark25S / Spark30S are proprietary Spark Commodities assessments; JKM is a proprietary S&P Global Platts assessment. A "professional" alternative to Bloomberg is therefore *not* a scraper that imitates these series — it is (a) a clear-eyed registry of what each free source genuinely is, and (b) a software layer that lets you run the whole pipeline on free proxies now and swap in the proprietary feeds later by editing one config file. That layer is already built (`config/sources.yaml` + `src/lngfreight/`).
 
 ---
@@ -13,6 +19,7 @@
 | **free** | A free series that *is* the real thing the proposal wants. No proprietary gap. |
 | **proxy** | A free, *imperfect* stand-in carrying basis/timing risk. Must be documented as such. |
 | **unavailable** | No adequate free option exists. Slot reserved for proprietary access. |
+| **restricted** | Local checksum-pinned input available only through an explicit opt-in; provenance or licence metadata is incomplete, so it cannot enter the default pipeline. |
 
 ---
 
@@ -22,12 +29,35 @@
 
 | Variable | What the proposal wants | Free reality | Status |
 |---|---|---|---|
-| `spark30s_atlantic_freight` | Spark30S daily spot assessment (Sabine Pass → Gate) | Spark publishes only **indicative** prices publicly; full daily data needs a Spark subscription. ICE lists **Spark30S freight futures**, whose *settlement* prices are a partial free proxy. | unavailable (proxy = futures settlement) |
-| `spark25s_pacific_freight` | Spark25S daily spot assessment (NWS → Tianjin) | Same as above. | unavailable (proxy = futures settlement) |
+| `spark30s_atlantic_freight` | Spark30S daily spot assessment (Sabine Pass → Gate) | Spark publishes only **indicative** prices publicly; full daily data needs a Spark subscription. ICE lists Spark30S freight futures, but no verified accessible historical settlement feed is implemented. | unavailable |
+| `spark25s_pacific_freight` | Spark25S daily spot assessment (NWS → Tianjin) | Same as above. | unavailable |
 
 - **What the proxy captures:** broad direction and large moves in LNG freight cost.
 - **What it cannot capture:** the *daily physical spot assessment itself*. A front-month future is a different instrument with its own roll, term structure and liquidity. Treating it as the spot series is a **measurement-validity assumption** that would have to be defended in the data chapter — and it partly undercuts the proposal's headline that the Atlantic spot posted a *record single-day* move (futures need not move identically).
 - **Bias introduced:** basis risk, roll effects, lower granularity. **Do not** silently substitute; if you must use it, the thesis degrades to the documented fallback branch.
+
+### Provenance-limited Fearnleys assessments supplied 2026-08-08
+
+Three user-supplied structured workbooks contain weekly Fearnleys assessments
+for East-of-Suez spot, West-of-Suez spot, and a one-year LNG-carrier time
+charter (155-165k cbm, USD/day). They cover 230 of 235 expected Friday weeks in
+the locked study window and include 18 post-cutoff weeks. They are analytically
+useful because they supply direct monetary freight-market observations that the
+free branch lacks.
+
+Their status is nevertheless **restricted / provenance-limited secondary**, not
+an admitted replacement for Spark25S/30S. The repository does not hold the exact
+Bloomberg identifiers, original terminal-export payloads, extraction receipts,
+assessment methodology, verified definition history, or confirmed thesis reuse
+rights. Three rows are marked as reconstructed transcription boundaries, and
+two zero West-of-Suez rows are preserved raw but masked in analysis. The
+workbooks are checksum-pinned and loaded only through the registry-controlled
+local provider. Raw values are not published.
+
+Permitted use: secondary descriptives, context, and supplementary
+pre-treatment-selected forecast deviations. Prohibited use: silent Spark
+substitution, primary-outcome activation, ATT language, structural causal
+freight claims, and identified mediation claims.
 
 ### Energy confounders
 
@@ -35,8 +65,12 @@
 |---|---|---|---|---|
 | `henry_hub_spot` | **EIA API** `NG.RNGWHHD.D` (cross-check: **FRED** `DHHNGSP`) | Henry Hub natural gas spot, USD/MMBtu, daily | **free** | Genuine match. US gas benchmark — exactly the series the proposal lists. Public domain. |
 | `brent_spot` | **EIA API** `PET.RBRTE.D` (cross-check: **FRED** `DCOILBRENTEU`) | Europe Brent spot, USD/bbl, daily, from 1987 | **free** | Genuine match. Public domain. |
-| `ttf_gas` | **ICE/EEX** front-month future settlement (free subset) | Dutch TTF gas, European benchmark | **proxy** | Front-month future ≠ physical TTF assessment. Calendar-roll and timing basis. |
-| `jkm_lng` | **EEX** Platts JKM future settlement (delayed, free subset) | Japan-Korea Marker LNG | **proxy** | The *assessment* is proprietary Platts. Futures settlement is delayed and is a different instrument. Document timing/basis risk. |
+| `ttf_gas` | User-supplied structured Bloomberg workbook (exact provider/identifier unverified) | Dutch TTF day-ahead assessment, EUR/MWh | **restricted** | Context only through the local checksum-pinned provider; not a headline control and not licensed for raw publication. |
+| `jkm_lng` | S&P Global Platts assessment; EEX settlement retained only as an access candidate | Japan-Korea Marker LNG | **unavailable** | No verified accessible historical feed or implemented provider. A future would be a different instrument with basis/timing risk. |
+
+Singapore VLSFO is likewise registered as a restricted context series from the
+user-supplied ClearLynx-labelled workbook. It is not a dependent variable and
+does not enter the headline freight forecasts as an observed post-event control.
 
 ### Route / chokepoint capacity
 
@@ -90,7 +124,10 @@ locked working primary.
 ## What each free source contributes vs. what it cannot — summary
 
 - **EIA / FRED** — *contribute:* clean, authoritative, free energy-price confounders (Henry Hub, Brent) that are genuine matches, with two independent providers for cross-checking. *Cannot:* give you any freight or LNG-assessment series.
-- **ICE / EEX settlements** — *contribute:* free-ish *proxies* for TTF, JKM, and even the Spark freight benchmarks via futures. *Cannot:* reproduce the daily physical spot assessments; they carry basis, roll and timing risk.
+- **ICE / EEX settlements** — *potential acquisition channels only:* no verified
+  accessible historical feed is implemented for TTF, JKM, or Spark-linked
+  freight futures. Even if access is obtained, futures cannot reproduce daily
+  physical spot assessments and carry basis, roll, and timing risk.
 - **IMF PortWatch** — *contribute:* a genuinely free, independent, AIS-derived operational view of the Hormuz and Panama chokepoints — valuable for the descriptive layer and as a route covariate. *Cannot:* deliver vessel-level laden ton-miles; it is aggregate only.
 - **WTO/AXSMarine Hormuz tracker** — *contribute:* a public LNG-only daily outbound shipment-volume index that excludes LPG. *Cannot:* provide freight rates, carrier counts, physical tonnes, ton-miles, or a long pre-period.
 - **Spark / Platts / Bloomberg / Kpler / Lloyd's** — *contribute:* the actual target and the primary mechanism variable. *Cannot:* be obtained free; these are the items to negotiate via TUM.
@@ -128,6 +165,25 @@ EU27 remains an aggregate comparator, not an importer. The active Eurostat
 `data/raw/public_snapshots_20260717/eurostat/`. The returned time dimension runs
 through 2026-06, and the last month with any non-null partner value is 2026-05.
 
+## Manual-capture and source-artifact limitations
+
+The following frozen extension inputs cannot be independently reconstructed
+from original response evidence held in this repository. This is a provenance
+limitation, not evidence that the values are wrong. It restricts auditability
+and therefore the strength assigned to importer- and vessel-extension results.
+It does not affect the independently frozen PortWatch primary outcome.
+
+| Input | What is retained | What was not retained | Consequence |
+|---|---|---|---|
+| Korea KCS importer table | Normalized table scrape and capture-method metadata | Original rendered HTML/HTTP response, query receipt, contemporaneous terms page | The repository cannot independently prove the historical server response from frozen bytes; Korea importer results are extension evidence only. |
+| China GACC importer table | Three portal-export CSV files, one per queried year | Surrounding HTML, request/query receipts, contemporaneous terms page | File contents are hash-verifiable, but the exact portal interaction and reuse terms cannot be independently reconstructed. |
+| India DGCI&S Tradestat table | Parsed, concatenated table capture (`in_original_long.csv`) and acquisition script | Original response HTML, response headers, contemporaneous terms page | The retained CSV is not an original HTTP payload. Historical capture used a browser-compatible User-Agent; future requests identify the academic script explicitly. |
+| Q-Flex 31-vessel benchmark | Manually assembled CSV with row-level Nakilat and IGU URLs | The supporting Nakilat fleet-list and IGU-report PDFs, page extracts, and a transcription log were not frozen with the roster | Schema, IMO checksums, and cited URLs are auditable, but row-level transcription cannot be independently verified from repository-held source documents. |
+
+No result from these inputs should be presented as independently source-
+reproducible. Re-capture would create a new dated vintage; it would not
+retroactively repair the missing historical response evidence.
+
 ---
 
 ## Registration / API-key requirements (flagged)
@@ -137,10 +193,10 @@ through 2026-06, and the last month with any non-null partner value is 2026-05.
 | EIA | Yes — instant, free | Free | https://www.eia.gov/opendata/register.php |
 | FRED | Yes — instant, free | Free | https://fred.stlouisfed.org/docs/api/api_key.html |
 | IMF PortWatch | No key — direct CSV/GeoJSON download + WFS API | Free | https://portwatch.imf.org |
-| ICE / EEX settlements | Free subset; full feed paid | Mixed | ice.com / eex.com |
+| ICE / EEX settlements | No verified accessible historical feed; full feeds licensed | Unavailable in the working pipeline | ice.com / eex.com |
 | Spark, Platts, Bloomberg, Kpler | Subscription / institutional access | Paid | via TUM negotiation |
 
-**Immediately usable today, with zero approvals beyond two instant keys:** Henry Hub, Brent (EIA+FRED), and Hormuz/Panama transits (PortWatch). That is enough to build and validate the entire pipeline and the descriptive event-study layer before any proprietary decision is made.
+**Immediately usable today, with zero approvals beyond two instant keys:** Henry Hub, Brent (EIA+FRED), and Hormuz/Panama transits (PortWatch). These support the descriptive throughput pipeline; they do not supply the missing freight-price outcome.
 
 > Sources for the access facts above: [EIA Open Data](https://www.eia.gov/opendata/), [FRED Henry Hub series](https://fred.stlouisfed.org/series/DHHNGSP), [IMF PortWatch data & methodology](https://portwatch.imf.org/pages/data-and-methodology), [Spark LNG Freight](https://www.sparkcommodities.com/lng-freight/), [ICE Spark25S future](https://www.ice.com/products/79234892/Spark25S-Pacific-NWS-to-Tianjin-LNG-Freight-Future), [EEX Natural Gas/LNG](https://www.eex.com/en/markets/natural-gas/lng).
 
@@ -148,12 +204,9 @@ through 2026-06, and the last month with any non-null partner value is 2026-05.
 
 ## Freight-target access decision — verified 2026-06-14
 
-**Supersedes** the optimistic "partial free proxy via futures settlement" framing in
-the dependent-variable table above (rows `spark30s_atlantic_freight`,
-`spark25s_pacific_freight`) and the "free-ish proxies via futures" line in the
-summary. Branch already chosen: **free/fallback** (no proprietary access assumed).
-This section records what was actually verified about getting *any* freight-target
-series for free, and the resulting decision.
+This section records the 2026-06-14 verification behind the conservative status
+used throughout this document. Branch already chosen: **free/fallback** (no
+proprietary access assumed).
 
 ### What was checked, and what is true
 
@@ -163,7 +216,7 @@ series for free, and the resulting decision.
 | Spark **free-trial** account (OAuth2) | Real assessment; **history depth unknown** | Signup-free | Trial exists; whether it covers the **Feb–Mar 2026 daily** window is **UNVERIFIED** — must be tested empirically with credentials. |
 | Spark **non-authenticated** endpoint | Real assessment but **"Price Release N-4"** (4 releases delayed) and appears **latest-value only** | Yes | N-4 delay confirmed. The delay is harmless for a *retrospective* study, but a latest-only endpoint **cannot rebuild** a past series now. |
 | Spark **academic/research** access | Potentially full primary series | One email | **Not documented publicly**; common for providers. Action item, not a confirmed fact. |
-| **ICE** LNG Freight Futures (Spark30S/25S-settled) — the proxy named in `sources.yaml` | Front-month future, tightly linked to Spark spot | **NOT confirmed free** | ICE EOD settlement is licensed; resellers (Barchart) are premium. The earlier "free subset" claim is **not supported** by this check. |
+| **ICE** LNG Freight Futures (Spark30S/25S-settled) — retained only as an acquisition candidate in `sources.yaml` | Front-month future, tightly linked to Spark spot | **NOT confirmed free** | ICE EOD settlement is licensed; resellers (Barchart) are premium. The earlier "free subset" claim is **not supported** by this check. |
 | **EEX** | — | n/a | EEX *owns* Spark but the freight futures trade on **ICE**, not EEX's free market-data pages. No free freight-futures EOD found. |
 | **Baltic Exchange** BLNG routes | Independent LNG freight assessment | No | Confirmed subscription. |
 

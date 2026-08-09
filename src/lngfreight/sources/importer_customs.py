@@ -31,7 +31,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from .base import BaseSource
+from .base import BaseSource, SourcePayload
 from .. import config
 
 SNAPSHOT_SCHEMA = ["period", "country", "hs", "weight_ton", "value_kusd"]
@@ -163,6 +163,13 @@ class ImporterCustomsSource(BaseSource):
             ) from exc
         if series not in ("total", "gulf"):
             raise ValueError(f"Unknown series {series!r}; expected total|gulf.")
+        source_path = snapshot_path(unit)
+        self._capture_source_payload(SourcePayload(
+            filename=source_path.name,
+            media_type="text/csv",
+            role="normalized_provider_snapshot",
+            path=source_path,
+        ))
         frame = load_by_origin(unit)
         measure = MEASURE_BY_UNIT[unit]
         if series == "gulf":

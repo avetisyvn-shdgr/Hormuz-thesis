@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "governance": {
+    "designation": "provenance_limited_secondary",
+    "authorized_by": "thesis_author",
+    "authorized_date": "2026-08-08",
+    "permitted_uses": [
+      "descriptive_market_evidence",
+      "supplementary_pre_treatment_selected_counterfactual",
+      "market_context"
+    ],
+    "prohibited_claims": [
+      "ATT",
+      "causal_freight_effect",
+      "identified_mediation_effect"
+    ]
+  },
+  "study_window": {
+    "start": "2022-01-01",
+    "end": "2026-07-07",
+    "treatment_cutoff": "2026-02-28"
+  },
+  "frequency": "native business-day observations on a weekday calendar",
+  "missing_policy": "leave missing; no carry-forward, interpolation, or backfill",
+  "standardization": "z-score using observations strictly before the treatment cutoff",
+  "model_role": "context only; excluded from headline freight counterfactuals",
+  "claim_boundary": "potential common shock or mediator; no causal conditioning claim"
+}

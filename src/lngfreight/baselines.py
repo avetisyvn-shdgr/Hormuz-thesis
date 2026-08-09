@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from .metrics import score_forecast
-from .validation import Fold, rolling_origin_splits
+from .validation import Fold, require_chronological_index, rolling_origin_splits
 
 
 def seasonal_naive_forecast(
@@ -27,7 +27,8 @@ def seasonal_naive_forecast(
     if season_length <= 0:
         raise ValueError(f"season_length must be > 0, got {season_length}.")
 
-    y = series.sort_index().astype("float64")
+    require_chronological_index(series.index, name="series index")
+    y = series.astype("float64")
     history = y.iloc[fold.train_idx].copy()
     test_index = y.iloc[fold.test_idx].index
 
@@ -61,6 +62,7 @@ def evaluate_seasonal_naive(
         raise KeyError(f"target {target!r} not found in panel columns.")
     if not isinstance(panel.index, pd.DatetimeIndex):
         raise TypeError("panel must be indexed by a DatetimeIndex.")
+    require_chronological_index(panel.index, name="panel index")
 
     folds = folds or rolling_origin_splits(panel.index)
     y = panel[target].astype("float64")
@@ -175,7 +177,9 @@ def arx_forecast(
     if ridge_alpha < 0:
         raise ValueError(f"ridge_alpha must be >= 0, got {ridge_alpha}.")
 
-    panel = panel.sort_index()
+    if not isinstance(panel.index, pd.DatetimeIndex):
+        raise TypeError("panel must be indexed by a DatetimeIndex.")
+    require_chronological_index(panel.index, name="panel index")
     y = panel[target].astype("float64")
     train_index = y.iloc[fold.train_idx].index
     test_index = y.iloc[fold.test_idx].index
@@ -231,6 +235,7 @@ def evaluate_arx(
         raise KeyError(f"target {target!r} not found in panel columns.")
     if not isinstance(panel.index, pd.DatetimeIndex):
         raise TypeError("panel must be indexed by a DatetimeIndex.")
+    require_chronological_index(panel.index, name="panel index")
 
     folds = folds or rolling_origin_splits(panel.index)
     y = panel[target].astype("float64")

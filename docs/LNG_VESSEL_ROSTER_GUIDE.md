@@ -18,6 +18,19 @@ numbers are cross-referenced to Appendix 3 of the International Gas Union's 2025
 World LNG Report. The roster was frozen before GFW identity matching, so API
 availability cannot influence which vessels enter the denominator.
 
+### Source-artifact retention limitation
+
+The roster CSV was manually transcribed and cross-referenced. It retains the
+Nakilat and IGU URLs in every row, but the supporting PDFs, page extracts, and a
+row-by-row transcription log were not frozen in the repository at capture time.
+The current repository can therefore validate schema, uniqueness, IMO
+checksums, capacity positivity, and cited URLs, but it cannot independently
+verify every name/capacity transcription against repository-held source
+documents. Re-downloading current PDFs would create a new source vintage and
+would not prove which bytes were consulted during the historical transcription.
+This limitation applies to the Q-Flex/GFW vessel extension, not the PortWatch
+primary outcome.
+
 Sources:
 
 - [Nakilat fleet list](https://www.nakilat.com/wp-content/uploads/2018/07/Fleet-List-3-2018.pdf)
@@ -58,6 +71,8 @@ The local feasibility audit checks minimum size, missing values, duplicate IMO
 numbers, the IMO checksum, and positive nominal capacity. Passing these checks
 only means the roster is ready to query. It does not establish GFW match rates,
 voyage coverage, actual cargo quantity, or laden/ballast status.
+It also does not validate the manually transcribed rows against archived source
+documents, because those documents were not retained.
 
 Run the audit from the repository root:
 

@@ -24,7 +24,9 @@ Two leakage guards, enforced by construction AND re-asserted before return:
 
 Policy (fold lengths, step, scheme, cutoff) lives in settings.yaml `modeling:`,
 never hard-coded here. Folds are returned as integer POSITIONAL indices into the
-caller's index (sklearn-style), so any model or library can consume them.
+caller's index (sklearn-style), so any model or library can consume them. The
+caller index must already be chronological; silently sorting it would make the
+returned positions unsafe when applied back to the caller's unsorted object.
 
 Pure function over an in-memory DatetimeIndex + local settings. No network, no
 key, no I/O. Run the guards via: pytest -q
@@ -74,6 +76,26 @@ def resolve_cutoff(settings: dict | None = None) -> pd.Timestamp:
     return pd.Timestamp(raw)
 
 
+def require_chronological_index(
+    index: pd.DatetimeIndex,
+    *,
+    name: str = "index",
+) -> pd.DatetimeIndex:
+    """Return ``index`` as a DatetimeIndex or reject unsafe positional order.
+
+    Fold positions are consumed with ``.iloc`` throughout the modeling stack.
+    Sorting a private copy here would detach those positions from the caller's
+    rows, so unsorted inputs fail loudly instead.
+    """
+    index = pd.DatetimeIndex(index)
+    if not index.is_monotonic_increasing:
+        raise ValueError(
+            f"{name} must be chronologically sorted in increasing order before "
+            "building or applying positional folds."
+        )
+    return index
+
+
 def rolling_origin_splits(
     index: pd.DatetimeIndex,
     settings: dict | None = None,
@@ -87,6 +109,8 @@ def rolling_origin_splits(
         The model's time index (e.g. ``panel.index``). Daily, but gaps are
         tolerated — bounds are by date, fold membership by mask, so missing
         calendar days simply yield smaller folds rather than misaligned ones.
+        Must be sorted in increasing chronological order because returned fold
+        positions refer to this exact caller order.
     settings :
         Parsed settings.yaml. Defaults to ``config.settings()``. Reads the
         ``modeling.validation`` block: ``scheme`` (expanding|sliding),
@@ -118,9 +142,7 @@ def rolling_origin_splits(
         if v <= 0:
             raise ValueError(f"modeling.validation.{nm} must be > 0, got {v}.")
 
-    index = pd.DatetimeIndex(index)
-    if not index.is_monotonic_increasing:
-        index = index.sort_values()
+    index = require_chronological_index(index)
 
     cut = pd.Timestamp(cutoff) if cutoff is not None else resolve_cutoff(settings)
 

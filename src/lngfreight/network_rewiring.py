@@ -18,6 +18,7 @@ import pandas as pd
 from . import config
 from .importer_coverage import _jsonstat_frame, verify_probe_manifest
 from .importer_outcomes import COMTRADE_GULF_CODES, EUROSTAT_GULF_CODES
+from .registry import RegisteredArtifact, get_variable
 from .sources.importer_customs import (
     GULF_BY_UNIT,
     MEASURE_BY_UNIT,
@@ -51,6 +52,33 @@ NETWORK_COLUMNS = [
     "post_treatment",
     "admissibility_note",
 ]
+
+CUSTOMS_ARTIFACT_VARIABLES = (
+    "korea_lng_by_origin_snapshot",
+    "taiwan_lng_by_origin_snapshot",
+    "china_lng_by_origin_snapshot",
+    "india_lng_by_origin_snapshot",
+    "japan_lng_by_origin_snapshot",
+)
+
+
+def registered_rewiring_input_paths(consumer: str) -> tuple[Path, Path, Path]:
+    """Resolve every external rewiring input through ``registry.get_variable``."""
+    customs = [
+        get_variable(name, query={"consumer": consumer})
+        for name in CUSTOMS_ARTIFACT_VARIABLES
+    ]
+    eurostat = get_variable(
+        "eurostat_lng_eu27_by_partner_snapshot",
+        query={"consumer": consumer},
+    )
+    if not all(isinstance(item, RegisteredArtifact) for item in [*customs, eurostat]):
+        raise TypeError("network-rewiring inputs must resolve as artifacts")
+    customs_dirs = {item.path.parent for item in customs}
+    if len(customs_dirs) != 1:
+        raise ValueError("importer-customs artifacts must share one directory")
+    probe_dir = config.path("data_raw") / "backup_pathway_probe_20260621"
+    return probe_dir, customs_dirs.pop(), eurostat.path
 
 MONTHLY_METRIC_COLUMNS = [
     "period",
@@ -478,7 +506,7 @@ def build_rewiring_network(
     eurostat_path: Path | None = None,
 ) -> pd.DataFrame:
     """Assemble the frozen by-origin importer network edge list."""
-    hashes = verify_probe_manifest(probe_dir)
+    hashes = verify_probe_manifest(probe_dir) if eurostat_path is None else {}
     eu_path = eurostat_path or (
         probe_dir / "eurostat_nrg_ti_gasm_lng_eu27_by_partner.json"
     )

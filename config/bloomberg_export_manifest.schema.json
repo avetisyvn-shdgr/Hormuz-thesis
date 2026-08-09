@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lngfreight.local/schemas/bloomberg-export-manifest-v1.json",
+  "title": "Bloomberg licensed-export admission manifest",
+  "type": "object",
+  "required": ["schema_version", "export_directory_env", "governance", "series"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "export_directory_env": {"type": "string", "minLength": 1},
+    "governance": {
+      "type": "object",
+      "required": [
+        "designation",
+        "authorized_by",
+        "authorized_date",
+        "permitted_uses",
+        "prohibited_claims"
+      ],
+      "properties": {
+        "designation": {"const": "provenance_limited_secondary"},
+        "authorized_by": {"const": "thesis_author"},
+        "authorized_date": {"type": "string", "format": "date"},
+        "permitted_uses": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "prohibited_claims": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "series": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"$ref": "#/$defs/series"}
+    }
+  },
+  "$defs": {
+    "right": {"type": ["boolean", "null"]},
+    "series": {
+      "type": "object",
+      "required": [
+        "filename",
+        "displayed_series_name",
+        "analysis_use",
+        "bloomberg_identifier",
+        "original_provider",
+        "candidate_role",
+        "frequency",
+        "assessment_calendar_verified",
+        "unit",
+        "currency",
+        "price_field",
+        "publication_time",
+        "timezone",
+        "extraction_date",
+        "export_procedure",
+        "raw_sheet",
+        "date_column",
+        "value_column",
+        "missing_value_convention",
+        "zero_is_genuine",
+        "assessment_methodology",
+        "definition_stable",
+        "expected_sha256",
+        "source_artifact_status",
+        "rights"
+      ],
+      "properties": {
+        "filename": {"type": "string", "minLength": 1},
+        "displayed_series_name": {"type": "string", "minLength": 1},
+        "analysis_use": {"const": "provenance_limited_secondary"},
+        "bloomberg_identifier": {"type": ["string", "null"]},
+        "original_provider": {"type": ["string", "null"]},
+        "candidate_role": {
+          "enum": ["secondary_freight_outcome", "market_context"]
+        },
+        "frequency": {"enum": ["weekly", "daily"]},
+        "assessment_calendar_verified": {"type": ["boolean", "null"]},
+        "unit": {"type": ["string", "null"]},
+        "currency": {"type": ["string", "null"]},
+        "price_field": {"type": ["string", "null"]},
+        "publication_time": {"type": ["string", "null"]},
+        "timezone": {"type": ["string", "null"]},
+        "extraction_date": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "export_procedure": {"type": ["string", "null"]},
+        "raw_sheet": {"type": "string", "minLength": 1},
+        "date_column": {"type": "string", "minLength": 1},
+        "value_column": {"type": "string", "minLength": 1},
+        "missing_value_convention": {"type": ["string", "null"]},
+        "zero_is_genuine": {"type": ["boolean", "null"]},
+        "assessment_methodology": {"type": ["string", "null"]},
+        "definition_stable": {"type": ["boolean", "null"]},
+        "expected_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_artifact_status": {
+          "enum": [
+            "original_terminal_export",
+            "structured_transcription_not_original_export"
+          ]
+        },
+        "rights": {
+          "type": "object",
+          "required": [
+            "historical_export",
+            "raw_retention",
+            "thesis_modelling",
+            "raw_publication",
+            "derived_results_publication"
+          ],
+          "properties": {
+            "historical_export": {"$ref": "#/$defs/right"},
+            "raw_retention": {"$ref": "#/$defs/right"},
+            "thesis_modelling": {"$ref": "#/$defs/right"},
+            "raw_publication": {"$ref": "#/$defs/right"},
+            "derived_results_publication": {"$ref": "#/$defs/right"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

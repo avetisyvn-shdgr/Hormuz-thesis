@@ -82,11 +82,11 @@
   "panel_end": "2026-06-01",
   "panel_start": "2022-01-01",
   "pre_cutoff_missing_values_by_target": {
-    "capacity_tanker": 2047,
+    "capacity_tanker": 2039,
     "n_tanker": 0
   },
   "raw_history_before_panel_start_is_intentionally_unused": true,
-  "raw_snapshot_end": "2026-06-07",
+  "raw_snapshot_end": "2026-07-12",
   "raw_snapshot_start": "2019-01-01",
   "schema_version": 1,
   "status": "pending_supervisor_approval"

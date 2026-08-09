@@ -52,8 +52,10 @@ Gaussian **local-level + weekly-seasonal** state-space model, Gibbs/FFBS, joint
 posterior predictive paths (so cumulative-shortfall intervals retain temporal
 dependence rather than summing independent pointwise bands). This *is* the
 CausalImpact structural form (Brodersen et al. 2015). Frozen result
-(`bsts_counterfactual_summary.csv`): posterior median shortfall **4,982**, 95%
-**[3,348, 6,711]**, P(shortfall > 0) = **1.0**, validation MASE ≈ 0.82.
+(`bsts_counterfactual_summary.csv`): posterior median shortfall **6,438**, 95%
+posterior predictive interval **[1,755, 11,710]**, P(shortfall > 0) = **1.0**,
+validation MASE ≈ 0.84. The interval is conditional on the local-level model;
+it is not a causal posterior.
 
 **The reconsideration point — do NOT add contemporaneous donor controls.** Stock
 CausalImpact sharpens the counterfactual by regressing the treated series on
@@ -69,37 +71,39 @@ deliberate choice.
 (Bayesian, joint-path) counterfactual that agrees with AR-only in direction and
 magnitude. Hardening is now implemented. A 3×3 grid over empirical-scale
 observation-variance and level-innovation priors gives posterior-median
-shortfalls of **4,972–5,082**. The interval is more prior-sensitive: grid
-endpoints span **[2,651, 7,513]**, driven mainly by the level-innovation prior.
-The pre-period PPC has 96.5% pointwise coverage and Bayesian p-values of 0.97
-(mean), 0.47 (SD), and 0.82 (maximum), with no evident gross misfit. Thus the
+shortfalls of **6,458–6,752**. The interval is more prior-sensitive: grid
+endpoints span **[879, 13,836]**, driven mainly by the level-innovation prior.
+The pre-period PPC has 97.1% pointwise coverage and Bayesian p-values of 0.97
+(mean), 0.69 (SD), and 0.67 (maximum), with no evident gross misfit. Thus the
 shortfall center is robust but the formal interval remains model/prior
 conditional.
 
 ## 18. Most defensible long-horizon interval — BUILT, method choice is correct
 
 **State.** `scripts/run_long_horizon_intervals.py` recalibrates the cumulative-
-shortfall band at the true ~94-day horizon by reusing the **placebo-in-time
-windows** (each a full 94-day pre-treatment recursive forecast, so its cumulative
-gap is a realised 94-day forecast error including recursive compounding). Result:
-~2.6× wider than the ≤30-day-fold band, and **every** model×target interval still
-excludes zero (route-only transit lower bound 3,960 ≫ 0).
+shortfall band at the current 130-day horizon by reusing the **placebo-in-time
+windows** (each a full 130-day pre-treatment recursive forecast, so its cumulative
+gap is a realised 130-day forecast error including recursive compounding). For
+the AR-only transit primary, the descriptive band is ~2.4× wider than the
+≤30-day-fold band and excludes zero (**5,430 to 8,089**). No nominal coverage
+claim is supported by the 35 overlapping windows.
 
 **Why this is the most defensible of the candidates:**
 
 | Method | Verdict |
 |---|---|
 | Sum of pointwise daily quantiles | **Rejected** — ignores serial correlation, understates the cumulative band. |
-| ≤30-day-fold block bootstrap | **Lower bound only** — fold horizon ≤30d, so 31–94-day recursion depths are unrepresented; honest but too narrow. |
+| ≤30-day-fold block bootstrap | **Lower bound only** — fold horizon ≤30d, so 31–130-day recursion depths are unrepresented; honest but too narrow. |
 | Conformal prediction | **Rejected** — its finite-sample guarantee assumes pre/post exchangeability, which an event study *deliberately breaks*. |
-| **Placebo-window empirical (chosen)** | **Preferred** — calibrates at the true 94-day horizon on real recursive errors; conservative (wide), not precise. |
-| Circular 14-day block bootstrap on ordered OOF residuals | **Independent cross-check** — AR-only transit band [4,649, 5,516], narrower than the chosen [3,934, 5,722] but still excludes zero. |
+| **Placebo-window empirical (chosen)** | **Descriptive scale diagnostic** — matches the 130-day horizon using realised recursive errors, but 35 overlapping windows do not support a nominal coverage claim. |
+| Circular 14-day block bootstrap on ordered OOF residuals | **Distinct cross-check** — AR-only transit band [6,180, 7,550], narrower than the placebo-window band [5,430, 8,089] but still excludes zero. |
 
-**Verdict — keep; it is the right choice.** State its honest limits: overlapping
-placebo windows (~9 effectively independent) make the 2.5/97.5 quantiles coarse,
-and placebo models train on shorter expanding windows than the actual full-pre-
-period model, which *widens* the band (conservative). It is a forecast-error band,
-not a structural causal interval.
+**Verdict — keep as a descriptive scale diagnostic.** State its honest limits:
+35 overlapping placebo windows are available, while only seven disjoint
+horizon-length blocks support separate rank inference. The overlapping-window
+2.5/97.5 quantiles are coarse, and placebo models train on shorter expanding
+windows than the actual full-pre-period model, which widens the band. It has no
+nominal coverage claim and is not a structural causal interval.
 
 ## 19. Hierarchical multi-chokepoint model — assess for identification, not fit
 

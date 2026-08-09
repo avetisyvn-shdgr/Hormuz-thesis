@@ -10,14 +10,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config, provenance  # noqa: E402
 from lngfreight.registry import get_gfw_vessel_identities  # noqa: E402
-from lngfreight.sources.gfw import IDENTITY_DATASET  # noqa: E402
+from lngfreight.sources.gfw import GFWClient, IDENTITY_DATASET  # noqa: E402
 
 
 def main() -> None:
     settings = config.settings()
     roster_path = config.ROOT / settings["paths"]["gfw_lng_vessel_benchmark_csv"]
     roster = pd.read_csv(roster_path, dtype={"imo": str})
-    identities = get_gfw_vessel_identities(roster)
+    client = GFWClient()
+    identities = get_gfw_vessel_identities(roster, client=client)
     out = provenance.save_raw(
         identities,
         provider="gfw",
@@ -29,6 +30,7 @@ def main() -> None:
         },
         license_note="Global Fishing Watch API terms and attribution apply",
         filename="vessel_identity.csv",
+        source_payloads=client.source_payloads,
     )
     matched = identities["imo"].nunique() if len(identities) else 0
     print(f"wrote {out}")

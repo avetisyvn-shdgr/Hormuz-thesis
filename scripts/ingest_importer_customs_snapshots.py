@@ -28,6 +28,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config, provenance  # noqa: E402
+from lngfreight.sources.base import SourcePayload  # noqa: E402
 from lngfreight.sources.importer_customs import (  # noqa: E402
     GULF_BY_UNIT,
     MEASURE_BY_UNIT,
@@ -42,10 +43,27 @@ PUBLIC_SNAPSHOT = config.ROOT / "data" / "raw" / "public_snapshots_20260717"
 
 LICENSES = {
     "kr": "Korea Open Government Data (tradedata.go.kr)",
-    "tw": "Taiwan Open Government Data License (portal.sw.nat.gov.tw)",
+    "tw": (
+        "Publicly accessible Taiwan customs portal; reuse terms unverified "
+        "(portal footer states All Rights Reserved)"
+    ),
     "cn": "GACC public customs statistics (stats.customs.gov.cn)",
     "in": "Government of India open data (tradestat.commerce.gov.in)",
     "jp": "Trade Statistics of Japan / e-Stat public statistics portal",
+}
+
+COUNTRY_BY_UNIT = {
+    "kr": "korea",
+    "tw": "taiwan",
+    "cn": "china",
+    "in": "india",
+    "jp": "japan",
+}
+
+SOURCE_PAYLOAD_STATUSES = {
+    "kr": "normalized_capture_only_no_original_response_or_query_receipt",
+    "cn": "portal_exports_preserved_no_html_query_receipt_or_terms_capture",
+    "in": "parsed_capture_preserved_original_http_responses_not_retained",
 }
 
 ORIGINALS_README = """\
@@ -57,9 +75,12 @@ Method notes (what a re-capture requires):
 
 - kr: Korea Customs Service, tradedata.go.kr -> 수출입통계 > 수출입 실적,
   통계항목 품목별+국가별, HS 2711110000, 월별, queried in three <=12-month
-  windows (portal cap), rendered table scraped (100 rows/page). No original
-  file exists: the scrape IS the capture; kr rows were captured 2026-07-15
-  (June 2026 finals published that day).
+  windows (portal cap), rendered table scraped (100 rows/page). The normalized
+  scrape is the only retained capture: original HTML/HTTP response bytes, a
+  query receipt, and the contemporaneous terms page were not retained. The
+  repository therefore cannot independently prove the server response from
+  frozen bytes alone. Rows were captured 2026-07-15 (June 2026 finals published
+  that day).
 - tw: Taiwan MOF Customs, portal.sw.nat.gov.tw/APGA/GA30 綜合查詢, 進口總值,
   按月 113年1月-115年6月, 貨品號列 271111, 全部國家, 重量(公噸)+金額(美元),
   下載CSV. CAPTCHA-gated: downloaded manually by the author 2026-07-17.
@@ -68,11 +89,18 @@ Method notes (what a re-capture requires):
   manual browser session by the author 2026-07-17), monthly imports of
   HS 27111100 by trading partner, US dollar, "By month", three 1-year
   queries. Originals: cn_original_2024.csv / _2025.csv / _2026.csv
-  (Quantity in kilograms; normalized to metric tonnes).
+  (Quantity in kilograms; normalized to metric tonnes). These portal-export
+  CSVs are retained, but the surrounding HTML, query receipts/request metadata,
+  and contemporaneous terms page are not. The files alone cannot independently
+  establish the exact portal interaction or reuse terms.
 - in: India DGCI&S Tradestat meidb commodity_wise_all_countries_import,
   scripted capture via scripts/fetch_india_tradestat_lng.py (calendar-year
   basis, US $ Million; the HS-6 monthly Quantity field is unpopulated, so
-  the value series is the usable one). Original: in_original_long.csv.
+  the value series is the usable one). `in_original_long.csv` is a parsed,
+  concatenated table capture, not an original HTTP response. Response HTML,
+  headers, and the contemporaneous terms page were not retained. The historical
+  script used a browser-compatible User-Agent; future requests identify the
+  TUM research script explicitly.
 - jp: Trade Statistics of Japan / e-Stat, monthly imports of HS 271111000
   by partner country, captured 2026-07-17 from public e-Stat CSV downloads
   plus the Japan Customs country-code list. Originals:
@@ -211,8 +239,45 @@ def copy_originals(dest_dir: Path) -> None:
     (dest / "README.md").write_text(ORIGINALS_README, encoding="utf-8")
 
 
+def source_payloads(unit: str, dest_dir: Path) -> list[SourcePayload]:
+    originals = dest_dir / "originals"
+    names = {
+        "kr": [],
+        "tw": ["tw_original_big5.csv"],
+        "cn": [
+            "cn_original_2024.csv",
+            "cn_original_2025.csv",
+            "cn_original_2026.csv",
+        ],
+        "in": ["in_original_long.csv"],
+        "jp": [
+            "jp_estat_2024_raw.csv",
+            "jp_estat_2025_raw.csv",
+            "jp_estat_2026_raw.csv",
+            "jp_country_code_list.html",
+            "jp_estat_search_page1.html",
+            "jp_estat_search_page2.html",
+            "jp_original_lng271111_with_jpy.csv",
+        ],
+    }[unit]
+    roles = {
+        "cn": "portal_export_without_query_receipt",
+        "in": "parsed_table_capture_not_http_response",
+    }
+    return [
+        SourcePayload(
+            filename=name,
+            media_type="text/html" if name.endswith(".html") else "text/csv",
+            role=roles.get(unit, "original_source_payload"),
+            path=originals / name,
+        )
+        for name in names
+    ]
+
+
 def main() -> int:
     dest_dir = config.path("importer_customs_dir")
+    copy_originals(dest_dir)
     builders = {
         "kr": normalize_kr, "tw": normalize_tw,
         "cn": normalize_cn, "in": normalize_in, "jp": normalize_jp,
@@ -234,10 +299,15 @@ def main() -> int:
             },
             license_note=LICENSES[unit],
             filename=SNAPSHOT_FILES[unit],
+            source_payloads=source_payloads(unit, dest_dir),
+            source_payload_status=SOURCE_PAYLOAD_STATUSES.get(unit, "preserved"),
+            registry_variables=[
+                f"{COUNTRY_BY_UNIT[unit]}_lng_import_total",
+                f"{COUNTRY_BY_UNIT[unit]}_lng_import_gulf",
+            ],
         )
         print(f"{unit}: wrote {path} ({len(frame)} rows, "
               f"{frame['period'].min()}..{frame['period'].max()})")
-    copy_originals(dest_dir)
     # Final validation through the provider's own loader.
     for unit in builders:
         load_by_origin(unit)

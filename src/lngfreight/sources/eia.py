@@ -12,7 +12,7 @@ from __future__ import annotations
 import requests
 import pandas as pd
 
-from .base import BaseSource
+from .base import BaseSource, SourcePayload
 from .. import config
 
 _BASE = "https://api.eia.gov/v2/seriesid/{series_id}"
@@ -34,6 +34,12 @@ class EIASource(BaseSource):
         }
         resp = requests.get(url, params=params, timeout=60)
         resp.raise_for_status()
+        self._capture_source_payload(SourcePayload(
+            filename=f"{code.replace('.', '_')}.json",
+            media_type="application/json",
+            source_url=getattr(resp, "url", url),
+            content=resp.content,
+        ))
         payload = resp.json()
 
         rows = payload.get("response", {}).get("data", [])

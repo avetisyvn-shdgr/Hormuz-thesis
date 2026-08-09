@@ -162,7 +162,8 @@
     "documented_limitations": [
       "presence product is not an individual raw vessel track",
       "no observed LNG cargo quantity",
-      "no authoritative laden/ballast state"
+      "no authoritative laden/ballast state",
+      "Q-Flex roster was manually transcribed; cited Nakilat/IGU source PDFs and a row-level transcription log were not retained in the repository"
     ],
     "required_local_inputs": {
       "gfw_lng_terminals_csv": {

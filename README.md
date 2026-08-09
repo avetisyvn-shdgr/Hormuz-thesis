@@ -56,12 +56,15 @@ Full setup (PyCharm + Claude Code, macOS): `docs/SETUP_CLAUDE_PYCHARM.md`.
 | `src/lngfreight/specification.py` | Validates outcome and estimator roles |
 | `src/lngfreight/registry.py` | `get_variable()` — the single data entry point |
 | `src/lngfreight/sources/` | One module per provider, all sharing `base.BaseSource` |
-| `src/lngfreight/provenance.py` | Immutable raw pulls + SHA-256 audit log |
+| `src/lngfreight/provenance.py` | Versioned normalized/source-payload SHA-256 ledger |
 | `src/lngfreight/metrics.py` | Dependency-free forecast metrics (MAE, RMSE, MASE, sMAPE) |
 | `src/lngfreight/baselines.py` | Transparent seasonal-naive + ARX baselines over rolling-origin folds |
 | `src/lngfreight/tsfm.py` | Isolated TSFM benchmark harness (Chronos-2 / TimesFM 2.5 / Moirai 2.0 adapters, shared scorer, admission test) |
 | `src/lngfreight/ar_intervals.py` | Raw horizon-aware AR-only interval (calibration leg of the TSFM admission test) |
 | `src/lngfreight/inference.py` | Counterfactual-gap summaries + placebo-in-time inference helpers |
+| `src/lngfreight/bloomberg_market.py` | Provenance-limited weekly freight and daily context panels |
+| `src/lngfreight/freight_counterfactual.py` | Pre-treatment-only validation and supplementary freight forecast deviations |
+| `src/lngfreight/freight_integration.py` | Synchronized physical, monetary, and context evidence layers |
 | `scripts/fetch_baseline.py` | Phase-1 smoke test on free data |
 | `scripts/run_baseline.py` | Phase-4 first benchmarks: free-data forecast scores |
 | `scripts/run_tsfm_benchmark.py` | Unified foundation-model benchmark runner (`--model all\|chronos2\|timesfm\|moirai\|stub`); isolated, excluded from `run_all.py` |
@@ -83,11 +86,42 @@ Full setup (PyCharm + Claude Code, macOS): `docs/SETUP_CLAUDE_PYCHARM.md`.
 | `CLAUDE.md` | Anti-hallucination rules for AI assistance |
 
 `scripts/run_all.py` regenerates the PortWatch and open-data LNG mechanism
-outputs, runs the full test suite, and compares 117 artifact hashes with the
-committed manifest through a temporary candidate manifest. It fails on output
-drift and never refreshes the reference manifest during verification. Isolated
-TSFM weights, Spark credential probes, and manually assembled presentation files
-remain outside this guarantee and carry separate provenance.
+outputs, runs the full test suite, and compares every allowlisted artifact with
+the committed manifest through a temporary candidate manifest. It fails on
+output drift and never refreshes the reference manifest during verification. It
+also retains the full console record at
+`reports/reproducibility_run_transcript.txt`.
+
+The active report consumes an admitted Chronos-2 counterfactual, so that
+matched-horizon output and its deterministic, host-bound TSFM provenance
+manifest are included in the main artifact guarantee. The broader three-model
+admission benchmark remains outside `run_all.py`; its stable output identities,
+exact environments, and model revisions are pinned inside
+`data/processed/tsfm_run_manifest.json`, with wall-clock runtime columns excluded
+from frozen identity. Spark credential probes and manually assembled
+presentation files remain outside the guarantee.
+
+### Optional provenance-limited Bloomberg layer
+
+The user-supplied Fearnleys, TTF, and VLSFO workbooks are implemented as an
+explicit opt-in branch. They remain dormant secondary/context series because
+the repository lacks original terminal exports, exact identifiers, methodology
+history, and verified reuse rights. The default free-data pipeline does not
+need these files.
+
+To include the branch in an authorized local rerun, set
+`ENABLE_BLOOMBERG_LAYER=1` and point `BLOOMBERG_EXPORT_DIR` at the workbook
+directory before running `scripts/run_all.py`. The branch performs source audit,
+registry ingestion, weekly QA, descriptives, pre-treatment-selected forecasts,
+TTF/VLSFO context, evidence integration, and freeze verification.
+
+Derived artifacts that embed the verbatim licensed assessment histories
+(`lng_freight_weekly_panel.csv`, `lng_freight_descriptive_weekly.csv`,
+`freight_market_context.csv`) are gitignored local-only outputs until
+redistribution rights are confirmed; `tests/test_bloomberg_quarantine.py`
+guards this boundary. See
+`docs/BLOOMBERG_MARKET_LAYER_IMPLEMENTATION_PLAN.md` for claim boundaries and
+generated artifacts.
 
 ## Phase roadmap (do NOT skip ahead)
 

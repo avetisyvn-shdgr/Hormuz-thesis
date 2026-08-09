@@ -18,8 +18,10 @@ from lngfreight.tsfm import (
     MODEL_REGISTRY,
     QuantileForecast,
     StubAdapter,
+    TSFMAdapter,
     admission_test,
     aggregate_benchmark,
+    configure_deterministic_execution,
     counterfactual_shortfall,
     run_benchmark,
 )
@@ -62,6 +64,14 @@ def test_registry_lists_three_foundation_models_plus_stub():
     assert set(MODEL_REGISTRY) == {"stub", *FOUNDATION_MODELS}
 
 
+def test_deterministic_configuration_reseeds_numpy():
+    configure_deterministic_execution(123)
+    first = np.random.random(4)
+    configure_deterministic_execution(123)
+    second = np.random.random(4)
+    np.testing.assert_array_equal(first, second)
+
+
 def test_stub_adapter_honors_requested_levels_and_horizon():
     adapter = StubAdapter(season_length=7)
     train = pd.Series(np.arange(30.0))
@@ -69,6 +79,37 @@ def test_stub_adapter_honors_requested_levels_and_horizon():
     assert len(fc.point) == 7
     assert fc.level_lower == 0.025 and fc.level_upper == 0.975
     assert np.all(fc.lower <= fc.point) and np.all(fc.point <= fc.upper)
+
+
+def test_adapter_preserves_calendar_steps_with_past_only_fill():
+    class CapturingAdapter(TSFMAdapter):
+        name = "capture"
+
+        def _predict(self, context, horizon, lower_q, upper_q):
+            self.context = context.copy()
+            point = np.zeros(horizon)
+            return QuantileForecast(point, point, point, lower_q, upper_q)
+
+    adapter = CapturingAdapter()
+    index = pd.to_datetime(["2024-01-01", "2024-01-03", "2024-01-04"])
+    train = pd.Series([1.0, np.nan, 4.0], index=index)
+    adapter.predict(train, horizon=2)
+
+    expected_index = pd.date_range("2024-01-01", "2024-01-04", freq="D")
+    pd.testing.assert_index_equal(adapter.context.index, expected_index)
+    assert adapter.context.tolist() == [1.0, 1.0, 1.0, 4.0]
+
+
+def test_adapter_rejects_leading_or_noncalendar_missing_context():
+    adapter = StubAdapter(season_length=7)
+    dated = pd.Series(
+        [np.nan, 2.0],
+        index=pd.date_range("2024-01-01", periods=2, freq="D"),
+    )
+    with pytest.raises(ValueError, match="leading missing"):
+        adapter.predict(dated, horizon=1)
+    with pytest.raises(ValueError, match="Non-datetime"):
+        adapter.predict(pd.Series([1.0, np.nan, 3.0]), horizon=1)
 
 
 def test_run_benchmark_emits_expected_columns_and_rows():
@@ -79,8 +120,9 @@ def test_run_benchmark_emits_expected_columns_and_rows():
     assert len(scores) == 2
     assert len(forecasts) == 14
     for col in ["mase", "rmse", "empirical_coverage", "nominal_coverage",
-                "coverage_error", "interval_width", "runtime_s"]:
+                "coverage_error", "interval_width"]:
         assert col in scores.columns
+    assert "runtime_s" not in scores.columns
     assert np.allclose(scores["nominal_coverage"], 0.95)
     assert scores["empirical_coverage"].between(0, 1).all()
     # coverage_error is empirical minus nominal, by construction.

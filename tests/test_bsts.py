@@ -52,3 +52,27 @@ def test_bsts_rejects_invalid_variance_prior_scales():
             y, future, n_draws=5, burn=2,
             observation_prior_scale_multiplier=0,
         )
+
+
+def test_bsts_rejects_missing_days_and_values_without_compressing_time():
+    index = pd.date_range("2024-01-01", periods=60, freq="D")
+    y = pd.Series(np.arange(60.0), index=index)
+    future = pd.date_range(index[-1] + pd.Timedelta(days=1), periods=7, freq="D")
+
+    with pytest.raises(ValueError, match="complete daily calendar"):
+        fit_bsts_forecast(
+            y.drop(index[index.size // 2]),
+            future,
+            n_draws=5,
+            burn=2,
+        )
+
+    missing_value = y.copy()
+    missing_value.iloc[index.size // 2] = np.nan
+    with pytest.raises(ValueError, match="finite on every calendar day"):
+        fit_bsts_forecast(
+            missing_value,
+            future,
+            n_draws=5,
+            burn=2,
+        )

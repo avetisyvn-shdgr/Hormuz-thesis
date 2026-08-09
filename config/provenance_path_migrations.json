@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "renames": [
+    {
+      "old_file": "data/raw/portwatch/ais_laden_tonmiles_usgc__chokepoint_panama_canal_capacity_tanker.csv",
+      "new_file": "data/raw/portwatch/quarantined_panama_tanker_capacity_duplicate__chokepoint_panama_canal_capacity_tanker.csv",
+      "sha256": "2841006ec4790db022616d86f22c49d47f5edb6881e9833e23aecb5934e1e485",
+      "reason": "The bytes are a duplicate of the Panama tanker-capacity snapshot, not AIS-derived laden ton-miles. The truthful filename is quarantined from every active input scope."
+    }
+  ]
+}

@@ -1,10 +1,10 @@
 # Network rewiring results summary
 
 This report is generated from the staged network-rewiring artifacts. It supports
-the descriptive mechanism claim that the 2026 Hormuz LNG disruption was absorbed
-through observable origin-portfolio rewiring and scenario-conditional adaptation
-costs. It does not report an ATT, a freight-rate effect, or observed cargo-level
-replacement.
+the descriptive claim that origin portfolios changed around the 2026 Hormuz LNG
+disruption and records the current reallocation model's data constraint. It does
+not show that the disruption was absorbed, and it does not report an ATT, a
+freight-rate effect, or observed cargo-level replacement.
 
 ## Figures
 
@@ -68,10 +68,9 @@ Source artifact(s): `data/processed/lng_network_anomaly_summary.csv`.
 
 ## Reallocation stress scenarios
 
-| Scenario | Demand k m3 | Allocated k m3 | Unmet share % | Mean route nm | Mean additional nm | Coverage |
-|---|---|---|---|---|---|---|
-| incremental_non_gulf_growth_only | 21,425 | 8,045 | 62.5 | 4,089 | +331 | observed_route_transport_solution; unmet_replacement_capacity |
-| post_non_gulf_pool | 21,425 | 21,425 | 0.0 | 676 | -2,858 | observed_route_transport_solution; unroutable_observed_supply_excluded; lower_bound_short_route_pool |
+| Scenario | Demand k m3 | Gross observed post k m3 | Committed post k m3 | Residual supply k m3 | Allocated residual k m3 | Unmet share % | Mean route nm | Mean additional nm | Coverage |
+|---|---|---|---|---|---|---|---|---|---|
+| observed_post_residual_after_commitments | 21,425 | 123,360 | 123,360 | 0 | 0 | 100.0 | NA | NA | residual_capacity_transport_solution; no_uncommitted_observed_supply; observed_post_voyages_reserved_for_recorded_destinations; unmet_replacement_capacity; no_usable_residual_route_cost_edges |
 
 ## Interpretation guardrails
 
@@ -93,10 +92,12 @@ Source artifact(s): `data/processed/lng_network_anomaly_summary.csv`.
   current artifact flags all six units at the empirical percentile ceiling, but
   this is floor-censored by the 12-month pre-calibration support and remains
   outside the primary causal inference family.
-- The reallocation model is a transparent stress test over observed route
-  costs. The `post_non_gulf_pool` case is a lower-bound routing exercise, not an
-  observed replacement-cargo reconstruction; when flagged as a short-route pool,
-  its negative additional-distance result should be read as a loose lower bound.
+- The reallocation model reserves every completed post-period non-Gulf voyage
+  for its recorded destination before calculating spare supply. The voyage
+  input therefore provides no observed uncommitted capacity, so the residual
+  scenario is fully unmet. This is a data-availability result, not evidence that
+  global LNG replacement was physically impossible. A positive spare-supply
+  scenario requires independently sourced terminal headroom.
 - Cross-unit tables mix native measurement bases: China, Japan, Korea, and
   Taiwan are tonnes; EU27 is MIO_M3; India is kUSD. Compare within-unit
   movements first, and treat India as value-basis evidence.

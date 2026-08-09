@@ -10,6 +10,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config  # noqa: E402
+from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
 from lngfreight.voyages import candidate_voyage_endpoints, endpoint_summary  # noqa: E402
 
 
@@ -33,10 +34,20 @@ def main() -> None:
     settings = config.settings()
     paths = settings["paths"]
     policy = settings["vessel_data_feasibility"]
-    visits = pd.read_csv(config.ROOT / paths["global_gfw_port_visits_csv"])
-    identities = pd.read_csv(
-        config.ROOT / paths["global_gfw_vessel_identity_csv"], dtype={"imo": str}
+    visits_artifact = get_variable(
+        "global_gfw_port_visits_snapshot",
+        query={"consumer": "run_global_voyage_feasibility"},
     )
+    identities_artifact = get_variable(
+        "global_gfw_identity_snapshot",
+        query={"consumer": "run_global_voyage_feasibility"},
+    )
+    if not isinstance(visits_artifact, RegisteredArtifact) or not isinstance(
+        identities_artifact, RegisteredArtifact
+    ):
+        raise TypeError("global voyage inputs must resolve as artifacts")
+    visits = visits_artifact.read_csv()
+    identities = identities_artifact.read_csv(dtype={"imo": str})
     audit = pd.read_csv(config.ROOT / paths["global_terminal_matching_audit_csv"])
 
     threshold = float(policy["min_terminal_endpoint_rate"])

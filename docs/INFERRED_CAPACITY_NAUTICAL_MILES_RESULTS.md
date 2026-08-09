@@ -66,5 +66,5 @@ shows a drop in observed completed voyages. These findings cannot distinguish
 physical reallocation from changes in sample composition, terminal matching,
 AIS coverage, censoring, partial cargoes, or actual laden state.
 
-Aggregate Gulf-origin validation against the independent WTO/AXSMarine LNG
+Aggregate Gulf-origin validation against the distinct WTO/AXSMarine LNG
 outbound index is complete; see `GULF_DEPARTURE_WTO_VALIDATION_RESULTS.md`.

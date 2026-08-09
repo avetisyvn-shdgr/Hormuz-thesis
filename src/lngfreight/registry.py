@@ -3,9 +3,15 @@
 Resolves a logical thesis variable (e.g. "henry_hub_spot") through the
 registry to whichever provider currently supplies it, fetches it, logs
 provenance, and returns the tidy (date, value) frame. Under the fallback
-branch it transparently uses the `proxy` entry when `status` is not free/primary.
+branch it transparently uses the `proxy` entry when appropriate. Restricted
+local series remain explicit opt-ins and never enter the default free panel.
 """
 from __future__ import annotations
+
+from dataclasses import dataclass
+import hashlib
+import json
+from pathlib import Path
 
 import pandas as pd
 
@@ -15,11 +21,102 @@ from .sources.gfw import GFWClient, exact_imo_vessel_ids, normalize_port_visits
 from . import provenance
 
 
+@dataclass(frozen=True)
+class RegisteredArtifact:
+    """A checksum-verified external artifact admitted through the registry."""
+
+    variable: str
+    path: Path
+    sha256: str
+    media_type: str
+    source_status: str
+
+    def read_csv(self, **kwargs) -> pd.DataFrame:
+        return pd.read_csv(self.path, **kwargs)
+
+    def read_json(self, **kwargs):
+        if kwargs:
+            return pd.read_json(self.path, **kwargs)
+        return json.loads(self.path.read_text(encoding="utf-8"))
+
+    def read_bytes(self) -> bytes:
+        return self.path.read_bytes()
+
+
+def _frozen_hashes() -> dict[str, str]:
+    hashes: dict[str, str] = {}
+    for relative in ("data/raw/SHA256SUMS", "data/raw/SHA256SUMS.vessel"):
+        path = config.ROOT / relative
+        if not path.exists():
+            continue
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                digest, filename = line.split(maxsplit=1)
+                hashes[filename] = digest
+    manifest_path = config.ROOT / "data/processed/reproducibility_manifest.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        hashes.update(manifest.get("interim_input_sha256", {}))
+    return hashes
+
+
+def _get_registered_artifact(
+    name: str,
+    spec: dict,
+    *,
+    query: dict | None,
+) -> RegisteredArtifact:
+    backend, channel = _resolve_entry(spec)
+    if backend.get("provider") != "frozen_artifact":
+        raise ValueError(
+            f"Artifact variable {name!r} must use provider='frozen_artifact'."
+        )
+    relative = backend["path"]
+    path = (config.ROOT / relative).resolve()
+    if not path.is_file():
+        raise FileNotFoundError(f"registered artifact missing: {relative}")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    expected = _frozen_hashes().get(relative)
+    if expected is None:
+        raise ValueError(
+            f"registered artifact is not in a frozen input scope: {relative}"
+        )
+    if digest != expected:
+        raise ValueError(
+            f"registered artifact hash mismatch for {relative}: "
+            f"expected {expected}, got {digest}"
+        )
+    source_status = backend.get(
+        "source_status", "artifact_is_preserved_source_payload"
+    )
+    provenance.register_existing_artifact(
+        path,
+        provider="frozen_artifact",
+        variable=name,
+        code=relative,
+        query={
+            "access_mode": "frozen_analysis_input",
+            "channel": channel,
+            **(query or {}),
+        },
+        license_note=backend.get("license", "unspecified"),
+        registry_variables=[name],
+        source_payload_status=source_status,
+    )
+    return RegisteredArtifact(
+        variable=name,
+        path=path,
+        sha256=digest,
+        media_type=backend.get("media_type", "application/octet-stream"),
+        source_status=source_status,
+    )
+
+
 def _resolve_entry(spec: dict) -> tuple[dict, str]:
     """Pick which backend to use given the variable's status. Returns
     (backend_dict, channel) where channel is 'primary' or 'proxy'."""
     status = spec.get("status")
-    if status in ("free", "primary"):
+    if status in ("free", "primary", "restricted"):
         return spec["primary"], "primary"
     # proxy / unavailable -> use proxy if one exists
     if "proxy" in spec:
@@ -30,11 +127,23 @@ def _resolve_entry(spec: dict) -> tuple[dict, str]:
     )
 
 
-def get_variable(name: str, start: str | None = None, end: str | None = None) -> pd.DataFrame:
+def get_variable(
+    name: str,
+    start: str | None = None,
+    end: str | None = None,
+    *,
+    query: dict | None = None,
+) -> pd.DataFrame | RegisteredArtifact:
     reg = config.registry()
     if name not in reg:
         raise KeyError(f"Unknown variable {name!r}. Defined variables: {list(reg)}")
     spec = reg[name]
+    if spec.get("kind") == "artifact":
+        if start is not None or end is not None:
+            raise ValueError(
+                f"Artifact variable {name!r} does not accept start/end bounds."
+            )
+        return _get_registered_artifact(name, spec, query=query)
 
     win = config.settings()["study_window"]
     start = start or win["full_start"]
@@ -51,6 +160,8 @@ def get_variable(name: str, start: str | None = None, end: str | None = None) ->
         code=backend["code"],
         query={"start": start, "end": end, "channel": channel, "role": spec["role"]},
         license_note=backend.get("license", "unspecified"),
+        source_payload=provider.source_payload,
+        registry_variables=[name],
     )
     return df
 

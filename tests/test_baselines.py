@@ -79,6 +79,21 @@ def test_datetime_index_required():
         evaluate_seasonal_naive(panel, "target")
 
 
+def test_positional_fold_consumers_reject_unsorted_panels():
+    panel = _panel()
+    folds = rolling_origin_splits(panel.index, _settings())
+    unsorted = panel.sample(frac=1, random_state=7)
+
+    with pytest.raises(ValueError, match="chronologically sorted"):
+        seasonal_naive_forecast(unsorted["target"], folds[0])
+    with pytest.raises(ValueError, match="chronologically sorted"):
+        evaluate_seasonal_naive(unsorted, "target", folds=folds)
+    with pytest.raises(ValueError, match="chronologically sorted"):
+        arx_forecast(unsorted, "target", folds[0], exog_cols=["exog"])
+    with pytest.raises(ValueError, match="chronologically sorted"):
+        evaluate_arx(unsorted, "target", exog_cols=["exog"], folds=folds)
+
+
 def test_arx_forecast_does_not_use_held_out_target_values():
     panel = _panel()
     fold = rolling_origin_splits(panel.index, _settings())[0]

@@ -6,6 +6,7 @@ from typing import Any
 import requests
 
 from .. import config
+from .base import SourcePayload
 
 
 BASE_URL = "https://gateway.api.globalfishingwatch.org/v3"
@@ -20,6 +21,7 @@ class GFWClient:
     def __init__(self, token: str | None = None, session: Any | None = None):
         self.token = token or config.api_key("GFW_API_TOKEN")
         self.session = session or requests
+        self.source_payloads: list[SourcePayload] = []
 
     def _get(self, path: str, params: dict) -> dict:
         response = self.session.get(
@@ -29,7 +31,18 @@ class GFWClient:
             timeout=60,
         )
         response.raise_for_status()
-        return response.json()
+        payload = response.json()
+        content = getattr(response, "content", None)
+        if content is not None:
+            sequence = len(self.source_payloads) + 1
+            slug = path.strip("/").replace("/", "_") or "response"
+            self.source_payloads.append(SourcePayload(
+                filename=f"{slug}_{sequence:04d}.json",
+                media_type="application/json",
+                source_url=BASE_URL + path,
+                content=content,
+            ))
+        return payload
 
     def search_imo(self, imo: str) -> list[dict]:
         """Return raw identity candidates; downstream code enforces exact IMO."""

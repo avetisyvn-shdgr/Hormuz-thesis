@@ -49,19 +49,28 @@
       "status": "captured"
     }
   },
+  "benchmark_output_hash_policy": "raw SHA-256 except benchmark CSV runtime_s* columns, which are excluded as nondeterministic wall-clock diagnostics",
   "benchmark_output_sha256": {
     "data/processed/tsfm_admission_test.csv": "51784d4547050456717204bac5a651e983c0414708db0e6ff53e837e457402a2",
     "data/processed/tsfm_benchmark_forecasts.csv": "e71b9a83805af9e03a19196d1cc8ad9346f7e6acff5d702a9cbd4b40e4196eb0",
-    "data/processed/tsfm_benchmark_scores.csv": "46d82491e86e243059f8cc33814c01fcfcbca0be912c5e09a1d7141935e22bf4",
-    "data/processed/tsfm_benchmark_summary.csv": "e1f82c20e3e0e19b22c7401676513b6368bbb60f8d5bb6781388cb6456010964",
+    "data/processed/tsfm_benchmark_scores.csv": "0462fbe993bca096b1508637c19a95a528cffac2f177dcf3bff9d13e72032c09",
+    "data/processed/tsfm_benchmark_summary.csv": "ad7ff232073506672e8411d2bafc6dcf88a36d2764676fa0da91a06c5f0f9546",
     "data/processed/tsfm_counterfactual_daily.csv": "05e6c119fcc09e97ff0e4cb3af7afd14f69540ec6f28b3e81a18b22d3fa4d490",
     "data/processed/tsfm_counterfactual_summary.csv": "990c877762781c470615149408440eec8b5cf557b30b29393cc1988ec04f90f9"
   },
   "capture_host_platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
-  "captured_at": "2026-07-23T18:34:19+00:00",
+  "determinism_policy": {
+    "numpy_seeded": true,
+    "python_random_seeded": true,
+    "seed": 20260612,
+    "torch_deterministic_algorithms": true,
+    "torch_seeded": true,
+    "wall_clock_runtime_columns_excluded_from_output_hashes": true
+  },
   "device": "cpu",
+  "manifest_schema": 2,
   "model_revisions": {
-    "hf_hub": "/Users/mheravetisyan/.cache/huggingface/hub",
+    "cache_scope": "default_huggingface_hub_cache",
     "snapshots": {
       "models--Salesforce--moirai-2.0-R-small": [
         "30f43ff08c8494f4943ae1521e9d4e94a0fbb389"
@@ -75,5 +84,5 @@
     },
     "status": "captured"
   },
-  "note": "Provenance of the isolated TSFM benchmark run. NOT part of the frozen PortWatch run_all.py pipeline. Re-run on the machine that produced the cited numbers; verify these versions/revisions match docs/MODERN_TSFM_BENCHMARK.md before citing any TSFM result. Foundation models are an ADMITTED benchmark cross-check only, never the locked AR-only primary (CLAUDE.md rule 2)."
+  "note": "Host-bound provenance for the isolated TSFM admission benchmark and the run_all-regenerated admitted Chronos-2 counterfactual. Re-run on the machine that produced the cited numbers; verify these versions/revisions match docs/MODERN_TSFM_BENCHMARK.md before citing any TSFM result. Foundation models are a robustness cross-check only, never the locked AR-only primary (CLAUDE.md rule 2)."
 }

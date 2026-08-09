@@ -38,8 +38,8 @@ in `VESSEL_DATA_FEASIBILITY.md` and
 For each, record: *can TUM provide it? at what granularity? for which date range? export-allowed?*
 - [ ] **Spark25S / Spark30S** daily spot assessments (the dependent variable) — via TUM Bloomberg or a Spark academic licence
 - [ ] **Baltic** LNG benchmarks (supervisor mentioned) — confirm availability
-- [ ] **Platts JKM** assessment (vs the EEX-futures proxy)
-- [ ] **TTF** physical assessment (vs the ICE-futures proxy)
+- [ ] **Platts JKM** assessment (EEX futures remain an unverified acquisition candidate, not an active proxy)
+- [ ] **TTF** physical assessment (ICE futures remain an unverified acquisition candidate, not an active proxy)
 - [ ] **Lloyd's List** war-risk listed-area premia (needed for the H2 rival-hypothesis equivalence test)
 - [ ] **AIS / vessel positioning** with laden-vs-ballast resolution (Kpler / Spire / MarineTraffic) — needed for the H3 primary ton-mile proxy
 

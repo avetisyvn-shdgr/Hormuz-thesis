@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "first_post_week": "2026-03-06",
+  "calendar": "Friday week-ending means; no cross-layer imputation",
+  "layers": [
+    "physical_primary",
+    "commodity_physical",
+    "monetary_secondary",
+    "market_context"
+  ],
+  "claim_boundary": "Synchronized triangulation only. Correlated movements do not identify a mediated causal chain or a freight-rate ATT."
+}

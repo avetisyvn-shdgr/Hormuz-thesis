@@ -28,3 +28,19 @@ venv/
 .DS_Store
 .idea/
 data/raw_staging/
+
+# Provenance-limited Bloomberg transcription layer: these derived artifacts
+# embed the verbatim licensed assessment histories (Fearnleys weekly rates,
+# TTF/VLSFO daily prices). Rights fields in config/bloomberg_exports.yaml are
+# all unverified, so full-history values stay local-only until Bloomberg /
+# Fearnleys / ClearLynx terms are confirmed. Regenerate locally via the
+# ENABLE_BLOOMBERG_LAYER=1 branch of scripts/run_all.py. Aggregate-only and
+# post-period derived artifacts remain version-controlled.
+# Guarded by tests/test_bloomberg_quarantine.py — update both together.
+data/processed/lng_freight_weekly_panel.csv
+data/processed/lng_freight_descriptive_weekly.csv
+data/processed/freight_market_context.csv
+# Workbook-inspection scratch (contains Raw Data sheet screenshots) and
+# unrelated Cowork session outputs.
+.work/
+outputs/

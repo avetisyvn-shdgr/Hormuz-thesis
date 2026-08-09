@@ -41,7 +41,8 @@ def test_cascade_has_five_ordered_links():
     df = _cascade()
     assert list(df["step"]) == [1, 2, 3, 4, 5]
     assert len(df) == 5
-    assert {"layer", "independent_source", "percent_change", "interpretation_boundary"} <= set(df.columns)
+    assert {"layer", "source", "percent_change", "interpretation_boundary"} <= set(df.columns)
+    assert "independent_source" not in df.columns
 
 
 def test_cascade_directions_match_the_argument():
@@ -56,8 +57,18 @@ def test_cascade_directions_match_the_argument():
 def test_every_link_states_an_interpretation_boundary():
     df = _cascade()
     assert df["interpretation_boundary"].str.len().gt(0).all()
-    # The strongest claim (layer 2) must name the second, independent source.
+    # The strongest cross-check (layer 2) must name the distinct WTO series.
     assert "WTO" in df.loc[df["step"].eq(2), "corroboration"].iloc[0]
+    joined = " ".join(df.fillna("").astype(str).to_numpy().ravel()).lower()
+    assert "independent" not in joined
+
+
+def test_corridor_link_does_not_claim_traced_substitution():
+    df = _cascade().set_index("step")
+    assert df.loc[5, "layer"] == "Alternative-corridor co-movement"
+    boundary = df.loc[5, "interpretation_boundary"]
+    assert "compatible with substitution" in boundary
+    assert "no voyage-level flow tracing" in boundary
 
 
 def test_hormuz_link_declares_mechanism_window_not_primary_headline():

@@ -6,13 +6,15 @@
 # happens to supply it today.
 #
 # When TUM Bloomberg / Spark access arrives you change ONLY this file:
-# flip `status: proxy` -> `status: primary`, point `provider`/`code` at
+# flip the relevant `status` to `primary`, point `provider`/`code` at
 # the proprietary feed, and the pipeline keeps running unchanged.
 #
 # status values:
 #   primary     - the assessment the proposal actually wants (proprietary)
 #   proxy       - a free, imperfect stand-in used under the fallback branch
 #   free        - a free series that IS the real thing (no proprietary gap)
+#   restricted  - opt-in local data with explicit provenance/licence limits;
+#                 never included in the default free-data panel
 #   unavailable - no free option exists yet; slot reserved for later access
 #
 # role values (maps to the proposal's panel):
@@ -60,6 +62,36 @@ variables:
       code: "Spark25S-FUT-M1"
       note: "UNVERIFIED ACCESS. Same caveat as Spark30S: futures != spot AND no confirmed free EOD feed."
 
+  # Provenance-limited Fearnleys histories transcribed from Bloomberg displays.
+  # These are useful secondary market evidence, not Spark substitutes and not
+  # primary causal outcomes. They require BLOOMBERG_EXPORT_DIR explicitly.
+  fearnleys_lng_spot_east_suez:
+    role: secondary_freight_outcome
+    description: "Fearnleys East-of-Suez LNG tanker 155-165k cbm spot assessment, USD/day, weekly."
+    status: restricted
+    primary:
+      provider: bloomberg_transcription
+      code: "fearnleys_lng_spot_east_suez"
+      license: "Bloomberg/Fearnleys rights unverified; local provenance-limited secondary use only; raw redistribution prohibited pending confirmation."
+
+  fearnleys_lng_spot_west_suez:
+    role: secondary_freight_outcome
+    description: "Fearnleys West-of-Suez LNG tanker 155-165k cbm spot assessment, USD/day, weekly."
+    status: restricted
+    primary:
+      provider: bloomberg_transcription
+      code: "fearnleys_lng_spot_west_suez"
+      license: "Bloomberg/Fearnleys rights unverified; local provenance-limited secondary use only; raw redistribution prohibited pending confirmation."
+
+  fearnleys_lng_one_year_time_charter:
+    role: secondary_freight_outcome
+    description: "Fearnleys one-year LNG tanker 155-165k cbm time-charter assessment, USD/day, weekly."
+    status: restricted
+    primary:
+      provider: bloomberg_transcription
+      code: "fearnleys_lng_one_year_time_charter"
+      license: "Bloomberg/Fearnleys rights unverified; local provenance-limited secondary use only; raw redistribution prohibited pending confirmation."
+
   # ---- ENERGY confounders ----
   henry_hub_spot:
     role: energy
@@ -86,30 +118,35 @@ variables:
       code: "DCOILBRENTEU"
 
   ttf_gas:
-    role: energy
-    description: "Dutch TTF natural gas, European benchmark."
-    status: proxy
+    role: market_context
+    description: "Netherlands TTF natural-gas forward day-ahead assessment, EUR/MWh; provenance-limited context only."
+    status: restricted
     primary:
-      provider: bloomberg
-      code: "TTF-SPOT"
-      license: "Bloomberg / ICE Endex assessment"
-    proxy:
-      provider: ice_settlement
-      code: "TFM-M1"            # TTF front-month future settlement
-      note: "Front-month future, not the physical spot assessment."
+      provider: bloomberg_transcription
+      code: "netherlands_ttf_day_ahead"
+      license: "Bloomberg rights unverified; local provenance-limited market-context use only; raw redistribution prohibited pending confirmation."
+
+  vlsfo_singapore:
+    role: market_context
+    description: "ClearLynx Singapore VLSFO bunker-fuel spot assessment, USD/metric tonne; provenance-limited context only."
+    status: restricted
+    primary:
+      provider: bloomberg_transcription
+      code: "clearlynx_vlsfo_singapore"
+      license: "Bloomberg/ClearLynx rights unverified; local provenance-limited market-context use only; raw redistribution prohibited pending confirmation."
 
   jkm_lng:
     role: energy
     description: "Platts JKM (Japan-Korea Marker) LNG price."
-    status: proxy
+    status: unavailable
     primary:
       provider: platts
       code: "JKM"
       license: "S&P Global Platts assessment (proprietary)"
     proxy:
       provider: eex_settlement
-      code: "JKM-FUT-M1"        # EEX Platts JKM future settlement (delayed/free subset)
-      note: "Delayed futures settlement. Not the daily assessment. Basis + timing risk."
+      code: "JKM-FUT-M1"
+      note: "Acquisition candidate only: no verified accessible historical feed and no provider implementation. A futures settlement is not the daily assessment and carries basis/timing risk."
 
   # ---- ROUTE / chokepoint capacity ----
   # Column choice decided 2026-06-12 (documented methodological decision):
@@ -197,7 +234,7 @@ variables:
     primary:
       provider: importer_customs
       code: "tw:total"
-      license: "Taiwan Open Government Data License (portal.sw.nat.gov.tw)"
+      license: "Publicly accessible Taiwan customs portal; reuse terms unverified (portal footer states All Rights Reserved)"
 
   taiwan_lng_import_gulf:
     role: importer
@@ -206,7 +243,7 @@ variables:
     primary:
       provider: importer_customs
       code: "tw:gulf"
-      license: "Taiwan Open Government Data License (portal.sw.nat.gov.tw)"
+      license: "Publicly accessible Taiwan customs portal; reuse terms unverified (portal footer states All Rights Reserved)"
 
   china_lng_import_total:
     role: importer
@@ -264,6 +301,308 @@ variables:
       provider: importer_customs
       code: "jp:gulf"
       license: "Trade Statistics of Japan / e-Stat public statistics portal"
+
+  # ---- FROZEN EXTERNAL ARTIFACTS USED BY ANALYSIS ----
+  # These non-series inputs still enter through registry.get_variable(). The
+  # frozen_artifact branch verifies their declared input-scope SHA-256 before a
+  # consumer may read CSV/JSON/GeoJSON/workbook bytes.
+  portwatch_chokepoints_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Full pinned IMF PortWatch daily chokepoint snapshot."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/portwatch/Daily_Chokepoints_Data.csv"
+      media_type: "text/csv"
+      license: "IMF PortWatch public data"
+
+  wto_hormuz_lng_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Full pinned WTO/AXSMarine Hormuz LNG-index snapshot."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/wto_hormuz/voy_intake_index_lng_export.csv"
+      media_type: "text/csv"
+      license: "WTO public tracker; underlying voyage intelligence by AXSMarine"
+
+  qflex_vessel_benchmark_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Manually assembled 31-vessel Q-Flex feasibility roster."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/gfw/lng_vessel_benchmark.csv"
+      media_type: "text/csv"
+      license: "Row-level source URLs retained; source-document rights vary"
+      source_status: "manual_snapshot_source_documents_not_retained"
+
+  qflex_gfw_identity_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen GFW identity matches for the Q-Flex roster."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/gfw/vessel_identity.csv"
+      media_type: "text/csv"
+      license: "Global Fishing Watch API terms"
+      source_status: "normalized_api_snapshot_historical_response_not_retained"
+
+  qflex_gfw_port_visits_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen GFW port visits for the Q-Flex roster."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/gfw/port_visits.csv"
+      media_type: "text/csv"
+      license: "Global Fishing Watch API terms"
+      source_status: "normalized_api_snapshot_historical_response_not_retained"
+
+  global_gfw_identity_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen GFW identity matches for the global LNG carrier frame."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/gfw/global_vessel_identity.csv"
+      media_type: "text/csv"
+      license: "Global Fishing Watch API terms"
+      source_status: "normalized_api_snapshot_historical_response_not_retained"
+
+  global_gfw_port_visits_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen GFW port visits for the global LNG carrier frame."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/gfw/global_port_visits.csv"
+      media_type: "text/csv"
+      license: "Global Fishing Watch API terms"
+      source_status: "normalized_api_snapshot_historical_response_not_retained"
+
+  gem_lng_terminals_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen GEM Global Gas Infrastructure Tracker LNG terminals."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/gem/GEM-GGIT-LNG-Terminals-2025-09.geojson"
+      media_type: "application/geo+json"
+      license: "Global Energy Monitor GGIT, CC BY 4.0"
+
+  qflex_lng_terminal_crosswalk_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Derived Q-Flex GFW-to-GEM LNG terminal crosswalk."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/gem/lng_terminals.csv"
+      media_type: "text/csv"
+      license: "Derived from Global Energy Monitor GGIT, CC BY 4.0"
+      source_status: "normalized_analysis_snapshot_with_upstream_source_link"
+
+  global_lng_terminal_crosswalk_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Derived global GFW-to-GEM LNG terminal crosswalk."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/gem/global_lng_terminals.csv"
+      media_type: "text/csv"
+      license: "Derived from Global Energy Monitor GGIT, CC BY 4.0"
+      source_status: "normalized_analysis_snapshot_with_upstream_source_link"
+
+  gem_lng_carrier_source_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen preprocessed GEM LNG carrier tracker input."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/interim/gem_lng_carriers.json"
+      media_type: "application/json"
+      license: "Global Energy Monitor LNG Carrier Tracker"
+      source_status: "normalized_source_snapshot_with_workbook_preserved"
+
+  eurostat_lng_eu27_by_partner_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen Eurostat EU27 LNG imports by partner JSON-stat payload."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/public_snapshots_20260717/eurostat/eurostat_nrg_ti_gasm_lng_eu27_by_partner_20260717.json"
+      media_type: "application/json"
+      license: "Eurostat reuse policy"
+
+  korea_lng_by_origin_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen Korea customs LNG imports by origin."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/importer_customs/kr_lng_imports_by_origin.csv"
+      media_type: "text/csv"
+      license: "Korea Open Government Data (tradedata.go.kr)"
+      source_status: "normalized_capture_only_no_original_response_or_query_receipt"
+
+  taiwan_lng_by_origin_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen Taiwan customs LNG imports by origin."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/importer_customs/tw_lng_imports_by_origin.csv"
+      media_type: "text/csv"
+      license: "Publicly accessible Taiwan customs portal; reuse terms unverified"
+
+  china_lng_by_origin_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen China customs LNG imports by origin."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/importer_customs/cn_lng_imports_by_origin.csv"
+      media_type: "text/csv"
+      license: "GACC public customs statistics"
+      source_status: "portal_exports_preserved_no_html_query_receipt_or_terms_capture"
+
+  india_lng_by_origin_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen India customs LNG imports by origin."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/importer_customs/in_lng_imports_by_origin.csv"
+      media_type: "text/csv"
+      license: "Government of India public Tradestat portal"
+      source_status: "parsed_capture_preserved_original_http_responses_not_retained"
+
+  japan_lng_by_origin_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen Japan Customs/e-Stat LNG imports by origin."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/importer_customs/jp_lng_imports_by_origin.csv"
+      media_type: "text/csv"
+      license: "Trade Statistics of Japan / e-Stat public statistics portal"
+
+  natural_earth_land_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Natural Earth 110m land boundary used for route-map context."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/natural_earth/ne_110m_land.geojson"
+      media_type: "application/geo+json"
+      license: "Natural Earth public domain"
+
+  backup_probe_manifest_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Frozen manifest for the historical importer coverage probe."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/backup_pathway_probe_20260621/MANIFEST.json"
+      media_type: "application/json"
+      license: "Mixed upstream public-source metadata"
+      source_status: "capture_manifest"
+
+  backup_comtrade_japan_by_partner_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Historical UN Comtrade Japan LNG by-partner coverage snapshot."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/backup_pathway_probe_20260621/comtrade_japan_lng271111_bypartner.json"
+      media_type: "application/json"
+      license: "UN Comtrade API terms"
+
+  backup_comtrade_japan_monthly_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Historical UN Comtrade Japan monthly coverage snapshot."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/backup_pathway_probe_20260621/comtrade_japan_hs2711_2026_monthly.json"
+      media_type: "application/json"
+      license: "UN Comtrade API terms"
+
+  backup_comtrade_usa_monthly_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Historical UN Comtrade US monthly coverage snapshot."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/backup_pathway_probe_20260621/comtrade_usa_hs2711_2026_monthly.json"
+      media_type: "application/json"
+      license: "UN Comtrade API terms"
+
+  backup_eia_us_lng_exports_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Historical EIA US LNG exports-by-country coverage snapshot."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/backup_pathway_probe_20260621/eia_us_lng_exports_by_country_eng.json"
+      media_type: "application/json"
+      license: "Public domain (US Government)"
+
+  backup_eurostat_eu27_by_partner_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Historical Eurostat EU27 LNG by-partner coverage snapshot."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/backup_pathway_probe_20260621/eurostat_nrg_ti_gasm_lng_eu27_by_partner.json"
+      media_type: "application/json"
+      license: "Eurostat reuse policy"
+
+  backup_ppac_lng_historical_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Historical PPAC LNG-import workbook used by coverage probing."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/backup_pathway_probe_20260621/ppac_lng_import_historical.xlsx"
+      media_type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      license: "Government of India PPAC public statistics"
+
+  backup_ppac_lng_current_snapshot:
+    kind: artifact
+    role: artifact
+    description: "Current PPAC LNG-import workbook used by coverage probing."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/backup_pathway_probe_20260621/ppac_lng_import_current.xls"
+      media_type: "application/vnd.ms-excel"
+      license: "Government of India PPAC public statistics"
 
   # ---- MECHANISM: ton-mile / fleet-vacuum operational proxies ----
   # The proposal's PRIMARY mechanism proxy is AIS-derived laden ton-miles

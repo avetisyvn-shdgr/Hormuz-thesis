@@ -6,12 +6,11 @@ not synthetic control yet; it is a placebo-in-space diagnostic.
 """
 from __future__ import annotations
 
-from pathlib import Path
-
 import pandas as pd
 
 from . import config
 from .inference import empirical_p_value, separation_ratio
+from .registry import RegisteredArtifact, get_variable
 from .sources.portwatch import EXPECTED_COLUMNS, VALUE_COLUMNS
 
 
@@ -36,10 +35,13 @@ def slugify_portname(portname: str) -> str:
 
 def load_portwatch_snapshot() -> pd.DataFrame:
     """Load and schema-check the pinned PortWatch CSV snapshot."""
-    csv_path = config.ROOT / config.settings()["paths"]["portwatch_csv"]
-    if not Path(csv_path).exists():
-        raise FileNotFoundError(f"PortWatch snapshot not found at {csv_path}.")
-    df = pd.read_csv(csv_path, encoding="utf-8-sig")
+    artifact = get_variable(
+        "portwatch_chokepoints_snapshot",
+        query={"consumer": "spatial_placebo"},
+    )
+    if not isinstance(artifact, RegisteredArtifact):
+        raise TypeError("portwatch_chokepoints_snapshot must resolve as an artifact")
+    df = artifact.read_csv(encoding="utf-8-sig")
     if list(df.columns) != EXPECTED_COLUMNS:
         raise ValueError(
             "PortWatch schema drift detected. Expected columns "

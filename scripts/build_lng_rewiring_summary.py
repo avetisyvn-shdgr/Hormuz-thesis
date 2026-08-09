@@ -18,6 +18,7 @@ from lngfreight import config  # noqa: E402
 from lngfreight.network_rewiring import (  # noqa: E402
     build_rewiring_network,
     monthly_rewiring_metrics,
+    registered_rewiring_input_paths,
     rewiring_prepost_summary,
 )
 
@@ -26,9 +27,9 @@ def _load_or_build_network() -> pd.DataFrame:
     network_path = config.ROOT / config.settings()["paths"]["lng_rewiring_network_csv"]
     if network_path.exists():
         return pd.read_csv(network_path)
-    probe_dir = config.path("data_raw") / "backup_pathway_probe_20260621"
-    eurostat_path = config.ROOT / config.settings()["paths"]["eurostat_lng_eu27_by_partner_json"]
-    return build_rewiring_network(probe_dir, config.path("importer_customs_dir"), eurostat_path)
+    return build_rewiring_network(
+        *registered_rewiring_input_paths("build_lng_rewiring_summary")
+    )
 
 
 def main() -> None:

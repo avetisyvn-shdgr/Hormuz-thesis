@@ -1,0 +1,4 @@
+series,selected_model,post_observations,average_deviation_usd_per_day,cumulative_deviation_usd_per_day_weeks,mean_observed_usd_per_day,mean_counterfactual_usd_per_day,conformal_radius_usd_per_day,pointwise_interval_coverage,pointwise_interval_exceedances,validation_mase,causal_effect_interpretation_permitted,time_placebo_count,two_sided_placebo_p_value
+east_spot,last_observation,18,45833.333333333336,825000.0,60833.333333333336,15000.0,18000.0,0.0,18,0.7827263913826608,False,22.0,0.043478260869565216
+west_spot,last_observation,18,54777.77777777778,986000.0,83777.77777777778,29000.0,25000.0,0.0,18,1.0246781733650425,False,21.0,0.09090909090909091
+one_year_charter,last_observation,18,26694.444444444445,480500.0,50694.444444444445,24000.0,5500.0,0.0,18,0.8405034039974765,False,22.0,0.08695652173913043

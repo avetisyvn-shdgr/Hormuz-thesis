@@ -131,7 +131,9 @@ numbers.
   reported value.
 - `data/processed/tsfm_run_manifest.json` records lockfile hashes, package
   versions, pandas consistency, `pip check`, model revisions, device, and output
-  hashes.
+  hashes. As of the REP-01 remediation, the manifest has no capture timestamp,
+  excludes wall-clock `runtime_s*` fields from frozen output identity, and
+  records the configured Python/NumPy/Torch seed and deterministic-Torch policy.
 
 Clean-rerun mean scores (pre-treatment validation, 30-day horizon, NOT causal
 effects). AR-only baseline shown for reference (`baseline_summary.csv`):
@@ -201,10 +203,13 @@ python scripts/run_tsfm_counterfactual.py --model stub --acknowledge-benchmark-o
 
 The broader three-model admission benchmark remains excluded from
 `scripts/run_all.py` and the frozen core requirements because model weights and
-the PyTorch stacks are optional external artifacts. Because the active results
-report consumes the admitted Chronos-2 counterfactual, that single cross-check
-is now regenerated inside `run_all.py` through `.venv-bench` in offline mode.
-The run fails loudly if the isolated environment or cached checkpoint is absent.
+the PyTorch stacks are optional external artifacts. Its stable output identities
+are pinned by `tsfm_run_manifest.json`. Because the active results report
+consumes the admitted Chronos-2 counterfactual, that single cross-check is
+regenerated inside `run_all.py` through `.venv-bench` in offline mode, followed
+by deterministic TSFM-manifest regeneration. The counterfactual files and TSFM
+manifest are included in the main reproducibility manifest. The run fails
+loudly if the isolated environment or cached checkpoint is absent.
 
 **Outcome hierarchy:** transit count remains the locked primary. Its Chronos-2
 shortfall is 6,614.9 versus 6,869.0 for AR-only on the same 130 dates and

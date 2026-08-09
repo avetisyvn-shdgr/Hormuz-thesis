@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from .validation import Fold, resolve_cutoff
+from .validation import Fold, require_chronological_index, resolve_cutoff
 
 
 def post_treatment_fold(
@@ -17,7 +17,7 @@ def post_treatment_fold(
     cutoff: pd.Timestamp | str | None = None,
 ) -> Fold:
     """Return one fold: train before cutoff, forecast on/after cutoff."""
-    index = pd.DatetimeIndex(index).sort_values()
+    index = require_chronological_index(index)
     cut = pd.Timestamp(cutoff) if cutoff is not None else resolve_cutoff()
     train_idx = np.flatnonzero(index < cut)
     test_idx = np.flatnonzero(index >= cut)
@@ -48,7 +48,7 @@ def fixed_train_post_fold(
     This supports treatment-date robustness without moving disrupted days into
     training. ``train_cutoff`` is exclusive; ``post_start`` is inclusive.
     """
-    index = pd.DatetimeIndex(index).sort_values()
+    index = require_chronological_index(index)
     train_cut = pd.Timestamp(train_cutoff)
     post = pd.Timestamp(post_start)
     if post < train_cut:
@@ -98,7 +98,7 @@ def placebo_time_folds(
     if step_days <= 0:
         raise ValueError("step_days must be > 0.")
 
-    index = pd.DatetimeIndex(index).sort_values()
+    index = require_chronological_index(index)
     cut = pd.Timestamp(cutoff) if cutoff is not None else resolve_cutoff()
     usable = index[index < cut]
     if len(usable) == 0:

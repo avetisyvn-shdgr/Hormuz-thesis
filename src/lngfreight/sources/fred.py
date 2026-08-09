@@ -13,7 +13,7 @@ from __future__ import annotations
 import requests
 import pandas as pd
 
-from .base import BaseSource
+from .base import BaseSource, SourcePayload
 from .. import config
 
 _URL = "https://api.stlouisfed.org/fred/series/observations"
@@ -33,6 +33,12 @@ class FREDSource(BaseSource):
         }
         resp = requests.get(_URL, params=params, timeout=60)
         resp.raise_for_status()
+        self._capture_source_payload(SourcePayload(
+            filename=f"{code}.json",
+            media_type="application/json",
+            source_url=getattr(resp, "url", _URL),
+            content=resp.content,
+        ))
         obs = resp.json().get("observations", [])
         if not obs:
             raise ValueError(f"FRED returned no data for {code} in [{start}, {end}]")

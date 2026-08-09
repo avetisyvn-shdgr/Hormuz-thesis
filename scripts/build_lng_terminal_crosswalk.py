@@ -9,6 +9,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config, provenance  # noqa: E402
+from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
 from lngfreight.terminal_matching import (  # noqa: E402
     build_terminal_crosswalk,
     load_operating_terminals,
@@ -19,9 +20,20 @@ def main() -> None:
     settings = config.settings()
     paths = settings["paths"]
     policy = settings["vessel_data_feasibility"]
-    visits = pd.read_csv(config.ROOT / paths["gfw_port_visits_csv"])
-    gem_path = config.ROOT / paths["gem_lng_terminals_geojson"]
-    terminals = load_operating_terminals(gem_path)
+    visits_artifact = get_variable(
+        "qflex_gfw_port_visits_snapshot",
+        query={"consumer": "build_lng_terminal_crosswalk"},
+    )
+    gem_artifact = get_variable(
+        "gem_lng_terminals_snapshot",
+        query={"consumer": "build_lng_terminal_crosswalk"},
+    )
+    if not isinstance(visits_artifact, RegisteredArtifact) or not isinstance(
+        gem_artifact, RegisteredArtifact
+    ):
+        raise TypeError("terminal-crosswalk inputs must resolve as artifacts")
+    visits = visits_artifact.read_csv()
+    terminals = load_operating_terminals(gem_artifact.path)
     crosswalk = build_terminal_crosswalk(
         visits,
         terminals,

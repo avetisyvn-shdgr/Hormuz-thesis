@@ -40,7 +40,7 @@ new causal ATT estimator.
 The existing result is strongest when framed as a **measurement and mechanism
 chain**:
 
-1. PortWatch and WTO measure the physical disruption.
+1. PortWatch and WTO record an AIS-/index-observed throughput disruption.
 2. Customs outcomes show origin-composition changes where by-origin data exist.
 3. GFW terminal sequences show longer retained LNG voyages and higher
    capacity-distance per voyage.
@@ -97,7 +97,7 @@ accurate forecaster still does not identify a causal effect.
 
 | Input | Potential source | Admission condition |
 |---|---|---|
-| Public freight-rate indicator | Baltic Exchange public gas weekly reports; Fearnleys only if stable and archiveable | Source URL, capture date, terms, and SHA-256 snapshot recorded |
+| Public freight-rate indicator | Baltic Exchange public gas weekly reports; Fearnleys only if access, reuse terms, stability, and archiving are verified | Source URL, capture date, terms, and SHA-256 snapshot recorded |
 | Additional monthly importer totals | JODI-Gas or national sources | Aggregate-stability appendix only; not origin-split confirmatory panel |
 | Additional origin splits | National customs sources | Must preserve source-native country names and by-origin monthly data |
 
@@ -235,13 +235,17 @@ Current implementation scope:
 
 - Demand nodes are destination basins with lost observed Hormuz-exposed LNG
   vessel capacity.
-- Supply nodes are observed non-Gulf source terminals under two scenarios:
-  `incremental_non_gulf_growth_only` and `post_non_gulf_pool`.
+- Candidate supply nodes are observed non-Gulf source terminals. Every
+  completed post-period voyage is first reserved for its recorded destination;
+  because the voyage data contain no independent liquefaction-headroom measure,
+  the resulting `observed_post_residual_after_commitments` scenario has zero
+  residual supply.
 - Costs are audited expanded maritime route distances from source terminal to
   the cheapest observed terminal in each destination basin.
-- The `post_non_gulf_pool` scenario is intentionally a lower-bound stress test:
-  it allows the model to choose the shortest observed non-Gulf routes and should
-  not be read as observed cargo replacement or global liquefaction capacity.
+- The zero-residual result is a measurement constraint, not a finding that
+  replacement was physically impossible. A positive spare-supply scenario
+  requires independently sourced terminal headroom and remains gated under the
+  active plan; observed voyages are not reused as free capacity.
 
 ### 5. Resilience typology
 

@@ -4,9 +4,9 @@ This module does not compute new estimates. It packages results that already
 exist in frozen artifacts into one ordered transmission chain so the thesis reads
 as a single triangulated argument rather than four disconnected analyses. The
 first link intentionally uses the 94-day mechanism/corridor-aligned window, not
-the active 130-day primary PortWatch headline. Each link names its independent
-data source and its interpretation boundary, so the cascade cannot be mistaken
-for a causal ton-mile multiplier.
+the active 130-day primary PortWatch headline. Each link names its source and
+interpretation boundary. The links are partially dependent diagnostics with
+shared maritime-observation risks, not independent causal confirmations.
 """
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ def build_evidence_cascade(
         {
             "step": 1,
             "layer": "Chokepoint disruption",
-            "independent_source": "IMF PortWatch (satellite AIS)",
+            "source": "IMF PortWatch (satellite AIS)",
             "metric": "Strait of Hormuz tanker transits, 94-day mechanism-aligned window",
             "pre_value": round(hormuz_counterfactual, 1),
             "post_value": round(hormuz_observed, 1),
@@ -74,7 +74,7 @@ def build_evidence_cascade(
         {
             "step": 2,
             "layer": "Commodity-specific export collapse",
-            "independent_source": "GFW port visits + WTO/AXSMarine index (two sources)",
+            "source": "GFW port visits + WTO/AXSMarine index (two sources)",
             "metric": "Gulf LNG departures: GFW calls / WTO outbound index",
             "pre_value": round(gfw_pre, 1),
             "post_value": round(gfw_post, 1),
@@ -88,7 +88,7 @@ def build_evidence_cascade(
         {
             "step": 3,
             "layer": "Fleet-activity contraction",
-            "independent_source": "GFW voyage reconstruction (624-carrier census)",
+            "source": "GFW voyage reconstruction (624-carrier census)",
             "metric": "Resolved Gulf LNG voyages (30km, expanded route QA)",
             "pre_value": round(voyages_pre, 1),
             "post_value": round(voyages_post, 1),
@@ -102,7 +102,7 @@ def build_evidence_cascade(
         {
             "step": 4,
             "layer": "Routing composition shift",
-            "independent_source": "GFW capacity-nautical-mile reconstruction",
+            "source": "GFW capacity-nautical-mile reconstruction",
             "metric": "Mean capacity-distance per retained voyage",
             "pre_value": None,
             "post_value": None,
@@ -119,14 +119,17 @@ def build_evidence_cascade(
         },
         {
             "step": 5,
-            "layer": "Destination substitution",
-            "independent_source": "IMF PortWatch corridor map",
+            "layer": "Alternative-corridor co-movement",
+            "source": "IMF PortWatch corridor map",
             "metric": "Alternative corridors above counterfactual",
             "pre_value": None,
             "post_value": None,
             "percent_change": None,
             "corroboration": f"risers: {risers}",
-            "interpretation_boundary": "descriptive; no voyage-level flow tracing",
+            "interpretation_boundary": (
+                "descriptive aggregate movements compatible with substitution; "
+                "no voyage-level flow tracing"
+            ),
         },
     ]
     return pd.DataFrame(rows)

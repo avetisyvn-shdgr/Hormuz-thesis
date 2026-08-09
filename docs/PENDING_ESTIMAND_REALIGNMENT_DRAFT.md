@@ -45,8 +45,9 @@ capacity after documented artifact masking.
 **H3, falsification evidence.** The observed shortfall is unusually large relative
 to pre-period placebo intervention windows and same-date placebo chokepoints.
 Temporal evidence is evaluated primarily by separation from the placebo p95
-rather than a conventionally interpreted p-value because only about nine
-non-overlapping horizon-length windows are available.
+rather than the overlapping-window reference rank, which is descriptive rather
+than a p-value. Seven disjoint horizon-length blocks are available for rank
+inference, giving a one-sided rank p-value of 0.125.
 
 **H4, donor corroboration.** A clean-donor synthetic control shows a materially
 larger post/pre RMSPE deterioration for Hormuz than for donor-placebo units.

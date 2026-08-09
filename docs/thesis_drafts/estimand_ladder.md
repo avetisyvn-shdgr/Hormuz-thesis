@@ -9,8 +9,8 @@ that uses it.
 The first rung is measurement: the thesis measures the observed AIS-based tanker
 throughput break at the Strait of Hormuz after the locked cutoff
 `2026-02-28` (`reports/run_output.md`). At this rung, the claim is that the
-observed PortWatch tanker-throughput series records a large physical disruption
-in a chokepoint flow. It is not yet a causal effect, not LNG-specific cargo
+observed PortWatch series records a large AIS-observed tanker-throughput break
+at the chokepoint. It is not yet a causal effect, not LNG-specific cargo
 volume, not freight pricing, and not a vessel-level laden-state reconstruction.
 
 ## Disruption-associated counterfactual shortfall
@@ -60,13 +60,13 @@ weight/volume-basis import evidence.
 ## Scenario-conditional feasibility
 
 The fifth rung asks whether transparent reallocation scenarios can bound
-replacement feasibility. Under the incremental non-Gulf growth-only scenario,
-`21,425` k m3 of demand is compared with `8,045` k m3 allocated observed growth,
-leaving `13,380` k m3 unmet, or `62.5%` of demand
-(`data/processed/lng_reallocation_summary.csv`). Under the post non-Gulf pool
-scenario, the same `21,425` k m3 demand is fully allocated but the output is
-flagged as an unroutable-supply-excluded lower-bound short-route pool
-(`data/processed/lng_reallocation_summary.csv`). At this rung, the thesis claims
-scenario-conditional feasibility diagnostics under stated route and supply
-assumptions. It does not claim observed rerouting, welfare loss, freight-rate
-pass-through, or an identified structural capacity shadow price.
+replacement feasibility. The voyage input records completed movements whose
+capacity was already committed to recorded destinations; it does not measure
+liquefaction headroom. After those commitments are reserved, the current
+`observed_post_residual_after_commitments` scenario has zero residual supply, so
+all modeled lost capacity is mechanically unmet
+(`data/processed/lng_reallocation_summary.csv`). This is a data-availability
+diagnostic, not evidence that global replacement was physically impossible.
+Quantitative feasibility requires independently sourced terminal headroom. At
+this rung, the thesis does not claim observed rerouting, welfare loss,
+freight-rate pass-through, or an identified structural capacity shadow price.

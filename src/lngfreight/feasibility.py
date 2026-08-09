@@ -167,27 +167,33 @@ def build_vessel_feasibility_report(
     root: Path,
     settings: Mapping,
     credential_presence: Mapping[str, bool],
+    registered_paths: Mapping[str, Path] | None = None,
 ) -> dict:
     """Inspect local evidence without calling or exposing credentialed APIs."""
     paths = settings["paths"]
+    registered_paths = registered_paths or {}
+
+    def input_path(key: str) -> Path:
+        return registered_paths.get(key, root / paths[key])
+
     criteria = dict(settings["vessel_data_feasibility"])
-    wto = _profile_csv(root / paths["wto_hormuz_lng_csv"], root=root)
-    portwatch = _profile_csv(root / paths["portwatch_csv"], root=root)
+    wto = _profile_csv(input_path("wto_hormuz_lng_csv"), root=root)
+    portwatch = _profile_csv(input_path("portwatch_csv"), root=root)
     inputs = {
-        key: _profile_csv(root / paths[key], required, root=root)
+        key: _profile_csv(input_path(key), required, root=root)
         for key, required in INPUT_SCHEMAS.items()
     }
     roster_key = "gfw_lng_vessel_benchmark_csv"
     inputs[roster_key] = _profile_benchmark_roster(
-        root / paths[roster_key],
+        input_path(roster_key),
         INPUT_SCHEMAS[roster_key],
         int(criteria["benchmark_vessels"]),
         root,
     )
     coverage = _gfw_coverage_diagnostics(
-        root / paths[roster_key],
-        root / paths["gfw_vessel_identity_csv"],
-        root / paths["gfw_port_visits_csv"],
+        input_path(roster_key),
+        input_path("gfw_vessel_identity_csv"),
+        input_path("gfw_port_visits_csv"),
         float(criteria["min_port_visit_coverage_rate"]),
     )
     summary_path = paths.get("voyage_feasibility_summary_json")
@@ -248,6 +254,11 @@ def build_vessel_feasibility_report(
                 "presence product is not an individual raw vessel track",
                 "no observed LNG cargo quantity",
                 "no authoritative laden/ballast state",
+                (
+                    "Q-Flex roster was manually transcribed; cited Nakilat/IGU "
+                    "source PDFs and a row-level transcription log were not "
+                    "retained in the repository"
+                ),
             ],
             "required_local_inputs": inputs,
             "coverage_diagnostics": coverage,

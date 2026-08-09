@@ -12,6 +12,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+RUN_TRANSCRIPT = ROOT / "reports" / "reproducibility_run_transcript.txt"
 
 
 STEPS = [
@@ -32,6 +33,7 @@ STEPS = [
             "--acknowledge-benchmark-only",
         ],
     ),
+    ("Refresh deterministic TSFM provenance", ["scripts/freeze_tsfm_run.py"]),
     ("Quantify AIS-dark-vessel bound", ["scripts/run_ais_dark_bound.py"]),
     ("Run Bayesian structural counterfactual", ["scripts/run_bsts_counterfactual.py"]),
     ("Run temporal placebos", ["scripts/run_placebo_inference.py"]),
@@ -74,12 +76,23 @@ STEPS = [
     ("Refresh integrated mechanism results", ["scripts/make_mechanism_summary.py"]),
     ("Render inspectable run outputs", ["scripts/make_run_output.py"]),
     ("Refresh working results summary", ["scripts/make_results_summary.py"]),
+    ("Audit provenance coverage", ["scripts/audit_provenance.py"]),
     ("Recheck frozen raw snapshots", ["scripts/freeze_reproducibility.py", "--check"]),
     ("Run full test suite", ["-m", "pytest", "-q"]),
     (
         "Verify regenerated artifacts against committed manifest",
         ["scripts/freeze_reproducibility.py", "--verify"],
     ),
+]
+
+BLOOMBERG_STEPS = [
+    ("Audit provenance-limited Bloomberg workbooks", ["scripts/audit_bloomberg_exports.py"]),
+    ("Build weekly LNG freight assessment panel", ["scripts/build_bloomberg_weekly_panel.py"]),
+    ("Render LNG freight descriptives", ["scripts/make_bloomberg_freight_descriptives.py"]),
+    ("Run secondary freight counterfactuals", ["scripts/run_bloomberg_freight_counterfactual.py"]),
+    ("Build TTF and VLSFO context layer", ["scripts/build_bloomberg_market_context.py"]),
+    ("Integrate physical and monetary evidence", ["scripts/make_bloomberg_mechanism_integration.py"]),
+    ("Verify Bloomberg layer freeze", ["scripts/freeze_bloomberg_layer.py", "--verify"]),
 ]
 
 
@@ -94,6 +107,30 @@ def _step_command(args: list[str]) -> list[str]:
     return [sys.executable, *args]
 
 
+def _emit(text: str, transcript) -> None:
+    print(text, end="", flush=True)
+    transcript.write(text)
+    transcript.flush()
+
+
+def _run_step(command: list[str], env: dict[str, str], transcript) -> None:
+    process = subprocess.Popen(
+        command,
+        cwd=ROOT,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
+    assert process.stdout is not None
+    for line in process.stdout:
+        _emit(line, transcript)
+    return_code = process.wait()
+    if return_code:
+        raise subprocess.CalledProcessError(return_code, command)
+
+
 def main() -> int:
     env = os.environ.copy()
     env["PYTHONHASHSEED"] = "0"
@@ -101,15 +138,48 @@ def main() -> int:
     env["OPENBLAS_NUM_THREADS"] = "1"
     env["MKL_NUM_THREADS"] = "1"
     env["NUMEXPR_NUM_THREADS"] = "1"
+    env["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+    env["PYTHONUNBUFFERED"] = "1"
     env.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
     env.setdefault("HF_HUB_OFFLINE", "1")
     env.setdefault("TRANSFORMERS_OFFLINE", "1")
-    for number, (label, args) in enumerate(STEPS, start=1):
-        print(f"\n{'=' * 72}\n[{number:02d}/{len(STEPS):02d}] {label}\n{'=' * 72}", flush=True)
-        subprocess.run(_step_command(args), cwd=ROOT, env=env, check=True)
-    print("\nEND-TO-END RUN COMPLETED CLEANLY", flush=True)
-    print(f"Report: {ROOT / 'reports' / 'run_output.md'}", flush=True)
-    print(f"Comparison: {ROOT / 'data' / 'processed' / 'run_spec_comparison.csv'}", flush=True)
+    steps = list(STEPS)
+    if env.get("ENABLE_BLOOMBERG_LAYER") == "1":
+        if not env.get("BLOOMBERG_EXPORT_DIR"):
+            raise RuntimeError(
+                "ENABLE_BLOOMBERG_LAYER=1 requires BLOOMBERG_EXPORT_DIR. "
+                "The default free-data pipeline remains independent."
+            )
+        insertion = next(
+            index
+            for index, (label, _) in enumerate(steps)
+            if label == "Audit provenance coverage"
+        )
+        steps[insertion:insertion] = BLOOMBERG_STEPS
+    RUN_TRANSCRIPT.parent.mkdir(parents=True, exist_ok=True)
+    with RUN_TRANSCRIPT.open("w", encoding="utf-8", buffering=1) as transcript:
+        _emit(
+            "LNG freight reproducibility run transcript\n"
+            f"step_count={len(steps)}\n"
+            f"bloomberg_layer_enabled={env.get('ENABLE_BLOOMBERG_LAYER') == '1'}\n",
+            transcript,
+        )
+        for number, (label, args) in enumerate(steps, start=1):
+            _emit(
+                f"\n{'=' * 72}\n"
+                f"[{number:02d}/{len(steps):02d}] {label}\n"
+                f"{'=' * 72}\n",
+                transcript,
+            )
+            _run_step(_step_command(args), env, transcript)
+        _emit("\nEND-TO-END RUN COMPLETED CLEANLY\n", transcript)
+        _emit(f"Report: {ROOT / 'reports' / 'run_output.md'}\n", transcript)
+        _emit(
+            f"Comparison: "
+            f"{ROOT / 'data' / 'processed' / 'run_spec_comparison.csv'}\n",
+            transcript,
+        )
+        _emit(f"Transcript: {RUN_TRANSCRIPT}\n", transcript)
     return 0
 
 

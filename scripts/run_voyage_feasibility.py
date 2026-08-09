@@ -10,17 +10,32 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config  # noqa: E402
+from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
 from lngfreight.voyages import candidate_voyage_endpoints, endpoint_summary  # noqa: E402
 
 
 def main() -> None:
     settings = config.settings()
     paths = settings["paths"]
-    visits = pd.read_csv(config.ROOT / paths["gfw_port_visits_csv"])
-    identities = pd.read_csv(
-        config.ROOT / paths["gfw_vessel_identity_csv"], dtype={"imo": str}
-    )
-    terminals = pd.read_csv(config.ROOT / paths["gfw_lng_terminals_csv"])
+    artifacts = {
+        "visits": get_variable(
+            "qflex_gfw_port_visits_snapshot",
+            query={"consumer": "run_voyage_feasibility"},
+        ),
+        "identities": get_variable(
+            "qflex_gfw_identity_snapshot",
+            query={"consumer": "run_voyage_feasibility"},
+        ),
+        "terminals": get_variable(
+            "qflex_lng_terminal_crosswalk_snapshot",
+            query={"consumer": "run_voyage_feasibility"},
+        ),
+    }
+    if not all(isinstance(item, RegisteredArtifact) for item in artifacts.values()):
+        raise TypeError("voyage-feasibility inputs must resolve as artifacts")
+    visits = artifacts["visits"].read_csv()
+    identities = artifacts["identities"].read_csv(dtype={"imo": str})
+    terminals = artifacts["terminals"].read_csv()
     voyages = candidate_voyage_endpoints(visits, identities, terminals)
     out = config.path("data_processed") / "candidate_voyage_endpoints.csv"
     voyages.to_csv(out, index=False)

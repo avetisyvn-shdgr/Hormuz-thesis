@@ -7,6 +7,31 @@ paths:
   data_processed: "data/processed"
   figures: "reports/figures"          # Layer-1 descriptive event-study output
   provenance_log: "data/raw/provenance.jsonl"
+  lng_freight_weekly_panel_csv: "data/processed/lng_freight_weekly_panel.csv"
+  lng_freight_weekly_quality_csv: "data/processed/lng_freight_weekly_quality.csv"
+  lng_freight_weekly_manifest_json: "data/processed/lng_freight_weekly_manifest.json"
+  lng_freight_descriptive_weekly_csv: "data/processed/lng_freight_descriptive_weekly.csv"
+  lng_freight_descriptive_summary_csv: "data/processed/lng_freight_descriptive_summary.csv"
+  lng_freight_descriptive_png: "reports/figures/lng_freight_market_descriptive.png"
+  lng_freight_descriptive_pdf: "reports/figures/lng_freight_market_descriptive.pdf"
+  lng_freight_validation_scores_csv: "data/processed/lng_freight_validation_scores.csv"
+  lng_freight_counterfactual_weekly_csv: "data/processed/lng_freight_counterfactual_weekly.csv"
+  lng_freight_counterfactual_summary_csv: "data/processed/lng_freight_counterfactual_summary.csv"
+  lng_freight_time_placebos_csv: "data/processed/lng_freight_time_placebos.csv"
+  lng_freight_counterfactual_manifest_json: "data/processed/lng_freight_counterfactual_manifest.json"
+  lng_freight_counterfactual_png: "reports/figures/lng_freight_counterfactual.png"
+  lng_freight_counterfactual_pdf: "reports/figures/lng_freight_counterfactual.pdf"
+  freight_market_context_csv: "data/processed/freight_market_context.csv"
+  freight_market_context_quality_csv: "data/processed/freight_market_context_quality.csv"
+  freight_market_context_manifest_json: "data/processed/freight_market_context_manifest.json"
+  freight_market_context_png: "reports/figures/freight_market_context.png"
+  freight_market_context_pdf: "reports/figures/freight_market_context.pdf"
+  freight_mechanism_weekly_csv: "data/processed/freight_mechanism_weekly.csv"
+  freight_mechanism_summary_csv: "data/processed/freight_mechanism_summary.csv"
+  freight_mechanism_manifest_json: "data/processed/freight_mechanism_manifest.json"
+  freight_mechanism_png: "reports/figures/freight_mechanism_integration.png"
+  freight_mechanism_pdf: "reports/figures/freight_mechanism_integration.pdf"
+  bloomberg_layer_freeze_json: "data/processed/bloomberg_layer_freeze.json"
   # Manually downloaded snapshot (no stable public API endpoint pinned yet).
   # Refresh procedure: re-download from portwatch.imf.org -> Daily Chokepoint
   # Transit Calls dataset -> CSV, overwrite this file, record date + md5 in
@@ -178,6 +203,9 @@ modeling:
     dormant_secondary_outcomes:
       - "spark30s_atlantic_freight"
       - "spark25s_pacific_freight"
+      - "fearnleys_lng_spot_east_suez"
+      - "fearnleys_lng_spot_west_suez"
+      - "fearnleys_lng_one_year_time_charter"
     primary_estimator: "ar_lag1_7"
     benchmark_estimators:
       - "seasonal_naive_7d"

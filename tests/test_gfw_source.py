@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 
 from lngfreight.registry import (
@@ -15,6 +17,7 @@ from lngfreight.sources.gfw import (
 class _Response:
     def __init__(self, payload):
         self.payload = payload
+        self.content = json.dumps(payload, sort_keys=True).encode()
 
     def raise_for_status(self):
         return None
@@ -48,6 +51,11 @@ def test_client_uses_bearer_auth_without_putting_token_in_query():
     _, kwargs = session.calls[0]
     assert kwargs["headers"] == {"Authorization": "Bearer secret"}
     assert "secret" not in kwargs["params"].values()
+    assert len(client.source_payloads) == 1
+    assert json.loads(client.source_payloads[0].content)["entries"][0][
+        "registryInfo"
+    ][0]["imo"] == "9337705"
+    assert client.source_payloads[0].filename == "vessels_search_0001.json"
 
 
 def test_batch_search_uses_where_and_rejects_truncation():

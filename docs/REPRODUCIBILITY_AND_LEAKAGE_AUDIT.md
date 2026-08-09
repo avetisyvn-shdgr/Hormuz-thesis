@@ -1,5 +1,46 @@
 # Reproducibility & AR-only Leakage Audit
 
+## 2026-07-26 REP-01 implementation addendum — HUMAN VERIFIED
+
+The 2026-06-20 results below are retained as a historical engineering audit.
+They are superseded for the current repository state by the REP-01 candidate
+reproducibility package:
+
+- `scripts/run_all.py` now executes 48 stages and retains the complete combined
+  stdout/stderr transcript at
+  `reports/reproducibility_run_transcript.txt`.
+- Frozen-input checks cover 9 core raw files, 145 vessel-branch raw files
+  (including the Natural Earth boundary archive), and 1 interim input.
+- The main allowlisted manifest covers 123 regenerated artifacts. It now includes
+  the reported Chronos-2 counterfactual outputs and the deterministic TSFM
+  provenance manifest.
+- The broad three-model TSFM admission benchmark remains host-bound and is pinned
+  inside `data/processed/tsfm_run_manifest.json`, rather than claimed as
+  cross-host byte-identical. Wall-clock runtime fields are excluded from frozen
+  identity. Python, NumPy, and Torch use seed `20260612`; Torch deterministic
+  algorithms are requested explicitly.
+- Mher subsequently ran the complete workflow and pasted its transcript:
+  48/48 stages completed, 282/282 tests passed, all 155 frozen inputs matched,
+  and all 123 regenerated artifacts matched. This is the G4 evidence that
+  closed REP-01.
+
+Following REP-01's human verification, the PROV-01 candidate adds a deterministic
+provenance audit after all provenance-producing stages. The current candidate
+workflow therefore has 49 stages and 125 allowlisted artifacts, with 285 tests.
+Mher subsequently pasted the clean completion block from that 49-stage run,
+closing PROV-01 under G4. DATA-02 now changes only source/access metadata,
+quarantines one mislabeled duplicate, and adds two tests. Its candidate input
+scope is 8 core + 145 vessel + 1 interim, with 287 tests and the same 125
+allowlisted artifacts. Mher's subsequent clean 49-stage run verified those
+DATA-02 counts under G4. DATA-03 adds disclosure/provenance labels without
+changing any source data table; its assistant-side candidate has 290 tests,
+8 core + 145 vessel + 1 interim inputs, and the same 125-artifact scope. Mher
+subsequently verified DATA-03 with a clean 49-stage run. The PROV-02 candidate
+routes native-schema external artifacts through `registry.get_variable()`;
+assistant-side validation has 293 tests, 43/43 mapped free registry entries,
+the same input counts, and the same 125-artifact scope. Mher subsequently
+verified PROV-02 with a clean 49-stage run on 2026-07-27.
+
 **Status:** Engineering audit, 2026-06-20. Covers the four "make the ML code
 properly done" items: (1) independent-venv suite run, (2) TSFM run provenance
 freeze, (3) deterministic end-to-end reproducibility, (4) AR-only leakage and

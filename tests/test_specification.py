@@ -13,7 +13,11 @@ def test_working_specification_locks_fallback_roles():
     assert spec.primary_estimator == "ar_lag1_7"
     assert spec.active_secondary_outcomes == ()
     assert set(spec.dormant_secondary_outcomes) == {
-        "spark30s_atlantic_freight", "spark25s_pacific_freight"
+        "spark30s_atlantic_freight",
+        "spark25s_pacific_freight",
+        "fearnleys_lng_spot_east_suez",
+        "fearnleys_lng_spot_west_suez",
+        "fearnleys_lng_one_year_time_charter",
     }
     assert spec.reporting_term == "disruption-associated counterfactual shortfall"
     assert spec.transformer_enabled is False

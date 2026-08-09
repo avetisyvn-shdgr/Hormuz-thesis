@@ -1,0 +1,976 @@
+LNG freight reproducibility run transcript
+step_count=49
+bloomberg_layer_enabled=False
+
+========================================================================
+[01/49] Verify frozen raw snapshots
+========================================================================
+INPUT HASH CHECK PASSED: 8 core raw files match.
+INPUT HASH CHECK PASSED: 145 vessel raw files match.
+INPUT HASH CHECK PASSED: 1 interim inputs match.
+
+========================================================================
+[02/49] Build panel from frozen raw data
+========================================================================
+panel shape: (1649, 7)  (2022-01-01 -> 2026-07-07, calendar-daily)
+
+                               non_null  null  null_share   first_obs    last_obs  weekend_obs_share  zeros
+column                                                                                                     
+henry_hub_spot                     1122   527      0.3196  2022-01-03  2026-07-06             0.0000      0
+brent_spot                         1134   515      0.3123  2022-01-03  2026-07-06             0.0000      0
+hormuz_tanker_transits             1649     0      0.0000  2022-01-01  2026-07-07             0.2862     28
+hormuz_tanker_capacity             1649     0      0.0000  2022-01-01  2026-07-07             0.2862     40
+panama_tanker_transits             1649     0      0.0000  2022-01-01  2026-07-07             0.2862      0
+panama_tanker_capacity             1649     0      0.0000  2022-01-01  2026-07-07             0.2862      0
+wto_hormuz_lng_outbound_index       553  1096      0.6646  2025-01-01  2026-07-07             0.2857    127
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/interim/panel_free.csv
+
+Spot-check around the closure window (2026-02-26 .. 2026-03-04):
+            henry_hub_spot  brent_spot  hormuz_tanker_transits  hormuz_tanker_capacity  panama_tanker_transits  panama_tanker_capacity  wto_hormuz_lng_outbound_index
+date                                                                                                                                                                 
+2026-02-26            2.94       71.66                    55.0               1415483.0                    13.0                325179.0                     119.807143
+2026-02-27            2.99       71.32                    35.0                914016.0                    12.0                312749.0                      29.424912
+2026-02-28             NaN         NaN                    35.0               2543517.0                    20.0                386284.0                       0.000000
+2026-03-01             NaN         NaN                    10.0                446614.0                    15.0                378288.0                      68.250202
+2026-03-02            2.99       77.24                     2.0                  6701.0                    15.0                367243.0                      26.566614
+2026-03-03            3.10       83.28                     2.0                  6701.0                    15.0                366518.0                       0.000000
+2026-03-04            2.87       81.56                     0.0                     0.0                    13.0                316757.0                       0.000000
+
+========================================================================
+[03/49] Align and audit panel
+========================================================================
+panel shape: (1649, 7)  (2022-01-01 -> 2026-07-07)
+
+Alignment report (per column):
+                               null_before  null_after  cells_altered
+column                                                               
+henry_hub_spot                         527           2            525
+brent_spot                             515           2            513
+hormuz_tanker_transits                   0           0              0
+hormuz_tanker_capacity                   0          12             12
+panama_tanker_transits                   0           0              0
+panama_tanker_capacity                   0           0              0
+wto_hormuz_lng_outbound_index         1096        1096              0
+
+Audit log — cells altered by reason:
+reason
+ffill              1038
+artifact_masked      12
+
+Hormuz transit-zero days preserved: 28 (genuine closure signal — must NOT be filled)
+Hormuz capacity cells masked to NaN: 12 (AIS artifact days)
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/panel_aligned.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/alignment_audit.csv
+
+Spot-check, closure window (raw NaN -> ffilled), Brent + Hormuz:
+            brent_spot  henry_hub_spot  hormuz_tanker_transits  hormuz_tanker_capacity
+date                                                                                  
+2026-02-26       71.66            2.94                    55.0               1415483.0
+2026-02-27       71.32            2.99                    35.0                914016.0
+2026-02-28       71.32            2.99                    35.0               2543517.0
+2026-03-01       71.32            2.99                    10.0                446614.0
+2026-03-02       77.24            2.99                     2.0                  6701.0
+2026-03-03       83.28            3.10                     2.0                  6701.0
+2026-03-04       81.56            2.87                     0.0                     0.0
+2026-03-05       88.59            2.90                     1.0                     NaN
+2026-03-06       95.74            3.10                     0.0                     0.0
+2026-03-07       95.74            3.10                     0.0                     0.0
+2026-03-08       95.74            3.10                     0.0                     0.0
+
+========================================================================
+[04/49] Render descriptive event-study figures
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/fig1_chokepoint_event_study.pdf
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/fig1_chokepoint_event_study.png
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/fig2_hormuz_robustness.pdf
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/fig2_hormuz_robustness.png
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/fig3_energy_response.pdf
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/fig3_energy_response.png
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/fig4_missingness_map.pdf
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/fig4_missingness_map.png
+
+Reminder (CLAUDE.md): these are DESCRIPTIVE figures.
+ - Treatment lines are VERIFIED dates (docs/EVENT_CHRONOLOGY.md).
+ - Hormuz vs Panama is a contrast, not an estimated effect.
+ - Price panel shows co-movement; weekend points are forward-filled.
+
+========================================================================
+[05/49] Export model diagnostics
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/model_input_coverage.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/capacity_missingness_diagnostics.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/model_information_sets.csv
+
+Cutoff: 2026-02-28
+
+Post-period target coverage:
+                column  post_rows  post_non_null  post_missing  post_coverage
+hormuz_tanker_transits        130            130             0       1.000000
+hormuz_tanker_capacity        130            118            12       0.907692
+
+Capacity missingness attribution:
+       capacity_column         transit_column period  rows  missing_capacity  audit_confirmed_artifact_masks  unexplained_missing_capacity  coverage
+hormuz_tanker_capacity hormuz_tanker_transits    pre  1519                 0                               0                             0  1.000000
+hormuz_tanker_capacity hormuz_tanker_transits   post   130                12                              12                             0  0.907692
+panama_tanker_capacity panama_tanker_transits    pre  1519                 0                               0                             0  1.000000
+panama_tanker_capacity panama_tanker_transits   post   130                 0                               0                             0  1.000000
+
+Model information sets:
+                  model                                                post_observed_covariates     counterfactual_role
+      seasonal_naive_7d                                                                         unconditional_candidate
+              ar_lag1_7                                                                                 working_primary
+       arx_lag1_7_route                           panama_tanker_transits,panama_tanker_capacity conditional_sensitivity
+arx_lag1_7_route_energy panama_tanker_transits,panama_tanker_capacity,henry_hub_spot,brent_spot conditional_sensitivity
+
+========================================================================
+[06/49] Run chronological validation
+========================================================================
+panel shape: (1649, 7)  (2022-01-01 -> 2026-07-07)
+rolling-origin folds: 38
+   fold train_start  train_end  n_train test_start   test_end  n_test
+fold_34  2022-01-01 2025-09-16     1355 2025-09-17 2025-10-16      30
+fold_35  2022-01-01 2025-10-16     1385 2025-10-17 2025-11-15      30
+fold_36  2022-01-01 2025-11-15     1415 2025-11-16 2025-12-15      30
+fold_37  2022-01-01 2025-12-15     1445 2025-12-16 2026-01-14      30
+fold_38  2022-01-01 2026-01-14     1475 2026-01-15 2026-02-13      30
+
+Aggregate scores:
+                  model                 target      mae_mean    mae_median       mae_std    rmse_mean  rmse_median      rmse_std  mase_mean  mase_median  mase_std  smape_mean  smape_median  smape_std
+              ar_lag1_7 hormuz_tanker_capacity 759505.738749 703892.645851 172596.703672 9.095722e+05 8.669626e+05 167657.044772   0.841392     0.775239  0.195514   30.371122     27.056949  10.706417
+              ar_lag1_7 hormuz_tanker_transits     12.506480     11.600931      3.429050 1.486161e+01 1.403533e+01      3.237947   0.919784     0.855373  0.248291   23.310319     20.453418   9.012102
+       arx_lag1_7_route hormuz_tanker_capacity 759126.412706 721720.345580 177188.382285 9.102539e+05 8.846983e+05 173882.334012   0.840950     0.779976  0.200398   30.352330     26.277898  10.771166
+       arx_lag1_7_route hormuz_tanker_transits     12.445343     11.639171      3.561602 1.482898e+01 1.419744e+01      3.369993   0.915655     0.862390  0.259174   23.205273     19.934595   9.161687
+arx_lag1_7_route_energy hormuz_tanker_capacity 708151.483959 686568.442493 131983.208536 8.602505e+05 8.615891e+05 135296.349607   0.784238     0.760406  0.149698   28.657975     26.345479   8.530612
+arx_lag1_7_route_energy hormuz_tanker_transits     11.671725     11.047097      2.799188 1.401197e+01 1.366390e+01      2.784449   0.859282     0.831857  0.206205   21.899495     19.548464   6.993173
+      seasonal_naive_7d hormuz_tanker_capacity 880845.105263 901282.933333 171134.644494 1.084968e+06 1.120581e+06 200827.469702   0.974876     0.966713  0.191302   35.955870     34.569640   8.428642
+      seasonal_naive_7d hormuz_tanker_transits     13.645614     12.933333      3.366282 1.669092e+01 1.562242e+01      3.949124   1.004980     0.971655  0.249677   26.027414     24.232755   6.784356
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/baseline_scores.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/baseline_forecasts.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/baseline_summary.csv
+
+Interpretation guard:
+ - These are pre-treatment validation scores, not causal effects.
+ - Seasonal naive is the benchmark; AR tests target-only dynamics.
+ - ARX tests whether observed controls improve pre-treatment prediction.
+ - Working primary estimator: ar_lag1_7.
+ - ARX uses observed exogenous controls, but held-out target values are not used as lags.
+ - Spark access is not required for this layer.
+
+========================================================================
+[07/49] Run AR-only and sensitivity counterfactuals
+========================================================================
+counterfactual fold: train 2022-01-01 -> 2026-02-27, forecast 2026-02-28 -> 2026-07-07
+
+Post-treatment counterfactual summary:
+                  model                 target      start        end  n_days  observed_sum  counterfactual_sum  cumulative_gap_observed_minus_predicted  cumulative_throughput_loss  mean_daily_throughput_loss
+              ar_lag1_7 hormuz_tanker_capacity 2026-02-28 2026-07-07     118    27499733.0        3.185058e+08                            -2.910061e+08                2.910061e+08                2.466153e+06
+              ar_lag1_7 hormuz_tanker_transits 2026-02-28 2026-07-07     130         529.0        7.397996e+03                            -6.868996e+03                6.868996e+03                5.283843e+01
+       arx_lag1_7_route hormuz_tanker_capacity 2026-02-28 2026-07-07     118    27499733.0        3.216714e+08                            -2.941717e+08                2.941717e+08                2.492980e+06
+       arx_lag1_7_route hormuz_tanker_transits 2026-02-28 2026-07-07     130         529.0        7.585419e+03                            -7.056419e+03                7.056419e+03                5.428014e+01
+arx_lag1_7_route_energy hormuz_tanker_capacity 2026-02-28 2026-07-07     118    27499733.0        3.746947e+08                            -3.471949e+08                3.471949e+08                2.942330e+06
+arx_lag1_7_route_energy hormuz_tanker_transits 2026-02-28 2026-07-07     130         529.0        8.700522e+03                            -8.171522e+03                8.171522e+03                6.285786e+01
+      seasonal_naive_7d hormuz_tanker_capacity 2026-02-28 2026-07-07     118    27499733.0        3.031132e+08                            -2.756134e+08                2.756134e+08                2.335707e+06
+      seasonal_naive_7d hormuz_tanker_transits 2026-02-28 2026-07-07     130         529.0        7.653000e+03                            -7.124000e+03                7.124000e+03                5.480000e+01
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/counterfactual_post_treatment.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/counterfactual_post_treatment_summary.csv
+
+Interpretation guard:
+ - These are conditional counterfactual gaps, not final causal inference.
+ - AR-only has no post-treatment covariate exposure and is the working primary.
+ - Route+energy ARX may absorb post-treatment energy mediation; compare it to route-only ARX.
+ - Route-only ARX is also conditional on observed post-treatment Panama traffic.
+ - Placebo inference is still required before thesis-level effect claims.
+
+========================================================================
+[08/49] Run matched-horizon admitted Chronos-2 counterfactual
+========================================================================
+counterfactual cross-check: model=chronos2, cutoff=2026-02-28
+determinism: seed=20260612, torch_configured=True
+train: < 2026-02-28 (univariate, pre-treatment only)  forecast: >= 2026-02-28
+
+
+Loading weights:   0%|          | 0/170 [00:00<?, ?it/s]
+Loading weights: 100%|██████████| 170/170 [00:00<00:00, 12576.85it/s]
+Counterfactual shortfall (counterfactual - observed):
+   model                 target  n_days  observed_sum  counterfactual_sum  cumulative_throughput_loss  ar_cumulative_throughput_loss  pct_diff_vs_ar  matched_ar_dates  matched_ar_observed
+chronos2 hormuz_tanker_transits     130         529.0        7.143888e+03                6.614888e+03                   6.868996e+03       -3.699341              True                 True
+chronos2 hormuz_tanker_capacity     118    27499733.0        2.875463e+08                2.600465e+08                   2.910061e+08      -10.638794              True                 True
+
+Interpretation guard (CLAUDE.md rules 1, 2):
+ - Robustness cross-check only: a similar shortfall under a stronger,
+   better-calibrated forecaster shows the headline is not an AR artifact.
+ - NOT causal inference; AR-only remains the locked primary estimator.
+ - lower_cf/upper_cf are POINTWISE daily bands; do NOT sum them into a
+   cumulative interval — use run_long_horizon_intervals.py for that.
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/tsfm_counterfactual_daily.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/tsfm_counterfactual_summary.csv
+
+========================================================================
+[09/49] Refresh deterministic TSFM provenance
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/tsfm_run_manifest.json
+  .venv-bench: python 3.11.15, torch 2.4.1, pandas metadata consistent=True, pip check=passed, lock exact=True
+  .venv-timesfm: python 3.11.15, torch 2.12.1, pandas metadata consistent=True, pip check=passed, lock exact=True
+  models--amazon--chronos-2: 29ec3766d36d6f73f0696f85560a422f50e8498c
+  models--google--timesfm-2.5-200m-pytorch: 1d952420fba87f3c6dee4f240de0f1a0fbc790e3
+  models--Salesforce--moirai-2.0-R-small: 30f43ff08c8494f4943ae1521e9d4e94a0fbb389
+
+========================================================================
+[10/49] Quantify AIS-dark-vessel bound
+========================================================================
+AIS-dark-vessel bound — primary estimator 'ar_lag1_7' on 'hormuz_tanker_transits'
+  observed post-period transits      O = 529
+  counterfactual post-period transits C = 7,398
+  naive observed reduction (CONDITIONAL UPPER BOUND under one-sided undercounting, d=0): 0.9285 (92.8%)
+
+Sensitivity — true reduction if a fraction d of true transits went dark:
+ assumed_dark_rate  implied_true_transits  true_reduction
+               0.0             529.000000        0.928494
+               0.1             587.777778        0.920549
+               0.2             661.250000        0.910618
+               0.3             755.714286        0.897849
+               0.4             881.666667        0.880824
+               0.5            1058.000000        0.856988
+               0.7            1763.333333        0.761647
+               0.9            5290.000000        0.284941
+
+Critical dark rate d* needed to pull the true reduction down to R:
+ reference_reduction  critical_dark_rate  exceeds_total_blackout
+                0.50            0.856988                   False
+                0.75            0.713977                   False
+                0.90            0.284941                   False
+                0.95            0.000000                   False
+
+Headline: to make the TRUE collapse merely 50%, 86% of ALL tankers truly transiting Hormuz in the post-period would have had to be simultaneously AIS-dark.
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/ais_dark_bound_sensitivity.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/ais_dark_bound_critical_rates.csv
+
+Guard: this is a conditional directional measurement-error bound, not a causal correction. It assumes one-sided undercounting: treatment-period observability error adds missed true transits, not false-positive observed transits. d is the INCREMENTAL treatment-period dark rate above the baseline gap-fill already in the pre-treatment counterfactual.
+
+========================================================================
+[11/49] Run Bayesian structural counterfactual
+========================================================================
+BSTS counterfactual summary:
+                  model                 target train_start  train_end post_start   post_end  n_post_days  validation_mase_mean  validation_rmse_mean  validation_mase_median  posterior_observation_sd_median  posterior_level_innovation_sd_median  prior_sensitivity_median_shortfall_min  prior_sensitivity_median_shortfall_max  prior_sensitivity_lower_endpoint_min  prior_sensitivity_upper_endpoint_max  pre_period_ppc_pointwise_95_coverage  pre_period_ppc_bayesian_p_sd  posterior_median_shortfall  posterior_mean_shortfall    lower_95     upper_95  posterior_probability_shortfall_positive  n_posterior_draws
+bsts_local_level_weekly hormuz_tanker_transits  2022-01-01 2026-02-27 2026-02-28 2026-07-07          130              0.836736               13.7971                0.805607                        11.088792                              2.840217                             6457.588752                             6751.890218                            878.615711                            13836.1887                              0.971034                      0.690667                 6437.924603               6489.100861 1754.634706 11709.630187                                       1.0               1500
+
+Prior-sensitivity shortfall range:
+ observation_prior_scale_multiplier  level_prior_scale_multiplier  posterior_median_shortfall    lower_95     upper_95
+                                0.1                           0.1                 6751.890218 2701.941542 10578.159080
+                                0.1                           0.5                 6687.281003 1776.372039 11881.904274
+                                0.1                           2.0                 6457.588752  878.615711 13836.188700
+                                0.5                           0.1                 6750.730790 2707.400187 10574.164305
+                                0.5                           0.5                 6688.574399 1780.423339 11877.236563
+                                0.5                           2.0                 6459.902756  882.985690 13827.982233
+                                2.0                           0.1                 6750.851510 2727.409415 10559.420609
+                                2.0                           0.5                 6693.297597 1795.286451 11860.104201
+                                2.0                           2.0                 6468.382509  899.183912 13798.154534
+
+Pre-period PPC: {'n_pre_days': 1519, 'pointwise_95_coverage': 0.9710335747202107, 'posterior_median_rmse': 10.342900312048751, 'bayesian_p_mean': 0.9693333333333334, 'bayesian_p_sd': 0.6906666666666667, 'bayesian_p_max': 0.672}
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/bsts_counterfactual.png
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/bsts_pre_period_ppc.png
+Interpretation guard: posterior intervals are model-conditional; this is corroboration, not causal ATT.
+
+========================================================================
+[12/49] Run temporal placebos
+========================================================================
+actual window: 2026-02-28 -> 2026-07-07 (130 calendar days)
+placebo windows: 35 overlapping; ~7 non-overlapping horizon-length windows
+
+Placebo-in-time summary:
+                  model                 target  actual_cumulative_throughput_loss  actual_mean_daily_throughput_loss  actual_n_days  actual_n_train  n_placebos  approx_non_overlapping_placebos  overlapping_windows  nominal_p_value_supported  placebo_train_min  placebo_train_median  placebo_train_max  placebo_valid_days_min  placebo_valid_days_median  placebo_valid_days_max  placebo_loss_mean  placebo_loss_median  placebo_loss_p05  placebo_loss_p95  loss_vs_placebo_p95_ratio  placebo_mean_daily_loss_mean  placebo_mean_daily_loss_median  placebo_mean_daily_loss_p05  placebo_mean_daily_loss_p95  mean_daily_loss_vs_placebo_p95_ratio  overlapping_reference_rank_loss_ge_actual  overlapping_reference_rank_mean_daily_loss_ge_actual  overlapping_reference_rank_abs_loss_ge_actual
+              ar_lag1_7 hormuz_tanker_capacity                       2.910061e+08                       2.466153e+06            118            1519          35                                7                 True                      False                365                 875.0               1385                     130                      130.0                     130       4.663773e+07         3.762347e+07     -3.182800e+06      1.141891e+08                   2.548458                 358751.784207                   289411.316153                -24483.075257                878377.418536                              2.807623                                   0.027778                                              0.027778                                       0.027778
+              ar_lag1_7 hormuz_tanker_transits                       6.868996e+03                       5.283843e+01            130            1519          35                                7                 True                      False                365                 875.0               1385                     130                      130.0                     130       6.936761e+02         4.926572e+02     -4.261806e+02      2.124297e+03                   3.233539                      5.335970                        3.789671                    -3.278312                    16.340744                              3.233539                                   0.027778                                              0.027778                                       0.027778
+       arx_lag1_7_route hormuz_tanker_capacity                       2.941717e+08                       2.492980e+06            118            1519          35                                7                 True                      False                365                 875.0               1385                     130                      130.0                     130       4.518581e+07         3.563289e+07     -8.936575e+06      1.158507e+08                   2.539231                 347583.175324                   274099.154857                -68742.888087                891159.231277                              2.797458                                   0.027778                                              0.027778                                       0.027778
+       arx_lag1_7_route hormuz_tanker_transits                       7.056419e+03                       5.428014e+01            130            1519          35                                7                 True                      False                365                 875.0               1385                     130                      130.0                     130       6.374528e+02         4.170976e+02     -6.153147e+02      2.170796e+03                   3.250614                      4.903483                        3.208443                    -4.733190                    16.698429                              3.250614                                   0.027778                                              0.027778                                       0.027778
+arx_lag1_7_route_energy hormuz_tanker_capacity                       3.471949e+08                       2.942330e+06            118            1519          35                                7                 True                      False                365                 875.0               1385                     130                      130.0                     130       1.979371e+07         8.379681e+06     -3.382419e+07      9.258614e+07                   3.749967                 152259.304434                    64459.086843               -260186.038587                712201.064873                              4.131319                                   0.027778                                              0.027778                                       0.027778
+arx_lag1_7_route_energy hormuz_tanker_transits                       8.171522e+03                       6.285786e+01            130            1519          35                                7                 True                      False                365                 875.0               1385                     130                      130.0                     130       1.310589e+02        -1.757235e+01     -9.584275e+02      1.541590e+03                   5.300709                      1.008146                       -0.135172                    -7.372519                    11.858388                              5.300709                                   0.027778                                              0.027778                                       0.027778
+      seasonal_naive_7d hormuz_tanker_capacity                       2.756134e+08                       2.335707e+06            118            1519          35                                7                 True                      False                365                 875.0               1385                     130                      130.0                     130      -9.399928e+06        -1.235212e+07     -8.989431e+07      7.794640e+07                   3.535936                 -72307.139780                   -95016.315385               -691494.661538                599587.678462                              3.895522                                   0.027778                                              0.027778                                       0.027778
+      seasonal_naive_7d hormuz_tanker_transits                       7.124000e+03                       5.480000e+01            130            1519          35                                7                 True                      False                365                 875.0               1385                     130                      130.0                     130      -1.979429e+02        -3.380000e+02     -1.592800e+03      1.342100e+03                   5.308099                     -1.522637                       -2.600000                   -12.252308                    10.323846                              5.308099                                   0.027778                                              0.027778                                       0.027778
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/placebo_time_effects.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/placebo_time_summary.csv
+
+Interpretation guard:
+ - Placebo windows overlap; their reference ranks are not p-values.
+ - Report separation ratios and state when the loss exceeds all windows.
+ - Use disjoint blocks for rank p-values and conformal calibration.
+ - Use mean-daily loss for capacity comparisons because valid day counts differ.
+ - This tests whether the observed gap is unusual vs earlier forecast errors.
+ - It does not solve AIS measurement bias or donor contamination by itself.
+
+========================================================================
+[13/49] Run independent-block and conformal inference
+========================================================================
+Block placebo and conformal summary:
+    model                 target                             scheme  horizon_calendar_days  n_overlapping_placebo_windows  n_independent_placebo_blocks  placebo_p_value_greater  placebo_p_value_floor  actual_to_placebo_p95_ratio  point_effect  interval_lower  interval_upper  nominal_coverage      radius  n_calibration_blocks  order_statistic_rank  finite_interval_supported  maximum_finite_coverage
+ar_lag1_7 hormuz_tanker_transits non_overlapping_horizon_block_rank                    130                             35                             7                    0.125                  0.125                      4.16101   6868.996006      5198.82466     8539.167352              0.80 1670.171346                     7                     7                       True                    0.875
+ar_lag1_7 hormuz_tanker_transits non_overlapping_horizon_block_rank                    130                             35                             7                    0.125                  0.125                      4.16101   6868.996006            -inf             inf              0.90         inf                     7                     8                      False                    0.875
+ar_lag1_7 hormuz_tanker_transits non_overlapping_horizon_block_rank                    130                             35                             7                    0.125                  0.125                      4.16101   6868.996006            -inf             inf              0.95         inf                     7                     8                      False                    0.875
+Interpretation guard: only disjoint 130-calendar-day windows enter the rank p-value and conformal calibration.
+
+========================================================================
+[14/49] Calibrate residual intervals
+========================================================================
+Residual-calibrated aggregate intervals:
+                  model                 target  alpha  block_length  n_bootstrap_draws  n_calibration_residuals  n_post_days  point_cumulative_throughput_loss  bootstrap_residual_sum_mean_centered_out  loss_interval_lower  loss_interval_upper  mean_daily_loss  mean_daily_loss_interval_lower  mean_daily_loss_interval_upper  residual_q_low  residual_q_high
+              ar_lag1_7 hormuz_tanker_capacity   0.05             7               5000                     1140          118                      2.910061e+08                             -4.015178e+07         2.629594e+08         3.175150e+08     2.466153e+06                    2.228470e+06                    2.690805e+06   -1.870291e+06     1.421732e+06
+       arx_lag1_7_route hormuz_tanker_capacity   0.05             7               5000                     1140          118                      2.941717e+08                             -3.843527e+07         2.655183e+08         3.212113e+08     2.492980e+06                    2.250155e+06                    2.722129e+06   -1.843793e+06     1.472291e+06
+arx_lag1_7_route_energy hormuz_tanker_capacity   0.05             7               5000                     1140          118                      3.471949e+08                             -1.656113e+07         3.204155e+08         3.741781e+08     2.942330e+06                    2.715386e+06                    3.171001e+06   -1.621431e+06     1.630565e+06
+      seasonal_naive_7d hormuz_tanker_capacity   0.05             7               5000                     1140          118                      2.756134e+08                              1.001744e+07         2.490631e+08         3.014895e+08     2.335707e+06                    2.110705e+06                    2.554995e+06   -2.038973e+06     2.250755e+06
+              ar_lag1_7 hormuz_tanker_transits   0.05             7               5000                     1140          130                      6.868996e+03                             -6.594893e+02         6.305209e+03         7.410246e+03     5.283843e+01                    4.850161e+01                    5.700189e+01   -3.075645e+01     2.326406e+01
+       arx_lag1_7_route hormuz_tanker_transits   0.05             7               5000                     1140          130                      7.056419e+03                             -5.957107e+02         6.484455e+03         7.613021e+03     5.428014e+01                    4.988043e+01                    5.856170e+01   -3.055875e+01     2.382664e+01
+arx_lag1_7_route_energy hormuz_tanker_transits   0.05             7               5000                     1140          130                      8.171522e+03                             -1.259777e+02         7.638170e+03         8.710097e+03     6.285786e+01                    5.875515e+01                    6.700074e+01   -2.654734e+01     2.721555e+01
+      seasonal_naive_7d hormuz_tanker_transits   0.05             7               5000                     1140          130                      7.124000e+03                              2.429362e+02         6.640964e+03         7.624064e+03     5.480000e+01                    5.108434e+01                    5.864664e+01   -3.000000e+01     3.600000e+01
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/counterfactual_intervals_daily.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/counterfactual_intervals_summary.csv
+
+Interpretation guard:
+ - Intervals use pre-treatment rolling-origin residuals, not post-treatment fit.
+ - Aggregate intervals are block-resampled residual-sum bands, not structural causal intervals.
+ - If AIS dark activity is treatment-correlated, these intervals do not fix that measurement bias.
+
+========================================================================
+[15/49] Build full-horizon empirical placebo bands
+========================================================================
+Full-horizon empirical placebo quantile bands vs short-fold intervals (130 calendar days):
+                  model                 target  point_cumulative_throughput_loss  interval_30dfold_lower  interval_30dfold_upper  overlapping_placebo_quantile_band_lower  overlapping_placebo_quantile_band_upper  interval_circular_bootstrap_lower  interval_circular_bootstrap_upper  widening_factor_vs_30dfold  overlapping_placebo_band_excludes_zero_descriptively  horizon_calendar_days  n_horizon_windows  effective_non_overlapping_windows
+              ar_lag1_7 hormuz_tanker_capacity                      2.910061e+08            2.629594e+08            3.175150e+08                             2.155917e+08                             3.443707e+08                       2.572961e+08                       3.230709e+08                    2.360508                                                  True                    130                 35                                  7
+       arx_lag1_7_route hormuz_tanker_capacity                      2.941717e+08            2.655183e+08            3.212113e+08                             2.162404e+08                             3.579140e+08                       2.599239e+08                       3.278443e+08                    2.543831                                                  True                    130                 35                                  7
+arx_lag1_7_route_energy hormuz_tanker_capacity                      3.471949e+08            3.204155e+08            3.741781e+08                             2.649704e+08                             4.029778e+08                       3.144645e+08                       3.790765e+08                    2.566977                                                  True                    130                 35                                  7
+      seasonal_naive_7d hormuz_tanker_capacity                      2.756134e+08            2.490631e+08            3.014895e+08                             1.851517e+08                             3.692724e+08                       2.455269e+08                       3.053299e+08                    3.511990                                                  True                    130                 35                                  7
+              ar_lag1_7 hormuz_tanker_transits                      6.868996e+03            6.305209e+03            7.410246e+03                             5.430335e+03                             8.088858e+03                       6.179537e+03                       7.549539e+03                    2.405822                                                  True                    130                 35                                  7
+       arx_lag1_7_route hormuz_tanker_transits                      7.056419e+03            6.484455e+03            7.613021e+03                             5.502441e+03                             8.528003e+03                       6.331937e+03                       7.732883e+03                    2.680891                                                  True                    130                 35                                  7
+arx_lag1_7_route_energy hormuz_tanker_transits                      8.171522e+03            7.638170e+03            8.710097e+03                             6.520026e+03                             9.318988e+03                       7.494205e+03                       8.833734e+03                    2.611151                                                  True                    130                 35                                  7
+      seasonal_naive_7d hormuz_tanker_transits                      7.124000e+03            6.640964e+03            7.624064e+03                             5.373307e+03                             8.891707e+03                       6.538351e+03                       7.717376e+03                    3.578883                                                  True                    130                 35                                  7
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/long_horizon_intervals_summary.csv
+
+Interpretation guard:
+ - The band uses realised full-horizon placebo forecast errors.
+ - The windows overlap: 2.5/97.5% are descriptive quantiles only.
+ - Do not label this band a 95% confidence, prediction, or conformal interval.
+ - Use the disjoint-block rank and block-conformal outputs for inference.
+ - The circular-block band independently resamples the chronological OOF residual path.
+ - It does not fix AIS measurement bias, donor contamination, or energy mediation.
+
+========================================================================
+[16/49] Run treatment-window robustness
+========================================================================
+fixed training cutoff: 2026-02-28 (training rows are strictly before this date)
+later event dates define post windows only; they are never training cutoffs
+forecast bridge: 2026-02-28 -> 2026-07-07 (scoring depends on window)
+donut_clean_post_after_force_majeure: train 2022-01-01 -> 2026-02-27, score post >= 2026-03-05
+anchored_kinetic_trigger: train 2022-01-01 -> 2026-02-27, score post >= 2026-02-28
+anchored_closure_declaration: train 2022-01-01 -> 2026-02-27, score post >= 2026-03-02
+anchored_force_majeure: train 2022-01-01 -> 2026-02-27, score post >= 2026-03-04
+
+Treatment-window robustness summary:
+                              window                   model                 target  is_donut fixed_train_cutoff train_start  train_end forecast_bridge_start post_start   post_end excluded_start excluded_end  n_train  n_forecast_bridge_days  n_scored_days                                                                                                                          note  n_days  observed_sum  counterfactual_sum  cumulative_gap_observed_minus_predicted  cumulative_throughput_loss  mean_daily_throughput_loss
+donut_clean_post_after_force_majeure       seasonal_naive_7d hormuz_tanker_transits      True         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-05 2026-07-07     2026-02-28   2026-03-04     1519                     130            125 Donut sensitivity: train before operational onset and exclude the transition through QatarEnergy's force-majeure declaration.     125         480.0        7.332000e+03                            -6.852000e+03                6.852000e+03                5.481600e+01
+donut_clean_post_after_force_majeure               ar_lag1_7 hormuz_tanker_transits      True         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-05 2026-07-07     2026-02-28   2026-03-04     1519                     130            125 Donut sensitivity: train before operational onset and exclude the transition through QatarEnergy's force-majeure declaration.     125         480.0        7.121672e+03                            -6.641672e+03                6.641672e+03                5.313338e+01
+donut_clean_post_after_force_majeure        arx_lag1_7_route hormuz_tanker_transits      True         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-05 2026-07-07     2026-02-28   2026-03-04     1519                     130            125 Donut sensitivity: train before operational onset and exclude the transition through QatarEnergy's force-majeure declaration.     125         480.0        7.301988e+03                            -6.821988e+03                6.821988e+03                5.457591e+01
+donut_clean_post_after_force_majeure arx_lag1_7_route_energy hormuz_tanker_transits      True         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-05 2026-07-07     2026-02-28   2026-03-04     1519                     130            125 Donut sensitivity: train before operational onset and exclude the transition through QatarEnergy's force-majeure declaration.     125         480.0        8.426278e+03                            -7.946278e+03                7.946278e+03                6.357023e+01
+donut_clean_post_after_force_majeure       seasonal_naive_7d hormuz_tanker_capacity      True         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-05 2026-07-07     2026-02-28   2026-03-04     1519                     130            125 Donut sensitivity: train before operational onset and exclude the transition through QatarEnergy's force-majeure declaration.     113    24496200.0        2.875545e+08                            -2.630583e+08                2.630583e+08                2.327949e+06
+donut_clean_post_after_force_majeure               ar_lag1_7 hormuz_tanker_capacity      True         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-05 2026-07-07     2026-02-28   2026-03-04     1519                     130            125 Donut sensitivity: train before operational onset and exclude the transition through QatarEnergy's force-majeure declaration.     113    24496200.0        3.054079e+08                            -2.809117e+08                2.809117e+08                2.485944e+06
+donut_clean_post_after_force_majeure        arx_lag1_7_route hormuz_tanker_capacity      True         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-05 2026-07-07     2026-02-28   2026-03-04     1519                     130            125 Donut sensitivity: train before operational onset and exclude the transition through QatarEnergy's force-majeure declaration.     113    24496200.0        3.084040e+08                            -2.839078e+08                2.839078e+08                2.512458e+06
+donut_clean_post_after_force_majeure arx_lag1_7_route_energy hormuz_tanker_capacity      True         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-05 2026-07-07     2026-02-28   2026-03-04     1519                     130            125 Donut sensitivity: train before operational onset and exclude the transition through QatarEnergy's force-majeure declaration.     113    24496200.0        3.619174e+08                            -3.374212e+08                3.374212e+08                2.986028e+06
+            anchored_kinetic_trigger       seasonal_naive_7d hormuz_tanker_transits     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-02-28 2026-07-07           None         None     1519                     130            130                                                      Sensitivity window; training cutoff remains fixed before the disruption.     130         529.0        7.653000e+03                            -7.124000e+03                7.124000e+03                5.480000e+01
+            anchored_kinetic_trigger               ar_lag1_7 hormuz_tanker_transits     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-02-28 2026-07-07           None         None     1519                     130            130                                                      Sensitivity window; training cutoff remains fixed before the disruption.     130         529.0        7.397996e+03                            -6.868996e+03                6.868996e+03                5.283843e+01
+            anchored_kinetic_trigger        arx_lag1_7_route hormuz_tanker_transits     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-02-28 2026-07-07           None         None     1519                     130            130                                                      Sensitivity window; training cutoff remains fixed before the disruption.     130         529.0        7.585419e+03                            -7.056419e+03                7.056419e+03                5.428014e+01
+            anchored_kinetic_trigger arx_lag1_7_route_energy hormuz_tanker_transits     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-02-28 2026-07-07           None         None     1519                     130            130                                                      Sensitivity window; training cutoff remains fixed before the disruption.     130         529.0        8.700522e+03                            -8.171522e+03                8.171522e+03                6.285786e+01
+            anchored_kinetic_trigger       seasonal_naive_7d hormuz_tanker_capacity     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-02-28 2026-07-07           None         None     1519                     130            130                                                      Sensitivity window; training cutoff remains fixed before the disruption.     118    27499733.0        3.031132e+08                            -2.756134e+08                2.756134e+08                2.335707e+06
+            anchored_kinetic_trigger               ar_lag1_7 hormuz_tanker_capacity     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-02-28 2026-07-07           None         None     1519                     130            130                                                      Sensitivity window; training cutoff remains fixed before the disruption.     118    27499733.0        3.185058e+08                            -2.910061e+08                2.910061e+08                2.466153e+06
+            anchored_kinetic_trigger        arx_lag1_7_route hormuz_tanker_capacity     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-02-28 2026-07-07           None         None     1519                     130            130                                                      Sensitivity window; training cutoff remains fixed before the disruption.     118    27499733.0        3.216714e+08                            -2.941717e+08                2.941717e+08                2.492980e+06
+            anchored_kinetic_trigger arx_lag1_7_route_energy hormuz_tanker_capacity     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-02-28 2026-07-07           None         None     1519                     130            130                                                      Sensitivity window; training cutoff remains fixed before the disruption.     118    27499733.0        3.746947e+08                            -3.471949e+08                3.471949e+08                2.942330e+06
+        anchored_closure_declaration       seasonal_naive_7d hormuz_tanker_transits     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-02 2026-07-07           None         None     1519                     130            128                                                      Sensitivity window; training cutoff remains fixed before the disruption.     128         484.0        7.503000e+03                            -7.019000e+03                7.019000e+03                5.483594e+01
+        anchored_closure_declaration               ar_lag1_7 hormuz_tanker_transits     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-02 2026-07-07           None         None     1519                     130            128                                                      Sensitivity window; training cutoff remains fixed before the disruption.     128         484.0        7.291676e+03                            -6.807676e+03                6.807676e+03                5.318497e+01
+        anchored_closure_declaration        arx_lag1_7_route hormuz_tanker_transits     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-02 2026-07-07           None         None     1519                     130            128                                                      Sensitivity window; training cutoff remains fixed before the disruption.     128         484.0        7.475241e+03                            -6.991241e+03                6.991241e+03                5.461907e+01
+        anchored_closure_declaration arx_lag1_7_route_energy hormuz_tanker_transits     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-02 2026-07-07           None         None     1519                     130            128                                                      Sensitivity window; training cutoff remains fixed before the disruption.     128         484.0        8.595620e+03                            -8.111620e+03                8.111620e+03                6.337203e+01
+        anchored_closure_declaration       seasonal_naive_7d hormuz_tanker_capacity     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-02 2026-07-07           None         None     1519                     130            128                                                      Sensitivity window; training cutoff remains fixed before the disruption.     116    24509602.0        2.966340e+08                            -2.721244e+08                2.721244e+08                2.345900e+06
+        anchored_closure_declaration               ar_lag1_7 hormuz_tanker_capacity     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-02 2026-07-07           None         None     1519                     130            128                                                      Sensitivity window; training cutoff remains fixed before the disruption.     116    24509602.0        3.135704e+08                            -2.890608e+08                2.890608e+08                2.491904e+06
+        anchored_closure_declaration        arx_lag1_7_route hormuz_tanker_capacity     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-02 2026-07-07           None         None     1519                     130            128                                                      Sensitivity window; training cutoff remains fixed before the disruption.     116    24509602.0        3.166311e+08                            -2.921215e+08                2.921215e+08                2.518289e+06
+        anchored_closure_declaration arx_lag1_7_route_energy hormuz_tanker_capacity     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-02 2026-07-07           None         None     1519                     130            128                                                      Sensitivity window; training cutoff remains fixed before the disruption.     116    24509602.0        3.699395e+08                            -3.454299e+08                3.454299e+08                2.977844e+06
+              anchored_force_majeure       seasonal_naive_7d hormuz_tanker_transits     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-04 2026-07-07           None         None     1519                     130            126                                                      Sensitivity window; training cutoff remains fixed before the disruption.     126         480.0        7.398000e+03                            -6.918000e+03                6.918000e+03                5.490476e+01
+              anchored_force_majeure               ar_lag1_7 hormuz_tanker_transits     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-04 2026-07-07           None         None     1519                     130            126                                                      Sensitivity window; training cutoff remains fixed before the disruption.     126         480.0        7.178213e+03                            -6.698213e+03                6.698213e+03                5.316042e+01
+              anchored_force_majeure        arx_lag1_7_route hormuz_tanker_transits     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-04 2026-07-07           None         None     1519                     130            126                                                      Sensitivity window; training cutoff remains fixed before the disruption.     126         480.0        7.359180e+03                            -6.879180e+03                6.879180e+03                5.459667e+01
+              anchored_force_majeure arx_lag1_7_route_energy hormuz_tanker_transits     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-04 2026-07-07           None         None     1519                     130            126                                                      Sensitivity window; training cutoff remains fixed before the disruption.     126         480.0        8.483079e+03                            -8.003079e+03                8.003079e+03                6.351650e+01
+              anchored_force_majeure       seasonal_naive_7d hormuz_tanker_capacity     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-04 2026-07-07           None         None     1519                     130            126                                                      Sensitivity window; training cutoff remains fixed before the disruption.     114    24496200.0        2.920165e+08                            -2.675203e+08                2.675203e+08                2.346669e+06
+              anchored_force_majeure               ar_lag1_7 hormuz_tanker_capacity     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-04 2026-07-07           None         None     1519                     130            126                                                      Sensitivity window; training cutoff remains fixed before the disruption.     114    24496200.0        3.083092e+08                            -2.838130e+08                2.838130e+08                2.489588e+06
+              anchored_force_majeure        arx_lag1_7_route hormuz_tanker_capacity     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-04 2026-07-07           None         None     1519                     130            126                                                      Sensitivity window; training cutoff remains fixed before the disruption.     114    24496200.0        3.113153e+08                            -2.868191e+08                2.868191e+08                2.515957e+06
+              anchored_force_majeure arx_lag1_7_route_energy hormuz_tanker_capacity     False         2026-02-28  2022-01-01 2026-02-27            2026-02-28 2026-03-04 2026-07-07           None         None     1519                     130            126                                                      Sensitivity window; training cutoff remains fixed before the disruption.     114    24496200.0        3.647389e+08                            -3.402427e+08                3.402427e+08                2.984585e+06
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/treatment_robustness_summary.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/treatment_robustness_daily.csv
+
+Interpretation guard:
+ - This is not a cutoff sweep; the training cutoff remains 2026-02-28.
+ - The donut design excludes 2026-02-28 through 2026-03-04 from effect scoring.
+ - Later cutoffs would train on disrupted days and poison the baseline.
+ - Route+energy ARX may absorb post-treatment energy mediation; compare route-only.
+
+========================================================================
+[17/49] Run spatial placebos
+========================================================================
+Spatial placebo summary:
+      value_col                donor_set  actual_cumulative_throughput_loss  actual_mean_daily_throughput_loss  actual_counterfactual_sum  actual_normalized_throughput_loss  actual_n_days  n_donors  donor_loss_mean  donor_loss_median  donor_loss_p95  loss_vs_donor_p95_ratio  donor_mean_daily_loss_mean  donor_mean_daily_loss_median  donor_mean_daily_loss_p95  mean_daily_loss_vs_donor_p95_ratio  donor_normalized_loss_mean  donor_normalized_loss_median  donor_normalized_loss_p95  normalized_loss_vs_donor_p95_ratio  p_donor_loss_ge_actual  p_donor_mean_daily_loss_ge_actual  p_donor_normalized_loss_ge_actual max_donor_slug  max_donor_loss max_normalized_donor_slug  max_normalized_donor_loss
+capacity_tanker               all_donors                        275613446.0                       2.335707e+06                303113179.0                           0.909276            118        27     7.218003e+06           -82568.0     35443606.90                 7.776112                55924.548776                   -635.138462              272643.130000                            8.566903                   -0.102472                      0.012946                   0.330345                            2.752502                0.035714                           0.035714                           0.037037 malacca_strait     170388294.0              kerch_strait                   0.631460
+capacity_tanker low_contamination_donors                        275613446.0                       2.335707e+06                303113179.0                           0.909276            118        22     8.647861e+06          -246557.0     37123771.15                 7.424177                67014.696924                  -1908.832797              285567.470385                            8.179178                   -0.125171                     -0.003141                   0.341340                            2.663842                0.043478                           0.043478                           0.045455 malacca_strait     170388294.0              kerch_strait                   0.631460
+       n_tanker               all_donors                             7124.0                       5.480000e+01                     7653.0                           0.930877            130        27     1.310370e+02               -4.0         1010.90                 7.047186                    1.007977                     -0.030769                   7.776154                            7.047186                   -0.049769                      0.004836                   0.204347                            4.555371                0.035714                           0.035714                           0.037037 malacca_strait          2495.0              ombai_strait                   0.246957
+       n_tanker low_contamination_donors                             7124.0                       5.480000e+01                     7653.0                           0.930877            130        22     1.391818e+02              -31.0         1023.00                 6.963832                    1.070629                     -0.238462                   7.869231                            6.963832                   -0.053012                     -0.020944                   0.210229                            4.427914                0.043478                           0.043478                           0.045455 malacca_strait          2495.0              ombai_strait                   0.246957
+
+Leave-one-donor-out summary:
+      value_col                donor_set         dropped_slug  n_donors  loss_vs_donor_p95_ratio  normalized_loss_vs_donor_p95_ratio  p_donor_loss_ge_actual  p_donor_normalized_loss_ge_actual
+capacity_tanker               all_donors bab_el_mandeb_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors       balabac_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors        bering_strait        26                 7.703081                            2.752502                0.037037                           0.037037
+capacity_tanker               all_donors         bohai_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors      bosporus_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors    cape_of_good_hope        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors         dover_strait        26                 8.140448                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors     gibraltar_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors         kerch_strait        26                 7.703081                            3.086398                0.037037                           0.038462
+capacity_tanker               all_donors         korea_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors        lombok_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors         luzon_strait        26                 9.564335                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors      magellan_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors      makassar_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors       malacca_strait        26                 9.564335                            3.086398                0.037037                           0.038462
+capacity_tanker               all_donors       mindoro_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors         mona_passage        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors         ombai_strait        26                 7.703081                            2.757130                0.037037                           0.038462
+capacity_tanker               all_donors       oresund_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors         panama_canal        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors           suez_canal        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors         sunda_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors        taiwan_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors        torres_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors       tsugaru_strait        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors     windward_passage        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker               all_donors      yucatan_channel        26                 7.703081                            2.734301                0.037037                           0.038462
+capacity_tanker low_contamination_donors       balabac_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors        bering_strait        21                 7.357578                            2.663842                0.045455                           0.045455
+capacity_tanker low_contamination_donors         bohai_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors      bosporus_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors         dover_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors         kerch_strait        21                 7.357578                            3.035373                0.045455                           0.047619
+capacity_tanker low_contamination_donors         korea_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors        lombok_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors         luzon_strait        21                 8.966203                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors      magellan_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors      makassar_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors       malacca_strait        21                 8.966203                            2.895176                0.045455                           0.047619
+capacity_tanker low_contamination_donors       mindoro_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors         mona_passage        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors         ombai_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors       oresund_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors         sunda_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors        taiwan_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors        torres_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors       tsugaru_strait        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors     windward_passage        21                 7.357578                            2.555251                0.045455                           0.047619
+capacity_tanker low_contamination_donors      yucatan_channel        21                 7.357578                            2.555251                0.045455                           0.047619
+       n_tanker               all_donors bab_el_mandeb_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors       balabac_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors        bering_strait        26                 7.027374                            4.555371                0.037037                           0.037037
+       n_tanker               all_donors         bohai_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors      bosporus_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors    cape_of_good_hope        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors         dover_strait        26                 7.418901                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors     gibraltar_strait        26                 7.102692                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors         kerch_strait        26                 7.027374                            4.561891                0.037037                           0.038462
+       n_tanker               all_donors         korea_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors        lombok_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors         luzon_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors      magellan_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors      makassar_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors       malacca_strait        26                 7.418901                            5.025457                0.037037                           0.038462
+       n_tanker               all_donors       mindoro_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors         mona_passage        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors         ombai_strait        26                 7.027374                            5.025457                0.037037                           0.038462
+       n_tanker               all_donors       oresund_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors         panama_canal        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors           suez_canal        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors         sunda_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors        taiwan_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors        torres_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors       tsugaru_strait        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors     windward_passage        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker               all_donors      yucatan_channel        26                 7.027374                            4.529296                0.037037                           0.038462
+       n_tanker low_contamination_donors       balabac_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors        bering_strait        21                 6.929961                            4.427914                0.045455                           0.045455
+       n_tanker low_contamination_donors         bohai_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors      bosporus_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors         dover_strait        21                 7.676724                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors         kerch_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors         korea_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors        lombok_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors         luzon_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors      magellan_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors      makassar_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors       malacca_strait        21                 7.676724                            4.906749                0.045455                           0.047619
+       n_tanker low_contamination_donors       mindoro_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors         mona_passage        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors         ombai_strait        21                 6.929961                            4.954709                0.045455                           0.047619
+       n_tanker low_contamination_donors       oresund_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors         sunda_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors        taiwan_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors        torres_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors       tsugaru_strait        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors     windward_passage        21                 6.929961                            4.389571                0.045455                           0.047619
+       n_tanker low_contamination_donors      yucatan_channel        21                 6.929961                            4.389571                0.045455                           0.047619
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/spatial_placebo_effects.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/spatial_placebo_summary.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/spatial_placebo_leave_one_out.csv
+
+Interpretation guard:
+ - This is same-date spatial placebo evidence, not synthetic control.
+ - Leave-one-donor-out is a sensitivity check on the same unweighted donor pool.
+ - Lead with normalized loss (% of counterfactual) because raw counts are scale-confounded.
+ - Low-contamination donors exclude obvious rerouting/spillover corridors.
+ - Donor p-values are descriptive with small N; report raw and normalized separation ratios.
+ - Seasonal naive is used because route-ARX is not symmetric across donors.
+
+========================================================================
+[18/49] Apply Romano-Wolf multiplicity correction
+========================================================================
+                                     family                                      hypothesis  observed_statistic  studentized_statistic  raw_resampling_p_value  romano_wolf_p_value  stepdown_rank  family_size  n_joint_resamples
+disjoint_placebo_time_generators_by_outcome       seasonal_naive_7d::hormuz_tanker_transits        7.124000e+03               9.819655                0.125000             0.125000              1            8                  7
+disjoint_placebo_time_generators_by_outcome arx_lag1_7_route_energy::hormuz_tanker_transits        8.171522e+03               8.985166                0.125000             0.125000              2            8                  7
+disjoint_placebo_time_generators_by_outcome arx_lag1_7_route_energy::hormuz_tanker_capacity        3.471949e+08               7.326845                0.125000             0.125000              3            8                  7
+disjoint_placebo_time_generators_by_outcome        arx_lag1_7_route::hormuz_tanker_transits        7.056419e+03               7.191361                0.125000             0.125000              4            8                  7
+disjoint_placebo_time_generators_by_outcome       seasonal_naive_7d::hormuz_tanker_capacity        2.756134e+08               7.178664                0.125000             0.125000              5            8                  7
+disjoint_placebo_time_generators_by_outcome               ar_lag1_7::hormuz_tanker_transits        6.868996e+03               7.080144                0.125000             0.125000              6            8                  7
+disjoint_placebo_time_generators_by_outcome               ar_lag1_7::hormuz_tanker_capacity        2.910061e+08               5.798879                0.125000             0.125000              7            8                  7
+disjoint_placebo_time_generators_by_outcome        arx_lag1_7_route::hormuz_tanker_capacity        2.941717e+08               5.681009                0.125000             0.125000              8            8                  7
+ spatial_placebo_outcomes_low_contamination                                        n_tanker        9.308768e-01               3.760333                0.045455             0.045455              1            2                 21
+ spatial_placebo_outcomes_low_contamination                                 capacity_tanker        9.092757e-01               2.119690                0.045455             0.045455              2            2                 21
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/romano_wolf_stepdown.csv
+
+Interpretation guard:
+ - Each family uses aligned joint placebo draws; dependence is preserved.
+ - Temporal inference uses only disjoint full-horizon blocks.
+ - Families without a joint null matrix are not pooled by shuffling draws.
+ - Correction is within inference axis, as pre-registered; family sizes are explicit.
+
+========================================================================
+[19/49] Run synthetic control
+========================================================================
+Synthetic-control corroboration summary:
+            unit  n_donors  n_pre_fit_days  n_post_days  pre_rmspe  post_rmspe  post_pre_rmspe_ratio  cumulative_scaled_throughput_loss  mean_daily_scaled_throughput_loss top_weight_slug  top_weight  effective_n_weights       value_col  is_actual fixed_train_cutoff  pre_start    pre_end post_start   post_end               donor_pool fit_status fit_warning  primary_prefit_rmspe_multiplier  primary_prefit_max_pre_rmspe  n_placebos_total  n_placebos_eligible  n_placebos_excluded  p_ratio_ge_actual  p_value_floor  placebo_ratio_p95  ratio_vs_placebo_p95  pre_rmspe_multiple_of_treated eligible_primary_prefit_screen
+strait_of_hormuz        22            1519          130   0.258158    0.839927              3.253534                         108.148189                           0.831909    korea_strait    0.215860             7.442270        n_tanker       True         2026-02-28 2022-01-01 2026-02-27 2026-02-28 2026-07-07 low_contamination_donors   computed                                          2.0                      0.516317              22.0                 14.0                  8.0           0.066667       0.066667           1.501945              2.166214                            NaN                            NaN
+strait_of_hormuz        21             431           38   0.353158    0.840023              2.378607                          30.916462                           0.813591  malacca_strait    0.241338             7.176223 capacity_tanker       True         2026-02-28 2022-01-01 2026-02-27 2026-02-28 2026-07-07 low_contamination_donors   computed                                          2.0                      0.706315              22.0                 10.0                 12.0           0.090909       0.090909           1.688816              1.408446                            NaN                            NaN
+
+Pre-fit RMSPE screen sensitivity:
+      value_col                    screen  is_primary_screen  pre_rmspe_multiplier  treated_pre_rmspe  maximum_eligible_pre_rmspe  actual_post_pre_rmspe_ratio  n_placebos_total  n_placebos_eligible  n_placebos_excluded  p_ratio_ge_actual  p_value_floor  placebo_ratio_p95  ratio_vs_placebo_p95
+       n_tanker pre_rmspe_le_1.5x_treated              False                   1.5           0.258158                    0.387237                     3.253534                22                   11                   11           0.083333       0.083333           1.608076              2.023246
+       n_tanker   pre_rmspe_le_2x_treated               True                   2.0           0.258158                    0.516317                     3.253534                22                   14                    8           0.066667       0.066667           1.501945              2.166214
+       n_tanker   pre_rmspe_le_5x_treated              False                   5.0           0.258158                    1.290791                     3.253534                22                   21                    1           0.045455       0.045455           1.254306              2.593893
+       n_tanker  pre_rmspe_le_10x_treated              False                  10.0           0.258158                    2.581583                     3.253534                22                   22                    0           0.043478       0.043478           1.250499              2.601788
+       n_tanker                unscreened              False                   NaN           0.258158                         inf                     3.253534                22                   22                    0           0.043478       0.043478           1.250499              2.601788
+capacity_tanker pre_rmspe_le_1.5x_treated              False                   1.5           0.353158                    0.529736                     2.378607                22                    8                   14           0.111111       0.111111           1.427635              1.666117
+capacity_tanker   pre_rmspe_le_2x_treated               True                   2.0           0.353158                    0.706315                     2.378607                22                   10                   12           0.090909       0.090909           1.688816              1.408446
+capacity_tanker   pre_rmspe_le_5x_treated              False                   5.0           0.353158                    1.765788                     2.378607                22                   20                    2           0.047619       0.047619           1.456316              1.633304
+capacity_tanker  pre_rmspe_le_10x_treated              False                  10.0           0.353158                    3.531576                     2.378607                22                   22                    0           0.043478       0.043478           1.432290              1.660702
+capacity_tanker                unscreened              False                   NaN           0.353158                         inf                     2.378607                22                   22                    0           0.043478       0.043478           1.432290              1.660702
+
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/synthetic_control_summary.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/synthetic_control_daily.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/synthetic_control_weights.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/synthetic_control_scales.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/synthetic_control_prefit_sensitivity.csv
+
+Interpretation guard:
+ - This is corroboration, not the anchor estimator.
+ - Donors exclude Panama, Suez, Bab el-Mandeb, Cape of Good Hope, and Gibraltar.
+ - Matching is on pre-period mean-scaled throughput, not raw levels.
+ - Pre-period RMSPE is the fit-credibility metric; weak fit limits interpretation.
+ - The remediation-primary eligibility rule is placebo pre-RMSPE <= 2x the treated pre-RMSPE.
+ - Threshold sensitivity at 1.5x, 2x, 5x, 10x, and unscreened is reported so interpretation does not depend on one screen.
+ - Abadie-style rank inference compares the treated post/pre RMSPE ratio only with eligible clean-donor placebos.
+
+========================================================================
+[20/49] Stress synthetic donors and donor-time placebos
+========================================================================
+Synthetic donor-pool stress:
+              donor_pool  n_donors  pre_rmspe  post_pre_rmspe_ratio  cumulative_scaled_throughput_loss
+low_contamination_donors        22   0.258158              3.253534                         108.148189
+    all_available_donors        27   0.253246              3.378261                         110.204820
+
+Donor-by-time block maxima:
+placebo_fold placebo_start placebo_end  n_pseudo_units  mean_post_pre_rmspe_ratio  median_post_pre_rmspe_ratio  max_post_pre_rmspe_ratio
+  placebo_01    2023-01-01  2023-05-10              22                   1.043236                     1.053454                  1.560787
+  placebo_06    2023-05-31  2023-10-07              22                   1.134196                     1.066248                  2.231128
+  placebo_11    2023-10-28  2024-03-05              22                   1.057645                     1.080091                  1.253426
+  placebo_16    2024-03-26  2024-08-02              22                   0.986031                     0.960194                  1.247814
+  placebo_21    2024-08-23  2024-12-30              22                   1.124180                     1.028611                  1.996189
+  placebo_26    2025-01-20  2025-05-29              22                   0.961871                     0.972993                  1.260359
+  placebo_31    2025-06-19  2025-10-26              22                   1.044719                     0.997616                  1.878242
+
+Disjoint-time-block inference:
+ actual_post_pre_rmspe_ratio      inference_unit                           within_block_statistic  n_requested_donor_time_fits  n_computed_donor_time_fits  n_disjoint_time_blocks  n_placebo_units  pooled_donor_time_p_value_supported  block_max_rank_p_value  block_max_rank_p_value_floor  block_max_ratio_p95  actual_to_block_max_p95_ratio
+                    3.253534 disjoint_time_block maximum_post_pre_rmspe_ratio_across_pseudo_units                          154                         154                       7               22                                False                   0.125                         0.125             2.160646                       1.505816
+
+========================================================================
+[21/49] Run optional LNG-only index robustness
+========================================================================
+                  model                     outcome  n_pre_days  n_post_days  n_days  observed_sum  counterfactual_sum  cumulative_gap_observed_minus_predicted  cumulative_throughput_loss  mean_daily_throughput_loss  posterior_median_shortfall  posterior_mean_shortfall    lower_95     upper_95  posterior_probability_shortfall_positive  n_posterior_draws
+              ar_lag1_7 wto_hormuz_lng_volume_index         423          130   130.0    248.754172        13172.209413                            -12923.455241                12923.455241                   99.411194                         NaN                       NaN         NaN          NaN                                       NaN                NaN
+bsts_local_level_weekly wto_hormuz_lng_volume_index         423          130     NaN           NaN                 NaN                                      NaN                         NaN                         NaN                12759.851894              13020.029684 3105.578438 25066.060317                                       1.0             1500.0
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/lng_index_counterfactual.png
+Guard: LNG-only volume index; not a freight rate, carrier count, or causal ATT.
+
+========================================================================
+[22/49] Build Q-Flex LNG terminal crosswalk
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/raw/gem/lng_terminals.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_terminal_matching_audit.csv
+observed_ports=94 provisional_matches=54
+within_10km_visits=129
+within_20km_visits=157
+within_30km_visits=220
+
+========================================================================
+[23/49] Score Q-Flex voyage feasibility
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/candidate_voyage_endpoints.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/voyage_feasibility_summary.json
+resolved=46/46 rate=100.0%
+
+========================================================================
+[24/49] Build global LNG carrier frame
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/interim/global_lng_carrier_frame.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/global_carrier_frame_diagnostics.json
+{"active_rows": 821, "duplicate_imos": 0, "eligible_rows": 624, "minimum_capacity_m3": 125000.0, "missing_capacity_references": 5, "tracker_rows": 1100, "vessel_type_counts": {"conventional": 609, "icebreaker": 15}}
+
+========================================================================
+[25/49] Build global LNG terminal crosswalk
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/raw/gem/global_lng_terminals.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/global_lng_terminal_matching_audit.csv
+observed_ports=891 provisional_matches=460
+within_10km_visits=3611
+within_20km_visits=5074
+within_30km_visits=5569
+
+========================================================================
+[26/49] Score global voyage feasibility
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/global_candidate_voyage_endpoints.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/global_voyage_feasibility_summary.json
+resolved=1717/1770 rate=97.0%
+fleet_coverage_pre=600/624
+fleet_coverage_post=560/624
+
+========================================================================
+[27/49] Build maritime route-distance matrix
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/maritime_route_distances.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/maritime_route_distance_summary.json
+accepted=453/600 rate=75.5%
+expanded_accepted=578/600 rate=96.3%
+
+========================================================================
+[28/49] Build inferred capacity-nautical miles
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/maritime_route_distances_sensitivity.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/inferred_capacity_nautical_miles_voyages.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/inferred_capacity_nautical_miles_period_summary.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/inferred_capacity_nautical_miles_comparison.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/inferred_capacity_nautical_miles_diagnostics.json
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/inferred_capacity_nautical_miles_bootstrap.json
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/inferred_capacity_nautical_miles_decomposition.json
+ terminal_match_radius_km  strict_pre_total_nominal_m3_nm  strict_post_total_nominal_m3_nm  strict_absolute_change_nominal_m3_nm  strict_percent_change  strict_pre_routed_voyages  strict_post_routed_voyages  strict_routed_voyage_percent_change  strict_pre_mean_nominal_m3_nm_per_voyage  strict_post_mean_nominal_m3_nm_per_voyage  strict_mean_per_voyage_percent_change  expanded_pre_total_nominal_m3_nm  expanded_post_total_nominal_m3_nm  expanded_absolute_change_nominal_m3_nm  expanded_percent_change  expanded_pre_routed_voyages  expanded_post_routed_voyages  expanded_routed_voyage_percent_change  expanded_pre_mean_nominal_m3_nm_per_voyage  expanded_post_mean_nominal_m3_nm_per_voyage  expanded_mean_per_voyage_percent_change
+                       10                    3.218233e+11                     2.338705e+11                         -8.795274e+10             -27.329517                        478                         314                           -34.309623                              6.732704e+08                               7.448106e+08                              10.625767                      3.728880e+11                       2.819932e+11                           -9.089482e+10               -24.375902                          549                           384                             -30.054645                                6.792132e+08                                 7.343573e+08                                 8.118827
+                       20                    4.971194e+11                     3.975014e+11                         -9.961803e+10             -20.039055                        752                         535                           -28.856383                              6.610630e+08                               7.429932e+08                              12.393702                      5.897758e+11                       4.779435e+11                           -1.118323e+11               -18.961837                          897                           667                             -25.641026                                6.574981e+08                                 7.165569e+08                                 8.982357
+                       30                    5.330205e+11                     4.460440e+11                         -8.697652e+10             -16.317667                        798                         588                           -26.315789                              6.679455e+08                               7.585783e+08                              13.568880                      6.282449e+11                       5.301911e+11                           -9.805379e+10               -15.607575                          948                           726                             -23.417722                                6.627056e+08                                 7.302907e+08                                10.198373
+
+========================================================================
+[29/49] Validate Gulf departures against WTO
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/gulf_departure_wto_validation_daily.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/gulf_departure_wto_validation_weekly.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/gulf_departure_wto_validation_correlations.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/gulf_departure_wto_validation_by_terminal.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/gulf_departure_wto_validation_summary.json
+{
+  "gfw_departure_calls_percent_change": -92.98245614035088,
+  "gfw_nominal_capacity_percent_change": -92.78688653071461,
+  "wto_mean_index_percent_change": -98.28609411922193
+}
+directional_agreement=True
+
+========================================================================
+[30/49] Build importer and basin exposure
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/importer_exposure_voyages.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/importer_exposure_summary.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/basin_exposure_summary.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/importer_basin_exposure_diagnostics.json
+destination_basin  pre_resolved_voyages  pre_unique_imos  pre_nominal_capacity_m3  pre_expanded_m3_nm  pre_expanded_route_coverage_rate  pre_hormuz_exposed_voyages  pre_hormuz_exposed_nominal_capacity_m3  pre_hormuz_exposed_expanded_m3_nm  pre_inside_hormuz_non_crossing_voyages  pre_non_gulf_voyages  pre_non_gulf_nominal_capacity_m3  pre_non_gulf_expanded_m3_nm  post_resolved_voyages  post_unique_imos  post_nominal_capacity_m3  post_expanded_m3_nm  post_expanded_route_coverage_rate  post_hormuz_exposed_voyages  post_hormuz_exposed_nominal_capacity_m3  post_hormuz_exposed_expanded_m3_nm  post_inside_hormuz_non_crossing_voyages  post_non_gulf_voyages  post_non_gulf_nominal_capacity_m3  post_non_gulf_expanded_m3_nm  pre_hormuz_exposure_capacity_share_pct  total_capacity_percent_change  hormuz_exposed_capacity_absolute_change_m3  hormuz_exposed_capacity_percent_change  non_gulf_capacity_absolute_change_m3  non_gulf_capacity_percent_change  descriptive_non_gulf_offset_ratio  expanded_m3_nm_percent_change
+          Pacific                   595              286               94234430.0        3.562368e+11                          0.964706                         138                              20532400.0                       6.833462e+10                                       0                   457                        73702030.0                 2.879022e+11                    451               264                73641800.0         3.261960e+11                           0.960089                            2                                 273300.0                        9.971490e+08                                        0                    449                         73368500.0                  3.251988e+11                               21.788639                     -21.852554                                 -20259100.0                              -98.668933                             -333530.0                         -0.452538                                0.0                      -8.432835
+         Atlantic                   351              206               60014600.0        2.486293e+11                          0.994302                           7                               1166300.0                       6.848697e+09                                       0                   344                        58848300.0                 2.417806e+11                    268               155                45825020.0         1.768859e+11                           0.992537                            0                                      0.0                                 NaN                                        0                    268                         45825020.0                  1.768859e+11                                1.943360                     -23.643547                                  -1166300.0                             -100.000000                           -13023280.0                        -22.130257                                0.0                     -28.855566
+      Middle East                    25               24                4219100.0        2.337868e+10                          1.000000                           0                                     0.0                                NaN                                       3                    22                         3801100.0                 2.325777e+10                     27                23                 4631400.0         2.710916e+10                           1.000000                            0                                      0.0                                 NaN                                        3                     24                          4166400.0                  2.698915e+10                                0.000000                       9.772226                                         0.0                                     NaN                              365300.0                          9.610376                                NaN                      15.956748
+
+========================================================================
+[31/49] Build importer customs outcomes
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/importer_outcomes.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/importer_outcomes_summary.json
+{
+  "interpretation": "Descriptive-grade outcomes for the by-source units (China, EU27, India, Japan, Korea, Taiwan). Not an admissible confirmatory panel -- see the V1 NO_GO coverage report. India is value-basis (kUSD): its Gulf share embeds origin price differentials.",
+  "month_range": [
+    "2016-01",
+    "2026-06"
+  ],
+  "outcomes_built": [
+    "y1_gulf_share",
+    "y1_gulf_volume",
+    "y2_total_volume",
+    "y3_non_gulf_volume"
+  ],
+  "outcomes_deferred": [
+    "y4_composite_vulnerability"
+  ],
+  "row_count": 980,
+  "treatment_month": "2026-03",
+  "units": [
+    "China",
+    "EU27",
+    "India",
+    "Japan",
+    "Korea",
+    "Taiwan"
+  ],
+  "units_with_gulf_outcome": [
+    "China",
+    "EU27",
+    "India",
+    "Japan",
+    "Korea",
+    "Taiwan"
+  ],
+  "y4_deferral_reason": "Composite vulnerability needs storage-drawdown and delay components that are unsourced ([VERIFY]); not fabricated."
+}
+
+========================================================================
+[32/49] Build LNG rewiring network
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_rewiring_network.csv
+rows=3166 units=6 months=2014-01..2026-06
+destination_unit unit_of_measure  rows  origins
+           China               t   342       23
+            EU27          MIO_M3  1670       48
+           India            kUSD   210       21
+           Japan               t   339       21
+           Korea               t   374       26
+          Taiwan               t   231       16
+
+========================================================================
+[33/49] Build LNG rewiring summary
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_rewiring_monthly_metrics.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_rewiring_summary.csv
+destination_unit  pre_months  post_months  edge_total_pct_change  same_calendar_edge_total_pct_change  gulf_share_change_pp  same_calendar_gulf_share_change_pp  source_hhi_change                                 coverage_note
+           China          12            3             -25.708618                           -13.923582            -21.591521                          -24.953823          -0.022711                       descriptive_coverage_ok
+            EU27          12            3               3.517781                            -3.283672             -3.704529                           -6.060216           0.028566 descriptive_coverage_ok; aggregate_comparator
+           India          12            3               5.137888                             5.939381            -52.257548                          -63.394877          -0.059958          descriptive_coverage_ok; value_basis
+           Japan          12            3             -13.149265                            -7.703367             -5.143105                           -4.686334           0.009857                       descriptive_coverage_ok
+           Korea          12            4             -15.817927                           -12.369718            -13.563707                          -15.468732           0.034958                       descriptive_coverage_ok
+          Taiwan          12            4               1.417020                             2.496118            -29.650592                          -29.765070           0.008158                       descriptive_coverage_ok
+
+========================================================================
+[34/49] Build LNG rewiring graph metrics
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_rewiring_graph_metrics.csv
+destination_unit  edge_turnover_rate  jensen_shannon_distance  new_origin_count  dropped_origin_count  non_gulf_offset_ratio                                 coverage_note
+           China            0.228835                 0.227249                 0                     5              -0.084044                       descriptive_coverage_ok
+            EU27            0.111361                 0.143600                 1                     9               2.010427 descriptive_coverage_ok; aggregate_comparator
+           India            0.555286                 0.466830                 4                     2               1.097534          descriptive_coverage_ok; value_basis
+           Japan            0.102599                 0.158282                 2                     3              -1.497023                       descriptive_coverage_ok
+           Korea            0.224717                 0.249242                 0                     6              -0.171880                       descriptive_coverage_ok
+          Taiwan            0.324276                 0.334502                 1                     4               1.048921                       descriptive_coverage_ok
+
+========================================================================
+[35/49] Build LNG network anomaly scores
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_network_anomaly_monthly.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_network_anomaly_summary.csv
+destination_unit  pre_calibration_months  post_months  post_max_js_distance  post_max_zscore  post_max_empirical_percentile  anomaly_flag                                coverage_note
+           China                      12            3              0.401555        10.068594                            1.0          True                       descriptive_anomaly_ok
+            EU27                      12            3              0.235483         4.108398                            1.0          True descriptive_anomaly_ok; aggregate_comparator
+           India                      12            3              0.558324         8.596033                            1.0          True          descriptive_anomaly_ok; value_basis
+           Japan                      12            3              0.254126         3.722585                            1.0          True                       descriptive_anomaly_ok
+           Korea                      12            4              0.383861         5.203699                            1.0          True                       descriptive_anomaly_ok
+          Taiwan                      12            4              0.496867         9.609471                            1.0          True                       descriptive_anomaly_ok
+
+========================================================================
+[36/49] Build LNG reallocation stress model
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_reallocation_basin_demands.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_reallocation_supply_nodes.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_reallocation_cost_matrix.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_reallocation_solution.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_reallocation_summary.csv
+                                scenario  demand_k_m3  gross_observed_post_k_m3  committed_observed_post_k_m3  residual_supply_k_m3  allocated_residual_k_m3  unmet_k_m3  unmet_share  mean_route_nm  mean_additional_nm                                                                                                                                                                                   coverage_note
+observed_post_residual_after_commitments      21425.0                 123359.92                     123359.92                   0.0                      0.0     21425.0          1.0            NaN                 NaN residual_capacity_transport_solution; no_uncommitted_observed_supply; observed_post_voyages_reserved_for_recorded_destinations; unmet_replacement_capacity; no_usable_residual_route_cost_edges
+
+========================================================================
+[37/49] Build LNG resilience typology
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_resilience_typology.csv
+destination_unit          primary_typology        caution_flags evidence_strength  pre_gulf_share  non_gulf_offset_ratio
+           China high_exposure_constrained                 none            medium        0.304339              -0.084044
+            EU27      aggregate_comparator aggregate_comparator      context_only        0.058375               2.010427
+           India high_exposure_high_offset  value_basis_caution            medium        0.580695               1.097534
+           Japan       low_exposure_stable                 none            medium        0.064904              -1.497023
+           Korea high_exposure_constrained                 none            medium        0.152192              -0.171880
+          Taiwan high_exposure_high_offset                 none              high        0.348996               1.048921
+
+========================================================================
+[38/49] Build LNG rewiring post-month sensitivity
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_rewiring_post_month_sensitivity.csv
+dropped_month destination_unit headline_primary_typology       dropped_primary_typology  changed_under_drop  any_primary_typology_change  post_months_after_drop                                 coverage_note
+      2026-03            China high_exposure_constrained not_estimable_coverage_limited                True                         True                       2                              thin_post_window
+      2026-04            China high_exposure_constrained not_estimable_coverage_limited                True                         True                       2                              thin_post_window
+      2026-05            China high_exposure_constrained not_estimable_coverage_limited                True                         True                       2                              thin_post_window
+      2026-06            China high_exposure_constrained      high_exposure_constrained               False                         True                       3                       descriptive_coverage_ok
+      2026-03             EU27      aggregate_comparator           aggregate_comparator               False                        False                       2        thin_post_window; aggregate_comparator
+      2026-04             EU27      aggregate_comparator           aggregate_comparator               False                        False                       2        thin_post_window; aggregate_comparator
+      2026-05             EU27      aggregate_comparator           aggregate_comparator               False                        False                       2        thin_post_window; aggregate_comparator
+      2026-06             EU27      aggregate_comparator           aggregate_comparator               False                        False                       3 descriptive_coverage_ok; aggregate_comparator
+      2026-03            India high_exposure_high_offset not_estimable_coverage_limited                True                         True                       2                 thin_post_window; value_basis
+      2026-04            India high_exposure_high_offset not_estimable_coverage_limited                True                         True                       2                 thin_post_window; value_basis
+      2026-05            India high_exposure_high_offset not_estimable_coverage_limited                True                         True                       2                 thin_post_window; value_basis
+      2026-06            India high_exposure_high_offset      high_exposure_high_offset               False                         True                       3          descriptive_coverage_ok; value_basis
+      2026-03            Japan       low_exposure_stable not_estimable_coverage_limited                True                         True                       2                              thin_post_window
+      2026-04            Japan       low_exposure_stable not_estimable_coverage_limited                True                         True                       2                              thin_post_window
+      2026-05            Japan       low_exposure_stable not_estimable_coverage_limited                True                         True                       2                              thin_post_window
+      2026-06            Japan       low_exposure_stable            low_exposure_stable               False                         True                       3                       descriptive_coverage_ok
+      2026-03            Korea high_exposure_constrained      high_exposure_constrained               False                        False                       3                       descriptive_coverage_ok
+      2026-04            Korea high_exposure_constrained      high_exposure_constrained               False                        False                       3                       descriptive_coverage_ok
+      2026-05            Korea high_exposure_constrained      high_exposure_constrained               False                        False                       3                       descriptive_coverage_ok
+      2026-06            Korea high_exposure_constrained      high_exposure_constrained               False                        False                       3                       descriptive_coverage_ok
+      2026-03           Taiwan high_exposure_high_offset      high_exposure_high_offset               False                        False                       3                       descriptive_coverage_ok
+      2026-04           Taiwan high_exposure_high_offset      high_exposure_high_offset               False                        False                       3                       descriptive_coverage_ok
+      2026-05           Taiwan high_exposure_high_offset      high_exposure_high_offset               False                        False                       3                       descriptive_coverage_ok
+      2026-06           Taiwan high_exposure_high_offset      high_exposure_high_offset               False                        False                       3                       descriptive_coverage_ok
+
+========================================================================
+[39/49] Build LNG typology threshold sensitivity
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/lng_typology_threshold_sensitivity.csv
+destination_unit  unit_grid_points  unit_grid_agreement_count  unit_grid_agreement_share
+           China                81                         81                   1.000000
+            EU27                81                         81                   1.000000
+           India                81                         81                   1.000000
+           Japan                81                         81                   1.000000
+           Korea                81                         54                   0.666667
+          Taiwan                81                         81                   1.000000
+
+========================================================================
+[40/49] Render LNG network rewiring summary
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/network_rewiring_origin_composition.png
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/network_rewiring_origin_composition.pdf
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/network_rewiring_gulf_vs_total.png
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/network_rewiring_gulf_vs_total.pdf
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/network_rewiring_source_structure.png
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/network_rewiring_source_structure.pdf
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/network_rewiring_summary.md
+
+========================================================================
+[41/49] Build modeled vessel-day estimates
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/vessel_day_voyage_diagnostics.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/vessel_day_period_summary.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/vessel_day_comparison.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/vessel_day_diagnostics.json
+ terminal_match_radius_km route_specification  speed_knots  pre_routed_voyages  post_routed_voyages  routed_voyages_percent_change  pre_total_modeled_sailing_vessel_days  post_total_modeled_sailing_vessel_days  total_modeled_sailing_vessel_days_percent_change  pre_mean_modeled_sailing_days_per_voyage  post_mean_modeled_sailing_days_per_voyage  mean_modeled_sailing_days_per_voyage_percent_change  pre_total_nominal_capacity_m3_days  post_total_nominal_capacity_m3_days  total_nominal_capacity_m3_days_percent_change  pre_mean_nominal_capacity_m3_days_per_voyage  post_mean_nominal_capacity_m3_days_per_voyage  mean_nominal_capacity_m3_days_per_voyage_percent_change  descriptive_post_excess_sailing_days_vs_pre_mean  descriptive_post_excess_capacity_m3_days_vs_pre_mean
+                       30  expanded_60nm_snap         15.0               948.0                726.0                     -23.417722                            10517.53599                              8710.34889                                        -17.182609                                 11.094447                                  11.997726                                             8.141717                        1.745125e+09                         1.472753e+09                                     -15.607575                                  1.840849e+06                                   2.028585e+06                                                10.198373                                        655.780189                                          1.362968e+08
+
+========================================================================
+[42/49] Refresh vessel-data feasibility audit
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/vessel_data_feasibility.json
+empirical branch: qflex_port_sequence_feasibility_passed_scope_limited
+simulation fallback: partially_ready
+Spark extension: dormant_access_unverified
+
+========================================================================
+[43/49] Refresh integrated mechanism results
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/mechanism_evidence_summary.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/mechanism_evidence_summary.png
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/mechanism_results_summary.md
+
+========================================================================
+[44/49] Render inspectable run outputs
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/run_spec_comparison.csv
+findfont: Failed to find font weight semibold, now using 700.
+findfont: Failed to find font weight semibold, now using 700.
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/run_actual_vs_counterfactual.png
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/run_actual_vs_counterfactual.pdf
+findfont: Failed to find font weight semibold, now using 700.
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/run_placebo_distribution.png
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/run_placebo_distribution.pdf
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/run_synthetic_control_path.png
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/run_synthetic_control_path.pdf
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/run_synthetic_control_placebo_paths.png
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/figures/run_synthetic_control_placebo_paths.pdf
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/run_output.md
+
+========================================================================
+[45/49] Refresh working results summary
+========================================================================
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/current_results_summary.md
+
+========================================================================
+[46/49] Audit provenance coverage
+========================================================================
+ledger records=189 v2=115
+current paths=48 historical stale records=4
+registry mapping=43/43 free variables
+frozen raw inventory=153 channels={'dated_capture_manifest': 95, 'fixity_only_metadata_gap': 6, 'provenance_v2_snapshot': 40, 'provenance_v2_source_payload': 12}
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/raw_provenance_inventory.csv
+wrote /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/provenance_audit_summary.json
+PROVENANCE AUDIT PASSED WITH DISCLOSED HISTORICAL SOURCE GAPS
+
+========================================================================
+[47/49] Recheck frozen raw snapshots
+========================================================================
+INPUT HASH CHECK PASSED: 8 core raw files match.
+INPUT HASH CHECK PASSED: 145 vessel raw files match.
+INPUT HASH CHECK PASSED: 1 interim inputs match.
+
+========================================================================
+[48/49] Run full test suite
+========================================================================
+........................................................................ [ 22%]
+........................................................................ [ 44%]
+........................................................................ [ 66%]
+........................................................................ [ 88%]
+....................................                                     [100%]
+324 passed in 19.60s
+
+========================================================================
+[49/49] Verify regenerated artifacts against committed manifest
+========================================================================
+ARTIFACT VERIFICATION PASSED: 125 regenerated artifacts match.
+
+END-TO-END RUN COMPLETED CLEANLY
+Report: /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/run_output.md
+Comparison: /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/processed/run_spec_comparison.csv
+Transcript: /Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/reports/reproducibility_run_transcript.txt

@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config, provenance  # noqa: E402
 from lngfreight.registry import get_gfw_port_visits  # noqa: E402
-from lngfreight.sources.gfw import PORT_VISIT_DATASET  # noqa: E402
+from lngfreight.sources.gfw import GFWClient, PORT_VISIT_DATASET  # noqa: E402
 
 
 # End dates are exclusive under the GFW API. Each window contains 94 days and
@@ -25,7 +25,10 @@ def main() -> None:
     settings = config.settings()
     identity_path = config.ROOT / settings["paths"]["gfw_vessel_identity_csv"]
     identities = pd.read_csv(identity_path, dtype={"imo": str})
-    visits = get_gfw_port_visits(identities["vessel_id"].tolist(), WINDOWS)
+    client = GFWClient()
+    visits = get_gfw_port_visits(
+        identities["vessel_id"].tolist(), WINDOWS, client=client
+    )
     out = provenance.save_raw(
         visits,
         provider="gfw",
@@ -34,6 +37,7 @@ def main() -> None:
         query={"windows": WINDOWS, "end_date_semantics": "exclusive"},
         license_note="Global Fishing Watch API terms and attribution apply",
         filename="port_visits.csv",
+        source_payloads=client.source_payloads,
     )
     print(f"wrote {out}")
     print(f"rows={len(visits)}")

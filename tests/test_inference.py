@@ -105,6 +105,25 @@ def test_placebo_time_folds_fail_loudly_if_no_window_fits():
         )
 
 
+def test_inference_fold_builders_reject_unsorted_indices():
+    unsorted = _index()[::-1]
+    with pytest.raises(ValueError, match="chronologically sorted"):
+        post_treatment_fold(unsorted, cutoff="2022-05-01")
+    with pytest.raises(ValueError, match="chronologically sorted"):
+        fixed_train_post_fold(
+            unsorted,
+            train_cutoff="2022-03-01",
+            post_start="2022-04-15",
+        )
+    with pytest.raises(ValueError, match="chronologically sorted"):
+        placebo_time_folds(
+            unsorted,
+            cutoff="2022-06-01",
+            horizon_days=14,
+            initial_train_days=30,
+        )
+
+
 def test_counterfactual_effect_summarizes_loss():
     out = counterfactual_effect([8.0, 9.0, None], [10.0, 12.0, 99.0])
     assert out["n_days"] == 2

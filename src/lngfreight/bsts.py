@@ -13,6 +13,8 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
+from .validation import require_chronological_index
+
 
 @dataclass(frozen=True)
 class BSTSResult:
@@ -96,19 +98,50 @@ def fit_bsts_forecast(
 ) -> BSTSResult:
     """Fit the local-level BSTS and sample posterior predictive paths.
 
-    Missing training values are rejected rather than silently imputed.  The
-    caller is responsible for passing the frozen, aligned pre-treatment series.
+    Training must be a complete, finite daily calendar. Missing dates or values
+    are rejected rather than dropped or silently imputed because compressing
+    them would change the meaning of each local-level transition and weekday
+    seasonal term. Forecast dates must be the immediately following complete
+    daily horizon.
     """
-    y = y.astype("float64").dropna().sort_index()
-    forecast_index = pd.DatetimeIndex(forecast_index).sort_values()
-    if len(y) < 30:
-        raise ValueError("BSTS requires at least 30 finite training observations.")
-    if len(forecast_index) == 0:
-        raise ValueError("forecast_index must contain at least one date.")
     if not isinstance(y.index, pd.DatetimeIndex):
         raise TypeError("y must use a DatetimeIndex.")
-    if forecast_index.min() <= y.index.max():
-        raise ValueError("All forecast dates must be after the training series.")
+    y = y.astype("float64")
+    train_index = require_chronological_index(y.index, name="BSTS training index")
+    forecast_index = require_chronological_index(
+        forecast_index,
+        name="BSTS forecast index",
+    )
+    if len(y) < 30:
+        raise ValueError("BSTS requires at least 30 finite training observations.")
+    if not train_index.is_unique or not forecast_index.is_unique:
+        raise ValueError("BSTS training and forecast dates must be unique.")
+    expected_train = pd.date_range(
+        train_index.min(),
+        train_index.max(),
+        freq="D",
+        name=train_index.name,
+    )
+    if not train_index.equals(expected_train):
+        raise ValueError("BSTS training index must be a complete daily calendar.")
+    if not np.isfinite(y.to_numpy()).all():
+        raise ValueError(
+            "BSTS training values must be finite on every calendar day; "
+            "impute explicitly upstream or choose a missing-aware model."
+        )
+    if len(forecast_index) == 0:
+        raise ValueError("forecast_index must contain at least one date.")
+    expected_forecast = pd.date_range(
+        train_index.max() + pd.Timedelta(days=1),
+        periods=len(forecast_index),
+        freq="D",
+        name=forecast_index.name,
+    )
+    if not forecast_index.equals(expected_forecast):
+        raise ValueError(
+            "BSTS forecast index must be the complete daily horizon immediately "
+            "after the training series."
+        )
     if n_draws <= 0 or burn < 0 or thin <= 0:
         raise ValueError("n_draws and thin must be positive; burn cannot be negative.")
     if observation_prior_scale_multiplier <= 0 or level_prior_scale_multiplier <= 0:

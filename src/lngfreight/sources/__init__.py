@@ -3,6 +3,7 @@ to a concrete BaseSource implementation."""
 from __future__ import annotations
 
 from .base import BaseSource
+from .bloomberg_transcription import BloombergTranscriptionSource
 from .eia import EIASource
 from .fred import FREDSource
 from .importer_customs import ImporterCustomsSource
@@ -21,6 +22,9 @@ _PROVIDERS: dict[str, type[BaseSource] | None] = {
     # targets are flipped to `status: primary` in sources.yaml (access pending);
     # it requires OAuth2 credentials and fails loudly without them.
     "spark": SparkSource,
+    # User-authorized, provenance-limited local workbooks. These are explicit
+    # opt-ins and do not enter the default free-data pipeline.
+    "bloomberg_transcription": BloombergTranscriptionSource,
     "wto_hormuz": WTOHormuzLNGSource,
     # V-layer national customs snapshots (Korea/Taiwan/China/India by-origin).
     "importer_customs": ImporterCustomsSource,
@@ -39,8 +43,8 @@ def get_provider(name: str) -> BaseSource:
     cls = _PROVIDERS[name]
     if cls is None:
         raise NotImplementedError(
-            f"Provider {name!r} has no free backend yet. It maps to a proprietary "
-            f"feed (Spark/Bloomberg/Platts/AIS) or an unbuilt settlement scraper. "
-            f"Use the registry's `proxy` entry under the fallback branch."
+            f"Provider {name!r} has no verified accessible backend. It maps to "
+            f"a proprietary feed or an unbuilt settlement candidate. Acquire "
+            f"access, document the terms, and implement it before use."
         )
     return cls()

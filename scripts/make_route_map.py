@@ -33,6 +33,7 @@ from figure_style import (  # noqa: E402
     save_pdf_and_png,
 )
 from lngfreight import config  # noqa: E402
+from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
 from lngfreight.routes import installed_searoute_version, searoute_router  # noqa: E402
 
 
@@ -559,7 +560,13 @@ def main() -> None:
     )
     corridor_path = config.ROOT / paths["corridor_transmission_results_csv"]
     corridors = _corridor_markers(pd.read_csv(corridor_path))
-    land_path = config.ROOT / paths["natural_earth_land_geojson"]
+    land_artifact = get_variable(
+        "natural_earth_land_snapshot",
+        query={"consumer": "make_route_map"},
+    )
+    if not isinstance(land_artifact, RegisteredArtifact):
+        raise TypeError("natural_earth_land_snapshot must resolve as an artifact")
+    land_path = land_artifact.path
     png_path = config.ROOT / paths["modeled_route_network_change_png"]
     pdf_path = config.ROOT / paths["modeled_route_network_change_pdf"]
     cap_bn = _render_map(

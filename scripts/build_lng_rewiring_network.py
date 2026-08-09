@@ -13,14 +13,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config  # noqa: E402
 from lngfreight.network_rewiring import build_rewiring_network  # noqa: E402
+from lngfreight.network_rewiring import registered_rewiring_input_paths  # noqa: E402
 
 
 def main() -> None:
-    probe_dir = config.path("data_raw") / "backup_pathway_probe_20260621"
-    customs_dir = config.path("importer_customs_dir")
-    eurostat_path = config.ROOT / config.settings()["paths"][
-        "eurostat_lng_eu27_by_partner_json"
-    ]
+    probe_dir, customs_dir, eurostat_path = registered_rewiring_input_paths(
+        "build_lng_rewiring_network"
+    )
     network = build_rewiring_network(probe_dir, customs_dir, eurostat_path)
     out = config.ROOT / config.settings()["paths"]["lng_rewiring_network_csv"]
     out.parent.mkdir(parents=True, exist_ok=True)

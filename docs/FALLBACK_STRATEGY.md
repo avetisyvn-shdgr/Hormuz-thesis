@@ -186,12 +186,13 @@ granularity. Outcomes:
 - **Measurement error under treatment is non-random and directional.** In a
   conflict zone, AIS dark activity, GPS jamming and spoofing (flagged by the IEA
   for this specific Middle East context) are *correlated with the treatment*, not
-  random noise: observed transits fall by more than true transits, concentrated in
-  the treated window. So the naive estimate is biased away from zero — treat it as
-  an **upper bound on the true throughput reduction**, report it as observed
-  AIS-based throughput, and triangulate a lower bound from UNCTAD, IEA, PortWatch
-  capacity/DWT and public Kpler/LSEG-style reporting. Present results as a range,
-  not a point estimate.
+  random noise. Under the explicit one-sided assumption that treatment-period
+  observability error hides true transits but does not create false-positive
+  observed transits, the naive estimate is biased away from zero and is a
+  **conditional upper bound on the true throughput reduction**. Report it as
+  observed AIS-based throughput. The repository currently has no admitted
+  dark-rate series, so do not report an empirical lower bound or range; add one
+  only if an external dark-rate anchor passes the data-admission rules.
 - **PortWatch is media-of-observation, not ground truth** (AIS coverage gaps, its
   own gap-filling). Treated as such throughout.
 - **Short post-period** (overfitting risk) — mitigated by pre-treatment-only

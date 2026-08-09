@@ -12,6 +12,7 @@ import requests
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config, provenance  # noqa: E402
+from lngfreight.sources.base import SourcePayload  # noqa: E402
 from lngfreight.sources.wto_hormuz import EXPECTED_COLUMNS  # noqa: E402
 
 
@@ -66,6 +67,13 @@ def main() -> None:
             "source_url": URL,
         },
         license_note=backend.get("license", "unspecified"),
+        source_payload=SourcePayload(
+            filename=out.name,
+            media_type="text/csv",
+            source_url=URL,
+            path=out,
+        ),
+        registry_variables=[VARIABLE],
     )
     print(f"wrote {out}")
     print(f"logged provenance snapshot {provenance_path}")

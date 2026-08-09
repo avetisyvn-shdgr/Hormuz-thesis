@@ -1,0 +1,216 @@
+schema_version: 1
+export_directory_env: BLOOMBERG_EXPORT_DIR
+governance:
+  designation: provenance_limited_secondary
+  authorized_by: thesis_author
+  authorized_date: "2026-08-08"
+  permitted_uses:
+    - descriptive_market_evidence
+    - supplementary_pre_treatment_selected_counterfactual
+    - market_context
+  prohibited_claims:
+    - ATT
+    - causal_freight_effect
+    - identified_mediation_effect
+
+# These entries describe the workbooks supplied on 2026-08-08. Null means the
+# item has not been verified; it must remain null rather than be inferred from
+# the filename or numerical history. The audit command treats every required
+# null as a failed admission gate.
+series:
+  fearnleys_lng_spot_east_suez:
+    filename: fearnleys_lng_tanker_east_of_suez_155_165k_cbm_spot_rate.xlsx
+    displayed_series_name: LNG Tanker East of Suez 155/165000 cbm USD/day spot rate
+    analysis_use: provenance_limited_secondary
+    bloomberg_identifier: null
+    original_provider: Fearnleys Securities AS
+    candidate_role: secondary_freight_outcome
+    instrument_type: basin_spot_assessment
+    route_or_basin: East of Suez
+    vessel_basis: 155,000-165,000 cbm
+    propulsion_basis: null
+    frequency: weekly
+    assessment_calendar: predominantly Friday; exact holiday calendar unverified
+    assessment_calendar_verified: null
+    unit: USD/day
+    currency: USD
+    price_field: null
+    publication_time: null
+    timezone: null
+    extraction_date: null
+    export_procedure: User-supplied Bloomberg history paste transformed into a structured workbook
+    raw_sheet: Raw Data
+    date_column: Date
+    value_column: Rate_USD_per_day
+    missing_value_convention: Blank remains missing; zero is not inferred from blank
+    zero_is_genuine: null
+    assessment_methodology: null
+    definition_stable: null
+    methodology_changes: null
+    source_artifact_status: structured_transcription_not_original_export
+    known_repairs: 2
+    quality_flags:
+      "2022-08-12": reconstructed_chat_boundary
+      "2018-09-14": reconstructed_chat_boundary_outside_study_window
+    zero_policy: preserve_raw_no_observed_zeros
+    expected_sha256: 8e06dcec9dec26343d64c385581c1464e23bdffd67e1f254f8c7d94bf2dfcf31
+    rights: &unverified_rights
+      historical_export: null
+      raw_retention: null
+      thesis_modelling: null
+      raw_publication: null
+      derived_results_publication: null
+
+  fearnleys_lng_spot_west_suez:
+    filename: fearnleys_lng_tanker_west_of_suez_155_165k_cbm_spot_rate.xlsx
+    displayed_series_name: LNG Tanker West of Suez 155/165000 cbm USD/day spot rate
+    analysis_use: provenance_limited_secondary
+    bloomberg_identifier: null
+    original_provider: Fearnleys Securities AS
+    candidate_role: secondary_freight_outcome
+    instrument_type: basin_spot_assessment
+    route_or_basin: West of Suez
+    vessel_basis: 155,000-165,000 cbm
+    propulsion_basis: null
+    frequency: weekly
+    assessment_calendar: predominantly Friday; exact holiday calendar unverified
+    assessment_calendar_verified: null
+    unit: USD/day
+    currency: USD
+    price_field: null
+    publication_time: null
+    timezone: null
+    extraction_date: null
+    export_procedure: User-supplied Bloomberg history paste transformed into a structured workbook
+    raw_sheet: Raw Data
+    date_column: Date
+    value_column: Rate_USD_per_day
+    missing_value_convention: Blank remains missing; zero is not inferred from blank
+    zero_is_genuine: null
+    assessment_methodology: null
+    definition_stable: null
+    methodology_changes: null
+    source_artifact_status: structured_transcription_not_original_export
+    known_repairs: 2
+    quality_flags:
+      "2022-08-05": reconstructed_chat_boundary
+      "2018-09-14": reconstructed_chat_boundary_outside_study_window
+      "2025-01-31": unverified_zero_mask_in_analysis
+      "2025-02-07": unverified_zero_mask_in_analysis
+    zero_policy: preserve_raw_mask_unverified_zeros_in_analysis
+    expected_sha256: 053af2af960a35ffc91998ae57d180e74aae1e14ef7913333cb5c476444b421f
+    rights: *unverified_rights
+
+  fearnleys_lng_one_year_time_charter:
+    filename: fearnleys_lng_tanker_1y_time_charter_155_165k_cbm.xlsx
+    # The vendor display label ends in "spot rate", but the instrument is the
+    # one-year time-charter assessment; the label is preserved verbatim as
+    # shown on the terminal rather than corrected.
+    displayed_series_name: LNG Tanker 1 Year Time Charter 155/165000 cbm USD/day spot rate
+    analysis_use: provenance_limited_secondary
+    bloomberg_identifier: null
+    original_provider: Fearnleys Securities AS
+    candidate_role: secondary_freight_outcome
+    instrument_type: one_year_time_charter_assessment
+    route_or_basin: null
+    vessel_basis: 155,000-165,000 cbm
+    propulsion_basis: null
+    frequency: weekly
+    assessment_calendar: predominantly Friday; exact holiday calendar unverified
+    assessment_calendar_verified: null
+    unit: USD/day
+    currency: USD
+    price_field: null
+    publication_time: null
+    timezone: null
+    extraction_date: null
+    export_procedure: User-supplied Bloomberg history paste transformed into a structured workbook
+    raw_sheet: Raw Data
+    date_column: Date
+    value_column: Rate_USD_per_day
+    missing_value_convention: Blank remains missing; zero is not inferred from blank
+    zero_is_genuine: null
+    assessment_methodology: null
+    definition_stable: null
+    methodology_changes: null
+    source_artifact_status: structured_transcription_not_original_export
+    known_repairs: 2
+    quality_flags:
+      "2022-08-19": reconstructed_chat_boundary
+      "2018-09-21": reconstructed_chat_boundary_outside_study_window
+    zero_policy: preserve_raw_no_observed_zeros
+    expected_sha256: 34e7ee8e60c52b1377b98cc0ee8bef74672edbd6832e4b9e7b44641120b3d193
+    rights: *unverified_rights
+
+  netherlands_ttf_day_ahead:
+    filename: netherlands_ttf_natural_gas_forward_day_ahead.xlsx
+    displayed_series_name: Netherlands TTF Natural Gas Forward Day Ahead
+    analysis_use: provenance_limited_secondary
+    bloomberg_identifier: null
+    original_provider: null
+    candidate_role: market_context
+    instrument_type: natural_gas_day_ahead_assessment
+    route_or_basin: Netherlands TTF
+    vessel_basis: null
+    propulsion_basis: null
+    frequency: daily
+    assessment_calendar: business days; exact holiday calendar unverified
+    assessment_calendar_verified: null
+    unit: EUR/MWh
+    currency: EUR
+    price_field: null
+    publication_time: null
+    timezone: null
+    extraction_date: null
+    export_procedure: User-supplied Bloomberg history paste transformed into a structured workbook
+    raw_sheet: Raw Data
+    date_column: Date
+    value_column: Price_EUR_per_MWh
+    missing_value_convention: Blank remains missing; zero is not inferred from blank
+    zero_is_genuine: null
+    assessment_methodology: null
+    definition_stable: null
+    methodology_changes: null
+    source_artifact_status: structured_transcription_not_original_export
+    known_repairs: 0
+    quality_flags: {}
+    zero_policy: preserve_raw_no_observed_zeros
+    expected_sha256: 9f430cfd34c37cb45a068a86e516807e9f910c1da78b6576727735e414d47f8a
+    rights: *unverified_rights
+
+  clearlynx_vlsfo_singapore:
+    filename: clearlynx_vlsfo_bunker_fuel_spot_price_singapore.xlsx
+    displayed_series_name: ClearLynx VLSFO Bunker Fuel Spot Price/Singapore
+    analysis_use: provenance_limited_secondary
+    bloomberg_identifier: null
+    original_provider: ClearLynx
+    candidate_role: market_context
+    instrument_type: bunker_fuel_spot_assessment
+    route_or_basin: Singapore
+    vessel_basis: null
+    propulsion_basis: null
+    frequency: daily
+    assessment_calendar: business days; exact holiday calendar unverified
+    assessment_calendar_verified: null
+    unit: USD/metric tonne
+    currency: USD
+    price_field: null
+    publication_time: null
+    timezone: null
+    extraction_date: null
+    export_procedure: User-supplied Bloomberg history paste transformed into a structured workbook
+    raw_sheet: Raw Data
+    date_column: Date
+    value_column: Price_USD_per_metric_tonne
+    missing_value_convention: Blank remains missing; zero is not inferred from blank
+    zero_is_genuine: null
+    assessment_methodology: null
+    definition_stable: null
+    methodology_changes: null
+    source_artifact_status: structured_transcription_not_original_export
+    known_repairs: 0
+    quality_flags:
+      "2026-08-07": missing_price_outside_locked_study_window
+    zero_policy: preserve_raw_no_observed_zeros
+    expected_sha256: dac372540e55215a2a2c065d61cb77a169cb85b94f055c4e379da29fb6486cfc
+    rights: *unverified_rights

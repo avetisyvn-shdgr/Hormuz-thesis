@@ -37,6 +37,7 @@ from lngfreight.tsfm import (  # noqa: E402
     MODEL_REGISTRY,
     admission_test,
     aggregate_benchmark,
+    configure_deterministic_execution,
     run_benchmark,
 )
 from lngfreight.validation import resolve_cutoff, rolling_origin_splits, summary  # noqa: E402
@@ -67,6 +68,14 @@ def _merge_on_write(new: pd.DataFrame, path: Path, models_ran: list[str]) -> pd.
         except (KeyError, pd.errors.EmptyDataError):
             return new
     return new
+
+
+def _drop_wall_clock_columns(frame: pd.DataFrame) -> pd.DataFrame:
+    """Keep frozen benchmark artifacts free of nondeterministic timings."""
+    runtime_columns = [
+        column for column in frame.columns if column.startswith("runtime_s")
+    ]
+    return frame.drop(columns=runtime_columns, errors="ignore")
 
 
 def _load_ar_aggregate() -> pd.DataFrame | None:
@@ -118,9 +127,15 @@ def main() -> None:
     targets = list(spec.outcomes)
     panel = _load_panel()
     folds = rolling_origin_splits(panel.index)
+    seed = int(config.settings()["reproducibility"]["random_seed"])
+    torch_deterministic = configure_deterministic_execution(seed)
 
     print(f"panel shape: {panel.shape}  "
           f"({panel.index.min().date()} -> {panel.index.max().date()})")
+    print(
+        f"determinism: seed={seed}, "
+        f"torch_configured={torch_deterministic}"
+    )
     print(f"treatment cutoff: {resolve_cutoff().date()} (all folds strictly before)")
     print(f"rolling-origin folds: {len(folds)}")
     print(summary(folds).tail(3).to_string(index=False))
@@ -179,9 +194,13 @@ def main() -> None:
     # Merge-on-write: accumulate across the two benchmark envs. Drop any prior
     # rows for the models that just ran (a re-run replaces its own rows), then
     # append. Other models' previously written rows are preserved.
-    scores = _merge_on_write(pd.concat(all_scores, ignore_index=True), scores_out, ran)
-    forecasts = _merge_on_write(
-        pd.concat(all_forecasts, ignore_index=True), forecasts_out, ran
+    scores = _drop_wall_clock_columns(
+        _merge_on_write(pd.concat(all_scores, ignore_index=True), scores_out, ran)
+    )
+    forecasts = _drop_wall_clock_columns(
+        _merge_on_write(
+            pd.concat(all_forecasts, ignore_index=True), forecasts_out, ran
+        )
     )
     aggregate = aggregate_benchmark(scores)
     scores.to_csv(scores_out, index=False)
@@ -192,7 +211,7 @@ def main() -> None:
     cols = [
         "model", "target", "mase_mean", "rmse_mean",
         "empirical_coverage_mean", "nominal_coverage_mean",
-        "coverage_error_mean", "interval_width_mean", "runtime_s_mean",
+        "coverage_error_mean", "interval_width_mean",
     ]
     print(aggregate[[c for c in cols if c in aggregate.columns]].to_string(index=False))
 

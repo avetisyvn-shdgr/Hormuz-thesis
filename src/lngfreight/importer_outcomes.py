@@ -231,7 +231,11 @@ def build_outcomes(
     (Comtrade Japan + EU27). Passing the importer-customs snapshot directory
     upgrades Japan to source-native e-Stat/Japan Customs and appends Korea,
     Taiwan, China and India."""
-    hashes = verify_probe_manifest(probe_dir)
+    hashes = (
+        verify_probe_manifest(probe_dir)
+        if customs_dir is None or eurostat_path is None
+        else {}
+    )
     rows: list[dict] = []
     if customs_dir is None:
         rows += japan_outcomes(

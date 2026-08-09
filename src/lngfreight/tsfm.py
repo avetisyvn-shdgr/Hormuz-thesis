@@ -4,7 +4,7 @@ This module wires Chronos-2, TimesFM 2.5 and Moirai 2.0 into the SAME
 leakage-safe, strictly pre-treatment rolling-origin folds and the SAME scoring
 used by the transparent baselines, so a foundation model is judged on the
 admission test in ``docs/MODERN_TSFM_BENCHMARK.md`` (MASE, RMSE, empirical
-interval coverage, interval width, runtime) and not on leaderboard reputation.
+interval coverage, and interval width) and not on leaderboard reputation.
 
 Honesty stance (CLAUDE.md rules 1, 2, 4, 6):
   * This is a BENCHMARK, never the locked primary estimator and never an enabled
@@ -36,18 +36,88 @@ comparable across models even when their native nominal levels differ.
 """
 from __future__ import annotations
 
-import time
+import random
 from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
 
 from .metrics import score_forecast
-from .validation import Fold, resolve_cutoff, rolling_origin_splits
+from .validation import (
+    Fold,
+    require_chronological_index,
+    resolve_cutoff,
+    rolling_origin_splits,
+)
 
 # Default central-interval bounds for the admission test (95% mass).
 DEFAULT_LOWER_Q = 0.025
 DEFAULT_UPPER_Q = 0.975
+
+
+def _calendar_preserving_context(train: pd.Series) -> pd.Series:
+    """Prepare model context without compressing missing calendar steps.
+
+    Datetime-indexed contexts are reindexed to a complete daily calendar and
+    forward-filled using only prior observations. Leading gaps cannot be filled
+    without future information and therefore fail loudly. Non-datetime contexts
+    cannot establish calendar spacing, so they must already be finite.
+    """
+    context = pd.Series(train, dtype="float64")
+    if len(context) == 0:
+        return context
+    if isinstance(context.index, pd.DatetimeIndex):
+        index = require_chronological_index(
+            context.index,
+            name="TSFM training index",
+        )
+        if not index.is_unique:
+            raise ValueError("TSFM training dates must be unique.")
+        complete = pd.date_range(
+            index.min(),
+            index.max(),
+            freq="D",
+            name=index.name,
+        )
+        context = context.reindex(complete).ffill()
+        if context.isna().any():
+            raise ValueError(
+                "TSFM training context has leading missing values that cannot "
+                "be filled without future information."
+            )
+        return context
+    if context.isna().any():
+        raise ValueError(
+            "Non-datetime TSFM training context contains missing values; "
+            "calendar-preserving imputation is unavailable."
+        )
+    return context
+
+
+def configure_deterministic_execution(seed: int) -> bool:
+    """Seed optional TSFM runtimes and request deterministic Torch operations.
+
+    Returns ``True`` when Torch is installed and configured. The core test
+    environment intentionally omits Torch, so the deterministic stub path still
+    seeds Python and NumPy and returns ``False`` without importing a heavy
+    optional dependency.
+    """
+    seed = int(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    try:
+        import torch  # type: ignore
+    except ImportError:
+        return False
+
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    torch.use_deterministic_algorithms(True, warn_only=True)
+    if hasattr(torch.backends, "cudnn"):
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+    return True
 
 
 @dataclass(frozen=True)
@@ -124,9 +194,9 @@ class TSFMAdapter:
     ) -> QuantileForecast:
         if horizon <= 0:
             raise ValueError(f"horizon must be > 0, got {horizon}.")
-        context = pd.Series(train, dtype="float64").dropna()
+        context = _calendar_preserving_context(train)
         if len(context) == 0:
-            raise ValueError("training context is empty after dropping NaNs.")
+            raise ValueError("training context is empty.")
         fc = self._predict(context, horizon, lower_q, upper_q)
         if len(fc.point) != horizon:
             raise ValueError(
@@ -411,7 +481,7 @@ def run_benchmark(
     Only each fold's pre-treatment training context is shown to the model; the
     test window is used for scoring only. Returns ``(scores, forecasts)`` with
     one score row per fold (MASE, RMSE, sMAPE, MAE, empirical vs nominal interval
-    coverage, mean interval width, runtime) and one forecast row per test day.
+    coverage, and mean interval width) and one forecast row per test day.
     """
     if target not in panel.columns:
         raise KeyError(f"target {target!r} not found in panel columns.")
@@ -427,9 +497,7 @@ def run_benchmark(
         y_train = y.iloc[fold.train_idx]
         y_test = y.iloc[fold.test_idx]
 
-        t0 = time.perf_counter()
         fc = adapter.predict(y_train, len(y_test), lower_q=lower_q, upper_q=upper_q)
-        runtime = time.perf_counter() - t0
 
         point = pd.Series(fc.point, index=y_test.index, name="y_pred")
         lower = pd.Series(fc.lower, index=y_test.index)
@@ -465,7 +533,6 @@ def run_benchmark(
             "empirical_coverage": coverage,
             "coverage_error": coverage - fc.nominal_coverage,
             "interval_width": width,
-            "runtime_s": runtime,
             **metrics,
         })
 
@@ -520,7 +587,7 @@ def counterfactual_shortfall(
 
     cut = pd.Timestamp(cutoff) if cutoff is not None else resolve_cutoff()
     y = panel[target].astype("float64")
-    train = y[y.index < cut].dropna()
+    train = y[y.index < cut]
     test_index = panel.index[panel.index >= cut]
     if len(train) == 0 or len(test_index) == 0:
         raise ValueError(
@@ -572,7 +639,7 @@ def aggregate_benchmark(scores: pd.DataFrame) -> pd.DataFrame:
     metric_cols = [
         "mase", "rmse", "mae", "smape",
         "empirical_coverage", "nominal_coverage", "coverage_error",
-        "interval_width", "runtime_s",
+        "interval_width",
     ]
     present = [c for c in metric_cols if c in scores.columns]
     out = (

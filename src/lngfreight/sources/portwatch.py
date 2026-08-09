@@ -32,7 +32,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from .base import BaseSource
+from .base import BaseSource, SourcePayload
 from .. import config
 
 # Pinned from the live file 2026-06-12. If PortWatch changes its schema the
@@ -88,6 +88,12 @@ class PortWatchSource(BaseSource):
             )
 
         df = self._load()
+        source_path = config.ROOT / config.settings()["paths"]["portwatch_csv"]
+        self._capture_source_payload(SourcePayload(
+            filename=source_path.name,
+            media_type="text/csv",
+            path=source_path,
+        ))
         match = df[df["portname"].map(_slug) == _slug(slug)]
         if match.empty:
             known = sorted(df["portname"].map(_slug).unique())

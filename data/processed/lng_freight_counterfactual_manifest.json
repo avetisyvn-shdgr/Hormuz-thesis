@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "design": {
+    "initial_train_weeks": 104,
+    "validation_horizon_weeks": 4,
+    "validation_step_weeks": 4,
+    "candidate_models": [
+      "last_observation",
+      "seasonal_naive_52",
+      "ar_lags_1_2_4",
+      "ar_lags_1_2_4_52"
+    ],
+    "simplicity_tolerance": 0.05,
+    "pointwise_conformal_coverage": 0.9,
+    "missing_policy": "score available observations; never impute or carry rates",
+    "post_lag_policy": "recursive forecasts never use observed post-treatment lags"
+  },
+  "first_post_week": "2026-03-06",
+  "post_horizon_weeks": 18,
+  "selected_models": {
+    "east_spot": "last_observation",
+    "west_spot": "last_observation",
+    "one_year_charter": "last_observation"
+  },
+  "claim_boundary": "Disruption-associated counterfactual deviations in assessed rates; not ATT or identified causal freight effects."
+}

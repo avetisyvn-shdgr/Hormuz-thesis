@@ -1,0 +1,8 @@
+evidence_layer,measure,observations,observed_mean,counterfactual_mean,directional_deviation,deviation_definition,unit,identified_mediation
+physical_primary,PortWatch tanker transits,18,3.7777777777777777,56.89368860523954,53.11591082746176,counterfactual minus observed,transits/day,False
+commodity_physical,WTO LNG outbound volume index,18,1.7703257966904133,101.29951272420483,99.52918692751442,counterfactual minus observed,index (2025 mean=100),False
+monetary_secondary,East of Suez spot assessment,18,60833.333333333336,15000.0,45833.333333333336,observed minus counterfactual,USD/day,False
+monetary_secondary,West of Suez spot assessment,18,83777.77777777778,29000.0,54777.77777777778,observed minus counterfactual,USD/day,False
+monetary_secondary,One-year time-charter assessment,18,50694.444444444445,24000.0,26694.444444444445,observed minus counterfactual,USD/day,False
+market_context,Netherlands TTF day-ahead,18,47.40275555555556,,,context level only,EUR/MWh,False
+market_context,Singapore VLSFO,18,804.8583333333332,,,context level only,USD/metric tonne,False

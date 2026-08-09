@@ -4,8 +4,8 @@
 
 ## Evidence chain
 
-1. The independent WTO/AXSMarine LNG outbound index falls **98.3%**.
-2. Inferred Qatar/UAE departure calls fall **93.0%**, providing independent directional agreement.
+1. The distinct WTO/AXSMarine LNG outbound index falls **98.3%**.
+2. Inferred Qatar/UAE departure calls fall **93.0%**, providing cross-source directional agreement; both measures retain maritime-observation risks.
 3. At the 30 km terminal radius with expanded route QA, routed voyages fall **23.4%**, while mean capacity-distance per voyage rises **10.2%** (carrier-cluster BCa 95% interval **4.4% to 17.0%**; percentile comparison **4.1% to 16.7%**).
 4. At 15 knots, mean modeled sailing days per voyage rise **8.1%**, equivalent to **656 descriptive excess post sailing days** versus the pre mean.
 5. Country-level Hormuz-exposed changes are suppressed where post-period voyage support is below the pre-specified minimum; basin aggregates are retained.
@@ -40,7 +40,7 @@ Modeled distance is fixed within a terminal pair, so the within-pair term reflec
 
 ## Interpretation boundary
 
-The evidence is consistent with a fleet-distance multiplier among retained post-period LNG voyages: fewer voyages are observed, but retained voyages are longer and consume more nominal capacity-time on average. It does not identify actual cargo quantities, unmet demand, sailed AIS tracks, freight rates, or a causal ATT. The non-Gulf offset ratio is descriptive composition, not a substitution coefficient.
+The retained-voyage result is a conditional sample-composition shift, not a fleet-distance or ton-mile multiplier. Routed voyages and aggregate nominal capacity-distance both fall, while mean modeled capacity-distance rises only among resolved voyages retained in the post-period sample. Common-route route shares and a separate entry/exit residual drive that pattern; fixed terminal-pair distances do not establish route elongation. The evidence does not identify actual cargo quantities, unmet demand, sailed AIS tracks, freight rates, or a causal ATT. The non-Gulf offset ratio is descriptive composition, not a substitution coefficient.
 
 ## Figure
 

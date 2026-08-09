@@ -79,7 +79,7 @@ def _save_figure(
     ]
     bars = ax.bar(labels, values, color=[colors["observed"], colors["inferred"], colors["inferred"]])
     ax.axhline(0, color="#333333", linewidth=0.8)
-    ax.set(title="A. Independent departure-collapse validation", ylabel="Pre/post change (%)")
+    ax.set(title="A. Cross-source departure-collapse comparison", ylabel="Pre/post change (%)")
     ax.bar_label(bars, labels=[_pct(value) for value in values], padding=3, fontsize=9)
     ax.set_ylim(min(values) - 15, 8)
     ax.grid(axis="y", alpha=0.2)
@@ -206,7 +206,7 @@ def main() -> None:
 
     evidence = pd.DataFrame([
         {
-            "evidence_layer": "independent_aggregate_observation",
+            "evidence_layer": "aggregate_cross_source_observation",
             "measure": "WTO_Hormuz_LNG_outbound_index_mean",
             "pre_value": wto["periods"]["pre"]["wto_mean_outbound_volume_index"],
             "post_value": wto["periods"]["post"]["wto_mean_outbound_volume_index"],
@@ -267,8 +267,8 @@ def main() -> None:
         "",
         "## Evidence chain",
         "",
-        f"1. The independent WTO/AXSMarine LNG outbound index falls **{abs(changes['wto_mean_index_percent_change']):.1f}%**.",
-        f"2. Inferred Qatar/UAE departure calls fall **{abs(changes['gfw_departure_calls_percent_change']):.1f}%**, providing independent directional agreement.",
+        f"1. The distinct WTO/AXSMarine LNG outbound index falls **{abs(changes['wto_mean_index_percent_change']):.1f}%**.",
+        f"2. Inferred Qatar/UAE departure calls fall **{abs(changes['gfw_departure_calls_percent_change']):.1f}%**, providing cross-source directional agreement; both measures retain maritime-observation risks.",
         f"3. At the 30 km terminal radius with expanded route QA, routed voyages fall **{abs(capacity['expanded_routed_voyage_percent_change']):.1f}%**, while mean capacity-distance per voyage rises **{capacity['expanded_mean_per_voyage_percent_change']:.1f}%** (carrier-cluster BCa 95% interval **{capacity_bootstrap['bca_ci_lower']:.1f}% to {capacity_bootstrap['bca_ci_upper']:.1f}%**; percentile comparison **{capacity_bootstrap['percentile_ci_lower']:.1f}% to {capacity_bootstrap['percentile_ci_upper']:.1f}%**).",
         f"4. At 15 knots, mean modeled sailing days per voyage rise **{vessel['mean_modeled_sailing_days_per_voyage_percent_change']:.1f}%**, equivalent to **{vessel['descriptive_post_excess_sailing_days_vs_pre_mean']:.0f} descriptive excess post sailing days** versus the pre mean.",
         "5. Country-level Hormuz-exposed changes are suppressed where post-period voyage support is below the pre-specified minimum; basin aggregates are retained.",
@@ -323,12 +323,15 @@ def main() -> None:
         "",
         "## Interpretation boundary",
         "",
-        "The evidence is consistent with a fleet-distance multiplier among retained "
-        "post-period LNG voyages: fewer voyages are observed, but retained voyages "
-        "are longer and consume more nominal capacity-time on average. It does not "
-        "identify actual cargo quantities, unmet demand, sailed AIS tracks, freight "
-        "rates, or a causal ATT. The non-Gulf offset ratio is descriptive composition, "
-        "not a substitution coefficient.",
+        "The retained-voyage result is a conditional sample-composition shift, "
+        "not a fleet-distance or ton-mile multiplier. Routed voyages and aggregate "
+        "nominal capacity-distance both fall, while mean modeled capacity-distance "
+        "rises only among resolved voyages retained in the post-period sample. "
+        "Common-route route shares and a separate entry/exit residual drive that "
+        "pattern; fixed terminal-pair distances do not establish route elongation. "
+        "The evidence does not identify actual cargo quantities, unmet demand, "
+        "sailed AIS tracks, freight rates, or a causal ATT. The non-Gulf offset "
+        "ratio is descriptive composition, not a substitution coefficient.",
         "",
         "## Figure",
         "",

@@ -85,7 +85,12 @@ BASE_URL = "https://tradestat.commerce.gov.in/meidb/commodity_wise_all_countries
 HS_CODE = "271111"
 MEASURES = {"quantity": "2", "usd_million": "1"}
 CALENDAR_YEAR = "2"
-UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"}
+UA = {
+    "User-Agent": (
+        "TUM-LNG-Freight-Thesis/1.0 "
+        "(non-commercial academic research; mher.avetisyan@tum.de)"
+    )
+}
 MONTH_NAMES = {
     1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "Jun",
     7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec",

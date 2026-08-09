@@ -49,6 +49,11 @@ country ranking or country-specific mechanism claim should be reported.
   still reflect partial cargoes, reloads, floating storage, or AIS omissions.
 - The descriptive offset ratio is a composition calculation. It must not be
   described as a causal substitution rate.
+- Korea retains only the normalized table scrape, China retains portal-export
+  CSVs without query receipts/terms capture, and India retains a parsed table
+  capture rather than original HTTP responses. These historical source-artifact
+  gaps limit independent auditability of the importer extension; they do not
+  affect the PortWatch primary outcome. See `docs/DATA_SOURCES.md`.
 
 Industry context for regional LNG-market framing: International Gas Union,
 2025 World LNG Report: https://www.igu.org/igu-reports/2025-world-lng-report

@@ -5,6 +5,63 @@
 `scripts/run_interval_calibration.py`. Covers placebo-in-time, placebo-in-space,
 and residual-calibrated intervals.
 
+## Provenance-limited LNG freight forecast layer — 2026-08-08
+
+The three Fearnleys assessment workbooks are implemented as dormant secondary
+outcomes. The design is weekly and entirely separate from the daily PortWatch
+model: 104 initial pre-treatment weeks, 4-week validation folds, 4-week steps,
+and the locked first post-assessment week of 2026-03-06. Candidate models are a
+last-observation benchmark, a 52-week seasonal naive, and two parsimonious AR
+lag sets. Selection uses only pre-treatment rolling-origin MASE, with a 5%
+simplicity rule. Missing weeks are not filled and post forecasts never use
+observed post-treatment lags.
+
+The last-observation benchmark is selected for East spot, West spot, and the
+one-year charter. This is a deliberately weak counterfactual: it carries the
+final pre-cutoff assessment ($15k, $29k, and $24k/day respectively) flat across
+all 18 post weeks, so the reported deviations largely restate the fact that
+assessed rates rose after late February and stayed elevated. Pre-treatment
+validation MASE is 0.78 (East spot), 1.02 (West spot), and 0.84 (one-year
+charter); a MASE near 1 means the selected benchmark is about as accurate as
+the in-sample naive scale, i.e. these series were barely forecastable even
+pre-treatment. Quote the deviation magnitudes only with this framing attached.
+
+Across 18 post weeks, the generated artifacts report average
+observed-minus-counterfactual assessment deviations of approximately
+$45.8k/day, $54.8k/day, and $26.7k/day, respectively. All 18 observations for
+each series lie above its pre-calibrated 90% pointwise conformal band — but
+that band understates uncertainty by construction: its radius is calibrated on
+pooled 1-to-4-week-ahead validation residuals, while the post forecast extends
+recursively to 18 weeks ahead, where errors are mechanically larger. Treat the
+band as an illustrative short-horizon reference, not a test. The primary
+uncertainty statement is the horizon-matched placebo comparison: the
+finite-sample-corrected two-sided ranks against overlapping historical
+18-week pseudo-cutoffs are 0.043, 0.091, and 0.087. Because pseudo-cutoff
+windows overlap, these are descriptive reference ranks rather than
+independent-sample p-values.
+
+**Disposition under the Phase 4 stop/go rule** (which demotes a series to
+descriptive evidence when its uncertainty diagnostics are not decisive): the
+East-of-Suez spot deviation, whose placebo rank of 0.043 falls below the 0.05
+reference threshold, is reportable as supplementary forecast-deviation
+evidence. The West-of-Suez spot and one-year-charter deviations (ranks 0.091
+and 0.087) are retained as **descriptive evidence only** and must not be
+presented as significant deviations. The conformal-band exceedances do not
+upgrade any series past this disposition, for the calibration reason above.
+
+Interpretation is deliberately narrow: these are
+**disruption-associated counterfactual deviations in assessed rates**, not ATT
+estimates or structural causal effects. The immediately preceding 12-week means
+roughly double after the cutoff, but the full-history figures show that high
+freight-rate regimes also occurred in 2022-23. TTF and VLSFO are plotted as
+context and excluded from the headline freight counterfactuals because they may
+reflect common shocks or treatment pathways.
+
+Strict source admission is still blocked by missing original-export,
+methodology, identifier, definition-history, and rights evidence. This limits
+the layer to supplementary reporting and prevents activation in the locked
+working specification.
+
 ## What the placebo-in-time result says
 
 The actual post-treatment Hormuz throughput loss is much larger than losses from
@@ -388,7 +445,9 @@ do not resolve:
 
 - Treatment-correlated measurement error (AIS dark activity, GPS jamming,
   spoofing) — the observed collapse is partly true halt, partly reduced
-  observability, so the loss remains an **upper bound** on the true reduction.
+  observability. Under the stated one-sided undercount assumption, the loss is a
+  **conditional upper bound** on the true reduction; without an admitted
+  dark-rate series, no empirical lower bound is identified.
 - Panama/donor contamination and SUTVA violations from rerouting (screened, not
   eliminated).
 - Energy-price mediation under route+energy ARX.

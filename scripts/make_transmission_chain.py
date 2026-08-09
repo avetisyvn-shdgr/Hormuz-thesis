@@ -81,21 +81,27 @@ primary PortWatch headline remains the 130-day AR-only counterfactual in
 
 ## The one-paragraph argument
 
-A Strait-of-Hormuz disruption shows up as a **cascade across five independent
-evidence layers** in the 94-day mechanism-aligned window. (1) Hormuz tanker
+A Strait-of-Hormuz disruption shows up as a **cascade across five partially
+dependent evidence layers** in the 94-day mechanism-aligned window. The layers
+agree directionally but share maritime-observation risks and some donor/model
+inputs. (1) Hormuz tanker
 throughput collapses ~95% below its own pre-treatment counterfactual, and the
 gap separates from a clean donor pool even under a pessimistic contamination
 screen. (2) The collapse is **commodity-specific and cross-validated**:
 GFW-inferred Gulf LNG departures and the
-independent WTO/AXSMarine outbound index both fall ~93–99% with no calibration.
+distinct WTO/AXSMarine outbound index both fall ~93–99% with no calibration;
+this is a cross-source comparison, not independent confirmation.
 (3) The LNG fleet **contracts**: resolved Gulf voyages and aggregate inferred
 capacity-distance both decline. (4) Among voyages that still complete, mean
 capacity-distance **rises ~10%**, but a Kitagawa/Oaxaca decomposition shows this
 is overwhelmingly a **route-composition shift, not route elongation**. (5)
-Consistent with substitution, **alternative corridors rise** (Cape of Good Hope,
-Yucatan, Panama). The honest reading is **contraction plus substitution**, not an
-aggregate ton-mile multiplier — the strong freight-multiplier claim is not
-supported on free data and is explicitly retired.
+**Alternative corridors rise** (Cape of Good Hope, Yucatan, Panama). These
+aggregate movements are compatible with substitution, but no lost Gulf shipment
+is traced to a replacement corridor. The defensible reading is that Gulf-linked
+activity contracted while destination portfolios and aggregate corridors changed
+in directions compatible with substitution. This is not an aggregate ton-mile
+multiplier; the strong freight-multiplier claim is not supported on free data
+and is explicitly retired.
 
 ## The cascade
 
@@ -108,6 +114,9 @@ supported on free data and is explicitly retired.
   as the active 130-day primary headline.
 - Every layer is descriptive; none establishes a causal ATT or observed cargo
   ton-miles or freight rates (those need proprietary access that is unavailable).
+- The layers are partially dependent: temporal diagnostics reuse the primary
+  series/model, spatial placebo and synthetic control share screened donors, and
+  the maritime sources retain overlapping observation risks.
 - Layers 2–4 rest on terminal-sequence inference (laden state not observed) and
   carry right-censoring and AIS-coverage caveats.
 - The cross-source agreement in layer 2 is the strongest single result and should

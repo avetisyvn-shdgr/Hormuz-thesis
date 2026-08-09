@@ -10,6 +10,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lngfreight import config  # noqa: E402
+from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
 from lngfreight.capacity_miles import (  # noqa: E402
     attach_capacity_nautical_miles,
     capacity_period_summary,
@@ -52,10 +53,20 @@ def main() -> None:
             f"Configured searoute {policy['engine_version']}, installed {engine_version}."
         )
 
-    visits = pd.read_csv(config.ROOT / paths["global_gfw_port_visits_csv"])
-    identities = pd.read_csv(
-        config.ROOT / paths["global_gfw_vessel_identity_csv"], dtype={"imo": str}
+    visits_artifact = get_variable(
+        "global_gfw_port_visits_snapshot",
+        query={"consumer": "build_inferred_capacity_nautical_miles"},
     )
+    identities_artifact = get_variable(
+        "global_gfw_identity_snapshot",
+        query={"consumer": "build_inferred_capacity_nautical_miles"},
+    )
+    if not isinstance(visits_artifact, RegisteredArtifact) or not isinstance(
+        identities_artifact, RegisteredArtifact
+    ):
+        raise TypeError("capacity-nautical-mile raw inputs must be artifacts")
+    visits = visits_artifact.read_csv()
+    identities = identities_artifact.read_csv(dtype={"imo": str})
     audit = pd.read_csv(config.ROOT / paths["global_terminal_matching_audit_csv"])
     carriers = pd.read_csv(
         config.ROOT / paths["global_carrier_frame_csv"], dtype={"imo": str}

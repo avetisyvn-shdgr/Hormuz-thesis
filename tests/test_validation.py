@@ -151,6 +151,12 @@ def test_nonpositive_window_raises():
         rolling_origin_splits(_index(), _settings(horizon=0))
 
 
+def test_unsorted_index_is_rejected_before_positional_folds_are_built():
+    unsorted = _index().to_series().sample(frac=1, random_state=7).index
+    with pytest.raises(ValueError, match="chronologically sorted"):
+        rolling_origin_splits(unsorted, _settings())
+
+
 # --------------------------------------------------------------------------
 # Summary helper
 # --------------------------------------------------------------------------
