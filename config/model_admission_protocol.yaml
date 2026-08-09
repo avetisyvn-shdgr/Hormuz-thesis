@@ -1,0 +1,330 @@
+schema_version: 2
+protocol_id: "portwatch_same_information_vintage_matrix_v2"
+locked_utc: "2026-08-09T21:18:46Z"
+lock_stage: "before_persisted_matrix_and_before_august_chronos_run"
+checkpoint_status: "local_byte_level_lock_pending_git_anchor_and_human_verification"
+
+design_timing:
+  preregistered: false
+  results_blinded: false
+  post_cutoff_outcome_path_known: true
+  characterization: "local_ex_post_governance_lock"
+  disclosure: >-
+    This ex post checkpoint constrains remaining reporting discretion. It does
+    not establish that the four-model roster was selected without knowledge of
+    the pinned-vintage results, August outcome path, August AR sensitivity
+    results, or pre-treatment TSFM validation results.
+  results_known_before_this_lock:
+    - "All pinned-vintage rows declared below."
+    - "All six rows of data/processed/portwatch_vintage_sensitivity.csv."
+    - "The complete August PortWatch outcome path through 2026-08-02."
+    - "The pre-treatment TSFM admission and calibration table."
+  results_seen_during_precheckpoint_independent_audit:
+    status: "assistant_in_memory_values_not_yet_frozen_or_human_verified"
+    note: >-
+      After the earlier unanchored v1 draft but before this corrected lock, an
+      independent read-only audit also observed approximate August same-window
+      seasonal-naive and BSTS results. The four-model roster was not changed.
+    values:
+      - model: "seasonal_naive_7d"
+        vintage: "vintage_20260809"
+        mean_daily_common_point_shortfall_approx: 43.700000
+      - model: "bsts_local_level_weekly"
+        vintage: "vintage_20260809"
+        mean_daily_common_point_shortfall_approx: 40.167457
+        mean_daily_model_native_shortfall_approx: 40.110773
+
+scope:
+  outcome: "hormuz_tanker_transits"
+  outcome_column: "n_tanker"
+  outcome_construct: "PortWatch daily all-tanker transit count at the Strait of Hormuz"
+  unit: "transits_per_day"
+  analysis_start: "2022-01-01"
+  training_end: "2026-02-27"
+  locked_cutoff: "2026-02-28"
+  scoring_end: "2026-07-07"
+  expected_scored_days: 130
+  expected_observed_sum_pinned: 529.0
+  permitted_information: "outcome history dated no later than 2026-02-27"
+  forbidden_information: "observed post-cutoff covariates or donor outcomes"
+  vintage_rule: "run each frozen vintage separately; never average vintages"
+
+comparison_sets:
+  representative_same_information_range_members:
+    - "seasonal_naive_7d"
+    - "ar_lag1_7"
+    - "chronos2"
+    - "bsts_local_level_weekly"
+  additional_preperiod_admitted_not_matrix_run:
+    - "timesfm"
+    - "moirai"
+  conditional_postcovariate_rows:
+    - "arx_lag1_7_route"
+    - "arx_lag1_7_route_energy"
+  noncomparable_corroboration_rows:
+    - "synthetic_control"
+  test_fixture_rows:
+    - "stub_seasonal"
+  primary_range_label: "selected_four_specification_same_information_range"
+  all_preperiod_admitted_range_status: "not_estimated_missing_common_window_timesfm_and_moirai_cells"
+  mixed_information_range_status: "not_computed_information_sets_differ"
+  synthetic_range_status: "not_computed_units_not_directly_comparable"
+
+representative_selection:
+  foundation_model: "chronos2"
+  status_code: "INCLUDE_HISTORICALLY_IMPLEMENTED_FAMILY_REPRESENTATIVE"
+  rationale: >-
+    Chronos-2 was documented as the first engineering candidate and implemented
+    as the default robustness path before its post-period output was committed.
+    It had the smallest absolute matched-fold coverage error, supports the
+    requested native 95% interval, and is integrated in run_all. It did not win
+    every point metric: TimesFM had the lower local transit MASE.
+  implementation_precedence:
+    default_runner_commit: "41c3c92"
+    postperiod_output_commit: "f15f0e9"
+  preperiod_evidence:
+    source: "data/processed/tsfm_admission_test.csv"
+    source_sha256: "51784d4547050456717204bac5a651e983c0414708db0e6ff53e837e457402a2"
+    target: "hormuz_tanker_transits"
+    chronos2_mase: 0.8000367817891185
+    chronos2_abs_coverage_error: 0.01231884057971
+    timesfm_mase: 0.7817235577336589
+    timesfm_abs_coverage_error: 0.0536231884057971
+    moirai_mase: 0.8399183851679082
+    moirai_abs_coverage_error: 0.0478260869565217
+
+central_statistic:
+  description: >-
+    Sum each scored day's point or marginal-median prediction minus the observed
+    outcome and divide by the common 130 days. Model-native joint summaries are
+    secondary. This is a case-local sensitivity range, not a variance
+    decomposition, pooled estimate, uncertainty interval, or general AIS claim.
+  seasonal_naive_7d: "mean(y_pred - y_true) over the 130 scored days"
+  ar_lag1_7: "mean(y_pred - y_true) over the 130 scored days"
+  chronos2: "mean(daily q0.5 prediction - y_true) over the 130 scored days"
+  bsts_local_level_weekly: "mean(daily marginal posterior median - y_true) over the 130 scored days"
+  bsts_model_native_secondary: "joint cumulative posterior median divided by 130"
+
+models:
+  - model: "seasonal_naive_7d"
+    estimator_family: "seasonal_benchmark"
+    pre_treatment_admission_passed: true
+    pinned_130_day_support_verified: true
+    same_information_contract: true
+    representative_matrix_selected: true
+    status_code: "INCLUDE_PREDECLARED_BENCHMARK"
+    fit_inputs: "pre-cutoff outcome history only"
+    post_outcome_ingested: false
+    post_covariates_ingested: false
+    reason: "Predeclared transparent benchmark in actual transit units."
+  - model: "ar_lag1_7"
+    estimator_family: "autoregressive_primary"
+    pre_treatment_admission_passed: true
+    pinned_130_day_support_verified: true
+    same_information_contract: true
+    representative_matrix_selected: true
+    status_code: "INCLUDE_LOCKED_PRIMARY"
+    fit_inputs: "pre-cutoff outcome history only"
+    post_outcome_ingested: false
+    post_covariates_ingested: false
+    reason: "Locked working primary in actual transit units."
+  - model: "chronos2"
+    estimator_family: "foundation_time_series"
+    pre_treatment_admission_passed: true
+    pinned_130_day_support_verified: true
+    same_information_contract: true
+    representative_matrix_selected: true
+    status_code: "INCLUDE_HISTORICALLY_IMPLEMENTED_FAMILY_REPRESENTATIVE"
+    fit_inputs: "pre-cutoff outcome context and frozen pretrained weights"
+    post_outcome_ingested: false
+    post_covariates_ingested: false
+    reason: "Existing calibration-anchor robustness implementation; not selected as universal MASE winner."
+  - model: "bsts_local_level_weekly"
+    estimator_family: "bayesian_state_space"
+    pre_treatment_admission_passed: true
+    pinned_130_day_support_verified: true
+    same_information_contract: true
+    representative_matrix_selected: true
+    status_code: "INCLUDE_EXISTING_STATE_SPACE_CROSSCHECK"
+    fit_inputs: "pre-cutoff outcome history and fixed prior settings"
+    post_outcome_ingested: false
+    post_covariates_ingested: false
+    reason: "Existing outcome-only state-space cross-check in actual transit units."
+  - model: "timesfm"
+    estimator_family: "foundation_time_series"
+    pre_treatment_admission_passed: true
+    pinned_130_day_support_verified: false
+    same_information_contract: true
+    representative_matrix_selected: false
+    status_code: "NOT_RUN_COMMON_WINDOW_ADDITIONAL_FAMILY_MEMBER"
+    fit_inputs: "pre-cutoff outcome context and frozen pretrained weights"
+    post_outcome_ingested: false
+    post_covariates_ingested: false
+    reason: "Passed the pre-period gate, but no frozen common-window 130-day comparison cell exists."
+  - model: "moirai"
+    estimator_family: "foundation_time_series"
+    pre_treatment_admission_passed: true
+    pinned_130_day_support_verified: false
+    same_information_contract: true
+    representative_matrix_selected: false
+    status_code: "NOT_RUN_COMMON_WINDOW_ADDITIONAL_FAMILY_MEMBER"
+    fit_inputs: "pre-cutoff outcome context and frozen pretrained weights"
+    post_outcome_ingested: false
+    post_covariates_ingested: false
+    reason: "Passed the pre-period gate, but no frozen common-window 130-day comparison cell exists."
+  - model: "arx_lag1_7_route"
+    estimator_family: "conditional_autoregression"
+    pre_treatment_admission_passed: true
+    pinned_130_day_support_verified: true
+    same_information_contract: false
+    representative_matrix_selected: false
+    status_code: "EXCLUDE_OBSERVED_POST_COVARIATES"
+    fit_inputs: "outcome history plus Panama route covariates"
+    post_outcome_ingested: false
+    post_covariates_ingested: true
+    reason: "Uses observed post-cutoff route covariates; visible as a same-unit mixed-information sensitivity only."
+  - model: "arx_lag1_7_route_energy"
+    estimator_family: "conditional_autoregression"
+    pre_treatment_admission_passed: true
+    pinned_130_day_support_verified: true
+    same_information_contract: false
+    representative_matrix_selected: false
+    status_code: "EXCLUDE_OBSERVED_POST_COVARIATES"
+    fit_inputs: "outcome history plus Panama route and energy covariates"
+    post_outcome_ingested: false
+    post_covariates_ingested: true
+    reason: "Uses observed post-cutoff route and energy covariates; visible as a same-unit mixed-information sensitivity only."
+  - model: "synthetic_control"
+    estimator_family: "donor_weighted_comparison"
+    pre_treatment_admission_passed: false
+    pinned_130_day_support_verified: true
+    same_information_contract: false
+    representative_matrix_selected: false
+    status_code: "EXCLUDE_POST_DONORS_AND_MEAN_SCALED_UNITS"
+    fit_inputs: "pre-cutoff donor fit plus post-cutoff donor outcomes"
+    post_outcome_ingested: false
+    post_covariates_ingested: true
+    reason: "Uses post-cutoff donors and reports mean-scaled transit equivalents, not direct transit-count forecasts."
+  - model: "stub_seasonal"
+    estimator_family: "test_adapter"
+    pre_treatment_admission_passed: false
+    pinned_130_day_support_verified: false
+    same_information_contract: false
+    representative_matrix_selected: false
+    status_code: "EXCLUDE_TEST_FIXTURE"
+    fit_inputs: "test fixture"
+    post_outcome_ingested: false
+    post_covariates_ingested: false
+    reason: "Dependency-free plumbing fixture, not an empirical result."
+
+known_artifact_results_at_lock:
+  - result_id: "pinned_seasonal_common"
+    model: "seasonal_naive_7d"
+    vintage: "pinned_primary"
+    target: "hormuz_tanker_transits"
+    statistic_basis: "common_daily_point"
+    declared_value: 54.8
+    unit: "transits_per_day"
+    comparable_same_information: true
+    verification_kind: "daily_common_point"
+    source: "data/processed/counterfactual_post_treatment.csv"
+    source_sha256: "f1ca455188893375b3711ee6e2eac3af9c6fd9b1cdc5df498118db2bef242267"
+    filters: {model: "seasonal_naive_7d", target: "hormuz_tanker_transits"}
+  - result_id: "pinned_ar_common"
+    model: "ar_lag1_7"
+    vintage: "pinned_primary"
+    target: "hormuz_tanker_transits"
+    statistic_basis: "common_daily_point"
+    declared_value: 52.838430816008604
+    unit: "transits_per_day"
+    comparable_same_information: true
+    verification_kind: "daily_common_point"
+    source: "data/processed/counterfactual_post_treatment.csv"
+    source_sha256: "f1ca455188893375b3711ee6e2eac3af9c6fd9b1cdc5df498118db2bef242267"
+    filters: {model: "ar_lag1_7", target: "hormuz_tanker_transits"}
+  - result_id: "pinned_chronos_common"
+    model: "chronos2"
+    vintage: "pinned_primary"
+    target: "hormuz_tanker_transits"
+    statistic_basis: "common_daily_point"
+    declared_value: 50.88375704838679
+    unit: "transits_per_day"
+    comparable_same_information: true
+    verification_kind: "daily_common_point"
+    source: "data/processed/tsfm_counterfactual_daily.csv"
+    source_sha256: "05e6c119fcc09e97ff0e4cb3af7afd14f69540ec6f28b3e81a18b22d3fa4d490"
+    filters: {model: "chronos2", target: "hormuz_tanker_transits"}
+  - result_id: "pinned_bsts_common"
+    model: "bsts_local_level_weekly"
+    vintage: "pinned_primary"
+    target: "hormuz_tanker_transits"
+    statistic_basis: "common_daily_point"
+    declared_value: 49.62516478850947
+    unit: "transits_per_day"
+    comparable_same_information: true
+    verification_kind: "daily_common_point"
+    source: "data/processed/bsts_counterfactual_daily.csv"
+    source_sha256: "a6646e880a726b29db28b926602c7448a4b44f24f10d26084134464fd5288c20"
+    filters: {model: "bsts_local_level_weekly", target: "hormuz_tanker_transits"}
+  - result_id: "pinned_bsts_joint_native"
+    model: "bsts_local_level_weekly"
+    vintage: "pinned_primary"
+    target: "hormuz_tanker_transits"
+    statistic_basis: "model_native_joint_central"
+    declared_value: 49.52249694980984
+    unit: "transits_per_day"
+    comparable_same_information: true
+    verification_kind: "bsts_joint_summary"
+    source: "data/processed/bsts_counterfactual_summary.csv"
+    source_sha256: "8f2e8bb6fa75dbfab8e183ec549e854863daad380f1c0f3dadc7fc1ac84577b8"
+    filters: {model: "bsts_local_level_weekly", target: "hormuz_tanker_transits"}
+  - result_id: "pinned_arx_route_mixed_information"
+    model: "arx_lag1_7_route"
+    vintage: "pinned_primary"
+    target: "hormuz_tanker_transits"
+    statistic_basis: "conditional_post_covariates"
+    declared_value: 54.28014275704669
+    unit: "transits_per_day"
+    comparable_same_information: false
+    verification_kind: "daily_common_point"
+    source: "data/processed/counterfactual_post_treatment.csv"
+    source_sha256: "f1ca455188893375b3711ee6e2eac3af9c6fd9b1cdc5df498118db2bef242267"
+    filters: {model: "arx_lag1_7_route", target: "hormuz_tanker_transits"}
+  - result_id: "pinned_arx_route_energy_mixed_information"
+    model: "arx_lag1_7_route_energy"
+    vintage: "pinned_primary"
+    target: "hormuz_tanker_transits"
+    statistic_basis: "conditional_post_covariates"
+    declared_value: 62.85785921606604
+    unit: "transits_per_day"
+    comparable_same_information: false
+    verification_kind: "daily_common_point"
+    source: "data/processed/counterfactual_post_treatment.csv"
+    source_sha256: "f1ca455188893375b3711ee6e2eac3af9c6fd9b1cdc5df498118db2bef242267"
+    filters: {model: "arx_lag1_7_route_energy", target: "hormuz_tanker_transits"}
+  - result_id: "pinned_synthetic_mean_scaled"
+    model: "synthetic_control"
+    vintage: "pinned_primary"
+    target: "hormuz_tanker_transits"
+    statistic_basis: "mean_scaled_transit_equivalent"
+    declared_value: 47.49659043360194
+    unit: "transit_equivalent_from_mean_scaling_per_day"
+    comparable_same_information: false
+    verification_kind: "synthetic_mean_scaled"
+    source: "data/processed/synthetic_control_summary.csv"
+    source_sha256: "b882a9584ca5114503f4561178840ac09d3789a053070f1b4ba7b1248dc59543"
+    auxiliary_source: "data/processed/synthetic_control_scales.csv"
+    auxiliary_source_sha256: "0a3b8847e22cb06ea3c250a610fd19d59b470256aa53acb5151073f987385582"
+    filters: {unit: "strait_of_hormuz", value_col: "n_tanker", is_actual: true}
+
+known_vintage_sensitivity_rows_at_lock:
+  source: "data/processed/portwatch_vintage_sensitivity.csv"
+  source_sha256: "95f104baf11f7e72abed7a9a074b25728eeb21aa34cf723c6838c17bbc8bfdc6"
+  verification_kind: "scenario_summary"
+  rows:
+    - {target: "hormuz_tanker_transits", scenario: "pinned_primary", window_end: "2026-07-07", post_days: 130, unit: "transits_per_day", declared_value: 52.83843081600861}
+    - {target: "hormuz_tanker_transits", scenario: "vintage_same_window", window_end: "2026-07-07", post_days: 130, unit: "transits_per_day", declared_value: 43.81350622973898}
+    - {target: "hormuz_tanker_transits", scenario: "vintage_extended_window", window_end: "2026-08-01", post_days: 155, unit: "transits_per_day", declared_value: 44.0758913247468}
+    - {target: "hormuz_tanker_capacity", scenario: "pinned_primary", window_end: "2026-07-07", post_days: 130, unit: "deadweight_capacity_per_day", declared_value: 2466153.0500483895}
+    - {target: "hormuz_tanker_capacity", scenario: "vintage_same_window", window_end: "2026-07-07", post_days: 130, unit: "deadweight_capacity_per_day", declared_value: 2086704.136047437}
+    - {target: "hormuz_tanker_capacity", scenario: "vintage_extended_window", window_end: "2026-08-01", post_days: 155, unit: "deadweight_capacity_per_day", declared_value: 2109105.647897424}
