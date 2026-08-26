@@ -9,8 +9,9 @@
 # causal spillover parameter (CLAUDE.md rule 2). A causal reading requires the
 # optional exposure design in Phase 6 of docs/ML_TRAINING_ACTION_PLAN.md.
 version: 1
-status: "draft_not_frozen"     # -> "frozen" only after the P1 gate is signed off
+status: "draft_not_frozen"     # -> "frozen" after the Red Sea onset date is adjudicated
 drafted_on: "2026-08-26"
+p1_gate: "PASSED 2026-08-26 - see docs/MULTI_EVENT_PANEL_COVERAGE_AUDIT.md"
 frozen_on: null
 
 training_window:
@@ -65,12 +66,14 @@ events:
     duration_class: "long"
     role: "train_secondary"
     observed_n_tanker: "12.7 -> 12.1 -> 9.9 (2024H1 trough) -> 12.2 -> 12.6"
+    fit_on: ["n_total", "n_tanker"]     # NOT n_container - see note
     note: >
-      WEAK on tankers: roughly a 22% trough, far smaller than the Red Sea
-      response. The drought bound draft and auctioned slots, which hit
-      container and gas carriers harder than tankers. Fit on n_container as
-      well as n_tanker and report both, or downweight. Do not treat a null
-      tanker result here as evidence the model fails.
+      WEAK, and not a container story. Trough vs pre-period: tanker -22%,
+      container -2%, total -29%. Container traffic was essentially unaffected
+      while total transits fell 29%, consistent with slot rationing protecting
+      contracted liner services and pushing the cut onto spot, bulk and tanker
+      traffic. Fit on n_total and n_tanker. A null Panama result is expected
+      and is not evidence the model fails.
 
   red_sea:
     units: ["Bab el-Mandeb Strait", "Suez Canal"]
@@ -82,10 +85,13 @@ events:
     observed_n_tanker: >
       Bab el-Mandeb 26.9 -> 10.2, Suez 25.5 -> 14.1, Cape of Good Hope
       10.0 -> 20.5 (monthly means, 2023-10 vs 2024-10).
+    fit_on: ["n_container", "n_tanker"]
     note: >
       Treated as ONE event: Bab el-Mandeb and Suez are the same route and must
       not be counted twice. This is the closest analogue to Hormuz and supplies
-      the SUBSTITUTION end of the duration axis.
+      the SUBSTITUTION end of the duration axis. The container signal is
+      stronger than the tanker signal (Bab el-Mandeb -71% vs -55%, Cape +209%
+      vs +104%), so fit both.
 
   hormuz:
     unit: "Strait of Hormuz"

@@ -34,25 +34,39 @@ attributable to definition change rather than to a real event.
 Days per year: 2019 365 · 2020 366 · 2021 365 · 2022 365 · 2023 365 · 2024 366 ·
 2025 365 · 2026 193 (partial to 07-12). Every year is exactly complete.
 
-## 3. Year-boundary screen (`n_tanker`)
+## 3. Year-boundary screen
 
-Six year-over-year moves exceed ±60%. **Every one is a known event, not a
-definition change.** No flagged move sits at a 2019/2020, 2020/2021 or 2021/2022
-boundary, which is the specific risk the extension had to clear.
+> **Correction, 2026-08-26.** An earlier version of this section claimed six
+> moves exceeded +/-60%. That was wrong. The figure came from a scratch check
+> using asymmetric thresholds (ratio >1.6 or <0.625), and <0.625 is -37.5%, not
+> -60%. The committed script applies a symmetric +/-60% and finds **two** on
+> `n_tanker`. The substantive conclusion is unchanged: every flagged move is a
+> known event and none sits at a 2019/2020, 2020/2021 or 2021/2022 boundary.
 
-| Chokepoint | Boundary | Mean → mean | Change | Adjudication |
+Confirmed by `scripts/build_multi_event_panel.py`, run by Mher 2026-08-26.
+
+**`n_tanker` — 2 jumps beyond +/-60%:**
+
+| Chokepoint | Boundary | Mean -> mean | Change | Adjudication |
 |---|---|---|---|---|
-| Bab el-Mandeb | 2023→2024 | 25.9 → 11.6 | −55% | Red Sea attacks |
-| Cape of Good Hope | 2023→2024 | 9.2 → 18.9 | +104% | Red Sea rerouting destination |
-| Suez Canal | 2023→2024 | 25.5 → 14.3 | −44% | Same route as Bab el-Mandeb |
-| Kerch Strait | 2021→2022 | 10.9 → 6.0 | −45% | Invasion of Ukraine |
-| Kerch Strait | 2022→2023 | 6.0 → 2.2 | −64% | Continued closure |
-| Kerch Strait | 2023→2024 | 2.2 → 1.2 | −45% | Continued closure |
+| Cape of Good Hope | 2023->2024 | 9.2 -> 18.9 | +104% | Red Sea rerouting destination |
+| Kerch Strait | 2022->2023 | 6.0 -> 2.2 | -64% | Black Sea closure |
 
-2020 shows no tanker-transit collapse. The largest 2019→2020 move is Bohai
-Strait, 29.7 → 41.0 (+38%, below threshold), consistent with Chinese crude
-stockpiling during the 2020 price collapse. Treat 2020 as usable with a period
-indicator rather than excluding it.
+**`n_container` — 2 jumps beyond +/-60%:**
+
+| Chokepoint | Boundary | Mean -> mean | Change | Adjudication |
+|---|---|---|---|---|
+| Bab el-Mandeb | 2023->2024 | 18.4 -> 5.4 | -71% | Red Sea attacks |
+| Cape of Good Hope | 2023->2024 | 6.2 -> 19.0 | +209% | Red Sea rerouting destination |
+
+Moves between -37.5% and -60% that the symmetric screen does not flag, but which
+are real and matter for Phase 2: Bab el-Mandeb tanker -55%, Suez tanker -44%,
+Suez container -54%, Kerch tanker -45% (2021->2022) and -45% (2023->2024).
+
+2020 shows no tanker-transit collapse. The largest 2019->2020 move is Bohai
+Strait, 29.7 -> 41.0 (+38%), consistent with Chinese crude stockpiling during the
+2020 price collapse. Treat 2020 as usable with a period indicator rather than
+excluding it.
 
 ## 4. Event-by-event verification
 
@@ -93,26 +107,50 @@ Cape roughly doubles as the other two roughly halve. The Bab el-Mandeb → Cape
 edge required by the spec's `sanity_gate` is plainly present in the raw data, so
 a fitted kernel that misses it is a bug in the fit, not an absence in the world.
 
-### 4.3 Panama drought — weak on tankers, and this changes the plan
+### 4.3 Panama drought — weak, and NOT a container story
 
-| Period | Panama `n_tanker`/day |
-|---|---|
-| 2023 H1 (pre) | 12.7 |
-| 2023 H2 (restrictions) | 12.1 |
-| 2024 H1 (trough) | **9.9** |
-| 2024 H2 (recovery) | 12.2 |
-| 2025 (normal) | 12.6 |
+> **Correction, 2026-08-26.** An earlier version of this section asserted the
+> drought hit container and gas carriers harder than tankers, and recommended
+> fitting Panama on `n_container`. The data says the opposite. That
+> recommendation was wrong and is withdrawn.
 
-A ~22% trough, an order of magnitude weaker than the Red Sea response. The
-drought bound draft and auctioned slots, which hit container and gas carriers
-harder than tankers.
+Panama Canal daily means by vessel type:
 
-**Consequence.** `ML_TRAINING_ACTION_PLAN.md` Phase 2 says to fit with and
-without Panama. That remains right, but a null Panama result on `n_tanker` is
-now *expected* and must not be read as model failure. The spec therefore admits
-`n_container` and `n_total` as additional value columns. Fitting the same kernel
-across vessel types turns this into a cross-outcome transfer test using columns
-already present in the snapshot.
+| Period | `n_tanker` | `n_container` | `n_total` |
+|---|---|---|---|
+| 2023 H1 (pre) | 12.7 | 7.4 | 32.1 |
+| 2023 H2 (restrictions) | 12.1 | 7.7 | 28.2 |
+| 2024 H1 (trough) | **9.9** | **7.2** | **22.9** |
+| 2024 H2 (recovery) | 12.2 | 8.1 | 30.0 |
+| 2025 (normal) | 12.6 | 7.9 | 31.0 |
+
+Trough against pre-period: **tanker -22%, container -2%, total -29%.**
+
+Container traffic was essentially unaffected while total transits fell 29%. The
+most plausible reading is that slot rationing protected contracted liner
+services, which hold long-term booked slots, and pushed the entire cut onto
+spot, bulk and tanker traffic. That is a priority-allocation mechanism, and it is
+worth a sentence in the thesis on its own.
+
+**Consequences for Phase 2.** Fit Panama on `n_total` and `n_tanker`, not
+`n_container`. Even then the response is roughly a fifth of the Red Sea's, so
+Panama stays a secondary training event and a null result there is expected.
+
+### 4.4 Signal strength differs by vessel type, so fit both
+
+Red Sea, 2023 against 2024 annual means:
+
+| Chokepoint | `n_tanker` | `n_container` |
+|---|---|---|
+| Bab el-Mandeb | 25.9 -> 11.6 (-55%) | 18.4 -> 5.4 (**-71%**) |
+| Suez Canal | 25.5 -> 14.3 (-44%) | 19.1 -> 8.7 (**-54%**) |
+| Cape of Good Hope | 9.2 -> 18.9 (+104%) | 6.2 -> 19.0 (**+209%**) |
+
+The Red Sea is a stronger container signal than tanker signal. Panama is a
+tanker and total signal with no container signal. Hormuz is a tanker event. The
+three training events therefore do not share a single best outcome column, and
+fitting the kernel across `n_tanker`, `n_container` and `n_total` becomes a
+genuine cross-outcome transfer test rather than a robustness afterthought.
 
 ## 5. Verdict and residual risks
 
@@ -132,8 +170,8 @@ Residual risks to carry into Phase 2:
 
 ## 6. Next actions
 
-1. Run `python scripts/build_multi_event_panel.py` and confirm the figures above.
-2. Run it again with `--value-col n_container` for the Panama comparison.
+1. DONE 2026-08-26 - script run by Mher; figures confirmed, threshold claim corrected.
+2. DONE 2026-08-26 - Panama is not a container story; see 4.3.
 3. Adjudicate the Red Sea onset date against `EVENT_CHRONOLOGY.md`.
 4. Record the 2020 handling decision in `DECISION_LOG.md`.
 5. Set `status: frozen` and `frozen_on` in `config/multi_event_propagation.yaml`.
