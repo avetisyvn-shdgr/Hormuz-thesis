@@ -1166,14 +1166,27 @@ hygiene pass (worktree mtime 2026-08-25); it was committed, not created, today.
   must be settled first. **This is an open decision for Mher, not a mechanical
   fix.**
 
-**Cause B — self-inflicted, and fixed (2 failures).** The stale-claim scan
-rebuilt to 83 rows against a written 82. The extra row was line 343 of the new
-`docs/ML_TRAINING_ACTION_PLAN.md`, where the "do not write" vocabulary list
-contained the literal banned token matching `\bATT\b`. The scanner counted the
-prohibition as a stale claim. Resolved by paraphrasing the banned tokens rather
-than adding the file to `excluded_paths`, so no frozen config was touched and no
-refreeze is required for this cause. Both new documents now return zero pattern
-hits. **Awaiting Mher's confirming test run.**
+**Cause B — self-inflicted, and fixed (contributed 1 row).** The stale-claim
+scan rebuilt to 83 rows against a written 82. The extra row was line 343 of the
+new `docs/ML_TRAINING_ACTION_PLAN.md`, where the "do not write" vocabulary list
+contained the literal banned token matching `\bATT\b`, so the scanner counted
+the prohibition itself as a stale claim. Resolved by paraphrasing rather than
+adding the file to `excluded_paths`; no frozen config touched. Confirmed by
+Mher's re-run: the shape mismatch is gone (82 vs 82).
 
-- **Status:** Cause B **fixed pending confirmation**. Cause A **OPEN**, gated on
-  the Bloomberg scope decision.
+**Correction — there is only ONE root cause, not two.** After the Cause B fix,
+`test_final_integration_audit` still failed, now on two shifted `line_number`
+values rather than a row count: `docs/DATA_SOURCES.md` 66 -> 69 and 127 -> 135.
+That file was edited by the **same 2026-08-19 Bloomberg refusal** as
+`sources.yaml` (+26/-11 lines, recording that the help desk did not authorise
+thesis use and the layer is excluded). The insertions pushed two long-standing
+flagged lines down the file.
+
+So **all eight failures trace to the 2026-08-19 Bloomberg decision**, which sat
+uncommitted in the worktree from 2026-08-19/25 until the hygiene pass committed
+it. One scope decision plus one refreeze clears all eight together.
+
+- **Status:** **OPEN**, gated on a single decision: what happens to the Bloomberg
+  layer in `scripts/run_all.py`. Remove it, or keep it as an optional branch
+  skipped by default. Once settled, run a clean `run_all.py` and refreeze; the
+  eight failures resolve as one.
