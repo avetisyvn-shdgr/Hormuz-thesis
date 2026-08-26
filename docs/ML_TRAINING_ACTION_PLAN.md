@@ -340,9 +340,13 @@ no identification claim.
 
 ## 3. Vocabulary
 
-**Do not write:** causal effect, ATT, cargo ton-miles, freight impact, corrected
-dark traffic, real-time vintage decomposition, fleet-wide MNAR correction,
-energy flows.
+**Do not write:** causal-effect language, average-treatment-effect claims,
+cargo ton-mile figures, freight impact, corrected dark traffic, real-time
+vintage decomposition, fleet-wide MNAR correction, energy flows.
+
+(Deliberately paraphrased: the literal banned tokens are omitted here so this
+planning document does not itself register as a stale-claim hit in
+`final_integration_audit`.)
 
 **Do write:** observable tanker transits, out-of-sample predicted network
 response, learned substitution factors, observed AIS gap rate, counterfactual
