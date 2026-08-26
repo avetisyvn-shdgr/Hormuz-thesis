@@ -19,13 +19,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
 import yaml
 
-from lngfreight import config
-from lngfreight.spatial import wide_chokepoint_panel
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from lngfreight import config                                 # noqa: E402
+from lngfreight.spatial import wide_chokepoint_panel          # noqa: E402
 
 SPEC_PATH = config.CONFIG_DIR / "multi_event_propagation.yaml"
 JUMP_THRESHOLD = 0.60  # flag year-over-year moves beyond +/-60%
