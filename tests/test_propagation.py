@@ -88,3 +88,21 @@ def test_sanity_gate_reports_rank():
     gate = sanity_gate(fit, "a", "unit_0", "unit_3")
     assert 1 <= gate["rank_among_receivers"] <= gate["n_receivers"]
     assert set(gate) >= {"loading", "rank_among_receivers", "passed"}
+
+
+def test_pair_reallocation_reports_recovered_fraction():
+    from lngfreight.propagation import pair_reallocation
+
+    panel = _panel(n_days=1400)
+    spec = EventSpec("a", "unit_0", pd.Timestamp("2022-01-01"))
+    out = pair_reallocation(
+        panel, spec, "unit_3", ["unit_0"], horizon_weeks=4, n_draws=30
+    )
+    assert set(out) >= {
+        "observed_gain_per_day",
+        "emitter_loss_per_day",
+        "recovered_fraction",
+        "percentile_of_observed",
+    }
+    assert 0.0 <= out["percentile_of_observed"] <= 100.0
+    assert out["n_draws"] > 0

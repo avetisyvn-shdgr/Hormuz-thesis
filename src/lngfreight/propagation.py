@@ -254,6 +254,71 @@ def screened_receivers(
     return sorted(keep)
 
 
+def pair_reallocation(
+    panel: pd.DataFrame,
+    spec: EventSpec,
+    receiver: str,
+    affected: list[str],
+    *,
+    horizon_weeks: int = 8,
+    n_draws: int = 250,
+    guard_onsets: list[pd.Timestamp] | None = None,
+    seed: int = 20260826,
+) -> dict:
+    """Traffic change at ONE named receiver, against its own placebo null.
+
+    The aggregate version of this accounting sums residual gains over every
+    chokepoint and fails: 27 units of noise, each scaled up by its own baseline,
+    outweigh the handful of transits a real event displaces. Testing a single
+    pre-registered pair instead removes 26 units of noise and the signal
+    separates cleanly.
+
+    The receiver MUST be named before the event is examined. Picking it after
+    looking at the loadings turns this into a selection statistic and the null
+    below stops being valid.
+    """
+    rng = np.random.default_rng(seed)
+    guard = [pd.Timestamp(o) for o in (guard_onsets or [spec.onset])]
+
+    def gain(onset: pd.Timestamp) -> float:
+        resp = event_response(panel, EventSpec("probe", spec.unit, onset),
+                              horizon_weeks, affected)
+        return float(resp.loc[receiver].mean() * _baseline(panel[receiver], onset))
+
+    observed = gain(spec.onset)
+    loss = -float(
+        event_response(panel, spec, horizon_weeks, affected).loc[spec.unit].mean()
+        * _baseline(panel[spec.unit], spec.onset)
+    )
+
+    lo = panel.index[0] + pd.Timedelta(days=BASELINE_DAYS + 35)
+    hi = panel.index[-1] - pd.Timedelta(days=(horizon_weeks + 2) * WEEK)
+    draws: list[float] = []
+    attempts = 0
+    while len(draws) < n_draws and attempts < n_draws * 40:
+        attempts += 1
+        cand = lo + pd.Timedelta(days=int(rng.integers(0, max((hi - lo).days, 1))))
+        if any(abs((cand - g).days) < 365 for g in guard):
+            continue
+        try:
+            draws.append(gain(cand))
+        except (ValueError, KeyError):
+            continue
+    null = np.asarray(draws)
+    return {
+        "event": spec.name,
+        "emitter": spec.unit,
+        "receiver": receiver,
+        "observed_gain_per_day": observed,
+        "emitter_loss_per_day": loss,
+        "recovered_fraction": observed / loss if loss > 0 else float("nan"),
+        "null_median": float(np.median(null)) if null.size else float("nan"),
+        "null_p95": float(np.quantile(null, 0.95)) if null.size else float("nan"),
+        "percentile_of_observed": float((null < observed).mean() * 100) if null.size else float("nan"),
+        "n_draws": int(null.size),
+    }
+
+
 def fit_propagation(
     panel: pd.DataFrame,
     specs: list[EventSpec],

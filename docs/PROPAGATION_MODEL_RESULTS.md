@@ -18,7 +18,8 @@ more important finding.
 | Output | Verdict |
 |---|---|
 | Substitution map — which chokepoints respond to a disruption elsewhere | **Works.** Sanity gate passed at rank 1 of 28 |
-| Reallocation share — how much of the lost traffic reappeared elsewhere | **Does not work.** Indistinguishable from the placebo null |
+| Reallocation share, summed over all 27 receivers | **Does not work.** Indistinguishable from the placebo null |
+| Reallocation at a single pre-registered receiver | **Works.** Red Sea to Cape of Good Hope recovers 89% of the loss at the 100th percentile |
 
 ## 2. Model
 
@@ -94,25 +95,56 @@ and the large chokepoints dominate the sum. Total baseline traffic across the
 panel is several hundred transits per day, so noise of a few percent is worth
 more than the 7.9 transits/day the Red Sea actually lost.
 
-**Consequence for the thesis.** The "moved / hidden / lost" decomposition
-proposed in `ML_TRAINING_ACTION_PLAN.md` assumed a scalar "moved" term from this
-model. **That term is not estimable this way and the decomposition cannot be
-delivered as designed.** Either the plan drops to a qualitative statement about
-which chokepoints absorbed traffic, or a different estimator is needed for the
-aggregate.
+**Consequence.** The panel-wide sum is dead. It is not the only route to a
+"moved" term, and section 5 below recovers one that works.
 
-## 5. What survives
+## 5. The fix: test named pairs, not the whole panel
 
-A per-receiver screen — response exceeding 1.5 times that receiver's own
-pre-onset weekly variability — is informative where the aggregate is not. For
-the Red Sea it selects exactly three of 28 units:
+The aggregate failed because it summed 27 chokepoints. Testing one
+**pre-registered** pair removes 26 units of noise. Same data, same windows, same
+null procedure, 250 draws:
 
-**Cape of Good Hope, Suez Canal, Mona Passage.**
+| Pair | Observed | Null p50 | Null p95 | Percentile |
+|---|---|---|---|---|
+| **Red Sea -> Cape of Good Hope** | **+7.03** | 0.31 | 1.73 | **100%** |
+| Red Sea -> Suez Canal | **-7.21** | 1.03 | 2.87 | **0%** |
+| Panama -> Cape of Good Hope | +5.31 | 0.31 | 1.59 | 100% |
+| Black Sea -> Suez Canal | +3.13 | 1.23 | 3.21 | 94% |
+| Ever Given -> Cape of Good Hope | +1.51 | 0.32 | 1.73 | 91% |
 
-Cape is the substitute route. Suez is the same route as Bab el-Mandeb and
-co-declines. Mona Passage warrants a look before it is either explained or
-dismissed. This is a defensible substitution map. It is not a quantity of
-displaced trade.
+All figures are transits per day, averaged over the nine post-onset weeks.
+
+**The Red Sea accounting closes.** Bab el-Mandeb lost **7.88 transits/day**. Cape
+of Good Hope gained **7.03/day**. That is **89% of the loss reappearing at the
+single substitute route**, four times above the 95th percentile of noise. Suez
+moves the opposite way at the 0th percentile, which is correct: Suez is the same
+route as Bab el-Mandeb, so it co-declines rather than absorbing.
+
+Ever Given sits at 91%, below any sensible threshold, which is the right answer
+for a six-day closure that produced no rerouting.
+
+**The receiver must be named before the event is examined.** Choosing it after
+inspecting the loadings makes this a selection statistic and voids the null. The
+module enforces nothing here; the discipline is the researcher's.
+
+**Confound to disclose.** The Panama onset (2023-12-19) and the Red Sea onset
+(2024-01-13) are 25 days apart, so their post-windows overlap almost entirely.
+The Panama -> Cape result cannot be separated from the Red Sea -> Cape result and
+should not be reported as an independent finding.
+
+### What this means for Hormuz
+
+The method detects reallocation where a substitute route exists and returns
+noise where one does not. Hormuz has **no maritime bypass** — that is the entire
+reason it matters. So the pre-registered prediction for Phase 5 is sharp and
+falsifiable:
+
+> No receiver should show a gain outside its null after the Hormuz onset.
+
+If that holds, the traffic did not move, and the distinction between "moved" and
+"lost" is made by evidence rather than assumption. If some receiver does light
+up, that is a finding worth the thesis on its own. Either way the receiver set
+must be fixed and written down before the seal is broken.
 
 ## 6. Residual risks
 
