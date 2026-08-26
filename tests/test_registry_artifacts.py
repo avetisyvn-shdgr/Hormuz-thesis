@@ -76,9 +76,57 @@ def test_registered_artifact_rejects_hash_drift_before_access(tmp_path, monkeypa
     assert not (tmp_path / "data/raw/provenance.jsonl").exists()
 
 
+def test_sensitivity_artifact_requires_explicit_declared_consumer(tmp_path, monkeypatch):
+    _prepare_artifact_root(tmp_path, monkeypatch)
+    sensitivity_registry = _artifact_registry()
+    sensitivity_registry["external_snapshot"].update({
+        "analysis_scope": "sensitivity_only",
+        "allowed_consumers": ["scripts/allowed.py"],
+    })
+    monkeypatch.setattr(config, "registry", lambda: sensitivity_registry)
+
+    with pytest.raises(PermissionError, match="sensitivity-only"):
+        registry_module.get_variable(
+            "external_snapshot",
+            query={"consumer": "scripts/allowed.py"},
+        )
+    with pytest.raises(PermissionError, match="undeclared sensitivity consumer"):
+        registry_module.get_variable(
+            "external_snapshot",
+            query={"consumer": "scripts/undeclared.py"},
+            allow_sensitivity=True,
+        )
+
+    artifact = registry_module.get_variable(
+        "external_snapshot",
+        query={"consumer": "scripts/allowed.py"},
+        allow_sensitivity=True,
+    )
+    assert isinstance(artifact, RegisteredArtifact)
+    record = json.loads((tmp_path / "data/raw/provenance.jsonl").read_text())
+    assert record["query"]["consumer"] == "scripts/allowed.py"
+    assert record["query"]["analysis_scope"] == "sensitivity_only"
+    assert record["query"]["sensitivity_opt_in"] is True
+
+
 def test_active_external_consumers_call_registry_entrypoint():
     expected = {
         "scripts/run_lng_index_analysis.py": "wto_hormuz_lng_outbound_index",
+        "scripts/run_portwatch_vintage_sensitivity.py": (
+            "portwatch_chokepoints_vintage_20260809_snapshot"
+        ),
+        "scripts/run_rebound_relapse_profile.py": (
+            "portwatch_chokepoints_vintage_20260809_snapshot"
+        ),
+        "scripts/run_revision_and_basin_exploration.py": (
+            "portwatch_chokepoints_vintage_20260809_snapshot"
+        ),
+        "scripts/verify_sensitivity_inputs.py": (
+            "portwatch_chokepoints_vintage_20260809_snapshot"
+        ),
+        "src/lngfreight/vintage_matrix.py": (
+            "portwatch_chokepoints_vintage_20260809_snapshot"
+        ),
         "src/lngfreight/spatial.py": "portwatch_chokepoints_snapshot",
         "scripts/build_lng_terminal_crosswalk.py": "gem_lng_terminals_snapshot",
         "scripts/build_global_lng_terminal_crosswalk.py": (
@@ -121,3 +169,5 @@ def test_active_external_consumers_call_registry_entrypoint():
             or "registered_rewiring_input_paths" in text
         )
         assert variable in text
+        if variable == "portwatch_chokepoints_vintage_20260809_snapshot":
+            assert "allow_sensitivity" in text

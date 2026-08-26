@@ -45,7 +45,11 @@ class RegisteredArtifact:
 
 def _frozen_hashes() -> dict[str, str]:
     hashes: dict[str, str] = {}
-    for relative in ("data/raw/SHA256SUMS", "data/raw/SHA256SUMS.vessel"):
+    for relative in (
+        "data/raw/SHA256SUMS",
+        "data/raw/SHA256SUMS.sensitivity",
+        "data/raw/SHA256SUMS.vessel",
+    ):
         path = config.ROOT / relative
         if not path.exists():
             continue
@@ -133,17 +137,33 @@ def get_variable(
     end: str | None = None,
     *,
     query: dict | None = None,
+    allow_sensitivity: bool = False,
 ) -> pd.DataFrame | RegisteredArtifact:
     reg = config.registry()
     if name not in reg:
         raise KeyError(f"Unknown variable {name!r}. Defined variables: {list(reg)}")
     spec = reg[name]
+    effective_query = dict(query or {})
+    if spec.get("analysis_scope") == "sensitivity_only":
+        if not allow_sensitivity:
+            raise PermissionError(
+                f"{name!r} is sensitivity-only; pass allow_sensitivity=True "
+                "from a declared sensitivity consumer"
+            )
+        consumer = str(effective_query.get("consumer", "")).split(":", 1)[0]
+        allowed = set(spec.get("allowed_consumers", []))
+        if not consumer or consumer not in allowed:
+            raise PermissionError(
+                f"undeclared sensitivity consumer {consumer!r} for {name!r}"
+            )
+        effective_query["analysis_scope"] = "sensitivity_only"
+        effective_query["sensitivity_opt_in"] = True
     if spec.get("kind") == "artifact":
         if start is not None or end is not None:
             raise ValueError(
                 f"Artifact variable {name!r} does not accept start/end bounds."
             )
-        return _get_registered_artifact(name, spec, query=query)
+        return _get_registered_artifact(name, spec, query=effective_query)
 
     win = config.settings()["study_window"]
     start = start or win["full_start"]

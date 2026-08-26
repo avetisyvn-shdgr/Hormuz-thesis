@@ -3,9 +3,9 @@
 These figures document the 2026 Strait of Hormuz disruption in the free panel
 and motivate the research design. They are descriptive only:
 
-  * Event-date lines are audited milestones from settings.yaml. Only the
-    operational-onset line is the primary model cutoff; later lines provide
-    historical context and sensitivity-window anchors.
+  * The event-study figure marks only the locked operational-onset cutoff. Later
+    audited milestones remain in the chronology rather than being compressed
+    into an unreadable cluster of vertical lines.
   * Hormuz-vs-Panama is a treated-vs-untreated CONTRAST (the visual seed of the
     later donor / synthetic-control design), NOT an estimated effect.
   * The energy-price panel shows CO-MOVEMENT, not a causal response; forward-
@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -28,6 +29,8 @@ _STYLE = {
     "figure.figsize": (7.0, 4.3),
     "figure.dpi": 130,
     "savefig.dpi": 200,
+    "font.family": "serif",
+    "font.serif": ["P052", "URW Palladio L", "Palatino", "TeX Gyre Pagella", "DejaVu Serif"],
     "font.size": 10,
     "axes.titlesize": 11,
     "axes.spines.top": False,
@@ -37,6 +40,10 @@ _STYLE = {
     "legend.frameon": False,
 }
 _TREAT_COLORS = ["#c1121f", "#d4762a", "#6a4c93", "#118ab2"]
+_OBSERVED_TREATED = "#B2182B"
+_COMPARISON_SERIES = "#3F3F3F"
+_EVENT_MARKER = "#000000"
+_THESIS_TEXTWIDTH_IN = 418.25555 / 72.27
 _SOURCE = "Source: IMF PortWatch (AIS-derived) & EIA. Free-data panel."
 _PDF_METADATA = {
     "Creator": "lngfreight reproducible pipeline",
@@ -57,6 +64,19 @@ def _mark_treatments(ax, *, label: bool = True) -> None:
                    label=f"{name} ({ts.date()})" if label else None)
 
 
+def _mark_primary_cutoff(ax) -> None:
+    """Draw only the locked operational onset used by the primary model."""
+    name, ts = next(iter(_candidates().items()))
+    ax.axvline(
+        ts,
+        ls=(0, (3.0, 2.0)),
+        lw=1.2,
+        color=_EVENT_MARKER,
+        alpha=0.95,
+        label=f"Locked operational onset ({ts.date()})",
+    )
+
+
 def _footnote(fig, extra: str = "") -> None:
     note = _SOURCE + ("  " + extra if extra else "")
     fig.text(0.01, 0.005, note, fontsize=7, color="#555", ha="left")
@@ -68,30 +88,41 @@ def _footnote(fig, extra: str = "") -> None:
 def fig_chokepoint_event_study(panel: pd.DataFrame) -> plt.Figure:
     with plt.rc_context(_STYLE):
         fig, (ax_full, ax_zoom) = plt.subplots(
-            2, 1, figsize=(7.0, 6.2), height_ratios=[1, 1])
+            2, 1, figsize=(_THESIS_TEXTWIDTH_IN, 5.15), height_ratios=[1, 1])
 
         for ax in (ax_full, ax_zoom):
             ax.plot(panel.index, panel["hormuz_tanker_transits"],
-                    color="#c1121f", lw=1.1, label="Hormuz (treated)")
+                    color=_OBSERVED_TREATED, lw=1.1,
+                    label="Hormuz (observed treated)")
             ax.plot(panel.index, panel["panama_tanker_transits"],
-                    color="#1d3557", lw=1.1, label="Panama (control)")
+                    color=_COMPARISON_SERIES, lw=1.1,
+                    label="Panama (unaffected comparator)")
             ax.set_ylabel("Tanker transits / day")
 
-        ax_full.set_title("Daily tanker transits — full study window")
+        ax_full.set_title("Daily tanker transits: full study window", loc="left")
+        ax_full.xaxis.set_major_locator(mdates.YearLocator())
+        ax_full.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
         ax_full.legend(loc="upper left", ncol=2, fontsize=8)
 
         zoom = panel.loc["2026-01-01":]
         ax_zoom.set_xlim(zoom.index.min(), zoom.index.max())
         ax_zoom.set_ylim(0, max(zoom[["hormuz_tanker_transits",
                                       "panama_tanker_transits"]].max()) * 1.1)
-        _mark_treatments(ax_zoom)
-        ax_zoom.set_title("Zoom: Jan–Jun 2026, with verified treatment dates")
+        ax_zoom.xaxis.set_major_locator(mdates.MonthLocator())
+        ax_zoom.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+        _mark_primary_cutoff(ax_zoom)
+        ax_zoom.set_title("Zoom: January to June 2026, locked operational onset", loc="left")
         ax_zoom.legend(loc="upper right", fontsize=7)
 
-        fig.suptitle("Strait of Hormuz disruption vs Panama Canal (descriptive)",
+        fig.suptitle("",
                      fontsize=12, y=0.99)
-        _footnote(fig, "Treatment dates verified (docs/EVENT_CHRONOLOGY.md); descriptive, not causal.")
-        fig.tight_layout(rect=(0, 0.02, 1, 0.98))
+        _footnote(
+            fig,
+            "\nShared absolute scale preserves transit units; Panama variation is compressed\n"
+            "by its lower level. Locked onset: 2026-02-28. Later verified milestones:\n"
+            "docs/EVENT_CHRONOLOGY.md.",
+        )
+        fig.tight_layout(rect=(0, 0.10, 1, 0.98))
     return fig
 
 
@@ -117,7 +148,7 @@ def fig_hormuz_robustness(panel: pd.DataFrame) -> plt.Figure:
         ax.axhline(100, color="#888", lw=0.8, ls=":")
         _mark_treatments(ax)
         ax.set_ylabel("Index, pre-treatment mean = 100")
-        ax.set_title("Hormuz collapse is robust across count and capacity")
+        ax.set_title("Count versus capacity robustness", loc="left")
         ax.legend(loc="lower left", fontsize=7)
         _footnote(fig, "Capacity gaps = masked AIS-artifact days (transits>0, capacity=0).")
         fig.tight_layout(rect=(0, 0.03, 1, 1))
