@@ -1098,3 +1098,41 @@ Each entry: **date · decision · decision-maker · rationale · affected files 
   adapters, registry entries, and re-entry documentation are preserved and no
   result depends on it.
 - **Status:** Recorded as the standing open-item list.
+
+## 2026-08-26 · Repository hygiene pass and multi-event ML branch opened
+
+- **Decision-maker:** Mher (researcher), implementation by AI.
+- **Decision:** Bring the untracked implementation layer under version control,
+  clear a blocking git lock, set a repo-local commit identity, and open branch
+  `ml/multi-event-propagation` for the additive ML work.
+- **Root cause found:** a zero-byte `.git/index.lock` dated **2026-08-24** had
+  been silently rejecting every commit. It was not a discipline failure; git had
+  been jammed for two days. Removed, along with orphaned `tmp_obj_*` objects and
+  a stray `.__wtest` write probe.
+- **Committed (was untracked, never in git):** six modules
+  (`claim_audit`, `horizon_frontier`, `network_support`, `observability_frontier`,
+  `route_burden`, `vintage_matrix`), twelve test files, seven config
+  specifications, ~25 run/freeze/verify scripts, and sixteen results documents
+  including those cited as G4-verified in `CURRENT_PLAN.md`. Roughly 20,000 lines.
+  Until today none of the committed results reproduced from a clean clone.
+- **WTO vintage state clarified (no change made):** `data/raw/wto_hormuz/` holds
+  five captures. `sources.yaml` pins `voy_intake_index_lng_export.csv`
+  (2025-01-01 → 2026-07-15), which is in `SHA256SUMS` and verifies OK. The
+  2026-08-09 capture (`…30549d8cfd3b`, → 2026-08-09) is the registry-review
+  verification fetch and remains **deliberately unpromoted**, per
+  `DATA_REGISTRY_REVIEW_2026-08.md`. This is a coherent governance state, not an
+  inconsistency; promotion requires a registry-path refetch and Mher's sign-off.
+- **Trailing zeros checked and confirmed genuine.** An independent vintage
+  comparison found no date reported 0.0 in the 2026-06-01 capture and positive in
+  the 2026-08-09 capture. The post-cutoff index is zero on 155 of 163 days with
+  eight isolated partial-loading days, reproducing the figures already recorded
+  in `WINDOW_EXTENSION_V2_RUNBOOK.md`. The one documented revision
+  (2026-07-06, 0.0 → 29.21) lies outside the compared range. No endpoint
+  contamination; no correction required.
+- **Affected files:** `.gitignore`, `docs/ML_TRAINING_ACTION_PLAN.md`, and the
+  newly tracked implementation layer.
+- **Status:** Hygiene **DONE** except two items that require Mher to run code:
+  (1) full `pytest` run and the manifest refreeze recorded as OPEN on 2026-08-10;
+  (2) reclaiming ~2.76 GB of virtualenvs. Regenerated artifacts under
+  `data/processed` and `reports/figures` are deliberately left uncommitted
+  pending that test run.
