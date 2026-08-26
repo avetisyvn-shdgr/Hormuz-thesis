@@ -1190,3 +1190,40 @@ it. One scope decision plus one refreeze clears all eight together.
   layer in `scripts/run_all.py`. Remove it, or keep it as an optional branch
   skipped by default. Once settled, run a clean `run_all.py` and refreeze; the
   eight failures resolve as one.
+
+## 2026-08-26 · Phase 2 fitted; aggregate reallocation share fails its placebo null
+
+- **Decision-maker:** Mher (researcher), implementation by AI. **Prototype only:**
+  `scripts/run_propagation_model.py` has not been executed by Mher.
+- **Spec frozen** (`config/multi_event_propagation.yaml`, 2026-08-26) with onsets
+  derived by a pre-registered rule rather than adjudicated against
+  `EVENT_CHRONOLOGY.md`, which covers the Hormuz event only. Red Sea moves from
+  the drafted 2023-12-15 to **2024-01-13**; Panama from 2023-07-01 to
+  **2023-12-19**; Ever Given **2021-03-23**; Black Sea **2022-02-24** (external
+  anchor, pre-2022 drift disclosed).
+- **Independent check on the locked cutoff.** The same sharp rule applied to
+  Hormuz returns **2026-03-01**, one day after the independently locked
+  operational-onset cutoff of 2026-02-28. The cutoff is unchanged and was not
+  derived this way; this is corroboration, not a re-derivation.
+- **Sanity gate PASSED.** The fit recovers Bab el-Mandeb -> Cape of Good Hope at
+  loading 0.738, **rank 1 of 28 receivers**, without being told the edge exists.
+- **Negative result, and it changes the plan.** The aggregate reallocation share
+  fails its placebo null. Red Sea observed gross gain 18.4 transits/day sits at
+  the **64th percentile** of 120 pseudo-onset draws (null median 13.9, p95 35.3).
+  Summing residual gains over 27 chokepoints integrates more noise than the 7.9
+  transits/day the Red Sea actually lost. **The scalar "moved" term assumed by
+  the moved/hidden/lost decomposition in `ML_TRAINING_ACTION_PLAN.md` is not
+  estimable this way.** A per-receiver screen still selects Cape of Good Hope,
+  Suez Canal and Mona Passage for the Red Sea, so the substitution map survives
+  as a qualitative object.
+- **Separate finding, affects the PRIMARY path not Phase 2.** Hormuz shows a
+  large pre-cutoff excursion that no prior document records: monthly means fall
+  from 49.7/day (2025-10) to 41.1 (2025-11) to **34.7 (2025-12, 0.62x baseline)**,
+  recover to 49.4 (2026-02), and the week ending **2026-02-22 reaches 60.4/day,
+  above baseline**, immediately before the collapse. The AR(1,7) counterfactual is
+  trained through 2026-02-27 and therefore anchors on that rebound. This bears
+  directly on the anticipation and residual-autocorrelation concerns already
+  raised and should be checked before the shortfall figure is quoted again.
+- **Status:** Phase 2 **fitted, pending Mher's confirming run**. Two open
+  decisions: what replaces the aggregate reallocation term, and whether the
+  pre-cutoff excursion changes the primary counterfactual.

@@ -9,10 +9,11 @@
 # causal spillover parameter (CLAUDE.md rule 2). A causal reading requires the
 # optional exposure design in Phase 6 of docs/ML_TRAINING_ACTION_PLAN.md.
 version: 1
-status: "draft_not_frozen"     # -> "frozen" after the Red Sea onset date is adjudicated
+status: "frozen"
 drafted_on: "2026-08-26"
 p1_gate: "PASSED 2026-08-26 - see docs/MULTI_EVENT_PANEL_COVERAGE_AUDIT.md"
-frozen_on: null
+frozen_on: "2026-08-26"
+p2_fit: "prototype fitted 2026-08-26 - see docs/PROPAGATION_MODEL_RESULTS.md"
 
 training_window:
   # PortWatch snapshot true coverage is 2019-01-01 -> 2026-07-12 (verified:
@@ -37,7 +38,7 @@ panel:
 events:
   suez_ever_given:
     unit: "Suez Canal"
-    onset: "2021-03-23"
+    onset: "2021-03-23"        # data-derived, sharp rule
     end: "2021-03-29"
     mechanism: "total_physical_blockage"
     duration_class: "short"
@@ -51,7 +52,7 @@ events:
 
   black_sea_kerch:
     unit: "Kerch Strait"
-    onset: "2022-02-24"
+    onset: "2022-02-24"        # external anchor; pre-2022 drift noted in results doc
     end: null
     mechanism: "conflict_and_sanctions"
     duration_class: "long_progressive"
@@ -60,7 +61,7 @@ events:
 
   panama_drought:
     unit: "Panama Canal"
-    onset: "2023-07-01"
+    onset: "2023-12-19"        # data-derived, sustained rule (was 2023-07-01)
     end: "2024-07-31"
     mechanism: "capacity_rationing"
     duration_class: "long"
@@ -77,7 +78,7 @@ events:
 
   red_sea:
     units: ["Bab el-Mandeb Strait", "Suez Canal"]
-    onset: "2023-12-15"        # DRAFT: refine against EVENT_CHRONOLOGY.md
+    onset: "2024-01-13"        # data-derived, sustained rule (draft said 2023-12-15)
     end: null
     mechanism: "attacks_and_voluntary_avoidance"
     duration_class: "long"
@@ -110,6 +111,8 @@ model:
   form: "low_rank_distributed_lag"
   kernel: "K[c_from -> c_to](h) ~ sum_k u_k[c_from] * v_k[c_to] * f_k(h)"
   rank_k_grid: [1, 2, 3]
+  fitted_rank: 1
+  horizon_weeks: 8
   lag_horizon_days: 60
   absorb: ["chokepoint_fixed_effects", "calendar_time_effects"]
   selection: "leave_one_event_out"      # never pooled-sample fit
@@ -120,6 +123,22 @@ model:
       (k, H) recovers it, stop and debug rather than tuning until it appears.
     required_edge: ["Bab el-Mandeb Strait", "Cape of Good Hope"]
     required_sign: "positive"
+
+onset_derivation:
+  status: "data_derived_pre_registered_rule"
+  reason: >
+    docs/EVENT_CHRONOLOGY.md covers the Hormuz event only and carries no Red Sea,
+    Panama or Black Sea chronology, so onsets could not be adjudicated against it.
+    They are derived from the panel itself by a single rule applied identically to
+    every candidate, which is more defensible than a hand-picked date.
+  sustained_rule: "28-day trailing mean below 0.75 x 365-day pre-baseline, held 14 days"
+  sharp_rule: "daily value below 0.50 x baseline on 2 consecutive days"
+  hormuz_check: >
+    Applied to Hormuz for validation only, the sharp rule returns 2026-03-01,
+    one day after the independently locked operational-onset cutoff of
+    2026-02-28. The locked cutoff is unchanged and was not derived this way.
+  note: >
+    Changing any onset invalidates the fitted model. Re-run Phase 2 if edited.
 
 validation:
   scheme: "expanding"
