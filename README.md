@@ -1,148 +1,249 @@
-# LNG Freight Thesis — Working Model Repository
+# LNG freight disruption thesis pipeline
 
-The authorized working implementation uses free IMF PortWatch data to estimate
-the **disruption-associated counterfactual shortfall** in Strait of Hormuz tanker
-throughput. Daily tanker transit count is the primary outcome, deadweight
-capacity is the robustness outcome, and AR-only is the primary counterfactual
-estimator. Zhenyu Wang accepted the revised title/RQ/estimand, claim strength,
-and empirical sufficiency in writing on 2026-07-23. Direct Prof. Li ratification
-is not on record, so the formal proposal remains unchanged and the staged
-language stays isolated in `docs/PENDING_ESTIMAND_REALIGNMENT_DRAFT.md`. The
-primary advisor-side evidence and its checksum are archived under
-`docs/approvals/`.
+This repository contains the reproducible analysis code and frozen evidence
+used to study the 2026 Strait of Hormuz disruption. The working primary outcome
+is daily IMF PortWatch tanker transit count. The main estimand is the
+**disruption-associated counterfactual shortfall** over a locked 130-day window,
+estimated with a transparent pre-treatment AR model and checked with temporal,
+spatial, interval, synthetic-control, Bayesian, and admitted Chronos-2
+robustness layers.
 
-> This is a conservative working thesis pipeline, not a finalized causal model.
-> It now includes leakage-safe baselines, counterfactual and placebo inference,
-> synthetic/BSTS corroboration, and the open-data LNG vessel mechanism branch.
+The design is explicitly non-causal. It measures a counterfactual shortfall in
+an AIS-based chokepoint observation, not actual LNG cargo lost, welfare loss,
+freight-price incidence, or a structural treatment effect. LNG-specific public
+sources support a separate descriptive mechanism layer.
 
-## Why it is built this way
+## Repository status and release boundary
 
-Your dependent variable (Spark25S/30S) and key mechanism data (AIS, Lloyd's,
-Kpler) are proprietary. Rather than scrape imitations, the repo separates the
-**logical thesis variable** from the **provider that supplies it**:
+The codebase is intended for thesis assessment and reproducibility. A public
+software licence has not yet been selected, so no general reuse permission
+should be inferred from the presence of source code.
 
-```
-analysis code  ──►  registry.get_variable("henry_hub_spot")
-                          │  (reads config/sources.yaml)
-                          ▼
-                    provider (EIA / FRED / PortWatch / …later Spark)
-                          │
-                          ▼
-                 tidy (date, value) frame  +  provenance log
-```
+The default pipeline uses public or redistributable inputs. Proprietary or
+provenance-limited Bloomberg, Fearnleys, ClearLynx, Spark, Platts, Kpler, and
+similar inputs are not required and must not be included in a public release.
+The optional Bloomberg branch is disabled by default and remains local-only.
 
-Spark is a dormant optional secondary-outcome extension, not a dependency. Its
-reactivation procedure is documented in `docs/SPARK_REENTRY.md` and requires no
-core model-code redesign.
+The LaTeX manuscript is maintained separately in `../TUM_Bachelor_Thesis/`.
+Project-management notes, personal defence material, credentials, virtual
+environments, raw licensed inputs, and historical backups are outside the
+public code-release boundary.
 
-## Quick start
+## Research design at a glance
+
+| Layer | Quantity | Role and boundary |
+|---|---|---|
+| Working primary | PortWatch Hormuz tanker transit count | AIS-derived aggregate chokepoint throughput; not LNG-specific cargo |
+| Capacity robustness | PortWatch `capacity_tanker` | AIS-derived tanker transit-volume/capacity proxy in metric tonnes; not observed loaded cargo |
+| Primary counterfactual | AR(1,7), trained strictly before 2026-02-28 | Transparent, leakage-controlled benchmark |
+| Optional model check | Admitted matched-horizon Chronos-2 | Robustness only; never replaces the primary estimator |
+| LNG mechanism | GFW terminal sequences, WTO/AXSMarine index, modeled sea routes | Inferred and modeled evidence, kept separate from identification |
+| Network adaptation | Monthly by-origin customs/source panels | Descriptive recomposition with mixed source-native measurement bases |
+
+The 130-day PortWatch estimation window and the 94-day LNG mechanism window are
+different by design and must not be pooled or described as one sample.
+
+## Data sources and access
+
+| Source | Contribution | Access/key | Important limitation |
+|---|---|---|---|
+| IMF PortWatch | Hormuz and donor-chokepoint transit series | Public; no key for the frozen snapshots | AIS coverage and provider processing; aggregate, not vessel-level ground truth |
+| EIA | Henry Hub and Brent covariates | Free API key for refetching | Energy context, not LNG freight |
+| FRED | Independent energy-series cross-check | Free API key for refetching | Same boundary as EIA |
+| WTO/AXSMarine Hormuz tracker | LNG-only outbound shipment index | Public frozen CSV | Index, not physical tonnage or freight rate |
+| Global Fishing Watch | Terminal calls and voyage-sequence evidence | Token needed only to refetch | Inferred calls; no laden-state or continuous-track guarantee |
+| GEM, Natural Earth, searoute | Terminals, boundaries, modeled routes | Public/local package assets | Routes are modeled shortest-sea paths, not observed sailed tracks |
+| Customs/Eurostat/e-Stat/KOSIS/Comtrade | Monthly importer-origin composition | Source-specific; some refetches need free keys | Mixed mass, volume, and value bases; reporting lags and thin post samples |
+
+Exact variables, licences, frozen-vintage roles, and unavailable proprietary
+targets are documented in `config/sources.yaml`, `docs/DATA_SOURCES.md`, and
+`docs/DATA_SOURCE_DEEP_DIVE.md`. Do not replace an unavailable target silently
+with a convenient proxy.
+
+## Installation
+
+The core package supports Python 3.10 or newer. The current canonical macOS
+verification environment uses Python 3.14.4.
 
 ```bash
-python3.11 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-pip install -e .
-cp .env.example .env          # add free EIA + FRED keys
-python scripts/fetch_baseline.py   # pulls the free energy confounders
-pytest -q                     # full no-network test suite
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip install -e .
 ```
-Full setup (PyCharm + Claude Code, macOS): `docs/SETUP_CLAUDE_PYCHARM.md`.
 
-## Layout
+Optional real-weight foundation-model checks use separate environments and
+lockfiles:
+
+- `requirements-benchmark.lock.txt` for Chronos-2/Moirai;
+- `requirements-timesfm.lock.txt` for TimesFM;
+- `data/processed/tsfm_run_manifest.json` for model revisions and run identity.
+
+The main workflow expects `.venv-bench/bin/python` when regenerating the
+admitted Chronos-2 check. The core test suite does not require those weights.
+
+## Credentials and frozen inputs
+
+For source refetches, copy the placeholder template and add only the keys you
+need:
+
+```bash
+cp .env.example .env
+```
+
+Never commit `.env`. Frozen-input verification and most tests run offline. A
+release that omits raw snapshots must provide them through a separate cleared
+artifact bundle; otherwise the full end-to-end workflow cannot be reproduced
+from source alone.
+
+## Validation and tests
+
+Run the no-network test suite from the repository root:
+
+```bash
+PYTHONHASHSEED=0 python -m pytest -q
+```
+
+Useful bounded checks include:
+
+```bash
+python scripts/freeze_reproducibility.py --check
+python scripts/audit_provenance.py
+python scripts/render_thesis_figures.py --check
+```
+
+Chronological splits are mandatory. The primary AR path uses no post-treatment
+target or contemporaneous post-treatment covariate. Missingness, donor
+contamination, reporting bias, temporal leakage, overlapping placebo windows,
+small reference sets, and model-selection sensitivity are treated as explicit
+limitations rather than hidden by a passing test suite.
+
+## Reproduce the complete pipeline
+
+From a correctly provisioned repository containing the frozen inputs and the
+isolated Chronos-2 environment:
+
+```bash
+PYTHONHASHSEED=0 python scripts/run_all.py
+```
+
+`run_all.py`:
+
+1. verifies frozen inputs before computation;
+2. rebuilds and audits the aligned panel;
+3. runs chronological validation and all admitted model/inference layers;
+4. rebuilds the LNG mechanism and network evidence;
+5. renders all manuscript figures and result summaries;
+6. runs the full tests;
+7. compares regenerated artifacts with the frozen allowlist without rewriting
+   the reference manifest; and
+8. writes `reports/reproducibility_run_transcript.txt`.
+
+The optional proprietary-data branch runs only when both
+`ENABLE_BLOOMBERG_LAYER=1` and `BLOOMBERG_EXPORT_DIR` are supplied. It is not
+part of the public or default thesis pipeline.
+
+## Reproduce manuscript figures
+
+All 13 manuscript figures are generated from code. Rendering from existing
+processed artifacts does not refit models or download data:
+
+```bash
+python scripts/render_thesis_figures.py
+python scripts/render_thesis_figures.py --list
+python scripts/render_thesis_figures.py --check
+python scripts/render_thesis_figures.py --figure 6.1
+python scripts/render_thesis_figures.py --figure 8.2 --figure 8.3
+```
+
+Canonical renderer settings are:
+
+| Setting | Value |
+|---|---|
+| Python | 3.14.4 in the current macOS verification environment |
+| Matplotlib | 3.11.0 |
+| Backend | `Agg` through the public renderer |
+| Hash seed | `PYTHONHASHSEED=0` |
+| Matplotlib cache | `/tmp/lngfreight-matplotlib` |
+| Primary font preference | P052/URW Palladio/Palatino/TeX Gyre Pagella; DejaVu Serif fallback |
+| Vector font mode | TrueType (`pdf.fonttype=42`) |
+| PNG previews | 300 dpi |
+
+Outputs are paired PDFs and PNG previews in `reports/figures/`. PDF creation
+and modification timestamps are removed. Font availability can still change
+glyph metrics and therefore hashes; the release verification transcript must
+record the resolved font and environment before figure hashes are treated as
+canonical.
+
+## Main outputs
 
 | Path | Purpose |
 |---|---|
-| `config/sources.yaml` | Series registry — the swap-in layer (edit this, not code) |
-| `config/settings.yaml` | Locked working specification, paths, dates, validation, seed |
-| `src/lngfreight/specification.py` | Validates outcome and estimator roles |
-| `src/lngfreight/registry.py` | `get_variable()` — the single data entry point |
-| `src/lngfreight/sources/` | One module per provider, all sharing `base.BaseSource` |
-| `src/lngfreight/provenance.py` | Versioned normalized/source-payload SHA-256 ledger |
-| `src/lngfreight/metrics.py` | Dependency-free forecast metrics (MAE, RMSE, MASE, sMAPE) |
-| `src/lngfreight/baselines.py` | Transparent seasonal-naive + ARX baselines over rolling-origin folds |
-| `src/lngfreight/tsfm.py` | Isolated TSFM benchmark harness (Chronos-2 / TimesFM 2.5 / Moirai 2.0 adapters, shared scorer, admission test) |
-| `src/lngfreight/ar_intervals.py` | Raw horizon-aware AR-only interval (calibration leg of the TSFM admission test) |
-| `src/lngfreight/inference.py` | Counterfactual-gap summaries + placebo-in-time inference helpers |
-| `src/lngfreight/bloomberg_market.py` | Provenance-limited weekly freight and daily context panels |
-| `src/lngfreight/freight_counterfactual.py` | Pre-treatment-only validation and supplementary freight forecast deviations |
-| `src/lngfreight/freight_integration.py` | Synchronized physical, monetary, and context evidence layers |
-| `scripts/fetch_baseline.py` | Phase-1 smoke test on free data |
-| `scripts/run_baseline.py` | Phase-4 first benchmarks: free-data forecast scores |
-| `scripts/run_tsfm_benchmark.py` | Unified foundation-model benchmark runner (`--model all\|chronos2\|timesfm\|moirai\|stub`); isolated, excluded from `run_all.py` |
-| `requirements-benchmark.txt` | Development constraints for Chronos-2 + Moirai 2.0; not the citable lock |
-| `requirements-timesfm.txt` | Development constraints for TimesFM 2.5; not the citable lock |
-| `requirements-*.lock.txt` | Complete exact-version environments for the optional citable TSFM rerun |
-| `scripts/run_ar_interval.py` | Raw AR-only interval + final matched-subset TSFM admission verdict (core env, no weights) |
-| `scripts/run_tsfm_counterfactual.py` | Matched-date counterfactual shortfall cross-check with admitted Chronos-2 vs AR-only; regenerated by `run_all.py` through the isolated `.venv-bench` environment |
-| `scripts/run_counterfactual.py` | Post-treatment observed-minus-counterfactual gap export |
-| `scripts/run_placebo_inference.py` | Placebo-in-time p-values for counterfactual gaps |
-| `scripts/run_spatial_placebo.py` | Same-date PortWatch chokepoint placebo checks |
-| `scripts/run_interval_calibration.py` | Residual-calibrated pointwise and aggregate loss intervals |
-| `scripts/make_results_summary.py` | Generated Markdown summary of current empirical results |
-| `scripts/make_mechanism_summary.py` | GFW/WTO mechanism report and integrated figure; regenerated by `run_all.py` |
-| `reports/current_results_summary.md` | Thesis-ready working table from processed outputs |
-| `reports/mechanism_results_summary.md` | Generated open-data LNG mechanism evidence chain |
-| `docs/INFERENCE_NOTES.md` | Reporting caveats for placebo-in-time evidence |
-| `docs/` | Data-source registry, setup guide, go/no-go checklist |
-| `CLAUDE.md` | Anti-hallucination rules for AI assistance |
+| `reports/run_output.md` | Inspectable primary and uncertainty results |
+| `reports/current_results_summary.md` | Working thesis result table |
+| `reports/mechanism_results_summary.md` | LNG mechanism evidence summary |
+| `reports/network_rewiring_summary.md` | Importer/network results and scenario diagnostics |
+| `reports/reproducibility_run_transcript.txt` | Complete end-to-end console record |
+| `data/processed/run_spec_comparison.csv` | Admitted estimator comparison |
+| `data/processed/reproducibility_manifest.json` | Frozen allowlisted output identities |
+| `data/processed/tsfm_admission_test.csv` | Model/outcome admission decisions |
+| `data/processed/tsfm_run_manifest.json` | Isolated model and environment provenance |
+| `data/raw/provenance.jsonl` | Append-only source/access provenance ledger |
 
-`scripts/run_all.py` regenerates the PortWatch and open-data LNG mechanism
-outputs, runs the full test suite, and compares every allowlisted artifact with
-the committed manifest through a temporary candidate manifest. It fails on
-output drift and never refreshes the reference manifest during verification. It
-also retains the full console record at
-`reports/reproducibility_run_transcript.txt`.
+Generated output is evidence only when its source inputs, command, environment,
+and hash are recorded. A regenerated file must not be accepted merely because
+its filename matches an older artifact.
 
-The active report consumes an admitted Chronos-2 counterfactual, so that
-matched-horizon output and its deterministic, host-bound TSFM provenance
-manifest are included in the main artifact guarantee. The broader three-model
-admission benchmark remains outside `run_all.py`; its stable output identities,
-exact environments, and model revisions are pinned inside
-`data/processed/tsfm_run_manifest.json`, with wall-clock runtime columns excluded
-from frozen identity. Spark credential probes and manually assembled
-presentation files remain outside the guarantee.
+## Repository layout
 
-### Optional provenance-limited Bloomberg layer
+| Path | Purpose |
+|---|---|
+| `config/settings.yaml` | Locked windows, outcomes, methods, seeds, and thresholds |
+| `config/sources.yaml` | Data registry, access status, units, licences, and checksums |
+| `src/lngfreight/` | Reusable data, validation, model, inference, and audit code |
+| `scripts/` | Acquisition, build, model, audit, freeze, and rendering entry points |
+| `tests/` | No-network unit and integration tests |
+| `data/processed/` | Frozen model inputs, outputs, diagnostics, and manifests |
+| `reports/` | Human-readable results, transcripts, and figures |
+| `docs/` | Method, source, provenance, and limitation documentation |
+| `references/` | Bibliographic seed data |
 
-The user-supplied Fearnleys, TTF, and VLSFO workbooks are implemented as an
-explicit opt-in branch. They remain dormant secondary/context series because
-the repository lacks original terminal exports, exact identifiers, methodology
-history, and verified reuse rights. The default free-data pipeline does not
-need these files.
+## Reproducibility contract
 
-To include the branch in an authorized local rerun, set
-`ENABLE_BLOOMBERG_LAYER=1` and point `BLOOMBERG_EXPORT_DIR` at the workbook
-directory before running `scripts/run_all.py`. The branch performs source audit,
-registry ingestion, weekly QA, descriptives, pre-treatment-selected forecasts,
-TTF/VLSFO context, evidence integration, and freeze verification.
+- Every external analysis input must pass through the source/artifact registry.
+- Frozen source bytes and normalized snapshots have separate provenance roles.
+- Pre-treatment selection and chronological evaluation are enforced in code.
+- The primary estimator remains AR-only; complex models are robustness checks.
+- A real TSFM run requires an admitted model/outcome record before execution.
+- The verification command compares against, but does not casually refresh,
+  the frozen manifest.
+- News- or AIS-derived observations are measurement systems, not ground truth.
+- No causal interpretation is permitted without a causal identification design.
 
-Derived artifacts that embed the verbatim licensed assessment histories
-(`lng_freight_weekly_panel.csv`, `lng_freight_descriptive_weekly.csv`,
-`freight_market_context.csv`) are gitignored local-only outputs until
-redistribution rights are confirmed; `tests/test_bloomberg_quarantine.py`
-guards this boundary. See
-`docs/BLOOMBERG_MARKET_LAYER_IMPLEMENTATION_PLAN.md` for claim boundaries and
-generated artifacts.
+See `docs/PROVENANCE_CONTRACT.md`, `docs/INFERENCE_NOTES.md`,
+`docs/SUTVA_CONTAMINATION_AUDIT.md`, and
+`docs/REPRODUCIBILITY_AND_LEAKAGE_AUDIT.md` for the detailed audit trail.
 
-## Phase roadmap (do NOT skip ahead)
+## Known limitations
 
-The completed extension path is recorded in
-[`docs/CURRENT_PLAN.md`](docs/CURRENT_PLAN.md). It preserves the Spark re-entry
-option and documents both the implemented vessel branch and unused simulation
-fallback.
+- The original Spark25S/30S freight-price target is unavailable in the default
+  public-data branch.
+- PortWatch does not identify LNG cargo, laden state, vessel identity, or
+  per-voyage ton-miles.
+- LNG route and capacity-distance quantities are inferred/modelled.
+- Customs panels use different native units and short post-event windows.
+- AIS darkness and provider gap filling may be treatment-correlated.
+- Donor-placebo and block-reference sets have finite inferential resolution.
+- The optional Chronos-2 result is host-bound and subordinate to the primary.
+- Full raw-source response evidence was not retained for every historical pull;
+  those gaps are disclosed rather than reconstructed.
 
-1. **Data foundation — complete.** Free sources, provenance, aligned panel.
-2. **Fallback decision — complete.** PortWatch is working primary; Spark remains optional.
-3. **Baseline and descriptive layer — complete.** Event study and chronological baselines.
-4. **Inference and corroboration — complete.** Counterfactual gaps, temporal/spatial placebos, intervals, BSTS, and synthetic control.
-5. **Open-data LNG mechanism — complete with stated limits.** GFW terminal sequences, modeled routes, capacity-distance, vessel-days, WTO validation, and importer exposure.
-6. **Optional TSFM extension — clean-rebuilt and isolated.** It remains a robustness benchmark, not the primary estimator.
+## Citation and responsible use
 
-The current blocking decision is formal supervisor approval of the revised
-estimand/title/RQ. Spark freight access remains desirable but non-blocking.
-
-## Status of treatment dates
-
-The chronology was re-audited on 2026-06-19 and is documented in
-`docs/EVENT_CHRONOLOGY.md`. The operational onset (`2026-02-28`) is explicitly
-locked as the modeling cutoff; later milestones define scoring sensitivities
-and cannot silently change the training boundary.
+If this repository accompanies the thesis, cite the thesis and the original
+data/method providers rather than treating this code as the primary scholarly
+source. Respect each provider's terms. Do not redistribute restricted inputs,
+checksums that disclose private source identity, credentials, or derived
+licensed charts. Do not describe scenario outputs as forecasts, classifications
+as causal effects, or AIS observations as complete physical ground truth.
