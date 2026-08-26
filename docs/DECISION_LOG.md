@@ -1136,3 +1136,44 @@ Each entry: **date · decision · decision-maker · rationale · affected files 
   (2) reclaiming ~2.76 GB of virtualenvs. Regenerated artifacts under
   `data/processed` and `reports/figures` are deliberately left uncommitted
   pending that test run.
+
+## 2026-08-26 · Diagnosis of the eight standing test failures
+
+- **Decision-maker:** Mher (researcher), diagnosis by AI.
+- **Run:** `PYTHONHASHSEED=0 python -m pytest -q` → **575 passed, 8 failed**,
+  identical to the 2026-08-09 baseline. The hygiene pass changed no test outcome.
+- **The eight failures have exactly two root causes.**
+
+**Cause A — `config/sources.yaml` drift (6 failures).** Pinned
+`f1d1c27e8cb3…`, actual `ffd509ccdc6f…`. The registered-variable count assertion
+still passes, so no variable was added or removed. The diff is the **2026-08-19
+Bloomberg refusal**: five `license:` fields moved from "rights unverified …
+pending confirmation" to "Bloomberg did not authorise thesis use (2026-08-19);
+excluded from thesis", plus an explanatory comment block. This edit predates the
+hygiene pass (worktree mtime 2026-08-25); it was committed, not created, today.
+
+  The gate is behaving correctly. The change is real and permanent, so
+  **reverting would be wrong and refreezing is the correct resolution.** It is
+  not performed here for the reason already recorded on 2026-08-10: refreezing
+  rewrites G4-verified manifests.
+
+  Failures: `test_public_data_gate_decisions` (3),
+  `test_portwatch_sensitivity_budget_card` (2), `test_model_vintage_matrix` (1).
+
+  **Blocker before refreezing.** `scripts/run_all.py` and eight other modules
+  still invoke the Bloomberg layer that the 2026-08-19 refusal excludes. A clean
+  `run_all.py` is a precondition of the refreeze, so the Bloomberg scope decision
+  must be settled first. **This is an open decision for Mher, not a mechanical
+  fix.**
+
+**Cause B — self-inflicted, and fixed (2 failures).** The stale-claim scan
+rebuilt to 83 rows against a written 82. The extra row was line 343 of the new
+`docs/ML_TRAINING_ACTION_PLAN.md`, where the "do not write" vocabulary list
+contained the literal banned token matching `\bATT\b`. The scanner counted the
+prohibition as a stale claim. Resolved by paraphrasing the banned tokens rather
+than adding the file to `excluded_paths`, so no frozen config was touched and no
+refreeze is required for this cause. Both new documents now return zero pattern
+hits. **Awaiting Mher's confirming test run.**
+
+- **Status:** Cause B **fixed pending confirmation**. Cause A **OPEN**, gated on
+  the Bloomberg scope decision.
