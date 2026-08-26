@@ -1,0 +1,121 @@
+# Frozen specification for the multi-event chokepoint-propagation model.
+#
+# SCOPE. This spec governs a SECONDARY estimator only. It does not touch
+# `study_window` in settings.yaml, the locked `primary_treatment_cutoff`
+# (2026-02-28), or the frozen `corridor_transmission.yaml`. Those continue to
+# govern the primary Hormuz throughput path unchanged.
+#
+# ESTIMAND CLASS. Out-of-sample PREDICTIVE network response. This is not a
+# causal spillover parameter (CLAUDE.md rule 2). A causal reading requires the
+# optional exposure design in Phase 6 of docs/ML_TRAINING_ACTION_PLAN.md.
+version: 1
+status: "draft_not_frozen"     # -> "frozen" only after the P1 gate is signed off
+drafted_on: "2026-08-26"
+frozen_on: null
+
+training_window:
+  # PortWatch snapshot true coverage is 2019-01-01 -> 2026-07-12 (verified:
+  # 28 chokepoints x 2750 days, zero missing days). The primary Hormuz path
+  # keeps its own 2022-01-01 start; this window is used ONLY by this estimator.
+  start: "2019-01-01"
+  end: "2026-07-12"
+  source_snapshot: "data/raw/portwatch/Daily_Chokepoints_Data.csv"
+
+panel:
+  unit: "chokepoint_day"
+  n_units: 28
+  value_columns: ["n_tanker", "n_container", "n_total"]
+  primary_value_column: "n_tanker"
+  aggregation_allowed: false     # voyages cross multiple chokepoints; never sum
+  outputs:
+    panel: "data/processed/multi_event_panel.csv"
+    audit: "data/processed/multi_event_panel_audit.json"
+
+# Training events. Windows are DRAFT and must be reconciled against
+# docs/EVENT_CHRONOLOGY.md and frozen before any kernel is fitted.
+events:
+  suez_ever_given:
+    unit: "Suez Canal"
+    onset: "2021-03-23"
+    end: "2021-03-29"
+    mechanism: "total_physical_blockage"
+    duration_class: "short"
+    role: "train"
+    observed_n_tanker: "16.7/day baseline -> 4.0/day during -> 21.1/day rebound"
+    note: >
+      Cape of Good Hope did not respond (12.1 -> 13.3 -> 14.7). A six-day
+      closure is shorter than the reroute decision horizon, so this event
+      supplies the NO-SUBSTITUTION end of the duration axis. It is available
+      only if the training window starts before 2022.
+
+  black_sea_kerch:
+    unit: "Kerch Strait"
+    onset: "2022-02-24"
+    end: null
+    mechanism: "conflict_and_sanctions"
+    duration_class: "long_progressive"
+    role: "train"
+    observed_n_tanker: "annual mean 10.9 (2021) -> 6.0 -> 2.2 -> 1.2 (2024) -> 3.9 (2025)"
+
+  panama_drought:
+    unit: "Panama Canal"
+    onset: "2023-07-01"
+    end: "2024-07-31"
+    mechanism: "capacity_rationing"
+    duration_class: "long"
+    role: "train_secondary"
+    observed_n_tanker: "12.7 -> 12.1 -> 9.9 (2024H1 trough) -> 12.2 -> 12.6"
+    note: >
+      WEAK on tankers: roughly a 22% trough, far smaller than the Red Sea
+      response. The drought bound draft and auctioned slots, which hit
+      container and gas carriers harder than tankers. Fit on n_container as
+      well as n_tanker and report both, or downweight. Do not treat a null
+      tanker result here as evidence the model fails.
+
+  red_sea:
+    units: ["Bab el-Mandeb Strait", "Suez Canal"]
+    onset: "2023-12-15"        # DRAFT: refine against EVENT_CHRONOLOGY.md
+    end: null
+    mechanism: "attacks_and_voluntary_avoidance"
+    duration_class: "long"
+    role: "train_primary"
+    observed_n_tanker: >
+      Bab el-Mandeb 26.9 -> 10.2, Suez 25.5 -> 14.1, Cape of Good Hope
+      10.0 -> 20.5 (monthly means, 2023-10 vs 2024-10).
+    note: >
+      Treated as ONE event: Bab el-Mandeb and Suez are the same route and must
+      not be counted twice. This is the closest analogue to Hormuz and supplies
+      the SUBSTITUTION end of the duration axis.
+
+  hormuz:
+    unit: "Strait of Hormuz"
+    onset: "2026-02-28"
+    end: null
+    mechanism: "attacks_closure_partial_corridors"
+    duration_class: "long"
+    role: "HELD_OUT"
+    seal: >
+      SEALED. No Hormuz post-onset observation may enter fitting, model
+      selection, or hyperparameter choice at any point in Phases 1-4. Record
+      the commit hash and date at which it is unsealed in DECISION_LOG.md
+      before running Phase 5.
+
+model:
+  form: "low_rank_distributed_lag"
+  kernel: "K[c_from -> c_to](h) ~ sum_k u_k[c_from] * v_k[c_to] * f_k(h)"
+  rank_k_grid: [1, 2, 3]
+  lag_horizon_days: 60
+  absorb: ["chokepoint_fixed_effects", "calendar_time_effects"]
+  selection: "leave_one_event_out"      # never pooled-sample fit
+  sanity_gate:
+    description: >
+      The fitted kernel must recover a strong positive Bab el-Mandeb ->
+      Cape of Good Hope edge. That substitution is known to be real. If no
+      (k, H) recovers it, stop and debug rather than tuning until it appears.
+    required_edge: ["Bab el-Mandeb Strait", "Cape of Good Hope"]
+    required_sign: "positive"
+
+validation:
+  scheme: "expanding"
+  chronological_only: true               # CLAUDE.md rule 5
+  random_split_prohibited: true
