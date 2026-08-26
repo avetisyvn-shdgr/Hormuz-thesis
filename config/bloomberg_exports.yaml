@@ -22,7 +22,13 @@ series:
     filename: fearnleys_lng_tanker_east_of_suez_155_165k_cbm_spot_rate.xlsx
     displayed_series_name: LNG Tanker East of Suez 155/165000 cbm USD/day spot rate
     analysis_use: provenance_limited_secondary
-    bloomberg_identifier: null
+    # Identifier verified 2026-08-09 from a user-supplied Bloomberg Charts PDF
+    # (title "FLNGEASZ Index (LNG East Suez $/Day)") plus a two-anchor exact
+    # match against this transcription: high 325,000 on 2022-10-21 and low
+    # 2,000 on 2025-02-07 both match value AND date, and each chart extreme is
+    # the workbook extreme over the 2022-2026 overlap. Chart PDF archived in
+    # originals/charts/. Not inferred from filename or numbers alone.
+    bloomberg_identifier: FLNGEASZ Index
     original_provider: Fearnleys Securities AS
     candidate_role: secondary_freight_outcome
     instrument_type: basin_spot_assessment
@@ -65,7 +71,14 @@ series:
     filename: fearnleys_lng_tanker_west_of_suez_155_165k_cbm_spot_rate.xlsx
     displayed_series_name: LNG Tanker West of Suez 155/165000 cbm USD/day spot rate
     analysis_use: provenance_limited_secondary
-    bloomberg_identifier: null
+    # Identifier verified 2026-08-09 from a user-supplied Bloomberg Charts PDF
+    # (title "FLNGWTSZ Index (LNG West Suez $/Day)") plus a two-anchor exact
+    # match: high 375,000 on 2022-10-21 and low 0.00 on 2025-01-31 both match
+    # value AND date. NOTE: the chart shows the 2025-01-31 zero in Bloomberg's
+    # own series, so the masked zeros are not transcription artifacts; whether
+    # they are genuine market assessments remains unverified (mask unchanged).
+    # Chart PDF archived in originals/charts/.
+    bloomberg_identifier: FLNGWTSZ Index
     original_provider: Fearnleys Securities AS
     candidate_role: secondary_freight_outcome
     instrument_type: basin_spot_assessment
@@ -108,7 +121,11 @@ series:
     # shown on the terminal rather than corrected.
     displayed_series_name: LNG Tanker 1 Year Time Charter 155/165000 cbm USD/day spot rate
     analysis_use: provenance_limited_secondary
-    bloomberg_identifier: null
+    # Identifier verified 2026-08-09 from a user-supplied Bloomberg Charts PDF
+    # (title "FLNG1YTC Index (LNG 1 Yr TC Suez $/Day)") plus a two-anchor exact
+    # match: high 190,000 on 2022-11-11 and low 15,000 on 2025-02-14 both match
+    # value AND date. Chart PDF archived in originals/charts/.
+    bloomberg_identifier: FLNG1YTC Index
     original_provider: Fearnleys Securities AS
     candidate_role: secondary_freight_outcome
     instrument_type: one_year_time_charter_assessment

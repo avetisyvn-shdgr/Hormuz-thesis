@@ -65,6 +65,12 @@ variables:
   # Provenance-limited Fearnleys histories transcribed from Bloomberg displays.
   # These are useful secondary market evidence, not Spark substitutes and not
   # primary causal outcomes. They require BLOOMBERG_EXPORT_DIR explicitly.
+  # Bloomberg tickers verified 2026-08-09 from chart-PDF evidence + six exact
+  # extreme-value anchors (see config/bloomberg_exports.yaml and
+  # data/raw/bloomberg_transcription/originals/charts/README.md):
+  # east = FLNGEASZ Index, west = FLNGWTSZ Index, 1yTC = FLNG1YTC Index.
+  # Bloomberg declined to authorise thesis use on 2026-08-19; status stays
+  # restricted and the complete licensed market layer is excluded from the thesis.
   fearnleys_lng_spot_east_suez:
     role: secondary_freight_outcome
     description: "Fearnleys East-of-Suez LNG tanker 155-165k cbm spot assessment, USD/day, weekly."
@@ -72,7 +78,7 @@ variables:
     primary:
       provider: bloomberg_transcription
       code: "fearnleys_lng_spot_east_suez"
-      license: "Bloomberg/Fearnleys rights unverified; local provenance-limited secondary use only; raw redistribution prohibited pending confirmation."
+      license: "Bloomberg did not authorise thesis use (2026-08-19); excluded from thesis; raw redistribution prohibited."
 
   fearnleys_lng_spot_west_suez:
     role: secondary_freight_outcome
@@ -81,7 +87,7 @@ variables:
     primary:
       provider: bloomberg_transcription
       code: "fearnleys_lng_spot_west_suez"
-      license: "Bloomberg/Fearnleys rights unverified; local provenance-limited secondary use only; raw redistribution prohibited pending confirmation."
+      license: "Bloomberg did not authorise thesis use (2026-08-19); excluded from thesis; raw redistribution prohibited."
 
   fearnleys_lng_one_year_time_charter:
     role: secondary_freight_outcome
@@ -90,7 +96,7 @@ variables:
     primary:
       provider: bloomberg_transcription
       code: "fearnleys_lng_one_year_time_charter"
-      license: "Bloomberg/Fearnleys rights unverified; local provenance-limited secondary use only; raw redistribution prohibited pending confirmation."
+      license: "Bloomberg did not authorise thesis use (2026-08-19); excluded from thesis; raw redistribution prohibited."
 
   # ---- ENERGY confounders ----
   henry_hub_spot:
@@ -124,7 +130,7 @@ variables:
     primary:
       provider: bloomberg_transcription
       code: "netherlands_ttf_day_ahead"
-      license: "Bloomberg rights unverified; local provenance-limited market-context use only; raw redistribution prohibited pending confirmation."
+      license: "Bloomberg did not authorise thesis use (2026-08-19); excluded from thesis; raw redistribution prohibited."
 
   vlsfo_singapore:
     role: market_context
@@ -133,7 +139,7 @@ variables:
     primary:
       provider: bloomberg_transcription
       code: "clearlynx_vlsfo_singapore"
-      license: "Bloomberg/ClearLynx rights unverified; local provenance-limited market-context use only; raw redistribution prohibited pending confirmation."
+      license: "Bloomberg did not authorise thesis use (2026-08-19); excluded from thesis; raw redistribution prohibited."
 
   jkm_lng:
     role: energy
@@ -166,7 +172,7 @@ variables:
 
   hormuz_tanker_capacity:
     role: route
-    description: "Daily deadweight capacity of transiting tankers, Strait of Hormuz (PortWatch capacity_tanker)."
+    description: "Daily AIS-derived tanker transit-volume/capacity proxy in metric tonnes, Strait of Hormuz (PortWatch capacity_tanker)."
     status: free
     primary:
       provider: portwatch
@@ -184,7 +190,7 @@ variables:
 
   panama_tanker_capacity:
     role: route
-    description: "Daily deadweight capacity of transiting tankers, Panama Canal (PortWatch capacity_tanker)."
+    description: "Daily AIS-derived tanker transit-volume/capacity proxy in metric tonnes, Panama Canal (PortWatch capacity_tanker)."
     status: free
     primary:
       provider: portwatch
@@ -316,6 +322,33 @@ variables:
       path: "data/raw/portwatch/Daily_Chokepoints_Data.csv"
       media_type: "text/csv"
       license: "IMF PortWatch public data"
+
+  # SENSITIVITY-ONLY vintage captured 2026-08-09 (coverage to 2026-08-02).
+  # NOT the reporting basis: Mher's 2026-08-09 decision keeps the pinned
+  # vintage above as primary because this capture revises 97.45% of all 2,750
+  # overlapping Hormuz days and 99.67% of the configured 2022--cutoff training
+  # days; the configured training mean falls 17.68%. PortWatch records July/
+  # August 2026 AIS-spoofing revisions and a March 2026 boundary refinement.
+  # See docs/PORTWATCH_VINTAGE_REGISTER.md.
+  portwatch_chokepoints_vintage_20260809_snapshot:
+    kind: artifact
+    role: artifact
+    analysis_scope: sensitivity_only
+    promotion_policy: "must_not_replace_pinned_primary_without_new_recorded_decision"
+    allowed_consumers:
+      - "scripts/verify_sensitivity_inputs.py"
+      - "scripts/run_portwatch_vintage_sensitivity.py"
+      - "scripts/run_rebound_relapse_profile.py"
+      - "scripts/run_revision_and_basin_exploration.py"
+      - "src/lngfreight/vintage_matrix.py"
+    description: "Candidate 2026-08-09 PortWatch chokepoint vintage; vintage-sensitivity use only."
+    status: free
+    primary:
+      provider: frozen_artifact
+      path: "data/raw/portwatch/vintages/Daily_Chokepoints_Data__vintage_2026-08-09.csv"
+      media_type: "text/csv"
+      license: "IMF PortWatch public data"
+      source_status: "portal_csv_export_endpoint_capture_2026-08-09"
 
   wto_hormuz_lng_snapshot:
     kind: artifact

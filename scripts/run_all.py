@@ -39,6 +39,12 @@ STEPS = [
     ("Run temporal placebos", ["scripts/run_placebo_inference.py"]),
     ("Run independent-block and conformal inference", ["scripts/run_block_inference.py"]),
     ("Calibrate residual intervals", ["scripts/run_interval_calibration.py"]),
+    (
+        # Depends on the counterfactual, the block-bootstrap intervals, the
+        # conformal intervals, and the legacy AIS-dark bound it cross-checks.
+        "Map the observability/counterfactual breakdown frontier",
+        ["scripts/run_observability_breakdown_frontier.py"],
+    ),
     ("Build full-horizon empirical placebo bands", ["scripts/run_long_horizon_intervals.py"]),
     ("Run treatment-window robustness", ["scripts/run_treatment_robustness.py"]),
     ("Run spatial placebos", ["scripts/run_spatial_placebo.py"]),
@@ -76,6 +82,10 @@ STEPS = [
     ("Refresh integrated mechanism results", ["scripts/make_mechanism_summary.py"]),
     ("Render inspectable run outputs", ["scripts/make_run_output.py"]),
     ("Refresh working results summary", ["scripts/make_results_summary.py"]),
+    (
+        "Render and verify complete manuscript figure set",
+        ["scripts/render_thesis_figures.py"],
+    ),
     ("Audit provenance coverage", ["scripts/audit_provenance.py"]),
     ("Recheck frozen raw snapshots", ["scripts/freeze_reproducibility.py", "--check"]),
     ("Run full test suite", ["-m", "pytest", "-q"]),

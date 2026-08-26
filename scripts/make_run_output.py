@@ -18,12 +18,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from figure_style import (  # noqa: E402
+    ACCENT_LIGHT_BLUE,
+    COUNTERFACTUAL,
     DECREASE_COLOR,
     FIGURE_WIDTH_IN,
     INCREASE_COLOR,
     NEUTRAL_DARK,
     NEUTRAL_LIGHT,
     NEUTRAL_MID,
+    OBSERVED_TREATED,
+    THESIS_TEXTWIDTH_IN,
     apply_publication_style,
     save_pdf_and_png,
     style_axes,
@@ -280,15 +284,15 @@ def main() -> None:
     fig, (ax, ax_post) = plt.subplots(
         1,
         2,
-        figsize=(FIGURE_WIDTH_IN, 4.15),
+        figsize=(THESIS_TEXTWIDTH_IN, 4.15),
         sharey=True,
         gridspec_kw={"width_ratios": [3.05, 1.15]},
     )
     fig.subplots_adjust(
         left=0.09,
         right=0.985,
-        bottom=0.28,
-        top=0.80,
+        bottom=0.35,
+        top=0.92,
         wspace=0.08,
     )
 
@@ -306,16 +310,16 @@ def main() -> None:
         panel_ax.plot(
             observed.index,
             observed,
-            color=NEUTRAL_MID,
+            color=OBSERVED_TREATED,
             linewidth=0.45,
-            alpha=0.24,
+            alpha=0.20,
             label="Observed, daily",
             zorder=2,
         )
         panel_ax.plot(
             observed_7d.index,
             observed_7d,
-            color=NEUTRAL_DARK,
+            color=OBSERVED_TREATED,
             linewidth=1.35,
             label="Observed, 7-day mean",
             zorder=3,
@@ -324,7 +328,7 @@ def main() -> None:
             panel_ax.plot(
                 validation_primary["date"],
                 validation_primary["y_pred"],
-                color=INCREASE_COLOR,
+                color=COUNTERFACTUAL,
                 linewidth=1.05,
                 linestyle=(0, (4, 1.8)),
                 label="Pre-period rolling-origin forecast",
@@ -334,7 +338,7 @@ def main() -> None:
             band["date"],
             band["counterfactual_lower"],
             band["counterfactual_upper"],
-            color="#F4A582",
+            color=ACCENT_LIGHT_BLUE,
             alpha=0.30,
             linewidth=0,
             label="Short-fold residual band (pointwise)",
@@ -343,7 +347,7 @@ def main() -> None:
         panel_ax.plot(
             post_primary["date"],
             post_primary["y_pred"],
-            color=DECREASE_COLOR,
+            color=COUNTERFACTUAL,
             linewidth=1.8,
             label="AR-only counterfactual",
             zorder=5,
@@ -378,15 +382,7 @@ def main() -> None:
     ax_post.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
     ax_post.xaxis.set_major_formatter(mdates.DateFormatter("%b\n%Y"))
     ax_post.tick_params(labelleft=False)
-    fig.suptitle(
-        "Hormuz tanker throughput: observed and AR-only counterfactual",
-        x=0.09,
-        y=0.95,
-        ha="left",
-        fontsize=13.0,
-        fontweight="semibold",
-        color=NEUTRAL_DARK,
-    )
+    # No in-figure headline title: the LaTeX caption carries it in the thesis.
     handles, labels = ax.get_legend_handles_labels()
     legend_order = [
         labels.index("Observed, daily"),
@@ -400,11 +396,12 @@ def main() -> None:
         [handles[index] for index in legend_order],
         [labels[index] for index in legend_order],
         loc="lower center",
-        bbox_to_anchor=(0.53, 0.03),
-        ncol=3,
+        bbox_to_anchor=(0.5, 0.025),
+        ncol=2,
         frameon=False,
-        handlelength=2.6,
-        columnspacing=1.3,
+        fontsize=8.0,
+        handlelength=2.2,
+        columnspacing=0.9,
     )
     fig_actual = _save_figure(fig, FIG_ACTUAL)
 
@@ -415,7 +412,7 @@ def main() -> None:
         & (~placebo_effects["is_actual"].astype(bool))
     ]["cumulative_throughput_loss"].dropna()
     fig, ax = plt.subplots(figsize=(FIGURE_WIDTH_IN, 3.95))
-    fig.subplots_adjust(left=0.11, right=0.98, bottom=0.24, top=0.80)
+    fig.subplots_adjust(left=0.11, right=0.98, bottom=0.24, top=0.94)
     counts, _, _ = ax.hist(
         placebo,
         bins=14,
@@ -461,12 +458,9 @@ def main() -> None:
         color=DECREASE_COLOR,
     )
     ax.set(
-        title="Actual cumulative shortfall exceeds all temporal placebos",
         xlabel="Cumulative throughput shortfall",
         ylabel="Overlapping placebo windows",
     )
-    ax.title.set_position((0.0, 1.02))
-    ax.title.set_ha("left")
     style_axes(ax, grid_axis="y")
     fig.text(
         0.11,
@@ -484,7 +478,7 @@ def main() -> None:
 
     # Figure 3: synthetic-control path in transit-equivalent units.
     fig, ax = plt.subplots(figsize=(FIGURE_WIDTH_IN, 3.8))
-    fig.subplots_adjust(left=0.10, right=0.98, bottom=0.22, top=0.82)
+    fig.subplots_adjust(left=0.10, right=0.98, bottom=0.22, top=0.94)
     ax.plot(
         synth_path["date"],
         synth_path["y_scaled"] * scale,
@@ -508,12 +502,9 @@ def main() -> None:
         label=f"Treatment cutoff {cutoff.date()}",
     )
     ax.set(
-        title="Hormuz tanker throughput: observed and donor-weighted synthetic control",
         ylabel="Daily transit-equivalent units",
         xlabel="Date",
     )
-    ax.title.set_position((0.0, 1.02))
-    ax.title.set_ha("left")
     style_axes(ax, grid_axis="y")
     ax.legend(
         loc="upper center",
@@ -540,7 +531,7 @@ def main() -> None:
         & synth_daily["unit"].isin(eligible_units)
     ].copy()
     fig, ax = plt.subplots(figsize=(FIGURE_WIDTH_IN, 3.9))
-    fig.subplots_adjust(left=0.10, right=0.98, bottom=0.22, top=0.82)
+    fig.subplots_adjust(left=0.10, right=0.98, bottom=0.22, top=0.94)
     for index, (_, path) in enumerate(eligible_daily.groupby("unit")):
         ax.plot(
             path["date"],
@@ -567,12 +558,9 @@ def main() -> None:
         label=f"Treatment cutoff {cutoff.date()}",
     )
     ax.set(
-        title="Synthetic-control gaps: Hormuz vs pre-fit-eligible placebos",
         ylabel="Observed minus synthetic (mean-scaled)",
         xlabel="Date",
     )
-    ax.title.set_position((0.0, 1.02))
-    ax.title.set_ha("left")
     style_axes(ax, grid_axis="y")
     ax.legend(
         loc="upper center",

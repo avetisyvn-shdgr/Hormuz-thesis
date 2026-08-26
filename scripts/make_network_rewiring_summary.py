@@ -17,6 +17,17 @@ import pandas as pd  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from figure_style import (  # noqa: E402
+    ACCENT_BLUE,
+    ACCENT_ORANGE,
+    THESIS_TEXTWIDTH_IN,
+    NEUTRAL_DARK,
+    NEUTRAL_LIGHT,
+    NEUTRAL_MID,
+    apply_publication_style,
+    style_axes,
+)
 from lngfreight import config  # noqa: E402
 
 
@@ -60,7 +71,33 @@ def _fmt_signed(value: object, digits: int = 1) -> str:
     return f"{numeric:+,.{digits}f}"
 
 
+def _fit_to_textwidth(fig: plt.Figure) -> None:
+    """Rescale until the tight bounding box equals the manuscript text width.
+
+    See make_thesis_figure_supplements._fit_to_textwidth for the reasoning; the
+    damping, floor and no-improvement break stop a text-heavy figure from being
+    shrunk until its axes collapse.
+    """
+    pad_in = float(plt.rcParams.get("savefig.pad_inches", 0.1))
+    target_pt = (THESIS_TEXTWIDTH_IN - 2.0 * pad_in) * 72.0
+    floor_in = 0.80 * float(fig.get_size_inches()[0])
+    previous_gap = float("inf")
+    for _ in range(24):
+        renderer = fig.canvas.get_renderer()
+        current = float(fig.get_tightbbox(renderer).width) * 72.0
+        gap = abs(current - target_pt)
+        if gap <= 0.5 or gap >= previous_gap:
+            return
+        width_in, height_in = fig.get_size_inches()
+        scale = min(max(target_pt / current, 0.92), 1.08)
+        if width_in * scale < floor_in:
+            return
+        previous_gap = gap
+        fig.set_size_inches(width_in * scale, height_in * scale)
+
+
 def _save(fig: plt.Figure, stem: str) -> Path:
+    _fit_to_textwidth(fig)
     out = config.path("figures") / f"{stem}.png"
     fig.savefig(out, dpi=180, bbox_inches="tight")
     fig.savefig(out.with_suffix(".pdf"), bbox_inches="tight", metadata=PDF_METADATA)
@@ -85,9 +122,10 @@ def _plot_origin_composition(summary: pd.DataFrame) -> Path:
     frame = summary.set_index("destination_unit").loc[units]
     x = np.arange(len(frame))
     width = 0.34
-    colors = {"gulf": "#B44C43", "non_gulf": "#4F7C5B"}
+    colors = {"gulf": "#B2182B", "non_gulf": "#2166AC"}
 
-    fig, ax = plt.subplots(figsize=(11.5, 6.3))
+    apply_publication_style()
+    fig, ax = plt.subplots(figsize=(THESIS_TEXTWIDTH_IN, 4.3))
     pre_gulf = frame["pre_gulf_share_mean"] * 100
     post_gulf = frame["post_gulf_share_mean"] * 100
     pre_non = 100 - pre_gulf
@@ -99,30 +137,92 @@ def _plot_origin_composition(summary: pd.DataFrame) -> Path:
     ax.bar(x + width / 2, post_non, width, bottom=post_gulf, color=colors["non_gulf"], alpha=0.55)
 
     for i, (_, row) in enumerate(frame.iterrows()):
-        ax.text(i - width / 2, 103, "pre", ha="center", va="bottom", fontsize=8)
-        ax.text(i + width / 2, 103, "post", ha="center", va="bottom", fontsize=8)
+        ax.text(i - width / 2, 102, "pre", ha="center", va="bottom", fontsize=7.5, color=NEUTRAL_MID)
+        ax.text(i + width / 2, 102, "post", ha="center", va="bottom", fontsize=7.5, color=NEUTRAL_MID)
         if "thin_post_window" in str(row["coverage_note"]):
-            ax.text(i, -11, "thin post", ha="center", va="top", fontsize=8, color="#7A4E00")
+            ax.text(i, -6, "thin post", ha="center", va="top", fontsize=7.5, color="#7A4E00")
         elif row["measurement_basis"] == "value_kusd":
-            ax.text(i, -11, "value", ha="center", va="top", fontsize=8, color="#7A4E00")
+            ax.text(i, -6, "value basis", ha="center", va="top", fontsize=7.5, color="#7A4E00")
 
-    ax.set_title("Pre/post LNG origin composition by destination unit")
     ax.set_ylabel("Share of observed monthly edge value (%)")
     ax.set_xticks(x, frame.index)
-    ax.set_ylim(-16, 112)
-    ax.grid(axis="y", alpha=0.2)
-    ax.legend(frameon=False, loc="upper right")
-    fig.text(
-        0.5,
-        0.015,
-        "Shares use each source's native measurement basis. India is value-basis; EU27 is an aggregate comparator.",
-        ha="center",
-        fontsize=9,
-        color="#444444",
+    ax.set_ylim(-15, 110)
+    style_axes(ax, grid_axis="y")
+    ax.legend(
+        frameon=False,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.34),
+        ncol=2,
     )
-    fig.tight_layout(rect=[0, 0.04, 1, 1])
+    fig.text(
+        0.01,
+        0.005,
+        "Shares use each source's native measurement basis. India is value-basis; "
+        "EU27 is an aggregate comparator.",
+        ha="left",
+        fontsize=7.0,
+        color=NEUTRAL_MID,
+    )
+    fig.tight_layout(rect=[0, 0.10, 1, 1])
     return _save(fig, FIG_ORIGIN)
 
+
+
+def _label_grouped_bars(fig, ax, series, label_fontsize=7.0, base_pad_pts=2.0):
+    """Annotate every bar in a grouped bar chart without colliding labels.
+
+    Bars that sit side by side in a group can end at almost the same height, so
+    a uniform padding puts neighbouring value labels on top of one another
+    (India, Korea, Taiwan and EU27 all collided at 1:1 print scale). A uniform
+    stagger is not the answer either: it separates the close pairs but pushes
+    already-separated pairs together. Offsets are therefore computed per bar,
+    and only where a horizontally adjacent label on the same side of zero would
+    otherwise be within one line height.
+    """
+    fig.canvas.draw()
+    y_lo, y_hi = ax.get_ylim()
+    axes_height_pts = ax.get_window_extent().height * 72.0 / fig.dpi
+    pts_per_unit = axes_height_pts / max(y_hi - y_lo, 1e-9)
+    line_height_pts = label_fontsize * 1.70
+
+    n_groups = len(series[0][1])
+    for gi in range(n_groups):
+        pads = [base_pad_pts] * len(series)
+        for a, b in zip(range(len(series) - 1), range(1, len(series))):
+            va, vb = series[a][1][gi], series[b][1][gi]
+            if (va >= 0) != (vb >= 0):
+                continue  # labels on opposite sides of zero cannot collide
+            gap_pts = abs(va - vb) * pts_per_unit
+            if gap_pts >= line_height_pts:
+                continue
+            outer = a if abs(va) >= abs(vb) else b
+            pads[outer] += line_height_pts - gap_pts
+        for (bars, values), pad in zip(series, pads):
+            value = values[gi]
+            patch = bars[gi]
+            ax.annotate(
+                _fmt_signed(value),
+                xy=(patch.get_x() + patch.get_width() / 2.0, value),
+                xytext=(0, pad if value >= 0 else -pad),
+                textcoords="offset points",
+                ha="center",
+                va="bottom" if value >= 0 else "top",
+                fontsize=label_fontsize,
+            )
+
+    # bar_label and annotate do not autoscale, so the outermost labels used to
+    # sit on or outside the axes frame. Expand the view to contain them.
+    fig.canvas.draw()
+    inv = ax.transData.inverted()
+    lo, hi = ax.get_ylim()
+    for text in ax.texts:
+        if not text.get_text().strip():
+            continue
+        box = text.get_window_extent(renderer=fig.canvas.get_renderer())
+        lo = min(lo, inv.transform((0, box.y0))[1])
+        hi = max(hi, inv.transform((0, box.y1))[1])
+    span = hi - lo
+    ax.set_ylim(lo - 0.02 * span, hi + 0.02 * span)
 
 def _plot_gulf_vs_total(summary: pd.DataFrame) -> Path:
     units = _ordered_units(summary)
@@ -130,7 +230,8 @@ def _plot_gulf_vs_total(summary: pd.DataFrame) -> Path:
     x = np.arange(len(frame))
     width = 0.26
 
-    fig, ax = plt.subplots(figsize=(11.5, 6.1))
+    apply_publication_style()
+    fig, ax = plt.subplots(figsize=(THESIS_TEXTWIDTH_IN, 4.3))
     total = frame["edge_total_pct_change"]
     total_same = frame["same_calendar_edge_total_pct_change"]
     gulf = frame["gulf_share_change_pp"]
@@ -156,27 +257,46 @@ def _plot_gulf_vs_total(summary: pd.DataFrame) -> Path:
         color="#B44C43",
     )
     ax.axhline(0, color="#333333", linewidth=0.8)
-    ax.bar_label(bars_total, labels=[_fmt_signed(v) for v in total], padding=3, fontsize=8)
-    ax.bar_label(bars_same, labels=[_fmt_signed(v) for v in total_same], padding=3, fontsize=8)
-    ax.bar_label(bars_gulf, labels=[_fmt_signed(v) for v in gulf], padding=3, fontsize=8)
-    ax.set_title("The invisible shock: total movement versus Gulf-share movement")
-    ax.set_ylabel("Change from comparison window to available post window")
+    ax.set_ylabel("Change from comparison window\nto available post window")
     ax.set_xticks(x, frame.index)
-    ax.grid(axis="y", alpha=0.2)
-    ax.legend(frameon=False, loc="lower left")
-    fig.text(
-        0.5,
-        0.015,
-        "Same-calendar totals compare available 2026 post months with the same months in 2025 to reduce seasonality confounding.",
-        ha="center",
-        fontsize=9,
-        color="#444444",
+    style_axes(ax, grid_axis="y")
+    ax.legend(
+        frameon=False,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.38),
+        ncol=2,
+        fontsize=8.0,
     )
-    fig.tight_layout(rect=[0, 0.04, 1, 1])
+    fig.text(
+        0.01,
+        0.005,
+        "Same-calendar totals compare available 2026 post months with the same "
+        "months in 2025 to reduce seasonality confounding.",
+        ha="left",
+        fontsize=7.0,
+        color=NEUTRAL_MID,
+    )
+    fig.tight_layout(rect=[0, 0.11, 1, 1])
+    _label_grouped_bars(
+        fig,
+        ax,
+        [(bars_total, list(total)), (bars_same, list(total_same)), (bars_gulf, list(gulf))],
+        label_fontsize=7.0,
+    )
     return _save(fig, FIG_TOTAL)
 
 
 def _plot_source_structure(summary: pd.DataFrame, graph: pd.DataFrame, anomaly: pd.DataFrame) -> Path:
+    """Vertically stacked small multiples, one full-width panel per quantity.
+
+    The earlier version shared a left axis between the HHI change (order 0.01)
+    and the Jensen-Shannon distance (order 0.1), which rendered the HHI bars
+    invisible, and carried the anomaly z-score on a twin right axis where
+    neighbouring bars invited a ratio reading the statistic does not support.
+    Each quantity now owns its own scale and the unit ordering is repeated in
+    three full-width rows.  This avoids compressing six category labels and
+    three different axes into narrow side-by-side columns.
+    """
     units = _ordered_units(summary)
     merged = (
         summary.merge(
@@ -202,61 +322,94 @@ def _plot_source_structure(summary: pd.DataFrame, graph: pd.DataFrame, anomaly: 
         if all_percentile_one
         else "empirical percentiles vary by unit"
     )
-    x = np.arange(len(merged))
-    width = 0.28
+    y = np.arange(len(merged))
 
-    fig, ax1 = plt.subplots(figsize=(11.5, 6.4))
-    ax2 = ax1.twinx()
-    bars_hhi = ax1.bar(
-        x - width,
-        merged["source_hhi_change"],
-        width,
-        label="HHI change",
-        color="#6A7FDB",
+    panels = (
+        (
+            "(a) Source concentration",
+            "Change in source HHI",
+            merged["source_hhi_change"],
+            ACCENT_BLUE,
+            lambda v: _fmt_signed(v, 2),
+            True,
+        ),
+        (
+            "(b) Portfolio reshuffling",
+            "Jensen-Shannon distance",
+            merged["jensen_shannon_distance"],
+            ACCENT_ORANGE,
+            lambda v: _fmt(v, 2),
+            False,
+        ),
+        (
+            "(c) Exploratory diagnostic",
+            "Max post-shock z-score",
+            merged["post_max_zscore"],
+            NEUTRAL_MID,
+            lambda v: _fmt(v, 1),
+            False,
+        ),
     )
-    bars_js = ax1.bar(
-        x,
-        merged["jensen_shannon_distance"],
-        width,
-        label="Jensen-Shannon distance",
-        color="#D17A22",
-    )
-    bars_z = ax2.bar(
-        x + width,
-        merged["post_max_zscore"],
-        width,
-        label="Max post anomaly z-score",
-        color="#5B8E7D",
-        alpha=0.8,
-    )
-    ax1.axhline(0, color="#333333", linewidth=0.8)
-    for i, flag in enumerate(merged["anomaly_flag"].fillna(False)):
-        if bool(flag):
-            ax2.text(i + width, merged["post_max_zscore"].iloc[i] + 0.25, "*", ha="center", fontsize=13)
-    ax1.bar_label(bars_hhi, labels=[_fmt_signed(v, 2) for v in merged["source_hhi_change"]], padding=3, fontsize=8)
-    ax1.bar_label(bars_js, labels=[_fmt(v, 2) for v in merged["jensen_shannon_distance"]], padding=3, fontsize=8)
-    ax2.bar_label(bars_z, labels=[_fmt(v, 1) for v in merged["post_max_zscore"]], padding=3, fontsize=8)
-    ax1.set_title("Source-portfolio structure and exploratory anomaly scores")
-    ax1.set_ylabel("HHI change / Jensen-Shannon distance")
-    ax2.set_ylabel("Max post-shock z-score against pre portfolio")
-    ax1.set_xticks(x, merged.index)
-    ax1.grid(axis="y", alpha=0.2)
-    handles1, labels1 = ax1.get_legend_handles_labels()
-    handles2, labels2 = ax2.get_legend_handles_labels()
-    ax1.legend(handles1 + handles2, labels1 + labels2, frameon=False, loc="upper left")
+
+    apply_publication_style()
+    fig, axes = plt.subplots(3, 1, figsize=(THESIS_TEXTWIDTH_IN, 6.2))
+    # Only panel (a) is signed, so only panel (a) draws a zero line. Panels (b)
+    # and (c) are non-negative magnitudes and are anchored with zero on the axis
+    # floor. Drawing a mid-panel baseline in each would put three y = 0 lines at
+    # three different heights and invite a cross-panel comparison that none of
+    # these quantities supports.
+    for ax, (title, xlabel, values, colour, formatter, signed) in zip(axes, panels):
+        bars = ax.barh(y, values, height=0.58, color=colour, zorder=3)
+        ax.bar_label(
+            bars,
+            labels=[formatter(v) for v in values],
+            padding=3,
+            fontsize=7.5,
+        )
+        ax.set_title(title, loc="left", fontsize=9.2, pad=4)
+        ax.set_xlabel(xlabel, fontsize=9.0)
+        ax.set_yticks(y, merged.index)
+        ax.tick_params(axis="y", labelsize=8.2)
+        ax.invert_yaxis()
+        finite = values[np.isfinite(values.astype(float))]
+        if len(finite):
+            if signed:
+                span = max(float(finite.max()) - min(float(finite.min()), 0.0), 1e-9)
+                ax.set_xlim(
+                    min(float(finite.min()), 0.0) - 0.18 * span,
+                    float(finite.max()) + 0.28 * span,
+                )
+                ax.axvline(0, color=NEUTRAL_DARK, linewidth=0.9, zorder=2)
+            else:
+                ax.set_xlim(0.0, float(finite.max()) * 1.22)
+        style_axes(ax, grid_axis="x")
+
+    # Panel (c) is grey rather than an accent colour because the z-score is a
+    # short-calibration diagnostic, not an estimated effect. The reference band
+    # marks the region a conventional two-sided 5% cut would occupy, which makes
+    # visible that every unit clears it and the ranking therefore carries the
+    # information, not the flag.
+    axes[2].axvspan(0, 1.96, color=NEUTRAL_LIGHT, alpha=0.55, zorder=1)
+
+    fig.tight_layout(rect=[0, 0.17, 1, 1], h_pad=1.4)
     fig.text(
-        0.5,
+        0.005,
         0.015,
         (
-            f"Asterisks mark anomaly flags: {flagged_count}/{len(anomaly)} units "
-            f"flag, {percentile_text}, tail-p floor-censored at "
-            f"1/{floor_denominator}; diagnostics, not causal estimates."
+            "Panel (a) is signed and carries a zero line; panels (b) and (c) are "
+            "non-negative magnitudes anchored at zero.\nShading in panel (c) marks "
+            "the conventional |z| < 1.96 region. All "
+            f"{flagged_count}/{len(anomaly)} units flag, {percentile_text},\n"
+            f"tail-p floor-censored at 1/{floor_denominator}, so the flag separates "
+            "no unit from another. Panel (c) is ordinal evidence only;\nno panel is "
+            "a causal estimate."
         ),
-        ha="center",
-        fontsize=9,
-        color="#444444",
+        ha="left",
+        va="bottom",
+        fontsize=6.6,
+        color=NEUTRAL_MID,
+        linespacing=1.35,
     )
-    fig.tight_layout(rect=[0, 0.04, 1, 1])
     return _save(fig, FIG_STRUCTURE)
 
 

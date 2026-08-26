@@ -44,6 +44,52 @@ from lngfreight.validation import resolve_cutoff  # noqa: E402
 AR_MODEL = "ar_lag1_7"
 
 
+def _validate_admission_table(
+    admission: pd.DataFrame,
+    *,
+    model: str,
+    targets: list[str],
+) -> None:
+    """Require one admitted frozen verdict for every requested real target."""
+    required = {(model, target) for target in targets}
+    selected = admission.loc[
+        admission["model"].eq(model) & admission["target"].isin(targets)
+    ].copy()
+    counts = selected.groupby(["model", "target"]).size().to_dict()
+    missing = sorted(required - set(counts))
+    duplicates = sorted(key for key, count in counts.items() if count != 1)
+    if missing or duplicates:
+        raise ValueError(
+            "Admission artifact must contain exactly one row per requested "
+            f"model/target; missing={missing}, duplicates={duplicates}."
+        )
+    admitted = selected["admitted"]
+    if admitted.dtype != bool:
+        admitted = admitted.astype(str).str.strip().str.lower().map(
+            {"true": True, "false": False}
+        )
+    if admitted.isna().any():
+        raise ValueError("Admission artifact contains a non-boolean admitted value.")
+    rejected = sorted(selected.loc[~admitted, "target"].tolist())
+    if rejected:
+        raise ValueError(
+            f"Model {model!r} is not admitted for targets {rejected}; refusing "
+            "the post-cutoff comparison."
+        )
+
+
+def _require_frozen_admission(model: str, targets: list[str]) -> None:
+    """Gate real-model comparisons on the frozen pre-cutoff admission artifact."""
+    if model == "stub":
+        return
+    path = config.path("data_processed") / "tsfm_admission_test.csv"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{path} not found. Run the pre-cutoff admission benchmark first."
+        )
+    _validate_admission_table(pd.read_csv(path), model=model, targets=targets)
+
+
 def _load_panel() -> pd.DataFrame:
     path = config.path("data_processed") / "panel_aligned.csv"
     if not path.exists():
@@ -155,6 +201,10 @@ def main() -> None:
 
     spec = working_specification()
     targets = list(spec.outcomes)
+    try:
+        _require_frozen_admission(args.model, targets)
+    except (FileNotFoundError, ValueError) as exc:
+        raise SystemExit(f"Admission gate failed: {exc}") from exc
     panel = _load_panel()
     cut = resolve_cutoff()
     ar_summary, ar_daily = _ar_reference()

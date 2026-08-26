@@ -15,7 +15,14 @@ import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from figure_style import (  # noqa: E402
+    FIGURE_WIDTH_IN,
+    NEUTRAL_MID,
+    apply_publication_style,
+    style_axes,
+)
 from lngfreight import config  # noqa: E402
 from lngfreight.bloomberg_market import ANALYSIS_COLUMNS  # noqa: E402
 from lngfreight.freight_counterfactual import (  # noqa: E402
@@ -37,13 +44,9 @@ PDF_METADATA = {
 
 
 def _plot(weekly: pd.DataFrame, cutoff: str) -> None:
-    fig, axes = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
-    fig.suptitle(
-        "Pre-treatment-selected LNG freight counterfactual forecasts",
-        fontsize=16,
-        fontweight="bold",
-        y=0.98,
-    )
+    apply_publication_style()
+    fig, axes = plt.subplots(3, 1, figsize=(FIGURE_WIDTH_IN, 6.2), sharex=True)
+    # No in-figure headline title: the LaTeX caption carries it in the thesis.
     for ax, (series, group) in zip(axes, weekly.groupby("series", sort=False)):
         group = group.sort_values("week_end")
         ax.fill_between(
@@ -52,6 +55,7 @@ def _plot(weekly: pd.DataFrame, cutoff: str) -> None:
             group["upper_90_usd_per_day"] / 1000,
             color=COLORS["interval"],
             alpha=0.45,
+            linewidth=0,
             label="90% pointwise conformal interval",
         )
         ax.plot(
@@ -59,7 +63,8 @@ def _plot(weekly: pd.DataFrame, cutoff: str) -> None:
             group["observed_usd_per_day"] / 1000,
             color=COLORS["observed"],
             marker="o",
-            markersize=3,
+            markersize=2.6,
+            linewidth=1.2,
             label="Observed assessment",
         )
         ax.plot(
@@ -67,24 +72,39 @@ def _plot(weekly: pd.DataFrame, cutoff: str) -> None:
             group["counterfactual_usd_per_day"] / 1000,
             color=COLORS["forecast"],
             linestyle="--",
+            linewidth=1.3,
             label=f"Counterfactual ({group['selected_model'].iloc[0]})",
         )
-        ax.axvline(pd.Timestamp(cutoff), color="#B44C43", linewidth=1.1)
-        ax.set(title=LABELS[series], ylabel="USD/day (thousands)")
-        ax.grid(axis="y", alpha=0.2)
-        ax.legend(frameon=False, fontsize=8, loc="best")
+        ax.axvline(
+            pd.Timestamp(cutoff),
+            color="#B44C43",
+            linewidth=1.1,
+            label=f"Treatment cutoff {cutoff}",
+        )
+        ax.set_title(LABELS[series], loc="left", pad=4)
+        ax.set_ylabel("USD/day (thousands)")
+        style_axes(ax, grid_axis="y")
     axes[-1].set_xlabel("Assessment week")
-    fig.text(
-        0.5,
-        0.012,
-        "Models and interval radius selected using pre-treatment rolling-origin validation only. "
-        "Post forecasts are recursive and do not use observed post-event lags. "
-        "Forecast deviations are supplementary and are not ATT estimates.",
-        ha="center",
-        fontsize=8.5,
-        color="#444444",
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.045),
+        ncol=2,
+        frameon=False,
     )
-    fig.tight_layout(rect=[0, 0.04, 1, 0.95])
+    fig.text(
+        0.01,
+        0.005,
+        "Models and interval radius selected using pre-treatment rolling-origin "
+        "validation only. Post forecasts are recursive and do not use observed "
+        "post-event lags. Forecast deviations are supplementary, not ATT estimates.",
+        ha="left",
+        fontsize=7.0,
+        color=NEUTRAL_MID,
+    )
+    fig.tight_layout(rect=[0, 0.115, 1, 1])
     fig.savefig(config.path("lng_freight_counterfactual_png"), dpi=180, bbox_inches="tight")
     fig.savefig(
         config.path("lng_freight_counterfactual_pdf"),

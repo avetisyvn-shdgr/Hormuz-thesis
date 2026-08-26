@@ -23,7 +23,14 @@ from lngfreight.specification import working_specification  # noqa: E402
 
 RAW_HASH_FILE = "data/raw/SHA256SUMS"
 VESSEL_HASH_FILE = "data/raw/SHA256SUMS.vessel"
+SENSITIVITY_HASH_FILE = "data/raw/SHA256SUMS.sensitivity"
 RUN_MANIFEST = "data/processed/reproducibility_manifest.json"
+CONFIG_INPUTS = (
+    "config/settings.yaml",
+    "config/sources.yaml",
+    "config/provenance_path_migrations.json",
+    "config/provenance_source_payload_exceptions.json",
+)
 INTERIM_INPUTS = (
     "data/interim/gem_lng_carriers.json",
 )
@@ -175,6 +182,14 @@ CORE_RAW_INPUTS = (
     "data/raw/wto_hormuz/voy_intake_index_lng_export.csv",
 )
 
+# Frozen inputs used only by explicitly labelled sensitivity branches. Keeping
+# this scope separate prevents a candidate vintage from being mistaken for the
+# pinned primary or disappearing inside the broad vessel/open-data inventory.
+SENSITIVITY_RAW_INPUTS = (
+    "data/raw/portwatch/vintages/"
+    "Daily_Chokepoints_Data__vintage_2026-08-09.csv",
+)
+
 # Historical vintages preserved for audit but excluded from all active input
 # scopes. See docs/PORTWATCH_VINTAGE_REGISTER.md.
 QUARANTINED_RAW_INPUTS = (
@@ -195,6 +210,7 @@ def raw_hashes(root: Path) -> dict[str, str]:
     raw_dir = root / "data" / "raw"
     ignored = {
         raw_dir / "SHA256SUMS",
+        raw_dir / "SHA256SUMS.sensitivity",
         raw_dir / "SHA256SUMS.vessel",
         raw_dir / "provenance.jsonl",
         raw_dir / ".gitkeep",
@@ -221,6 +237,11 @@ def core_raw_hashes(root: Path) -> dict[str, str]:
     return out
 
 
+def sensitivity_raw_hashes(root: Path) -> dict[str, str]:
+    """Hashes of declared sensitivity-only inputs; missing files fail loudly."""
+    return _declared_hashes(root, SENSITIVITY_RAW_INPUTS, "sensitivity input")
+
+
 def vessel_raw_hashes(root: Path) -> dict[str, str]:
     """Hashes of vessel-branch raw inputs: everything under data/raw that is not a
     core input or a transient download archive (.zip). OS junk files (.DS_Store,
@@ -235,11 +256,13 @@ def vessel_raw_hashes(root: Path) -> dict[str, str]:
     and scripts/freeze_bloomberg_layer.py (payload snapshots), which run inside
     the branch that guarantees the files exist."""
     core = set(CORE_RAW_INPUTS)
+    sensitivity = set(SENSITIVITY_RAW_INPUTS)
     quarantined = set(QUARANTINED_RAW_INPUTS)
     return {
         rel: digest
         for rel, digest in raw_hashes(root).items()
         if rel not in core
+        and rel not in sensitivity
         and rel not in quarantined
         and not rel.startswith("data/raw/bloomberg_transcription/")
         and not rel.endswith(".zip")
@@ -345,10 +368,7 @@ def build_manifest(root: Path) -> dict[str, object]:
         "platform": platform.platform(),
         "packages": _package_versions(),
         "working_specification": _working_specification(),
-        "config_sha256": {
-            "config/settings.yaml": sha256_file(root / "config/settings.yaml"),
-            "config/sources.yaml": sha256_file(root / "config/sources.yaml"),
-        },
+        "config_sha256": _declared_hashes(root, CONFIG_INPUTS, "config input"),
         "raw_sha256": core_raw_hashes(root),
         "vessel_raw_sha256": vessel_raw_hashes(root),
         "interim_input_sha256": interim_input_hashes(root),

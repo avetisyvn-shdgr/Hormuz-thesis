@@ -18,9 +18,16 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _read_frozen_hashes(root: Path) -> dict[str, str]:
+def _read_frozen_hashes(
+    root: Path,
+    *,
+    include_sensitivity: bool = False,
+) -> dict[str, str]:
     hashes: dict[str, str] = {}
-    for relative in ("data/raw/SHA256SUMS", "data/raw/SHA256SUMS.vessel"):
+    scopes = ["data/raw/SHA256SUMS", "data/raw/SHA256SUMS.vessel"]
+    if include_sensitivity:
+        scopes.append("data/raw/SHA256SUMS.sensitivity")
+    for relative in scopes:
         for line in (root / relative).read_text(encoding="utf-8").splitlines():
             if line.strip():
                 digest, path = line.split(maxsplit=1)
@@ -42,6 +49,68 @@ def _read_path_migrations(root: Path) -> dict[str, dict]:
             raise ValueError(f"duplicate provenance path migration: {old_file}")
         migrations[old_file] = row
     return migrations
+
+
+def _read_source_payload_exceptions(root: Path) -> dict[tuple[int, str, str], dict]:
+    path = root / "config/provenance_source_payload_exceptions.json"
+    if not path.exists():
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != 1:
+        raise ValueError(f"unsupported source-payload exception schema: {path}")
+    exceptions: dict[tuple[int, str, str], dict] = {}
+    for row in payload.get("exceptions", []):
+        key = (row["ledger_line"], row["source_file"], row["unpreserved_sha256"])
+        if key in exceptions:
+            raise ValueError(f"duplicate source-payload exception: {key}")
+        if row.get("status") != "historical_source_payload_not_preserved":
+            raise ValueError(f"unsupported source-payload exception status: {row}")
+        exceptions[key] = row
+    return exceptions
+
+
+def _source_payload_exception_is_valid(
+    root: Path,
+    source_path: Path,
+    exception: dict,
+) -> bool:
+    """Fail closed unless both disclosed replacement identities still match."""
+    current = _sha256(source_path) if source_path.exists() else None
+    derivative = root / exception["preserved_derivative"]
+    derivative_sha = _sha256(derivative) if derivative.exists() else None
+    return bool(
+        current == exception["current_restored_sha256"]
+        and derivative_sha == exception["preserved_derivative_sha256"]
+    )
+
+
+def _is_optional_record(
+    record: dict,
+    *,
+    sensitivity_variables: set[str],
+    sensitivity_consumers: set[str],
+) -> bool:
+    query = record.get("query", {})
+    consumer = str(query.get("consumer", "")).split(":", 1)[0]
+    variables = set(record.get("registry_variables", []))
+    return bool(
+        query.get("analysis_scope") == "sensitivity_only"
+        or consumer in sensitivity_consumers
+        or (variables and variables.issubset(sensitivity_variables))
+    )
+
+
+def _audit_output_paths(root: Path, *, include_sensitivity: bool) -> tuple[Path, Path]:
+    processed = root / config.settings()["paths"]["data_processed"]
+    if include_sensitivity:
+        return (
+            processed / "raw_provenance_inventory_with_sensitivity.csv",
+            processed / "provenance_audit_sensitivity_summary.json",
+        )
+    return (
+        processed / "raw_provenance_inventory.csv",
+        processed / "provenance_audit_summary.json",
+    )
 
 
 def _capture_manifest(root: Path) -> dict[str, dict]:
@@ -67,7 +136,7 @@ def _backup_manifest(root: Path) -> dict[str, dict]:
     }
 
 
-def main() -> int:
+def main(*, include_sensitivity: bool = False) -> int:
     root = config.ROOT
     ledger_path = root / config.settings()["paths"]["provenance_log"]
     records = [
@@ -75,14 +144,41 @@ def main() -> int:
         for line in ledger_path.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
-    v2 = [record for record in records if record.get("schema_version") == 2]
+    sensitivity_variables = {
+        name
+        for name, spec in config.registry().items()
+        if spec.get("analysis_scope") == "sensitivity_only"
+    }
+    sensitivity_consumers = {
+        consumer
+        for name, spec in config.registry().items()
+        if name in sensitivity_variables
+        for consumer in spec.get("allowed_consumers", [])
+    }
+
+    audited_records = [
+        (number, record)
+        for number, record in enumerate(records, 1)
+        if include_sensitivity
+        or not _is_optional_record(
+            record,
+            sensitivity_variables=sensitivity_variables,
+            sensitivity_consumers=sensitivity_consumers,
+        )
+    ]
+    v2 = [
+        record
+        for _, record in audited_records
+        if record.get("schema_version") == 2
+    ]
     migrations = _read_path_migrations(root)
+    source_exceptions = _read_source_payload_exceptions(root)
 
     missing_ledger_paths: list[str] = []
     resolved_renamed_ledger_paths: list[dict] = []
     stale_records: list[int] = []
     matching_by_path: dict[str, list[dict]] = {}
-    for number, record in enumerate(records, 1):
+    for number, record in audited_records:
         path = root / record["file"]
         if not path.exists():
             migration = migrations.get(record["file"])
@@ -109,24 +205,44 @@ def main() -> int:
 
     source_by_path: dict[str, list[dict]] = {}
     source_hash_failures: list[str] = []
-    for record in v2:
+    disclosed_missing_source_payloads: list[dict] = []
+    used_source_exception_keys: set[tuple[int, str, str]] = set()
+    for ledger_line, record in audited_records:
+        if record.get("schema_version") != 2:
+            continue
         for source in record.get("source_payloads", []):
             source_by_path.setdefault(source["file"], []).append(record)
             path = root / source["file"]
-            if not path.exists() or _sha256(path) != source["sha256"]:
+            if path.exists() and _sha256(path) == source["sha256"]:
+                continue
+            key = (ledger_line, source["file"], source["sha256"])
+            exception = source_exceptions.get(key)
+            if exception is None:
                 source_hash_failures.append(source["file"])
+                continue
+            if not _source_payload_exception_is_valid(root, path, exception):
+                source_hash_failures.append(source["file"])
+                continue
+            used_source_exception_keys.add(key)
+            disclosed_missing_source_payloads.append(exception)
+
+    unused_source_exceptions = [
+        source_exceptions[key]
+        for key in sorted(set(source_exceptions) - used_source_exception_keys)
+    ]
 
     configured_free = {
         name
         for name, spec in config.registry().items()
         if spec.get("status") in {"free", "primary"}
+        and (include_sensitivity or name not in sensitivity_variables)
     }
     mapped_registry = {
         name for record in v2 for name in record.get("registry_variables", [])
     }
     unmapped_free = sorted(configured_free - mapped_registry)
 
-    frozen = _read_frozen_hashes(root)
+    frozen = _read_frozen_hashes(root, include_sensitivity=include_sensitivity)
     frozen_hash_failures = [
         path
         for path, expected in frozen.items()
@@ -160,13 +276,16 @@ def main() -> int:
             "registry_variables": "|".join(registry_variables),
         })
 
-    processed = config.path("data_processed")
-    inventory_path = processed / "raw_provenance_inventory.csv"
-    summary_path = processed / "provenance_audit_summary.json"
+    inventory_path, summary_path = _audit_output_paths(
+        root, include_sensitivity=include_sensitivity
+    )
     pd.DataFrame(inventory_rows).to_csv(inventory_path, index=False)
     channels = Counter(row["provenance_channel"] for row in inventory_rows)
     summary = {
-        "ledger_records": len(records),
+        "audit_scope": (
+            "core_plus_sensitivity" if include_sensitivity else "core_without_optional_sensitivity"
+        ),
+        "ledger_records": len(audited_records),
         "v2_records": len(v2),
         "current_ledger_paths": len(matching_by_path),
         "historical_stale_record_count": len(stale_records),
@@ -175,6 +294,8 @@ def main() -> int:
         "resolved_renamed_ledger_paths": resolved_renamed_ledger_paths,
         "current_paths_without_v2": current_without_v2,
         "source_payload_hash_failures": sorted(set(source_hash_failures)),
+        "disclosed_missing_source_payloads": disclosed_missing_source_payloads,
+        "unused_source_payload_exceptions": unused_source_exceptions,
         "configured_free_registry_variables": len(configured_free),
         "mapped_free_registry_variables": len(configured_free - set(unmapped_free)),
         "unmapped_free_registry_variables": unmapped_free,
@@ -197,10 +318,11 @@ def main() -> int:
         missing_ledger_paths
         or current_without_v2
         or source_hash_failures
+        or unused_source_exceptions
         or unmapped_free
         or frozen_hash_failures
     )
-    print(f"ledger records={len(records)} v2={len(v2)}")
+    print(f"audited ledger records={len(audited_records)} v2={len(v2)}")
     print(
         f"current paths={len(matching_by_path)} "
         f"historical stale records={len(stale_records)}"
@@ -220,4 +342,13 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--include-sensitivity",
+        action="store_true",
+        help="also require the optional August PortWatch sensitivity bytes",
+    )
+    args = parser.parse_args()
+    raise SystemExit(main(include_sensitivity=args.include_sensitivity))

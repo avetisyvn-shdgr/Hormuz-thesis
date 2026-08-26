@@ -1,0 +1,161 @@
+schema_version: 1
+design_id: "hormuz_horizon_resolution_inference_frontier_v1"
+frozen_utc: "2026-08-09T22:45:56Z"
+analysis_role: "block_inference_design_frontier_audit_and_extension"
+
+# Task-6 freeze status. This is NOT a preregistration. Before this design was
+# written the audit had already disclosed the expected direct-tiling pattern
+# (eight reference blocks, p-floor 1/9, finite 80% radius, unbounded 90%/95%).
+# The design is therefore frozen BEFORE the results are generated, with that
+# prior disclosure stated, exactly as in the phase-5 sensitivity card.
+freeze_status:
+  timing: "frozen_before_generation_not_preregistered"
+  prior_disclosure:
+    - "Audit expectation of 8 disjoint 130-day reference blocks under direct tiling."
+    - "Audit expectation of a 1/9 finite-sample rank p-value floor."
+    - "Audit expectation of a finite 80% conformal radius."
+    - "Audit expectation that 90% and 95% conformal bands are necessarily unbounded."
+    - "Locked primary artifact already reported 7 greedy blocks and a 1/8 floor."
+  selection_rule: >-
+    The primary origin rule and the horizon grid are fixed in this file before
+    any block statistic is computed. No rule or horizon may be promoted,
+    demoted, or added after seeing a loss, a p-value, or an interval.
+
+upstream_locked_artifacts:
+  block_conformal_summary:
+    path: "data/processed/block_conformal_summary.csv"
+    sha256: "431c6c61c2680e862bf102343f123e46f7e82dad0a65a2378ab8f8f0634f18bb"
+    role: "locked_primary_reporting_artifact_must_not_be_overwritten"
+  block_placebo_effects:
+    path: "data/processed/block_placebo_effects.csv"
+    sha256: "5565c063851b9beb58ea9d43f56e95d7be02ba347188b7db3782d6af7152d827"
+    role: "locked_primary_reporting_artifact_must_not_be_overwritten"
+  placebo_time_effects:
+    path: "data/processed/placebo_time_effects.csv"
+    sha256: "6659c71005bd52575ae14d26cf50969e810782db8a1dd5c24b6697bf4b0af22d"
+    role: "locked_primary_overlapping_placebo_input"
+  panel_aligned:
+    path: "data/processed/panel_aligned.csv"
+    sha256: "4d26dbe004947cb32896fd801e066adbcf664813a0c8b7c80e855558b3ed7728"
+    role: "estimation_input"
+
+# Held fixed across every cell of this frontier. Nothing here may vary.
+held_fixed:
+  outcome: "hormuz_tanker_transits"
+  unit: "transits_per_day"
+  statistic: "cumulative_throughput_loss"
+  statistic_definition: "sum over block days of (counterfactual point forecast - observed)"
+  model_id: "ar_lag1_7"
+  model_family: "recursive_autoregression_with_deterministic_weekday_terms"
+  y_lags: [1, 7]
+  exog_cols: []
+  ridge_alpha: 1.0e-6
+  training_scheme: "expanding_from_panel_start"
+  panel_start: "2022-01-01"
+  training_cutoff_exclusive: "2026-02-28"
+  treated_window_start: "2026-02-28"
+  treated_window_end: "2026-07-07"
+  treated_window_days: 130
+  min_initial_train_days: 365
+
+# Every rule below is a pure function of the calendar index, the locked cutoff,
+# and min_initial_train_days. None of them reads the outcome column. This is the
+# outcome-independence guarantee and it is enforced by test and by manifest.
+origin_rules:
+  forward_anchored_direct:
+    role: "primary"
+    description: >-
+      Anchor the first reference block at panel_start + min_initial_train_days,
+      then tile forward in steps of exactly one horizon. A block is admitted
+      only if it ends strictly before the training cutoff.
+    rationale: >-
+      Preserves the anchor already used by the locked primary artifact, uses the
+      earliest admissible origin, and attains the maximum-cardinality disjoint
+      packing for a fixed anchor.
+  backward_anchored_from_cutoff:
+    role: "sensitivity"
+    description: >-
+      Anchor the last reference block to end on the day before the training
+      cutoff, then tile backward in steps of exactly one horizon while the
+      remaining training span stays at or above min_initial_train_days.
+    rationale: >-
+      Tests whether the frontier depends on which calendar end the partition is
+      anchored to. It places the reference blocks as close as possible to the
+      treated window.
+  legacy_greedy_step30:
+    role: "audit_reproduction"
+    description: >-
+      Reproduce the locked primary construction: enumerate candidate origins on
+      a 30-calendar-day step from the anchor, then greedily retain disjoint
+      windows in chronological order.
+    rationale: >-
+      The locked artifact selects disjoint blocks from a 30-day-stepped
+      candidate set rather than from all feasible origins. This rule exists only
+      to reproduce that number and quantify what the restriction costs.
+
+# Reference resolution grid. "Resolution" here is the length of the reference
+# partition block, which is also the scored horizon. The treated statistic is
+# always the first `horizon_days` days of the fixed treated window, so a shorter
+# horizon reports a strictly nested sub-window of the same treated period and
+# never a different treatment date. Horizons above the treated window length are
+# infeasible and are not in the grid.
+horizon_grid_days: [30, 65, 91, 130]
+primary_horizon_days: 130
+horizon_grid_rationale: >-
+  130 is the locked treated-window length. 65 is its half, 91 is thirteen weeks,
+  and 30 matches the validation fold length already fixed in settings.yaml.
+  The grid is calendar-derived, declared before generation, and complete: every
+  listed horizon is reported whatever its result.
+
+# Reported for every rule x horizon cell.
+confidence_levels: [0.80, 0.90, 0.95]
+rank_p_value_alternative: "greater"
+conformal_rank_formula: "ceil((K + 1) * level)"
+finite_support_condition: "ceil((K + 1) * level) <= K"
+p_value_floor_formula: "1 / (K + 1)"
+maximum_attainable_coverage_formula: "K / (K + 1)"
+
+outputs:
+  geometry_csv: "data/processed/horizon_frontier_block_geometry.csv"
+  blocks_csv: "data/processed/horizon_frontier_blocks.csv"
+  summary_csv: "data/processed/horizon_frontier_summary.csv"
+  diagnostics_json: "data/processed/horizon_frontier_diagnostics.json"
+  audit_expectation_json: "data/processed/horizon_frontier_audit_expectation.json"
+  documentation_markdown: "docs/HORIZON_RESOLUTION_FRONTIER.md"
+  manifest_json: "data/processed/horizon_frontier_manifest.json"
+
+# The audit expectation this phase must reproduce or explicitly refute.
+audit_expectation:
+  rule: "forward_anchored_direct"
+  horizon_days: 130
+  n_reference_blocks: 8
+  rank_p_value_floor: 0.1111111111111111
+  finite_interval_levels: [0.80]
+  unbounded_interval_levels: [0.90, 0.95]
+
+reporting_guards:
+  is_ATT: false
+  is_causal_identification: false
+  five_percent_significance_claim_permitted: false
+  reference_blocks_are_treated_units: false
+  claim_vocabulary: "counterfactual_forecast_shortfall_not_treatment_effect"
+  p_value_interpretation: >-
+    A finite-sample rank position among pre-treatment reference blocks under the
+    same forecast machinery. With K reference blocks the smallest attainable
+    value is 1/(K+1). The primary reporting resolution cannot reach 0.05, and no
+    cell at any resolution may be described as significant at the 5% level.
+  resolution_floor_policy: >-
+    A shorter block length packs more blocks into the same fixed pre-period and
+    therefore mechanically lowers the 1/(K+1) floor without adding any
+    observation, while shortening the accumulation each block measures and
+    weakening block independence. Finer-resolution floors are reported for
+    completeness only. The reporting resolution is fixed at
+    primary_horizon_days by this file and must never be replaced by whichever
+    horizon produced the smallest floor.
+  unbounded_interval_policy: >-
+    When the required order statistic exceeds K the conformal radius is infinite
+    and the interval is reported as unbounded. Clipping the rank to K would
+    silently understate the requested coverage and is prohibited.
+  overwrite_policy: "locked_primary_block_artifacts_are_read_only_in_this_phase"
+  core_run_all_dependency: "none"
+  core_reproducibility_manifest_dependency: "none"

@@ -19,6 +19,8 @@ import matplotlib.patheffects as path_effects  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
+from matplotlib.patches import PathPatch  # noqa: E402
+from matplotlib.path import Path as MplPath  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -70,6 +72,20 @@ CORRIDOR_ANNOTATION_OFFSETS = {
     "panama_canal": (-30, -23),
     "yucatan_channel": (-62, 17),
 }
+LAND_FACE_COLOR = "#E9E5DE"
+LAND_EDGE_COLOR = "#A8A196"
+OCEAN_COLOR = "#F4F8FA"
+GRATICULE_COLOR = "#C6D4DC"
+# Plot extent. Antarctica and the high Arctic carry no LNG voyages in the
+# sample, so the map is cropped to the latitudes that do.
+MAP_LAT_MIN = -60.0
+MAP_LAT_MAX = 80.0
+# Layout is specified in inches rather than figure fractions so that the axes
+# box can be sized to the exact Robinson data ratio (see _render_map).
+MARGIN_LEFT_IN = 0.42
+MARGIN_RIGHT_IN = 0.06
+MARGIN_TOP_IN = 0.06
+MARGIN_BOTTOM_IN = 0.86
 ROBINSON_X = np.asarray([
     1.0000, 0.9986, 0.9954, 0.9900, 0.9822, 0.9730, 0.9600,
     0.9427, 0.9216, 0.8962, 0.8679, 0.8350, 0.7986, 0.7597,
@@ -173,7 +189,8 @@ def robinson_project(
     return projected_x, projected_y
 
 
-def _iter_polygon_rings(geometry: dict) -> Iterable[list[list[float]]]:
+def _iter_polygons(geometry: dict) -> Iterable[list[list[list[float]]]]:
+    """Yield each polygon as its full ring list (exterior first, then holes)."""
     if geometry["type"] == "Polygon":
         polygons = [geometry["coordinates"]]
     elif geometry["type"] == "MultiPolygon":
@@ -182,31 +199,73 @@ def _iter_polygon_rings(geometry: dict) -> Iterable[list[list[float]]]:
         return
     for polygon in polygons:
         if polygon:
-            yield polygon[0]
+            yield polygon
+
+
+def _polygon_path(rings: list[list[list[float]]]) -> MplPath | None:
+    """Build a compound path so interior rings render as holes, not fill."""
+    vertices: list[np.ndarray] = []
+    codes: list[np.ndarray] = []
+    for ring in rings:
+        coordinates = np.asarray(ring, dtype=float)
+        if len(coordinates) < 3:
+            continue
+        projected_x, projected_y = robinson_project(
+            coordinates[:, 0],
+            coordinates[:, 1],
+        )
+        ring_vertices = np.column_stack([projected_x, projected_y])
+        ring_codes = np.full(len(ring_vertices), MplPath.LINETO, dtype=np.uint8)
+        ring_codes[0] = MplPath.MOVETO
+        ring_codes[-1] = MplPath.CLOSEPOLY
+        vertices.append(ring_vertices)
+        codes.append(ring_codes)
+    if not vertices:
+        return None
+    return MplPath(np.concatenate(vertices), np.concatenate(codes))
 
 
 def _draw_land(ax: plt.Axes, geojson_path: Path) -> None:
     payload = json.loads(geojson_path.read_text())
     for feature in payload["features"]:
-        for ring in _iter_polygon_rings(feature["geometry"]):
-            coordinates = np.asarray(ring, dtype=float)
-            projected_x, projected_y = robinson_project(
-                coordinates[:, 0],
-                coordinates[:, 1],
+        for rings in _iter_polygons(feature["geometry"]):
+            path = _polygon_path(rings)
+            if path is None:
+                continue
+            ax.add_patch(
+                PathPatch(
+                    path,
+                    facecolor=LAND_FACE_COLOR,
+                    edgecolor=LAND_EDGE_COLOR,
+                    linewidth=0.30,
+                    joinstyle="round",
+                    zorder=1,
+                )
             )
-            ax.fill(
-                projected_x,
-                projected_y,
-                facecolor="#EAE7E1",
-                edgecolor="#BEB9B0",
-                linewidth=0.32,
-                zorder=1,
-            )
+
+
+def _boundary_path() -> MplPath:
+    """Trace the Robinson neatline for the plotted latitude band.
+
+    Robinson's bounding meridians are curved, so a rectangular axes background
+    would paint ocean into corners that lie outside the projection.
+    """
+    latitudes = np.linspace(MAP_LAT_MIN, MAP_LAT_MAX, 281)
+    left_x, left_y = robinson_project(-180.0, latitudes)
+    right_x, right_y = robinson_project(180.0, latitudes[::-1])
+    vertices = np.concatenate([
+        np.column_stack([left_x, left_y]),
+        np.column_stack([right_x, right_y]),
+    ])
+    codes = np.full(len(vertices) + 1, MplPath.LINETO, dtype=np.uint8)
+    codes[0] = MplPath.MOVETO
+    codes[-1] = MplPath.CLOSEPOLY
+    return MplPath(np.vstack([vertices, vertices[:1]]), codes)
 
 
 def _draw_graticule(ax: plt.Axes) -> None:
     longitude_grid = np.linspace(-180.0, 180.0, 721)
-    latitude_grid = np.linspace(-60.0, 80.0, 281)
+    latitude_grid = np.linspace(MAP_LAT_MIN, MAP_LAT_MAX, 281)
     for latitude in (-60.0, -30.0, 0.0, 30.0, 60.0):
         projected_x, projected_y = robinson_project(
             longitude_grid,
@@ -215,10 +274,10 @@ def _draw_graticule(ax: plt.Axes) -> None:
         ax.plot(
             projected_x,
             projected_y,
-            color="#CAD6DC",
-            linewidth=0.42,
-            linestyle=":",
-            zorder=0,
+            color=GRATICULE_COLOR,
+            linewidth=0.38,
+            linestyle=(0, (1.0, 2.4)),
+            zorder=0.4,
         )
     for longitude in (-120.0, -60.0, 0.0, 60.0, 120.0):
         projected_x, projected_y = robinson_project(
@@ -228,10 +287,10 @@ def _draw_graticule(ax: plt.Axes) -> None:
         ax.plot(
             projected_x,
             projected_y,
-            color="#CAD6DC",
-            linewidth=0.42,
-            linestyle=":",
-            zorder=0,
+            color=GRATICULE_COLOR,
+            linewidth=0.38,
+            linestyle=(0, (1.0, 2.4)),
+            zorder=0.4,
         )
 
     label_effect = [
@@ -258,7 +317,7 @@ def _draw_graticule(ax: plt.Axes) -> None:
         )
         text.set_path_effects(label_effect)
     for longitude in (-120.0, -60.0, 0.0, 60.0, 120.0):
-        projected_x, projected_y = robinson_project(longitude, -60.0)
+        projected_x, projected_y = robinson_project(longitude, MAP_LAT_MIN)
         longitude_label = (
             "0°"
             if longitude == 0
@@ -280,13 +339,15 @@ def _draw_graticule(ax: plt.Axes) -> None:
 
 
 def _line_width(value_bn: float, cap_bn: float) -> float:
+    """Scale stroke weight with |change|, capped so hub overlaps stay readable."""
     scaled = min(abs(value_bn), cap_bn) / cap_bn
-    return 0.16 + 2.30 * math.sqrt(scaled)
+    return 0.14 + 1.62 * math.sqrt(scaled)
 
 
 def _line_alpha(value_bn: float, cap_bn: float) -> float:
+    """Keep the heaviest strokes translucent so crossings remain separable."""
     scaled = min(abs(value_bn), cap_bn) / cap_bn
-    return 0.045 + 0.67 * (scaled ** 0.70)
+    return 0.05 + 0.48 * (scaled ** 0.70)
 
 
 def _corridor_markers(corridors: pd.DataFrame) -> pd.DataFrame:
@@ -363,15 +424,32 @@ def _render_map(
     if not math.isfinite(cap_bn) or cap_bn <= 0:
         raise ValueError("Route changes do not contain a positive plotting scale.")
 
-    fig, ax = plt.subplots(figsize=(FIGURE_WIDTH_IN, 4.05))
+    # Size the canvas from the projected data ratio so that locking the axes
+    # aspect below neither distorts the coastlines nor leaves dead whitespace.
+    x_limit = float(robinson_project(180.0, 0.0)[0])
+    y_min = float(robinson_project(0.0, MAP_LAT_MIN)[1])
+    y_max = float(robinson_project(0.0, MAP_LAT_MAX)[1])
+    axes_width_in = FIGURE_WIDTH_IN - MARGIN_LEFT_IN - MARGIN_RIGHT_IN
+    axes_height_in = axes_width_in * (y_max - y_min) / (2.0 * x_limit)
+    figure_height_in = axes_height_in + MARGIN_TOP_IN + MARGIN_BOTTOM_IN
+
+    fig, ax = plt.subplots(figsize=(FIGURE_WIDTH_IN, figure_height_in))
     fig.subplots_adjust(
-        left=0.065,
-        right=0.992,
-        bottom=0.24,
-        top=0.78,
+        left=MARGIN_LEFT_IN / FIGURE_WIDTH_IN,
+        right=1.0 - (MARGIN_RIGHT_IN / FIGURE_WIDTH_IN),
+        bottom=MARGIN_BOTTOM_IN / figure_height_in,
+        top=1.0 - (MARGIN_TOP_IN / figure_height_in),
     )
     fig.patch.set_facecolor("white")
-    ax.set_facecolor("#F5F9FB")
+    ax.set_facecolor("white")
+    boundary = _boundary_path()
+    ocean = PathPatch(
+        boundary,
+        facecolor=OCEAN_COLOR,
+        edgecolor="none",
+        zorder=0.0,
+    )
+    ax.add_patch(ocean)
     _draw_graticule(ax)
     _draw_land(ax, land_path)
 
@@ -408,9 +486,24 @@ def _render_map(
                     alpha=_line_alpha(value_bn, cap_bn),
                     linestyle=line_style,
                     solid_capstyle="round",
-                    dash_capstyle="round",
+                    solid_joinstyle="round",
+                    dash_capstyle="butt",
                     zorder=2.0 + (0.15 * layer_index),
                 )
+
+    # Confine land, graticule and flows to the projection outline, then stroke
+    # the neatline over them.
+    for artist in list(ax.lines) + [patch for patch in ax.patches if patch is not ocean]:
+        artist.set_clip_path(ocean)
+    ax.add_patch(
+        PathPatch(
+            boundary,
+            facecolor="none",
+            edgecolor=LAND_EDGE_COLOR,
+            linewidth=0.55,
+            zorder=3.5,
+        )
+    )
 
     for row in corridors.itertuples(index=False):
         marker_x, marker_y = robinson_project(row.longitude, row.latitude)
@@ -424,9 +517,10 @@ def _render_map(
             linewidth=1.15,
             zorder=4,
         )
+        # Typographic minus, not a hyphen, to match the thesis body text.
         label = (
             f"{CORRIDOR_LABELS[row.corridor]} "
-            f"{row.signed_deviation:+.0%}"
+            f"{row.signed_deviation:+.0%}".replace("-", "−")
         )
         ax.annotate(
             label,
@@ -448,37 +542,17 @@ def _render_map(
             path_effects.withStroke(linewidth=2.8, foreground="white")
         ])
 
-    x_limit = float(robinson_project(180.0, 0.0)[0])
-    y_min = float(robinson_project(0.0, -60.0)[1])
-    y_max = float(robinson_project(0.0, 80.0)[1])
     ax.set_xlim(-x_limit, x_limit)
     ax.set_ylim(y_min, y_max)
+    # Robinson is a fixed-ratio projection: without an equal aspect the axes box
+    # rescales the two coordinates independently and the continents shear.
+    ax.set_aspect("equal", adjustable="box")
     ax.set_xticks([])
     ax.set_yticks([])
     for spine in ax.spines.values():
         spine.set_visible(False)
 
-    fig.suptitle(
-        "Modeled LNG route-network change",
-        x=0.065,
-        y=0.96,
-        ha="left",
-        fontsize=13.0,
-        fontweight="semibold",
-        color=NEUTRAL_DARK,
-    )
-    fig.text(
-        0.065,
-        0.875,
-        (
-            "Modeled post-minus-pre aggregate nominal capacity-distance; "
-            "equal 94-day windows, 30 km expanded-QA sample"
-        ),
-        ha="left",
-        va="bottom",
-        fontsize=10.0,
-        color=NEUTRAL_MID,
-    )
+    # No in-figure headline title: the LaTeX caption carries it in the thesis.
     legend_handles = [
         Line2D(
             [0],
@@ -511,7 +585,7 @@ def _render_map(
     fig.legend(
         handles=legend_handles,
         loc="lower center",
-        bbox_to_anchor=(0.50, 0.085),
+        bbox_to_anchor=(0.50, 0.34 / figure_height_in),
         frameon=False,
         ncol=3,
         fontsize=9.0,
@@ -519,8 +593,8 @@ def _render_map(
         columnspacing=1.25,
     )
     fig.text(
-        0.992,
-        0.025,
+        1.0 - (MARGIN_RIGHT_IN / FIGURE_WIDTH_IN),
+        0.09 / figure_height_in,
         (
             "Modeled-flow line width scales with |change| and is capped at "
             "the pair-level p95 for legibility."

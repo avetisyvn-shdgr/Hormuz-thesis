@@ -16,6 +16,13 @@ import pandas as pd  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from figure_style import (  # noqa: E402
+    FIGURE_WIDTH_IN,
+    NEUTRAL_MID,
+    apply_publication_style,
+    style_axes,
+)
 from lngfreight import config  # noqa: E402
 from lngfreight.bloomberg_admission import load_manifest  # noqa: E402
 from lngfreight.bloomberg_market import (  # noqa: E402
@@ -31,30 +38,38 @@ PDF_METADATA = {
 
 
 def _plot(panel: pd.DataFrame, cutoff: str) -> None:
-    fig, axes = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
-    fig.suptitle("Gas and bunker-price context for LNG freight", fontsize=16, fontweight="bold", y=0.98)
-    axes[0].plot(panel["date"], panel["ttf_eur_per_mwh"], color="#2F6690")
-    axes[0].set(title="A. Netherlands TTF day-ahead", ylabel="EUR/MWh")
-    axes[1].plot(panel["date"], panel["vlsfo_singapore_usd_per_metric_tonne"], color="#D17A22")
-    axes[1].set(title="B. Singapore VLSFO", ylabel="USD/metric tonne")
-    axes[2].plot(panel["date"], panel["ttf_eur_per_mwh_pre_zscore"], color="#2F6690", label="TTF")
-    axes[2].plot(panel["date"], panel["vlsfo_singapore_usd_per_metric_tonne_pre_zscore"], color="#D17A22", label="VLSFO")
+    apply_publication_style()
+    panel = panel.copy()
+    panel["date"] = pd.to_datetime(panel["date"])
+    fig, axes = plt.subplots(3, 1, figsize=(FIGURE_WIDTH_IN, 5.6), sharex=True)
+    # No in-figure headline title: the LaTeX caption carries it in the thesis.
+    axes[0].plot(panel["date"], panel["ttf_eur_per_mwh"], color="#2F6690", linewidth=1.0)
+    axes[0].set_title("A. Netherlands TTF day-ahead", loc="left", pad=4)
+    axes[0].set_ylabel("EUR/MWh")
+    axes[1].plot(panel["date"], panel["vlsfo_singapore_usd_per_metric_tonne"], color="#D17A22", linewidth=1.0)
+    axes[1].set_title("B. Singapore VLSFO", loc="left", pad=4)
+    axes[1].set_ylabel("USD/metric tonne")
+    axes[2].plot(panel["date"], panel["ttf_eur_per_mwh_pre_zscore"], color="#2F6690", linewidth=1.0, label="TTF")
+    axes[2].plot(panel["date"], panel["vlsfo_singapore_usd_per_metric_tonne_pre_zscore"], color="#D17A22", linewidth=1.0, label="VLSFO")
     axes[2].axhline(0, color="#666666", linewidth=0.8)
-    axes[2].set(title="C. Pre-event standardized context", ylabel="Pre-event standard deviations")
-    axes[2].legend(frameon=False)
+    axes[2].set_title("C. Pre-event standardized context", loc="left", pad=4)
+    axes[2].set_ylabel("Pre-event standard deviations")
+    axes[2].legend(frameon=False, fontsize=8.0)
     for ax in axes:
-        ax.axvline(pd.Timestamp(cutoff), color="#B44C43", linewidth=1.1, label="Operational cutoff")
-        ax.grid(axis="y", alpha=0.2)
+        ax.axvline(pd.Timestamp(cutoff), color="#B44C43", linewidth=1.1)
+        style_axes(ax, grid_axis="y")
     axes[-1].set_xlabel("Date")
     fig.text(
-        0.5,
-        0.012,
-        "Context only: TTF and VLSFO are not controls in the headline freight forecasts and may reflect common shocks or mediating paths. Missing business days are not filled.",
-        ha="center",
-        fontsize=8.5,
-        color="#444444",
+        0.01,
+        0.005,
+        "Context only: TTF and VLSFO are not controls in the headline freight "
+        "forecasts and may reflect common shocks or mediating paths. Missing "
+        "business days are not filled.",
+        ha="left",
+        fontsize=7.0,
+        color=NEUTRAL_MID,
     )
-    fig.tight_layout(rect=[0, 0.04, 1, 0.95])
+    fig.tight_layout(rect=[0, 0.035, 1, 1])
     fig.savefig(config.path("freight_market_context_png"), dpi=180, bbox_inches="tight")
     fig.savefig(
         config.path("freight_market_context_pdf"),

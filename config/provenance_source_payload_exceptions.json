@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "exceptions": [
+    {
+      "ledger_line": 190,
+      "source_file": "data/raw/wto_hormuz/voy_intake_index_lng_export.csv",
+      "unpreserved_sha256": "450ac387ab16ff8d2c84558439f55eb64ff471898742a638a8906b5e7d9ac1e6",
+      "current_restored_sha256": "a7618fe62c8527a898d77f2897da680b541e4c276eb648f10b5fac3d5cf62cbe",
+      "preserved_derivative": "data/raw/wto_hormuz/wto_hormuz_lng_outbound_index__lng_outbound_volume_index__30549d8cfd3b.csv",
+      "preserved_derivative_sha256": "30549d8cfd3b73fc1b7640769adbdc9e18ec93d1b56cd557cacf200172e02a2e",
+      "status": "historical_source_payload_not_preserved",
+      "reason": "The 2026-08-09 WTO source payload was normalized and then the canonical source path was restored to the pinned v2 bytes. The normalized derivative is preserved, but the intermediate original payload bytes are not; the ledger's source_payload_status='preserved' must not be read literally for this source entry."
+    }
+  ]
+}

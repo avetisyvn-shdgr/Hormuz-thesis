@@ -12,11 +12,19 @@ os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
 import matplotlib  # noqa: E402
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib.patches import Patch  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from figure_style import (  # noqa: E402
+    THESIS_TEXTWIDTH_IN,
+    NEUTRAL_MID,
+    apply_publication_style,
+    style_axes,
+)
 from lngfreight import config  # noqa: E402
 
 
@@ -62,31 +70,69 @@ def _save_figure(
         "gain": "#4F7C5B",
         "neutral": "#7A7A7A",
     }
-    fig, axes = plt.subplots(2, 2, figsize=(13.5, 9.5))
-    fig.suptitle(
-        "Open-data evidence on the LNG fleet-distance mechanism",
-        fontsize=16,
-        fontweight="bold",
-        y=0.98,
-    )
+    # Colour is the evidence-layer encoding and carries one meaning throughout:
+    # observed aggregate index, inferred terminal sequence, modeled route work.
+    # The legend in panel A declares it so the caption's "kept separate" promise
+    # is delivered visually rather than only in prose.
+    estimable = importer.loc[
+        importer["pre_hormuz_exposed_voyages"].gt(0)
+        & importer["country_hormuz_exposed_estimate_estimable"].eq(True)
+    ]
+    if not estimable.empty:
+        raise RuntimeError(
+            "importer_exposure_summary now contains "
+            f"{len(estimable)} estimable country-level Hormuz-exposed rows. "
+            "The suppressed-importer panel was removed while that set was empty; "
+            "reinstate a panel rather than leaving the evidence out of the figure."
+        )
 
-    ax = axes[0, 0]
+    apply_publication_style()
+    # Absolute placement rather than tight_layout: the shared-y row, the
+    # figure-level legend and the four-line footnote are not all compatible with
+    # automatic layout, and deterministic coordinates keep the output stable.
+    fig = plt.figure(figsize=(THESIS_TEXTWIDTH_IN, 5.6))
+    grid_top = fig.add_gridspec(
+        1, 2, left=0.135, right=0.985, top=0.880, bottom=0.610, wspace=0.10
+    )
+    # Leave a deliberate blank band below the two-line category labels in
+    # panels A and B.  Panel C keeps the same height but sits lower so that its
+    # heading and metric key cannot compete with the upper-row labels.
+    grid_bottom = fig.add_gridspec(
+        1, 1, left=0.135, right=0.985, top=0.425, bottom=0.225
+    )
+    ax_a = fig.add_subplot(grid_top[0, 0])
+    ax_b = fig.add_subplot(grid_top[0, 1], sharey=ax_a)
+    ax_c = fig.add_subplot(grid_bottom[0, 0])
+
+    # Panels A and B report the same unit, so they share one y-scale and one
+    # zero line. Independent scales here previously placed the two baselines at
+    # different heights while inviting a bar-height comparison across them.
+    ax = ax_a
     labels = ["WTO outbound\nindex", "GFW Gulf\ncalls", "GFW nominal\ncapacity"]
-    values = [
+    values_a = [
         wto_changes["wto_mean_index_percent_change"],
         wto_changes["gfw_departure_calls_percent_change"],
         wto_changes["gfw_nominal_capacity_percent_change"],
     ]
-    bars = ax.bar(labels, values, color=[colors["observed"], colors["inferred"], colors["inferred"]])
-    ax.axhline(0, color="#333333", linewidth=0.8)
-    ax.set(title="A. Cross-source departure-collapse comparison", ylabel="Pre/post change (%)")
-    ax.bar_label(bars, labels=[_pct(value) for value in values], padding=3, fontsize=9)
-    ax.set_ylim(min(values) - 15, 8)
-    ax.grid(axis="y", alpha=0.2)
+    bars = ax.bar(
+        labels,
+        values_a,
+        color=[colors["observed"], colors["inferred"], colors["inferred"]],
+    )
+    ax.set_title("A. Cross-source departure collapse", loc="left", pad=4, fontsize=8.3)
+    ax.set_ylabel("Pre/post change (%)", fontsize=9.0)
+    ax.bar_label(bars, labels=[_pct(value) for value in values_a], padding=2, fontsize=7.0)
+    style_axes(ax, grid_axis="y")
+    ax.tick_params(axis="x", labelsize=7.5)
 
-    ax = axes[0, 1]
-    labels = ["Routed\nvoyages", "Total capacity-\ndistance", "Mean capacity-\ndistance/voyage", "Mean sailing\ndays/voyage"]
-    values = [
+    ax = ax_b
+    labels = [
+        "Routed\nvoyages",
+        "Total\ncap.-dist.",
+        "Cap.-dist.\nper voyage",
+        "Sailing days\nper voyage",
+    ]
+    values_b = [
         capacity["expanded_routed_voyage_percent_change"],
         capacity["expanded_percent_change"],
         capacity["expanded_mean_per_voyage_percent_change"],
@@ -94,52 +140,39 @@ def _save_figure(
     ]
     bars = ax.bar(
         labels,
-        values,
+        values_b,
         color=[colors["inferred"], colors["modeled"], colors["modeled"], colors["modeled"]],
     )
-    ax.axhline(0, color="#333333", linewidth=0.8)
-    ax.set(title="B. Count versus distance decomposition", ylabel="Pre/post change (%)")
-    ax.bar_label(bars, labels=[_pct(value) for value in values], padding=3, fontsize=8)
-    ax.set_ylim(min(values) - 8, max(values) + 8)
-    ax.grid(axis="y", alpha=0.2)
+    ax.set_title("B. Count versus distance decomposition", loc="left", pad=4, fontsize=8.3)
+    ax.bar_label(bars, labels=[_pct(value) for value in values_b], padding=2, fontsize=7.0)
+    style_axes(ax, grid_axis="y")
+    ax.tick_params(axis="x", labelsize=6.8)
+    ax.tick_params(axis="y", labelleft=False)
 
-    ax = axes[1, 0]
-    top = importer.loc[
-        importer["pre_hormuz_exposed_voyages"].gt(0)
-        & importer["country_hormuz_exposed_estimate_estimable"].eq(True)
-    ].head(7).copy()
-    top = top.iloc[::-1]
-    y = np.arange(len(top))
-    if top.empty:
-        ax.text(
-            0.5, 0.5,
-            "Country-level Hormuz-exposed changes\nnot estimable (post n = 2 overall)",
-            ha="center", va="center", transform=ax.transAxes,
-        )
-        ax.set_axis_off()
-        ax.set_title("C. Importer estimates suppressed")
-    else:
-        ax.barh(
-            y - 0.18,
-            top["hormuz_exposed_capacity_absolute_change_m3"] / 1e6,
-            height=0.34,
-            color=colors["loss"],
-            label="Hormuz-exposed change",
-        )
-        ax.barh(
-            y + 0.18,
-            top["non_gulf_capacity_absolute_change_m3"] / 1e6,
-            height=0.34,
-            color=colors["gain"],
-            label="Non-Gulf change",
-        )
-        ax.set_yticks(y, top["destination_country"])
-        ax.axvline(0, color="#333333", linewidth=0.8)
-        ax.set(title="C. Largest pre-period importer exposures", xlabel="Nominal capacity change (million m3)")
-        ax.legend(frameon=False, fontsize=8, loc="lower right")
-        ax.grid(axis="x", alpha=0.2)
+    shared = [float(value) for value in values_a + values_b]
+    span = max(shared) - min(shared)
+    for ax in (ax_a, ax_b):
+        ax.set_ylim(min(shared) - 0.17 * span, max(shared) + 0.22 * span)
+        ax.axhline(0, color="#333333", linewidth=0.8, zorder=2)
 
-    ax = axes[1, 1]
+    layer_handles = [
+        Patch(facecolor=colors["observed"], label="Observed index"),
+        Patch(facecolor=colors["inferred"], label="Inferred terminal sequence"),
+        Patch(facecolor=colors["modeled"], label="Modeled route work"),
+    ]
+    fig.legend(
+        handles=layer_handles,
+        frameon=False,
+        fontsize=7.2,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.0),
+        ncol=3,
+        handlelength=1.2,
+        handleheight=0.9,
+        columnspacing=1.6,
+    )
+
+    ax = ax_c
     ordered = basin.set_index("destination_basin").reindex(["Pacific", "Atlantic", "Middle East"])
     y = np.arange(len(ordered))
     width = 0.34
@@ -148,31 +181,57 @@ def _save_figure(
         ordered["total_capacity_percent_change"],
         height=width,
         color=colors["inferred"],
-        label="Nominal capacity",
+        label="Nominal capacity (inferred)",
     )
     ax.barh(
         y + width / 2,
         ordered["expanded_m3_nm_percent_change"],
         height=width,
         color=colors["modeled"],
-        label="Capacity-distance",
+        label="Capacity-distance (modeled)",
     )
     ax.set_yticks(y, ordered.index)
     ax.axvline(0, color="#333333", linewidth=0.8)
-    ax.set(title="D. Destination-basin composition", xlabel="Pre/post change (%)")
-    ax.legend(frameon=False, fontsize=8)
-    ax.grid(axis="x", alpha=0.2)
+    # Keep the metric key outside the data region.  Panel C needs both the
+    # figure-level evidence-layer key and a local mapping from those layers to
+    # its two measures, but an in-axes legend obscures the composition bars and
+    # competes with the destination labels.
+    ax.set_title(
+        "C. Destination-basin composition",
+        loc="left",
+        pad=0,
+        y=1.28,
+        fontsize=8.3,
+    )
+    ax.set_xlabel("Pre/post change (%)", fontsize=9.0)
+    ax.legend(
+        frameon=False,
+        fontsize=7.0,
+        loc="lower left",
+        bbox_to_anchor=(0.0, 1.03),
+        borderaxespad=0.0,
+        ncol=2,
+        handlelength=1.4,
+        columnspacing=1.5,
+    )
+    style_axes(ax, grid_axis="x")
+    ax.tick_params(axis="y", labelsize=8.0)
 
     fig.text(
-        0.5,
-        0.012,
-        "Observed aggregate index, inferred terminal sequences, and modeled routes are distinct evidence layers. "
-        "No cargo quantity, sailed track, freight rate, or causal ATT is claimed.",
-        ha="center",
-        fontsize=9,
-        color="#444444",
+        0.005,
+        0.055,
+        "Panels A and B share one scale and one zero line; panel C is a different "
+        "cut and carries its own.\nCountry-level Hormuz-exposed changes are not "
+        "estimable (post n = 2 overall) and are reported as a null, not plotted.\n"
+        "Observed aggregate index, inferred terminal sequences, and modeled routes "
+        "are distinct evidence layers. No cargo\nquantity, sailed track, freight "
+        "rate, or causal ATT is claimed.",
+        ha="left",
+        va="bottom",
+        fontsize=6.6,
+        color=NEUTRAL_MID,
+        linespacing=1.35,
     )
-    fig.tight_layout(rect=[0, 0.035, 1, 0.95])
     output = config.path("figures") / FIGURE
     fig.savefig(output, dpi=180, bbox_inches="tight")
     fig.savefig(

@@ -21,6 +21,13 @@ from lngfreight import config  # noqa: E402
 from lngfreight.freight_integration import (  # noqa: E402
     build_freight_mechanism_integration,
 )
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from figure_style import (  # noqa: E402
+    FIGURE_WIDTH_IN,
+    NEUTRAL_MID,
+    apply_publication_style,
+    style_axes,
+)
 
 PDF_METADATA = {
     "Creator": "lngfreight reproducible pipeline",
@@ -30,24 +37,24 @@ PDF_METADATA = {
 
 
 def _plot(panel: pd.DataFrame, cutoff: str) -> None:
-    fig, axes = plt.subplots(2, 2, figsize=(14, 9), sharex=True)
-    fig.suptitle(
-        "Synchronized physical and LNG freight-market evidence",
-        fontsize=16,
-        fontweight="bold",
-        y=0.98,
-    )
+    apply_publication_style()
+    panel = panel.copy()
+    panel["week_end"] = pd.to_datetime(panel["week_end"])
+    fig, axes = plt.subplots(2, 2, figsize=(FIGURE_WIDTH_IN, 5.2), sharex=True)
+    # No in-figure headline title: the LaTeX caption carries it in the thesis.
     ax = axes[0, 0]
     ax.plot(panel["week_end"], panel["portwatch_tanker_transits_observed_daily_mean"], color="#2F6690", label="Observed")
     ax.plot(panel["week_end"], panel["portwatch_tanker_transits_counterfactual_daily_mean"], color="#D17A22", linestyle="--", label="Counterfactual")
-    ax.set(title="A. PortWatch tanker throughput", ylabel="Mean daily transits")
-    ax.legend(frameon=False)
+    ax.set_title("A. PortWatch tanker throughput", loc="left", pad=4)
+    ax.set_ylabel("Mean daily transits")
+    ax.legend(frameon=False, fontsize=8.0)
 
     ax = axes[0, 1]
     ax.plot(panel["week_end"], panel["wto_lng_outbound_index_observed_daily_mean"], color="#2F6690", label="Observed")
     ax.plot(panel["week_end"], panel["wto_lng_outbound_index_counterfactual_daily_mean"], color="#D17A22", linestyle="--", label="Counterfactual")
-    ax.set(title="B. WTO LNG outbound-volume index", ylabel="Index (2025 mean = 100)")
-    ax.legend(frameon=False)
+    ax.set_title("B. WTO LNG outbound-volume index", loc="left", pad=4)
+    ax.set_ylabel("Index (2025 mean = 100)")
+    ax.legend(frameon=False, fontsize=8.0)
 
     ax = axes[1, 0]
     for series, color, label in [
@@ -57,31 +64,36 @@ def _plot(panel: pd.DataFrame, cutoff: str) -> None:
     ]:
         ax.plot(panel["week_end"], panel[f"{series}_deviation_usd_per_day"] / 1000, color=color, label=label)
     ax.axhline(0, color="#555555", linewidth=0.8)
-    ax.set(title="C. Freight forecast deviations", ylabel="Observed minus counterfactual\n(USD/day, thousands)")
-    ax.legend(frameon=False)
+    ax.set_title("C. Freight forecast deviations", loc="left", pad=4)
+    ax.set_ylabel("Observed minus counterfactual\n(USD/day, thousands)")
+    ax.legend(frameon=False, fontsize=8.0)
 
     ax = axes[1, 1]
     ax.plot(panel["week_end"], panel["ttf_eur_per_mwh_pre_zscore"], color="#2F6690", label="TTF")
     ax.plot(panel["week_end"], panel["vlsfo_singapore_usd_per_metric_tonne_pre_zscore"], color="#D17A22", label="VLSFO")
     ax.axhline(0, color="#555555", linewidth=0.8)
-    ax.set(title="D. Market context", ylabel="Pre-event standard deviations")
-    ax.legend(frameon=False)
+    ax.set_title("D. Market context", loc="left", pad=4)
+    ax.set_ylabel("Pre-event standard deviations")
+    ax.legend(frameon=False, fontsize=8.0)
 
     for ax in axes.flat:
         ax.axvline(pd.Timestamp(cutoff), color="#B44C43", linewidth=1.0)
-        ax.grid(axis="y", alpha=0.2)
+        style_axes(ax, grid_axis="y")
+        ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b\n%Y"))
+    for ax in axes[1]:
         ax.set_xlabel("Week ending Friday")
-        ax.xaxis.set_major_locator(mdates.MonthLocator())
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
     fig.text(
-        0.5,
-        0.012,
-        "Layers are synchronized for triangulation, not pooled into one estimator. PortWatch is the working primary; freight assessments are secondary; TTF and VLSFO are context. No mediation or freight ATT is identified.",
-        ha="center",
-        fontsize=8.5,
-        color="#444444",
+        0.01,
+        0.004,
+        "Layers are synchronized for triangulation, not pooled into one estimator. "
+        "PortWatch is the working primary; freight assessments are secondary; TTF "
+        "and VLSFO are context. No mediation or freight ATT is identified.",
+        ha="left",
+        fontsize=6.8,
+        color=NEUTRAL_MID,
     )
-    fig.tight_layout(rect=[0, 0.04, 1, 0.95])
+    fig.tight_layout(rect=[0, 0.035, 1, 1])
     fig.savefig(config.path("freight_mechanism_png"), dpi=180, bbox_inches="tight")
     fig.savefig(
         config.path("freight_mechanism_pdf"),

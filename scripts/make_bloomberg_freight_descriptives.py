@@ -10,11 +10,19 @@ os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
 
 import matplotlib  # noqa: E402
 matplotlib.use("Agg")
+import matplotlib.dates as mdates  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from figure_style import (  # noqa: E402
+    FIGURE_WIDTH_IN,
+    NEUTRAL_MID,
+    apply_publication_style,
+    style_axes,
+)
 from lngfreight import config  # noqa: E402
 from lngfreight.bloomberg_market import descriptive_freight_layer  # noqa: E402
 
@@ -43,57 +51,78 @@ def _event_lines(ax: plt.Axes, window: dict) -> None:
 
 
 def _plot(data: pd.DataFrame, window: dict) -> None:
-    fig, axes = plt.subplots(2, 2, figsize=(14, 9), sharex=True)
-    fig.suptitle(
-        "LNG freight assessments around the 2026 Hormuz disruption",
-        fontsize=16,
-        fontweight="bold",
-        y=0.98,
-    )
+    apply_publication_style()
+    data = data.copy()
+    data["week_end"] = pd.to_datetime(data["week_end"])
+    fig, axes = plt.subplots(2, 2, figsize=(FIGURE_WIDTH_IN, 5.2), sharex=True)
+    # No in-figure headline title: the LaTeX caption carries it in the thesis.
 
     ax = axes[0, 0]
-    ax.plot(data["week_end"], data["east_spot_usd_per_day_analysis"] / 1000, color=COLORS["east"], label="East of Suez spot")
-    ax.plot(data["week_end"], data["west_spot_usd_per_day_analysis"] / 1000, color=COLORS["west"], label="West of Suez spot")
+    ax.plot(data["week_end"], data["east_spot_usd_per_day_analysis"] / 1000, color=COLORS["east"], linewidth=1.1, label="East of Suez spot")
+    ax.plot(data["week_end"], data["west_spot_usd_per_day_analysis"] / 1000, color=COLORS["west"], linewidth=1.1, label="West of Suez spot")
     _event_lines(ax, window)
-    ax.set(title="A. Basin spot assessments", ylabel="USD/day (thousands)")
-    handles, labels = ax.get_legend_handles_labels()
-    unique = dict(zip(labels, handles))
-    ax.legend(unique.values(), unique.keys(), frameon=False, fontsize=8, ncol=2)
+    ax.set_title("A. Basin spot assessments", loc="left", pad=4)
+    ax.set_ylabel("USD/day (thousands)")
 
     ax = axes[0, 1]
-    ax.plot(data["week_end"], data["east_minus_west_spot_usd_per_day"] / 1000, color=COLORS["spread"])
+    ax.plot(data["week_end"], data["east_minus_west_spot_usd_per_day"] / 1000, color=COLORS["spread"], linewidth=1.1, label="East-minus-West spread")
     ax.axhline(0, color="#555555", linewidth=0.8)
     _event_lines(ax, window)
-    ax.set(title="B. East-minus-West spot spread", ylabel="USD/day (thousands)")
+    ax.set_title("B. East-minus-West spot spread", loc="left", pad=4)
+    ax.set_ylabel("USD/day (thousands)")
 
     ax = axes[1, 0]
-    ax.plot(data["week_end"], data["one_year_charter_usd_per_day_analysis"] / 1000, color=COLORS["charter"])
+    ax.plot(data["week_end"], data["one_year_charter_usd_per_day_analysis"] / 1000, color=COLORS["charter"], linewidth=1.1, label="One-year time charter")
     _event_lines(ax, window)
-    ax.set(title="C. One-year time-charter assessment", ylabel="USD/day (thousands)")
+    ax.set_title("C. One-year time-charter assessment", loc="left", pad=4)
+    ax.set_ylabel("USD/day (thousands)")
 
     ax = axes[1, 1]
-    ax.plot(data["week_end"], data["east_spot_pre12_index"], color=COLORS["east"], label="East spot")
-    ax.plot(data["week_end"], data["west_spot_pre12_index"], color=COLORS["west"], label="West spot")
-    ax.plot(data["week_end"], data["one_year_charter_pre12_index"], color=COLORS["charter"], label="One-year charter")
+    ax.plot(data["week_end"], data["east_spot_pre12_index"], color=COLORS["east"], linewidth=1.1)
+    ax.plot(data["week_end"], data["west_spot_pre12_index"], color=COLORS["west"], linewidth=1.1)
+    ax.plot(data["week_end"], data["one_year_charter_pre12_index"], color=COLORS["charter"], linewidth=1.1)
     ax.axhline(100, color="#777777", linewidth=0.8)
     _event_lines(ax, window)
-    ax.set(title="D. Common pre-event index", ylabel="12-week pre-event mean = 100")
-    ax.legend(frameon=False, fontsize=8, ncol=2)
+    ax.set_title("D. Common pre-event index", loc="left", pad=4)
+    ax.set_ylabel("12-week pre-event mean = 100")
 
     for ax in axes.flat:
-        ax.grid(axis="y", alpha=0.2)
+        style_axes(ax, grid_axis="y")
+        ax.xaxis.set_major_locator(mdates.YearLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+    for ax in axes[1]:
         ax.set_xlabel("Assessment week")
-    fig.text(
-        0.5,
-        0.012,
-        "Source: provenance-limited structured transcriptions of user-supplied Bloomberg workbooks. "
-        "Missing weeks are not filled; flagged West zeros are masked only in analysis columns. "
-        "Descriptive market evidence—no causal effect or ATT is claimed.",
-        ha="center",
-        fontsize=8.5,
-        color="#444444",
+
+    # One shared legend: series colors from panels A-C, event lines once.
+    handles: list = []
+    labels: list = []
+    for ax in (axes[0, 0], axes[0, 1], axes[1, 0]):
+        for handle, label in zip(*ax.get_legend_handles_labels()):
+            if label not in labels:
+                handles.append(handle)
+                labels.append(label)
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.035),
+        ncol=4,
+        frameon=False,
+        fontsize=8.0,
+        columnspacing=1.1,
     )
-    fig.tight_layout(rect=[0, 0.04, 1, 0.95])
+    fig.text(
+        0.01,
+        0.004,
+        "Source: provenance-limited structured transcriptions of user-supplied "
+        "Bloomberg workbooks. Missing weeks are not filled; flagged West zeros are "
+        "masked only in analysis columns. Descriptive evidence; no causal effect "
+        "or ATT is claimed.",
+        ha="left",
+        fontsize=6.8,
+        color=NEUTRAL_MID,
+    )
+    fig.tight_layout(rect=[0, 0.14, 1, 1])
     png = config.path("lng_freight_descriptive_png")
     pdf = config.path("lng_freight_descriptive_pdf")
     fig.savefig(png, dpi=180, bbox_inches="tight")

@@ -121,6 +121,21 @@ paths:
   modeled_route_network_change_manifest_json: "data/processed/modeled_route_network_change_manifest.json"
   modeled_route_network_change_png: "reports/figures/modeled_route_network_change.png"
   modeled_route_network_change_pdf: "reports/figures/modeled_route_network_change.pdf"
+  portwatch_regime_phase_profile_csv: "data/processed/portwatch_regime_phase_profile.csv"
+  portwatch_regime_contrasts_csv: "data/processed/portwatch_regime_contrasts.csv"
+  model_admission_protocol_csv: "data/processed/model_admission_protocol.csv"
+  model_admission_known_results_csv: "data/processed/model_admission_known_results.csv"
+  portwatch_sensitivity_input_manifest_json: "data/processed/portwatch_sensitivity_input_manifest.json"
+  model_vintage_matrix_core_daily_csv: "data/processed/model_vintage_matrix_core_daily.csv"
+  model_vintage_matrix_core_summary_csv: "data/processed/model_vintage_matrix_core_summary.csv"
+  model_vintage_matrix_chronos_daily_csv: "data/processed/model_vintage_matrix_chronos_daily.csv"
+  model_vintage_matrix_chronos_summary_csv: "data/processed/model_vintage_matrix_chronos_summary.csv"
+  model_vintage_matrix_daily_csv: "data/processed/model_vintage_matrix_daily.csv"
+  model_vintage_matrix_summary_csv: "data/processed/model_vintage_matrix_summary.csv"
+  model_vintage_matrix_manifest_json: "data/processed/model_vintage_matrix_manifest.json"
+  portwatch_sensitivity_manifest_json: "data/processed/portwatch_sensitivity_manifest.json"
+  model_admission_pre_run_checkpoint_json: "data/processed/model_admission_pre_run_checkpoint.json"
+  model_admission_pre_run_checkpoint_sha256: "data/processed/model_admission_pre_run_checkpoint.sha256"
 
 # Explicit frozen-series pins. These prevent provenance-record ordering from
 # silently changing an active analysis vintage. See
@@ -165,6 +180,75 @@ study_window:
   #   2026-03-18/19   Later Ras Laffan escalation; ~17% LNG capacity damaged.
   #   2026-03-27      IRGC bans vessels to/from US/Israel-allied ports (AFP).
   #   2026-04-18      Iran's formal closure statement.
+  # Post-March context milestones added 2026-08-09 (see docs/EVENT_CHRONOLOGY.md
+  # "Post-March context chronology" for sources and flags; none is a treatment
+  # candidate and the cutoff does not move):
+  #   2026-04-07/08   US-Iran ceasefire; traffic remains restricted.
+  #   2026-06-17      US-Iran 14-point MoU (blockade removal; 60-day safe
+  #                   passage). No sustained LNG resumption followed: the WTO
+  #                   outbound index shows only isolated partial-loading days
+  #                   (06-28, 07-05, 07-06) then zeros through 08-09.
+  #   2026-07-07      Iran attacks three commercial ships in 24h (MoU breakdown).
+  #   2026-07-19/20   Renewed tanker attack; 10th consecutive night of US
+  #                   strikes (single-sourced flag).
+  #   2026-07-27/29   Iran-Oman proposals on Strait administration; Iran
+  #                   rejects joint oversight 07-29.
+  #   2026-07-29      Damietta (Egypt) terminal attack: drone hits FSRU
+  #                   Energos Winter, fire spreads to LNG carrier GasLog Salem.
+  #                   NON-HORMUZ CONFOUND EVENT, attribution unresolved — see
+  #                   SUTVA_CONTAMINATION_AUDIT.md and DECISION_LOG.md.
+  # Descriptive phase profile for the post-MoU rebound/relapse correction.
+  # These are context-scoring windows only: they do not move the locked cutoff,
+  # retrain a model, or identify a causal effect of either milestone. The 20-day
+  # windows give the MoU interval a matched-length pre-period; the renewed-
+  # attacks interval begins one day after the 2026-07-07 event day.
+  rebound_relapse_profile:
+    window_selection_status: "fixed_after_exploratory_inspection_before_artifact_generation"
+    outcome_column: "n_tanker"
+    chokepoint: "Strait of Hormuz"
+    vintage_policies:
+      pinned_primary:
+        registry_variable: "portwatch_chokepoints_snapshot"
+        trusted_reporting_end: "2026-07-07"
+        endpoint_policy: "five_day_source_buffer_excluded"
+      vintage_20260809:
+        registry_variable: "portwatch_chokepoints_vintage_20260809_snapshot"
+        trusted_reporting_end: "2026-08-01"
+        endpoint_policy: "one_day_source_buffer_excluded"
+    windows:
+      pre_mou_reference_20d:
+        start: "2026-05-28"
+        end: "2026-06-16"
+        role: "matched_reference"
+      post_mou_interval_20d:
+        start: "2026-06-17"
+        end: "2026-07-06"
+        role: "matched_event_interval"
+      post_mou_final_7d:
+        start: "2026-06-30"
+        end: "2026-07-06"
+        role: "nested_late_interval_diagnostic"
+      renewed_attacks_event_day:
+        start: "2026-07-07"
+        end: "2026-07-07"
+        role: "context_event_day"
+      post_renewed_attacks_interval:
+        start: "2026-07-08"
+        end: "2026-08-01"
+        role: "post_event_interval"
+    contrasts:
+      matched_post_mou_vs_pre_mou:
+        reference_phase: "pre_mou_reference_20d"
+        comparison_phase: "post_mou_interval_20d"
+        role: "matched_rebound_contrast"
+      late_post_mou_vs_pre_mou:
+        reference_phase: "pre_mou_reference_20d"
+        comparison_phase: "post_mou_final_7d"
+        role: "nested_late_rebound_diagnostic"
+      post_attacks_vs_post_mou:
+        reference_phase: "post_mou_interval_20d"
+        comparison_phase: "post_renewed_attacks_interval"
+        role: "relapse_contrast"
 
 # Step-4 alignment / imputation policy. Applied downstream of build_panel,
 # never inside the data layer (panel_free.csv stays the honest, un-filled state).

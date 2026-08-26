@@ -1,0 +1,87 @@
+schema_version: 1
+card_id: "portwatch_hormuz_sensitivity_budget_v1"
+frozen_utc: "2026-08-09T22:13:16Z"
+analysis_role: "case_local_descriptive_sensitivity_budget"
+upstream_matrix_g4:
+  status: "verified"
+  local_date: "2026-08-10"
+  transcript_sha256: "f35137526a1e106d6adc5f6eff42a8f63d317ccce2665e7851fb5c703fedf40b"
+
+parent_artifacts:
+  complete_branch_manifest:
+    path: "data/processed/portwatch_sensitivity_complete_manifest.json"
+    sha256: "2d6daf153d4fe73224533cbd39c64631a1156c44f4907959283c2550ca651fa7"
+  matrix_summary:
+    path: "data/processed/model_vintage_matrix_summary.csv"
+    sha256: "79043329359bb6194260ff4461fef9a2da679a0e120136b3bfdec93531c8be89"
+  matrix_manifest:
+    path: "data/processed/model_vintage_matrix_manifest.json"
+    sha256: "65cb3352877f2cdd3042360ecdb25a4ee7ca77bd30a54a683dbebb1c14ca711b"
+  admission_known_results:
+    path: "data/processed/model_admission_known_results.csv"
+    sha256: "d191a2329b5471c9bd718fd22f7c92c9c608db147485ef6d08c4970bcdfa643e"
+
+comparison_basis:
+  outcome: "hormuz_tanker_transits"
+  unit: "transits_per_day"
+  training_start: "2022-01-01"
+  training_end: "2026-02-27"
+  scoring_start: "2026-02-28"
+  scoring_end: "2026-07-07"
+  scored_days: 130
+  primary_metric:
+    id: "mean_daily_common_point_shortfall"
+    formula: "cumulative_common_point_shortfall / n_scored_days"
+    display_unit: "lost transits/day"
+  secondary_denominator_check:
+    id: "shortfall_share_of_counterfactual_pct"
+    formula: "100 * cumulative_common_point_shortfall / counterfactual_point_sum"
+    display_unit: "% of model counterfactual"
+    role: "descriptive_scale_context_only_not_budget_axis"
+    denominator_scope: "cell_specific_model_counterfactual_point_sum"
+    between_cell_difference_unit: "percentage_points"
+    not_equivalent_to: "raw_observed_pre_post_decline"
+
+selected_representative_models:
+  - "seasonal_naive_7d"
+  - "ar_lag1_7"
+  - "chronos2"
+  - "bsts_local_level_weekly"
+expected_point_definitions:
+  seasonal_naive_7d: "deterministic_daily_point"
+  ar_lag1_7: "deterministic_daily_point"
+  chronos2: "daily_q0.5"
+  bsts_local_level_weekly: "daily_marginal_posterior_median"
+vintages:
+  - "pinned_primary"
+  - "vintage_20260809"
+locked_primary_model: "ar_lag1_7"
+
+axes:
+  selected_model_range_within_vintage:
+    formula: "maximum minus minimum across selected models, vintage fixed"
+  same_model_difference_across_vintages:
+    formula: "pinned_primary minus vintage_20260809, model fixed"
+  axes_are_additive: false
+  combined_budget_total_permitted: false
+  vintage_averaging_permitted: false
+
+outputs:
+  card_csv: "data/processed/portwatch_sensitivity_budget_card.csv"
+  card_json: "data/processed/portwatch_sensitivity_budget_card.json"
+  card_markdown: "docs/PORTWATCH_SENSITIVITY_BUDGET_CARD.md"
+  card_png: "reports/figures/portwatch_sensitivity_budget_card.png"
+  card_pdf: "reports/figures/portwatch_sensitivity_budget_card.pdf"
+  manifest_json: "data/processed/portwatch_sensitivity_budget_card_manifest.json"
+
+reporting_guards:
+  admission_timing: "ex_post_unblinded_governance_lock"
+  vintage_scope: "full_saved_series_measurement_state_affecting_training_and_scoring"
+  is_variance_decomposition: false
+  is_uncertainty_interval: false
+  is_all_admissible_model_range: false
+  is_ATT: false
+  is_general_AIS_claim: false
+  causal_label: "counterfactual_forecast_shortfall_not_treatment_effect"
+  all_preperiod_admitted_model_range: "not_estimated"
+  replication_archive_status: "pending_deposit_gitignored_august_source_bytes"
