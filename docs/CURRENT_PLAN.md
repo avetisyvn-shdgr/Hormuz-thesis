@@ -1,5 +1,23 @@
 # Current thesis implementation plan
 
+> **2026-08-09 integration-hardening refinement:** the dependency-ordered
+> claim, provenance, inference, and reporting work is recorded in
+> `INTEGRATION_HARDENING_EXECUTION_ORDER_2026-08-09.md`. It preserves this
+> accepted no-third-layer scope and does not authorize edits to the formal
+> proposal. The G4-verified model–vintage matrix is documented in
+> `PORTWATCH_MODEL_VINTAGE_MATRIX_RESULTS.md`. Its separate case-local
+> sensitivity-budget card is now G4-verified. The separately frozen
+> horizon/resolution inference frontier and the selective network-support
+> frontier are also G4-verified; see `HORIZON_RESOLUTION_FRONTIER.md` and
+> `NETWORK_SUPPORT_FRONTIER.md`. The route-burden decomposition is implemented
+> and the route-burden decomposition are also G4-verified; see
+> `ROUTE_BURDEN_DECOMPOSITION.md`. The optional public-data gate decision is
+> the optional public-data gate decision, and the final evidence-to-claim audit
+> are all G4-verified; no third layer is admitted. See
+> `FINAL_EVIDENCE_TO_CLAIM_AUDIT.md` and `DEFENCE_PREPARATION.md`. The ordered
+> integration-hardening list is complete and **writing is the remaining work**;
+> three non-blocking reproducibility items stay open and are recorded there.
+
 **Status:** Phase 3A implementation complete as of 2026-06-20. As of
 2026-07-17, the active implementation path is the accepted no-third-layer plan:
 integrate the existing results, add only pre-declared sensitivity checks, and

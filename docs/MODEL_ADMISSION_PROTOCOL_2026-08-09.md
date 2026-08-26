@@ -3,8 +3,9 @@
 **Locked locally:** 2026-08-09T21:18:46Z.  
 **Protocol SHA-256:**
 `bb050aa041e8fc1c8391b908baeab529aaf2e9944d5f35b07af661349176adce`.  
-**Status:** Ex post, unblinded governance lock; local byte-level identity
-pending a path-scoped Git checkpoint and Mher's G4 verification.
+**Status:** Ex post, unblinded governance lock; anchored in commit `ca925a8`.
+Mher completed the pre-run G4 verification on 2026-08-09. The subsequently
+generated matrix has a separate post-run verification gate.
 
 ## What this lock does—and does not do
 
@@ -100,6 +101,8 @@ The generated tables are:
 - `data/processed/model_admission_protocol.csv`
 - `data/processed/model_admission_known_results.csv`
 
-The branch remains `NEEDS-VERIFY` under G4 until Mher runs the builder and its
-focused tests. The missing August Chronos run must not begin before the corrected
-protocol/design and pre-run checkpoint are anchored.
+Mher ran the builder and focused checks and pasted 43/43 passing tests before
+the matrix began. The matrix was then generated under the anchored design;
+those new outputs remain `NEEDS-VERIFY` until Mher runs the post-matrix command
+block. The immutable pre-run checkpoint retains its historical `pending_g4`
+field because it records the state before that human verification.

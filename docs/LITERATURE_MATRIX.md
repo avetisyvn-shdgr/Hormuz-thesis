@@ -5,7 +5,9 @@
 working matrix).
 **Scope:** The 26 references verified in `references/literature_seed.bib` (all
 metadata confirmed live against Crossref / arXiv — see
-`CITATION_INTEGRITY_AUDIT.md`).
+`CITATION_INTEGRITY_AUDIT.md`), plus two 2026-08-09 additions
+([fontagne2024matrix], [halkiewicz2026exact]; metadata verified against arXiv
+abstract pages on 2026-08-09 — see `DATA_REGISTRY_REVIEW_2026-08.md` §6).
 **Reading note:** This matrix is built under the **revised throughput scope**
 (supervisor-approved 2026-06-16): the outcome is observable Hormuz tanker
 throughput and an explicitly non-causal "disruption-associated shortfall," not
@@ -76,6 +78,8 @@ causal claim.
 | 21 | Ansari et al. 2024 (Chronos) [ansari2024chronos] | Zero-shot TS-foundation benchmark | Tokenized probabilistic forecasting baseline | Identification (benchmark only) | Open weights/code |
 | 22 | Das et al. 2024 (TimesFM) [das2024timesfm] | Zero-shot TS-foundation benchmark | Patch-decoder forecasting baseline | Identification (benchmark only) | Open weights/code |
 | 23 | Woo et al. 2024 (Moirai) [woo2024moirai] | Zero-shot TS-foundation benchmark | Any-variate masked-encoder baseline | Identification (benchmark only) | Open weights/code |
+| 26 | Fontagné, Micocci & Rungi 2024/2026 [fontagne2024matrix] *(added 2026-08-09)* | Matrix-completion counterfactual precedent on trade data (CETA application) | Modern generalization of SCM-style counterfactuals; adjacent to the corroboration layer and the causal-ML heterogeneity arm | Any change to the thesis's estimators; it is an application paper, not the canonical method reference (that would be Athey et al.) | arXiv preprint (v5 2026-06); peer status unverified △ |
+| 27 | Halkiewicz 2026 [halkiewicz2026exact] *(added 2026-08-09)* | Exact finite-sample inference under concentrated identifying variation — limitations pointer for the small-N wild-cluster-bootstrap caveat (`CAPTIVITY_EVENT_STUDY_DESIGN.md` §5/§9) | States that exact-inference alternatives exist for the one-shock, few-clusters setting | Re-implementation of inference before submission: v1 is a days-old, single-author, unrefereed preprint. Cite as pointer only | arXiv preprint (v1 2026-08-05) △ |
 
 ## D. Energy-economics context (price/integration, not event design)
 
@@ -111,8 +115,11 @@ protocol.** See `GAP_VALIDATION.md`.
 
 ## Outstanding for full systematic status
 
-1. Scopus/Web of Science Boolean runs (institutional login) before claiming
-   exhaustive coverage.
+1. The 25 August Scopus Boolean run and capped screening are complete; see
+   `../../planning/T04_INSTITUTIONAL_SEARCH_RUN_LOG.md` and
+   `../../planning/T04_CURATED_LITERATURE_REVIEW_SET.md`. Web of Science was
+   unavailable through the tested TUM/Clarivate route, so coverage remains
+   explicitly Scopus-only and non-exhaustive.
 2. Resolve every remaining **△** by full-text screening
    and the Nguyen taxonomy, both audit-flagged.
 3. Confirm artifact/openness claims (Zenodo, replication packages) by visiting the

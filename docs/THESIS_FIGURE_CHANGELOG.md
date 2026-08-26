@@ -77,3 +77,68 @@
 - Repeating both figure scripts produced identical hashes for all eight
   regenerated PDF/PNG artifacts.
 - Full evidence-repository test result: **265 passed**.
+
+## 2026-08-09 — Template-wide serif restyle and full figure embedding
+
+Scope: all thesis-facing figures regenerated through their existing scripts
+after a central style change; no image was edited or post-processed.
+
+- `scripts/figure_style.py`: body font switched from Arial to serif
+  (P052/URW Palladio, the Palatino clone matching the fwalch TUM template's
+  mathpazo body font), with mathtext mapped to the same face.
+- All in-figure headline titles removed; the LaTeX caption now carries the
+  title. Informative panel labels (A./B./..., "Full series") are retained.
+- Bloomberg-layer scripts (`make_bloomberg_freight_descriptives.py`,
+  `run_bloomberg_freight_counterfactual.py`,
+  `make_bloomberg_mechanism_integration.py`,
+  `build_bloomberg_market_context.py`) rebuilt on the shared
+  `figure_style` at print width (7.2 in) instead of 12-14 in canvases whose
+  text shrank below body size when scaled to \textwidth.
+- `make_network_rewiring_summary.py`: legend moved out of the axes (was
+  colliding with the pre/post bar labels), stray "value" annotation renamed
+  "value basis" and repositioned, Gulf/non-Gulf palette switched to the
+  colorblind-safe RdBu pair shared with the route map.
+- `make_mechanism_summary.py`: panel-B tick labels shortened and shrunk to
+  remove overlap; shared style applied.
+- `make_event_study.py` / `eventstudy.py`: serif face added to the local
+  style block; assertive suptitle dropped; em dash removed from panel title.
+- `make_route_map.py`: in-figure title and subtitle removed.
+- Thesis embedding: manuscript now includes 14 figures (was 3):
+  event study (ch. 3), market context (ch. 4), mechanism summary +
+  freight descriptive + freight counterfactual + synchronized integration
+  panel (ch. 7), three network-rewiring figures (ch. 8), synthetic-control
+  path and placebo gaps (ch. 9), plus the original throughput, placebo, and
+  route-map figures.
+
+## 2026-08-09 — Route-map projection correction
+
+Scope: `scripts/make_route_map.py` only. The Robinson projection was being
+rendered incorrectly; no data, sample filter, or route geometry changed.
+
+- **Aspect distortion fixed (primary defect).** `_render_map` never called
+  `ax.set_aspect("equal")`, so Matplotlib stretched the axes box to the
+  figure. For the plotted extent the projected data ratio is 2.356:1 while the
+  axes box was 6.674 in x 2.187 in = 3.052:1, i.e. every landmass was drawn
+  **1.296x too wide**. The axes aspect is now locked and the figure height is
+  derived from the projected data ratio (margins are specified in inches, see
+  `MARGIN_*_IN`) so the correction introduces no whitespace.
+- **Projection neatline added.** The ocean was a full-width rectangle, which
+  painted sea into the corners lying outside Robinson's curved bounding
+  meridians. `_boundary_path()` traces the outline; it now fills the ocean,
+  clips land, graticule and flow lines, and is stroked as a neatline.
+- **Interior rings render as holes.** `_iter_polygon_rings` kept only
+  `polygon[0]` and filled it, so enclosed water bodies were drawn as land.
+  Replaced by `_iter_polygons` plus `_polygon_path`, building a compound
+  `matplotlib.path.Path`. This is a prerequisite for any higher-resolution
+  coastline.
+- **Flow strokes retuned** so overlapping pairs stop merging into opaque
+  blobs at the East Asian and US Gulf hubs: width cap 2.46 pt -> 1.76 pt,
+  alpha ceiling 0.715 -> 0.53, dash caps butt instead of round.
+- Land/ocean/graticule palette given more separation; corridor deviation
+  labels now use a typographic minus (U+2212) rather than a hyphen.
+- Known remaining limitation: the basemap is Natural Earth **110m**
+  (`ne_110m_land.geojson`, 1:110 million, 127 features). At 7.2 in width the
+  Caribbean, Aegean and Indonesian coastlines are visibly generalized, and
+  modeled sea routes can appear to clip land. Upgrading to the 50m snapshot
+  is a `sources.yaml` path change plus a re-freeze; the plotting code is
+  resolution-agnostic.

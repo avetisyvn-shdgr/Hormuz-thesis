@@ -1,7 +1,9 @@
 # Event chronology and treatment-cutoff rule
 
 **Status:** Re-audited 2026-06-19 after a primary-source conflict was found.
-This document controls the event labels used by the working implementation.
+Extended 2026-08-09 with post-March context events through 2026-08-01 (see
+`DATA_REGISTRY_REVIEW_2026-08.md` for verification detail). This document
+controls the event labels used by the working implementation.
 
 ## Purpose
 
@@ -85,6 +87,33 @@ is evaluated with rolling post-period windows instead.
 - After changing any date, re-run the event-study and treatment-window scripts
   so figures and processed tables remain synchronized.
 
+## Post-March context chronology (added 2026-08-09, coverage through 2026-08-01)
+
+These are **context/annotation events only**: none is a treatment candidate,
+none moves the 2026-02-28 training boundary, and none redefines a sensitivity
+window without a separate documented decision. All were verified against the
+sources listed below on 2026-08-09; single-sourced items are flagged. News
+remains observation, not ground truth.
+
+| Date | Event | Sourcing | Flags |
+|---|---|---|---|
+| **2026-04-07/08** | US–Iran ceasefire; major combat halts. US statements say the Strait is "set to open," but traffic remains restricted; Iran routes ships through its territorial waters and attacks noncompliant vessels | CRS R45281; UK House of Commons Library CBP-10637; ABC News timeline | Multi-sourced |
+| 2026-04-18 | Iran formal closure statement (already logged as placebo/falsification date) | — | Note: post-dates the ceasefire; both are real, the sequence is not contradictory — closure terms were asserted amid ceasefire |
+| **2026-06-17** | US–Iran 14-point Memorandum of Understanding (Trump/Pezeshkian): removal of US naval blockade; Iranian arrangements for safe passage of commercial vessels "with no charge, for 60 days only" | CRS R45281; Al Jazeera MoU explainer (2026-07-09); ABC News timeline; corroborated by EIA TIE #67865 (Brent declined after 06-17) | **Load-bearing for v2/v3 interpretation**: the extended window spans closure → attempted reopening → renewed closure. The WTO LNG outbound index shows **no sustained resumption** after the MoU — three isolated partial-loading days (06-28, 07-05, 07-06, at 26–29 vs a 2025 base of 100) followed by 34 consecutive zeros through 08-09 |
+| ~2026-06-25/28 | First post-MoU Iranian strike on a vessel in the Strait; contained US response | ABC News timeline ("just over a week after" 06-17) | **Date not pinned — do not use as a dated event until confirmed** |
+| **2026-07-07** | Iran attacks three commercial ships in 24 hours; widely read as the MoU breakdown | Axios; CNN; Al Jazeera (three independent outlets, same date) | Multi-sourced |
+| 2026-07-19/20 | Renewed tanker attack amid the 10th consecutive night of US strikes (campaign resumed ~07-10/11) | Washington Post | **Single-sourced in the 2026-08-09 review**; milestone of an ongoing campaign, not a discrete onset |
+| **2026-07-27/29** | Iran–Oman exchange of proposals on Strait administration; Iran rejects Oman's joint-oversight proposal on 07-29 | Bloomberg (07-27); Al Jazeera (07-29) | Multi-sourced |
+| **2026-07-29** | **Damietta terminal attack (Egypt)** — drone strikes the FSRU Energos Winter alongside at the Damietta LNG terminal; fire spreads to the LNG carrier GasLog Salem (155k m³). No casualties; Egyptian officials state supplies secured | Egyptian Cabinet statement (UAV attribution; via Egypt Oil & Gas); Splash247; Al Jazeera; CNBC | **Non-Hormuz confound event** — see `SUTVA_CONTAMINATION_AUDIT.md` and `DECISION_LOG.md` 2026-08-09. Attribution **unresolved** (no claim of responsibility; "Iran chief suspect" is press inference); early technical-malfunction accounts conflict with the Cabinet statement |
+
+**Post-window developments (after 2026-08-01; context for framing only, not
+window events):** Iran–Oman deal reported in "final stages" (CNBC, 08-05);
+Iran announces an Iran–Oman agreement prohibiting US/Israeli vessels with
+fines up to 20% of cargo value (NPR, 08-07) — a **distinct, treaty-framed
+event, not a re-report of the unilateral 2026-03-27 IRGC ban**; UAE says Iran
+attacked an ADNOC-linked vessel with a missile (gCaptain, 08-08). The episode
+was not resolved at window close.
+
 ## Pre-treatment confounder: January 2026 Henry Hub spike
 
 The frozen EIA series records a local maximum of $30.72/MMBtu on 23 January,
@@ -102,3 +131,17 @@ attributed to the Hormuz event.
 - [QatarEnergy news archive - production stop, force majeure, and Ras Laffan statements (primary)](https://www.qatarenergy.qa/en/Pages/vHome.aspx)
 - [International LNG prices rise amid Strait of Hormuz closure - EIA](https://www.eia.gov/todayinenergy/detail.php?id=67604)
 - [Severe winter weather and natural gas prices - EIA](https://www.eia.gov/todayinenergy/detail.php?id=67046)
+
+Post-March context chronology (2026-08-09 extension):
+
+- [The Strait of Hormuz: Security Developments and Impacts - CRS R45281](https://www.congress.gov/crs-product/R45281)
+- [US-Iran ceasefire and nuclear talks in 2026 - House of Commons Library CBP-10637](https://commonslibrary.parliament.uk/research-briefings/cbp-10637/)
+- [How the US-Iran ceasefire and MOU broke down - ABC News timeline](https://abcnews.com/Politics/us-iran-ceasefire-mou-broke-timeline/story?id=134622392)
+- [What has happened since the US-Iran MoU on June 17? - Al Jazeera](https://www.aljazeera.com/news/2026/7/9/strait-of-hormuz-what-has-happened-since-the-us-iran-mou-on-june-17)
+- [Iran attacks three ships in 24 hours - Axios](https://www.axios.com/2026/07/07/iran-resumes-hormuz-attacks-us-officials) / [CNN](https://www.cnn.com/2026/07/07/middleeast/hormuz-tanker-iran-attack-intl-hnk) / [Al Jazeera](https://www.aljazeera.com/news/2026/7/7/ships-attacked-in-the-strait-of-hormuz-what-that-means-for-ongoing-talks)
+- [Another tanker attacked as US strikes Iran for 10th consecutive night - Washington Post](https://www.washingtonpost.com/business/2026/07/19/iran-us-hormuz-strait-war-july-20-2026/85f64c6e-83ed-11f1-9cec-0fb26676f07e_story.html)
+- [Iran-Oman talks focused on restarting Hormuz shipping - Bloomberg](https://www.bloomberg.com/news/articles/2026-07-27/iran-oman-talks-focused-on-restarting-hormuz-shipping-traffic) / [Iran and Oman swap proposals - Al Jazeera](https://www.aljazeera.com/news/2026/7/29/iran-and-oman-swap-proposals-to-manage-strait-of-hormuz-what-we-know)
+- [Cabinet: Blaze on FSRU at Damietta Port Caused by Drone - Egypt Oil & Gas](https://egyptoil-gas.com/news/cabinet-drone-attack-sparked-blaze-on-fsru-at-damietta-port/) (closest-to-primary for Damietta)
+- [Drone strike hits FSRU and LNG carrier at Egyptian terminal - Splash247](https://splash247.com/drone-strike-hits-fsru-and-lng-carrier-at-egyptian-terminal/)
+- [Petroleum markets responded to Middle East disruptions in Q2 - EIA TIE #67865](https://www.eia.gov/todayinenergy/detail.php?id=67865) (corroborates the 06-17 MoU)
+- [Middle East crude oil tanker rates reached a multi-decade high in March - EIA TIE #67386](https://www.eia.gov/todayinenergy/detail.php?id=67386) (independently corroborates the 03-02 closure milestone)

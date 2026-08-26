@@ -2,8 +2,9 @@
 
 **Search date:** 2026-06-21  
 **Purpose:** Maintain an auditable record of searches supporting the redefined
-throughput-counterfactual thesis. This log covers the initial web-accessible search.
-Institutional Scopus and Web of Science searches remain required.
+throughput-counterfactual thesis. This log covers the initial web-accessible
+search and is supplemented by the institutional-search completion record dated
+25 August 2026 below.
 
 ## Scope and eligibility
 
@@ -113,8 +114,9 @@ LNG/energy and remote-sensing items were full-text or abstract screened.
 
 ### Caveats on the expansion pass
 
-- This remains a **web-indexed** search. Scopus/Web of Science Boolean runs are
-  still required before calling any stream exhaustive.
+- At the time of this pass, this was a **web-indexed** search. The later Scopus
+  run is recorded in the 25 August update below; Web of Science remained
+  unavailable through the tested TUM route.
 - The TS foundation-model papers are cited for the *benchmark appendix only*;
   per the citation audit they justify forecasting comparisons, never
   identification. Exact deployed model-release versions (Chronos-2, TimesFM-2.5)
@@ -124,20 +126,40 @@ LNG/energy and remote-sensing items were full-text or abstract screened.
 - *Energies* Hormuz-blockade and *World Economy* integration papers are
   energy-economics context, not event-study evidence for the 2026 shortfall.
 
-## Remaining database work
+## Institutional-search completion update (25 August 2026)
 
-1. Run all seven planned Boolean queries in Scopus and Web of Science.
-2. Export RIS/BibTeX records including abstracts, keywords, citation counts, and
-   references.
-3. Deduplicate by DOI, then by normalized title.
-4. Screen titles/abstracts against the inclusion rules above.
-5. Conduct backward and forward citation searches from:
-   - the 2019 AIS critical review;
-   - the 2022 LNG agent-based model;
-   - the 2023 chokepoint closure-scenario study;
-   - the 2025 Suez LNG event study;
-   - the 2025 systemic chokepoint-risk study;
-   - the 2026 same-event Hormuz SAR study.
-6. Freeze the final search date and record the number found, deduplicated, screened,
-   excluded, and retained before describing the review as systematic.
+Nine pre-specified Scopus queries were run through TUM institutional access for
+2000--2026 and filtered to English articles, reviews, and conference papers.
+The relevance-ranked results were screened up to a 200-record cap per query:
+1,037 query-record appearances were captured and exact normalized-title
+deduplication left 982 unique titles. A 34-reference diversified proposal was
+retained after title screening and high-priority abstract/full-record checks.
+The complete strings, raw/filtered counts, capture counts, and dispositions are
+recorded in `../../planning/task3-search/task3-query-pack.md`,
+`../../planning/T04_INSTITUTIONAL_SEARCH_RUN_LOG.md`, and
+`../../planning/T04_CURATED_LITERATURE_REVIEW_SET.md`.
 
+The intended Web of Science replication was not run because the tested
+Clarivate institution selector did not offer TUM. Scopus RIS export also
+required a personal Elsevier profile, so direct interface capture was used and
+is not mislabeled as an export. The final review is therefore non-exhaustive and
+Scopus-only at the institutional-database stage. Backward/forward citation
+chasing remains a useful extension if time permits, not a condition falsely
+recorded as completed.
+
+
+## 2026-08-09 targeted screening (candidate review)
+
+Context: four arXiv IDs supplied by Mher were screened during the 2026-08
+candidate review (`DATA_REGISTRY_REVIEW_2026-08.md` §6). Each was verified
+against its arXiv abstract page on 2026-08-09.
+
+| ID | Identity (verified) | Decision |
+|---|---|---|
+| 2407.07652 | Fontagné, Micocci & Rungi, matrix-completion counterfactual on CETA trade data (v5 2026-06-05) | **Retained** — Section C methodological precedent [fontagne2024matrix] |
+| 2608.04839 | Halkiewicz, exact inference in fixed-effect regressions with concentrated identifying variation (v1 2026-08-05) | **Retained** — limitations pointer only [halkiewicz2026exact]; unrefereed, not a method dependency |
+| 2608.04469 | Flament, Hurlin, Lajaunie & Pull, generalized impulse responses of portfolio default probabilities (geopolitical-risk application) | **Excluded** — credit-risk outcome domain; GPR link already covered by [caldara2022] |
+| 2608.05017 | Yang & Zha, algorithm-driven SVARs for big data | **Excluded** — no SVAR layer exists or is planned in the design |
+
+This was a targeted screening of supplied candidates, not a systematic query;
+the outstanding Scopus/Web of Science requirement is unchanged.

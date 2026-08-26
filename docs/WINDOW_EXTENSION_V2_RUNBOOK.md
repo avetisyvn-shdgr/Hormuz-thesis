@@ -139,3 +139,74 @@ Persistence: does the shortfall rate (~55/day) hold through July, decay, or
 show reopening dynamics? This answers the dropped `regime_consolidation`
 question with data instead of a design workaround, and pre-empts the obvious
 defense question ("your data ends June 1 — what happened after?").
+
+---
+
+# v3 extension note — 2026-08-09 (approved in principle, execution pending)
+
+**Goal:** extend `study_window.full_end` from 2026-07-07 to ≥ **2026-08-01**
+so the July events sit in-window: the 07-07 attack resumption, the 07-19/20
+escalation, the Iran–Oman proposals, and the **07-29 Damietta confound**
+(see `EVENT_CHRONOLOGY.md` post-March table and `SUTVA_CONTAMINATION_AUDIT.md`
+new section). Approved by Mher 2026-08-09 (`DECISION_LOG.md`); v1 and v2
+remain quotable from their branches; the 2026-02-28 cutoff does not move.
+
+**What changed since v2:**
+
+- The WTO series was refreshed on 2026-08-09 via `fetch_wto_hormuz_lng.py`
+  (registry-sanctioned): `rows=586 start=2025-01-01 end=2026-08-09`. The
+  v2-era "tracker frozen at 06-01" and "rolling window dropped Jan–Feb 2025"
+  concerns are both **not borne out**.
+- **Correction to an earlier note in this file:** the post-cutoff LNG index is
+  *not* uniformly 0.0. It is zero on 155 of 163 post-cutoff days, with eight
+  isolated partial-loading days (2026-03-01 68.3, 03-02 26.6, 03-28 27.1,
+  05-02 41.6, 06-13 33.5, 06-28 26.0, 07-05 25.7, 07-06 29.2; 2025 base =
+  100). The correct claim is **no sustained resumption**, not "no loadings".
+- The refresh also **revised one in-window historical day**: 2026-07-06 moved
+  from 0.0 to 29.21 — a late-arriving partial-loading observation inside the
+  v2 primary window (≤ 2026-07-07). See the v3 status note below.
+- The `wto_departure_validation.comparison_windows` **stay at v1** per the
+  2026-08-09 decision; only PortWatch-based layers extend.
+
+**Interpretive obligation (write-up):** the v3 post-period is a **regime
+mixture** — closure → MoU/attempted reopening (06-17) → renewed attacks
+(07-07 onward) — plus the non-Hormuz Damietta confound in the tail. The
+persistence numbers must be presented against that chronology, not as a
+homogeneous closure regime. Donor re-check: rerun the donor-influence
+diagnostic on the v3 window (Damietta may shift Mediterranean-adjacent
+corridor traffic; see SUTVA addendum).
+
+**Steps (Mher, local terminal — same dance as v2):**
+
+```bash
+cd lng_freight_thesis
+git checkout -b extension/post-window-v3
+# 1. Backup current raw dir (v2 state) outside the repo first:
+cp -R data/raw ~/thesis_backup/raw_v2_2026-08-09
+# 2. WTO refresh (registry-sanctioned; note the start= and max lines):
+.venv/bin/python scripts/fetch_wto_hormuz_lng.py
+# 3. PortWatch: browser download from portwatch.imf.org -> Daily Chokepoint
+#    Transit Calls -> full CSV -> replace data/raw/portwatch/Daily_Chokepoints_Data.csv
+#    Then check the max date:
+.venv/bin/python - <<'PYEOF'
+import pandas as pd
+df = pd.read_csv("data/raw/portwatch/Daily_Chokepoints_Data.csv")
+date_col = [c for c in df.columns if "date" in c.lower()][0]
+print("max date overall:", df[date_col].max())
+PYEOF
+# 4. Edit config/settings.yaml: study_window.full_end = (max date - 5 days).
+#    If that lands before 2026-08-01, STOP and record why (PortWatch lag);
+#    do not force the date. Touch nothing else.
+# 5. Rebuild, freeze, run, re-freeze (first run_all's final verify step is
+#    expected to fail once, then pass after the second freeze):
+.venv/bin/python scripts/build_panel.py
+.venv/bin/python scripts/freeze_reproducibility.py
+.venv/bin/python scripts/run_all.py
+.venv/bin/python scripts/freeze_reproducibility.py
+.venv/bin/python scripts/run_all.py
+git add -A && git commit -m "v3: extend study window through early August, refreshed snapshots, re-frozen manifest"
+```
+
+Paste back: the WTO fetch output, the PortWatch max date, and the tail of each
+`run_all.py` run. No v3 number enters any document until the second run passes
+clean.

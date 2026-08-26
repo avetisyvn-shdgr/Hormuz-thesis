@@ -46,18 +46,28 @@ useful because they supply direct monetary freight-market observations that the
 free branch lacks.
 
 Their status is nevertheless **restricted / provenance-limited secondary**, not
-an admitted replacement for Spark25S/30S. The repository does not hold the exact
-Bloomberg identifiers, original terminal-export payloads, extraction receipts,
-assessment methodology, verified definition history, or confirmed thesis reuse
-rights. Three rows are marked as reconstructed transcription boundaries, and
+an admitted replacement for Spark25S/30S. The repository does not hold the
+original terminal-export payloads, extraction receipts, assessment
+methodology, verified definition history, or confirmed thesis reuse rights.
+**Update 2026-08-09:** the exact Bloomberg identifiers are now held —
+`FLNGEASZ Index` (East of Suez spot), `FLNGWTSZ Index` (West of Suez spot),
+and `FLNG1YTC Index` (one-year time charter) — verified from user-supplied
+Bloomberg Charts PDFs plus six exact extreme-value/date matches against the
+transcriptions (see `config/bloomberg_exports.yaml` comments and
+`data/raw/bloomberg_transcription/originals/charts/README.md`). The earlier
+"identifiers unknown" caveat is downgraded to "identifiers known"; everything
+else in this paragraph stands. **Update 2026-08-19:** Bloomberg's help desk did
+not authorise use of Bloomberg data in the thesis, so the layer is excluded
+rather than awaiting a rights decision. Three rows are marked as reconstructed transcription boundaries, and
 two zero West-of-Suez rows are preserved raw but masked in analysis. The
 workbooks are checksum-pinned and loaded only through the registry-controlled
 local provider. Raw values are not published.
 
-Permitted use: secondary descriptives, context, and supplementary
-pre-treatment-selected forecast deviations. Prohibited use: silent Spark
-substitution, primary-outcome activation, ATT language, structural causal
-freight claims, and identified mediation claims.
+Analytical role before the rights decision: candidate secondary descriptives,
+context, and supplementary pre-treatment-selected forecast deviations. Final
+thesis role after the 2026-08-19 decision: excluded. Prohibited use includes raw
+redistribution, silent Spark substitution, primary-outcome activation, ATT
+language, structural causal freight claims, and identified mediation claims.
 
 ### Energy confounders
 
@@ -65,12 +75,13 @@ freight claims, and identified mediation claims.
 |---|---|---|---|---|
 | `henry_hub_spot` | **EIA API** `NG.RNGWHHD.D` (cross-check: **FRED** `DHHNGSP`) | Henry Hub natural gas spot, USD/MMBtu, daily | **free** | Genuine match. US gas benchmark — exactly the series the proposal lists. Public domain. |
 | `brent_spot` | **EIA API** `PET.RBRTE.D` (cross-check: **FRED** `DCOILBRENTEU`) | Europe Brent spot, USD/bbl, daily, from 1987 | **free** | Genuine match. Public domain. |
-| `ttf_gas` | User-supplied structured Bloomberg workbook (exact provider/identifier unverified) | Dutch TTF day-ahead assessment, EUR/MWh | **restricted** | Context only through the local checksum-pinned provider; not a headline control and not licensed for raw publication. |
+| `ttf_gas` | User-supplied structured Bloomberg workbook (exact provider/identifier unverified) | Dutch TTF day-ahead assessment, EUR/MWh | **restricted** | Excluded from the thesis after the 2026-08-19 vendor decision; raw publication prohibited. |
 | `jkm_lng` | S&P Global Platts assessment; EEX settlement retained only as an access candidate | Japan-Korea Marker LNG | **unavailable** | No verified accessible historical feed or implemented provider. A future would be a different instrument with basis/timing risk. |
 
 Singapore VLSFO is likewise registered as a restricted context series from the
-user-supplied ClearLynx-labelled workbook. It is not a dependent variable and
-does not enter the headline freight forecasts as an observed post-event control.
+user-supplied ClearLynx-labelled workbook. It is excluded from the thesis after
+the 2026-08-19 vendor decision and does not enter the headline freight forecasts
+as an observed post-event control.
 
 ### Route / chokepoint capacity
 
@@ -79,6 +90,10 @@ does not enter the headline freight forecasts as an observed post-event control.
 | `panama_transit` | **IMF PortWatch** (AIS/satellite, ~90k ships) | Daily transit calls + trade-volume estimate, Panama Canal | **free** | Strong free covariate for the Panama-arbitrage channel. Updated weekly (Tue). |
 | `hormuz_transit` | **IMF PortWatch** | Daily transit calls + trade-volume estimate, Strait of Hormuz | **free** | Lets you observe the disruption directly in operational data. |
 
+- **Units:** PortWatch reports chokepoint transit volume in metric tonnes. The
+  registered `capacity_tanker` field is therefore described conservatively as
+  an AIS-derived tanker transit-volume/capacity proxy in metric tonnes, rather
+  than as cargo actually observed aboard each vessel.
 - **What PortWatch captures:** aggregate vessel-traffic intensity through a named chokepoint — a real, independent, public window onto the event.
 - **What it cannot capture:** laden vs ballast legs, vessel identity, commodity split per vessel, or per-voyage ton-miles. It is **chokepoint-aggregate**, not vessel-level.
 - **Bias / caveats:** AIS coverage gaps, gap-filling/modelling assumptions in PortWatch's own pipeline, and it is *not* LNG-specific at the transit-count level. Treat as media-of-observation data, not ground truth.

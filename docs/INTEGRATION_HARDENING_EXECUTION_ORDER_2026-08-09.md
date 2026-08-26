@@ -45,7 +45,7 @@ or preregistered.
 - The conditional route/energy ARX result (about 62.858) and mean-scaled
   synthetic-control transit equivalent were already visible. They must remain
   in the published audit table, with machine-readable exclusion reasons, but
-  do not enter the same-information envelope.
+  do not enter the selected same-information comparison range.
 - Exploratory inspection had already revealed a temporary post-MoU tanker-count
   rebound followed by relapse. The phase windows are fixed in
   `config/settings.yaml` before the descriptive artifact is generated.
@@ -57,17 +57,17 @@ August matrix**, not preregistered.
 
 | Order | Action | Completion gate | Current state |
 |---:|---|---|---|
-| 0 | Governance and dirty-tree baseline | Preserve the accepted scope, record ownership and known results, touch neither the formal proposal nor unrelated changes | AI recorded; `NEEDS-VERIFY` |
-| 1 | Freeze the model-admission protocol | Same outcome, units, training dates, cutoff, scoring dates, and strictly pre-treatment information; publish every included and excluded row with a reason | Corrected ex post lock implemented; Git checkpoint and G4 verification pending |
-| 2 | Freeze the August sensitivity input | Explicit hash/provenance scope, sensitivity-only label, registered consumers, and separate optional orchestration that cannot promote it to primary | Separation corrections in progress; archive deposit and G4 verification pending |
-| 3 | Correct rebound/relapse claims | Reproducible phase table; replace “no rebound” with “temporary partial rebound followed by relapse; no sustained recovery”; keep the separate WTO LNG wording | Trusted-endpoint correction in progress; `NEEDS-VERIFY` |
-| 4 | Complete the 2-vintage × 4-model matrix | Seasonal naive, AR, Chronos, and BSTS under a common 130-day window; only vintage changes; revisions, environments, seeds, and hashes recorded | **Blocked pending phases 1–3 checkpoint and G4 verification** |
-| 5 | Build the sensitivity-budget reporting card | Report vintage swing and the selected four-specification range as separate axes; never call it a variance decomposition, all-admissible-model range, or general AIS result | Pending |
-| 6 | Build the horizon/resolution frontier | Outcome-independent origin rule, all feasible disjoint origins, finite-sample p-value floors, and unbounded intervals stated explicitly | Pending |
-| 7 | Build the selective network-support frontier | Overall and Hormuz-specific denominators, radius and balanced-cohort checks; missing modeled edge described as missing observation, not proof of no sailing | Pending |
-| 8 | Freeze route-burden decomposition | Complete-case composition/entry-exit/within-pair components plus radius and censoring sensitivity; descriptive construct labels only | Pending |
-| 9 | Decide optional public-data gates | ERA5 only after an explicit scope-reopening decision; SAR post-submission and scene-level only; JODI blocked pending rights and adequate reporting lag | Pending |
-| 10 | Final reproducibility and defence pass | Full pipeline, tests, provenance audit, manifest verification, stale-claim search, artifact citation check, then Mher's G4 verification | Pending |
+| 0 | Governance and dirty-tree baseline | Preserve the accepted scope, record ownership and known results, touch neither the formal proposal nor unrelated changes | Recorded and computationally verified; scope ownership remains with Mher |
+| 1 | Freeze the model-admission protocol | Same outcome, units, training dates, cutoff, scoring dates, and strictly pre-treatment information; publish every included and excluded row with a reason | **DONE:** anchored in `ca925a8`; 14 rows and 43 focused tests verified by Mher |
+| 2 | Freeze the August sensitivity input | Explicit hash/provenance scope, sensitivity-only label, registered consumers, and separate optional orchestration that cannot promote it to primary | **DONE locally:** input and 6-artifact manifest verified by Mher; archive deposit remains open |
+| 3 | Correct rebound/relapse claims | Reproducible phase table; replace “no rebound” with “temporary partial rebound followed by relapse; no sustained recovery”; keep the separate WTO LNG wording | **DONE:** trusted-endpoint artifacts verified by Mher |
+| 4 | Complete the 2-vintage × 4-model matrix | Seasonal naive, AR, Chronos, and BSTS under a common 130-day window; only vintage changes; revisions, environments, seeds, and hashes recorded | **DONE:** Mher reproduced 8 cells; 9/9 matrix and 358/358 full tests; 13-artifact manifest verified |
+| 5 | Build the sensitivity-budget reporting card | Report vintage swing and the selected four-specification range as separate axes; never call it a variance decomposition, all-admissible-model range, or general AIS result | **DONE:** Mher reproduced all outputs; 19/19 focused and 377/377 full tests; both optional manifests verified |
+| 6 | Build the horizon/resolution frontier | Outcome-independent origin rule, all feasible disjoint origins, finite-sample p-value floors, and unbounded intervals stated explicitly | **DONE:** Mher reproduced K=8, floor 1/9, finite 80%, unbounded 90%/95%; 41/41 focused and 418/418 full tests verified |
+| 7 | Build the selective network-support frontier | Overall and Hormuz-specific denominators, radius and balanced-cohort checks; missing modeled edge described as missing observation, not proof of no sailing | **DONE:** Mher reproduced 145→2 Hormuz-crossing against 971→746 all resolved at 30 km; 36/36 focused and 454/454 full tests verified |
+| 8 | Freeze route-burden decomposition | Complete-case composition/entry-exit/within-pair components plus radius and censoring sensitivity; descriptive construct labels only | **DONE:** Mher reproduced +67.585M m³-nm/sequence and the 54.9/43.8/1.3 split; non-generalising split and one uninterpretable cell disclosed; 39/39 focused and 493/493 full tests verified |
+| 9 | Decide optional public-data gates | ERA5 only after an explicit scope-reopening decision; SAR post-submission and scene-level only; JODI blocked pending rights and adequate reporting lag | **DONE:** Mher reproduced 5 candidates with JODI `NO_GO`, no GO status, 0 downloads and registry unchanged at 53 variables; 26/26 focused and 519/519 full tests verified |
+| 10 | Final reproducibility and defence pass | Full pipeline, tests, provenance audit, manifest verification, stale-claim search, artifact citation check, then Mher's G4 verification | **DONE:** Mher reproduced 82 occurrences with 0 asserted, 8 artifact-cited claims, 5 defence answers, and all five optional manifests; 34/34 focused and 553/553 full tests verified |
 
 ## Stop rules
 
@@ -81,9 +81,42 @@ August matrix**, not preregistered.
 5. Optional extensions cannot displace writing or the throughput spine unless
    Mher explicitly reopens scope.
 
-## Immediate next action
+## Verification-command note
 
-Finish the separate sensitivity-branch manifest, regenerate the trusted-endpoint
-rebound artifact, anchor the corrected protocol/design in a path-scoped Git
-checkpoint, and have Mher run the phase 1–3 verification commands. Only then
-start the missing August Chronos cell and finalize the matrix.
+The input gate for an assistant-run phase is
+`freeze_reproducibility.py --check`, which verifies the 8 core, 146 vessel, and
+1 interim input hashes. Do **not** use `--verify` as a phase gate on this
+branch: it compares every regenerated artifact against the committed run
+manifest, which is older than the 77 pre-existing changed paths recorded in the
+baseline above, so it fails for reasons unrelated to any current phase.
+Refreezing that manifest belongs to order 10.
+
+## Execution order complete
+
+All eleven ordered actions (0-10) are `DONE` and G4-verified by Mher. This
+document is now a closed record rather than an active work list.
+
+## What remains
+
+**Writing.** Under stop rule 5, optional extensions must not displace it.
+
+Three reproducibility items stay open and are documented in
+`FINAL_EVIDENCE_TO_CLAIM_AUDIT.md`. None blocks submission:
+
+1. **August raw-byte replication-archive deposit** — OPEN.
+2. **Historical source-payload gaps** — OPEN and disclosed (6 fixity-only
+   records predating provenance v2).
+3. **Core run-manifest staleness** — OPEN, and the only item needing a decision.
+   `--verify` fails because the committed manifest predates the 77 pre-existing
+   worktree changes in the baseline above; `--check` passes. Refreezing needs a
+   clean `run_all.py` and rewrites a committed manifest across 23+ artifacts, so
+   it requires Mher's explicit instruction.
+
+The formal proposal remains unedited pending direct Prof. Li ratification.
+
+## Operational note for re-running the final audit
+
+The task-10 audit reads the live repository and records line numbers in the
+documents it scans. Editing any scanned document shifts those numbers and
+invalidates the frozen scan by design. Regenerate and re-freeze that phase
+**last**, after all other documentation edits.

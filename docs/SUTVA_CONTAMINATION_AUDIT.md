@@ -77,6 +77,39 @@ corroboration, not the estimate (consistent with FALLBACK_STRATEGY.md).
    is structurally immune to this SPOF. The donor layers answer "is the gap unusual
    across space?", which is corroborative, not identifying.
 
+## Non-Hormuz LNG supply-side shocks inside the extended window (added 2026-08-09)
+
+The contamination screen above handles **transit-corridor interference**:
+rerouted Hormuz flows contaminating donor chokepoints. The window extension
+past 2026-07-07 admits a different shock class that the screen's language does
+not describe and cannot absorb: **terminal-side attacks on LNG infrastructure
+outside the Hormuz/Red Sea corridors.**
+
+**Instance: Damietta, Egypt, 2026-07-29.** A drone struck the FSRU Energos
+Winter alongside at the Damietta LNG terminal; fire spread to the LNG carrier
+GasLog Salem. Egyptian Cabinet attributes the fire to a UAV; no claim of
+responsibility; attribution unresolved (press naming of Iran is inference).
+Details and sources: `EVENT_CHRONOLOGY.md` post-March table and
+`DATA_REGISTRY_REVIEW_2026-08.md` §1.
+
+Layer-by-layer exposure of this shock class:
+
+| Layer | Exposed? | Mechanism |
+|---|---|---|
+| AR-only primary (within-unit Hormuz ITS) | **No** | A Mediterranean terminal attack does not mechanically move Hormuz transit counts; the firewall holds |
+| Placebo-in-time | No | Pre-period windows predate the event |
+| Spatial placebo / synthetic control donors | **Potentially** | East-Med/Suez war-risk perception can shift Suez-corridor traffic; Suez is already in the excluded contaminated set, but the event strengthens the case that the *exclusion* was right and adds a reason to re-check the "clean" Mediterranean-adjacent donors in any v3 re-run |
+| Fearnleys secondary freight series (restricted) | **Yes** | War-risk premia, especially West-of-Suez; 18 post-cutoff weeks are in scope — post-2026-07-29 observations carry this confound |
+| Importer panel (Option D) | **Yes** | Egypt is a panel unit (`destination_basin_by_country`); its import capability was shocked mid-window by a non-Hormuz event. Flag Egypt observations after 2026-07-29 or handle explicitly |
+
+**Classification (per `DECISION_LOG.md` 2026-08-09):** treated as a
+**distinct confound**, not an extension of the Hormuz treatment, because
+attribution is unresolved. If attribution to Iran is later established, the
+classification question reopens — that would move it toward "same conflict
+complex," which changes wording, not the estimator (the within-unit primary is
+unaffected either way). Any v3 write-up that scores post-2026-07-29 windows
+must name this event and this classification.
+
 ## One-line verdict
 
 The design's cross-unit corroboration rests on a **single shared assumption (the
