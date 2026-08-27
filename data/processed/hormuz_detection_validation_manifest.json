@@ -18,7 +18,7 @@
   "command": "run_hormuz_detection.py --phase validate",
   "config": {
     "path": "config/hormuz_detection.yaml",
-    "sha256": "9163449df64424762c15c87877b4b1b77051b7f8c549e6f8f8fca970df7d3724"
+    "sha256": "2e96df590fbc8ab4df80cf1d0c59bb251a1e769f8ad76299d871d1950ebb4b32"
   },
   "environment": {
     "numpy": "1.26.4",
@@ -130,8 +130,8 @@
   },
   "git": {
     "branch": "ml/hormuz-revision-robust",
-    "commit": "d6a1e4a091ab510b4b231f811b16095670ccf211",
-    "dirty": true
+    "commit": "3581896b02dffe0b4c34f7e0044cb32e2e1e572b",
+    "dirty": false
   },
   "inputs": {
     "hormuz_handling": {
@@ -527,7 +527,7 @@
       "yucatan_channel": 5.055525013743815
     }
   },
-  "run_utc": "2026-08-27T15:34:14.616039+00:00",
+  "run_utc": "2026-08-27T15:50:06.890888+00:00",
   "schema": "hormuz_detection_validation_manifest/1",
   "script": "scripts/run_hormuz_detection.py",
   "sealing_assertions": {
