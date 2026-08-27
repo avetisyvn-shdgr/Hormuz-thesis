@@ -1,0 +1,5 @@
+onset_label,onset,emitter_loss_per_day,receiver_gain_per_day,recovered_fraction,family,anchor_standardised,rank_of_anchor,family_size,max_statistic,max_statistic_unit,percentile_within_family,inferential_p_value
+register_onset,2024-01-13,7.8769537827168,7.0325525555049015,0.8928010433342087,same_emitter_alternative_receivers,7.951455574821582,1,16,7.951455574821582,cape_of_good_hope,100.0,
+register_onset,2024-01-13,7.8769537827168,7.0325525555049015,0.8928010433342087,same_receiver_alternative_emitters,6.201274441552536,1,16,6.201274441552536,bab_el_mandeb_strait,100.0,
+external_onset,2023-12-14,12.616039220169498,5.034700777132796,0.39907142719433897,same_emitter_alternative_receivers,5.6925560450386055,1,16,5.6925560450386055,cape_of_good_hope,100.0,
+external_onset,2023-12-14,12.616039220169498,5.034700777132796,0.39907142719433897,same_receiver_alternative_emitters,9.93220523158607,1,16,9.93220523158607,bab_el_mandeb_strait,100.0,

@@ -1,0 +1,1432 @@
+{
+  "schema": "hormuz_measurement_state_manifest/1",
+  "phase": "B1",
+  "status": "frozen",
+  "script": "scripts/run_hormuz_measurement_audit.py",
+  "command": "run_hormuz_measurement_audit.py --check",
+  "run_utc": "2026-08-27T09:12:31.676286+00:00",
+  "plan": {
+    "path": "docs/HORMUZ_TECHNICAL_EXECUTION_PLAN.md",
+    "version": "1.1"
+  },
+  "git": {
+    "commit": "73ae8989f274f06566dd883e6e6e1699a64e07c9",
+    "branch": "ml/hormuz-revision-robust",
+    "dirty": true,
+    "status_porcelain": "M config/sources.yaml\n M data/raw/provenance.jsonl\n?? config/hormuz_detection.yaml\n?? config/hormuz_measurement_audit.yaml\n?? data/processed/portwatch_hormuz_revision_annual.csv\n?? data/processed/portwatch_hormuz_revision_daily.csv\n?? data/processed/portwatch_instrument_shift_by_chokepoint.csv\n?? data/processed/wto_measurement_state_audit.csv\n?? docs/HORMUZ_DETECTION_MODEL_CARD.md\n?? docs/HORMUZ_MEASUREMENT_NETWORK_CARD.md\n?? scripts/run_hormuz_detection.py\n?? scripts/run_hormuz_measurement_audit.py\n?? src/lngfreight/disruption_detector.py\n?? src/lngfreight/global_forecaster.py\n?? src/lngfreight/instrument_shift.py\n?? tests/test_disruption_detector.py\n?? tests/test_global_forecaster.py\n?? tests/test_instrument_shift.py"
+  },
+  "config": {
+    "path": "config/hormuz_measurement_audit.yaml",
+    "sha256": "af3abb7f3068dfa7ed47a22cba13ce7844f18533d4c8f806dd107f370e5d4f92",
+    "version": 1
+  },
+  "inputs": {
+    "july": {
+      "path": "data/raw/portwatch/Daily_Chokepoints_Data.csv",
+      "sha256": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d",
+      "registry_variable": "portwatch_chokepoints_snapshot",
+      "sensitivity_opt_in": false
+    },
+    "august": {
+      "path": "data/raw/portwatch/vintages/Daily_Chokepoints_Data__vintage_2026-08-09.csv",
+      "sha256": "0bc806a4c384723debff08053d6fcbb915a03ee9fdf7b23c73d76d9bcb885bcb",
+      "registry_variable": "portwatch_chokepoints_vintage_20260809_snapshot",
+      "sensitivity_opt_in": true
+    },
+    "registry_consumer": "scripts/run_hormuz_measurement_audit.py:b1_instrument_revision_audit",
+    "sensitivity_use_note": "The August vintage is admitted as a declared sensitivity input: the second measurement state of a revision audit. It is not promoted, not substituted for the pinned primary, and not averaged with it."
+  },
+  "measurement_states": {
+    "states_separate": true,
+    "never_averaged": true,
+    "july": {
+      "label": "july",
+      "path": "data/raw/portwatch/Daily_Chokepoints_Data.csv",
+      "sha256": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d",
+      "n_rows": 77000,
+      "date_min": "2019-01-01",
+      "date_max": "2026-07-12"
+    },
+    "august": {
+      "label": "august",
+      "path": "data/raw/portwatch/vintages/Daily_Chokepoints_Data__vintage_2026-08-09.csv",
+      "sha256": "0bc806a4c384723debff08053d6fcbb915a03ee9fdf7b23c73d76d9bcb885bcb",
+      "n_rows": 77588,
+      "date_min": "2019-01-01",
+      "date_max": "2026-08-02"
+    },
+    "identical_content": false
+  },
+  "analysis_window": {
+    "start": "2019-01-01",
+    "end": "2026-07-12",
+    "n_days": 2750,
+    "n_units": 28
+  },
+  "focus_unit": "Strait of Hormuz",
+  "primary_measure": "n_tanker",
+  "measures_audited": [
+    "n_tanker",
+    "n_container",
+    "n_dry_bulk",
+    "n_general_cargo",
+    "n_roro",
+    "n_cargo",
+    "n_total",
+    "capacity_tanker",
+    "capacity_container",
+    "capacity_dry_bulk",
+    "capacity_general_cargo",
+    "capacity_roro",
+    "capacity_cargo",
+    "capacity"
+  ],
+  "estimators": {
+    "default_mapping": "proportional_2019_2025",
+    "residual_evaluation": "full_overlap",
+    "forms": {
+      "proportional_2019_2025": {
+        "name": "proportional_2019_2025",
+        "form": "proportional",
+        "role": "default",
+        "intercept": 0.0,
+        "scale": 0.8319168616194081,
+        "sample_start": "2019-01-01",
+        "sample_end": "2025-12-31",
+        "n_sample": 2557
+      },
+      "affine_2019_2025": {
+        "name": "affine_2019_2025",
+        "form": "affine",
+        "role": "declared_sensitivity",
+        "intercept": 0.15047420819085,
+        "scale": 0.8293302061044494,
+        "sample_start": "2019-01-01",
+        "sample_end": "2025-12-31",
+        "n_sample": 2557
+      },
+      "proportional_2019_2026_02_27": {
+        "name": "proportional_2019_2026_02_27",
+        "form": "proportional",
+        "role": "declared_sensitivity",
+        "intercept": 0.0,
+        "scale": 0.8312966213639191,
+        "sample_start": "2019-01-01",
+        "sample_end": "2026-02-27",
+        "n_sample": 2615
+      },
+      "additive_2019_2025": {
+        "name": "additive_2019_2025",
+        "form": "additive",
+        "role": "declared_sensitivity",
+        "intercept": -9.124364489636292,
+        "scale": 1.0,
+        "sample_start": "2019-01-01",
+        "sample_end": "2025-12-31",
+        "n_sample": 2557
+      }
+    },
+    "sample_selection_rule": "Samples are fixed by date in the frozen config before fitting. No sample or form was chosen after inspecting residuals."
+  },
+  "revision_decomposition": {
+    "proportional_2019_2025": {
+      "n": 2750,
+      "sse_raw_revision": 261744.0,
+      "sse_after_mapping": 28057.614885305928,
+      "rmse_raw_revision": 9.756005143686444,
+      "rmse_after_mapping": 3.194177366584729,
+      "fraction_squared_error_remaining": 0.10719487317877746,
+      "share_absorbed_by_mapping": 0.8928051268212225
+    },
+    "affine_2019_2025": {
+      "n": 2750,
+      "sse_raw_revision": 261744.0,
+      "sse_after_mapping": 28071.888621304017,
+      "rmse_raw_revision": 9.756005143686444,
+      "rmse_after_mapping": 3.194989749381992,
+      "fraction_squared_error_remaining": 0.10724940637150811,
+      "share_absorbed_by_mapping": 0.8927505936284919
+    },
+    "proportional_2019_2026_02_27": {
+      "n": 2750,
+      "sse_raw_revision": 261744.0,
+      "sse_after_mapping": 28054.414296806044,
+      "rmse_raw_revision": 9.756005143686444,
+      "rmse_after_mapping": 3.193995178274157,
+      "fraction_squared_error_remaining": 0.10718264524423117,
+      "share_absorbed_by_mapping": 0.8928173547557688
+    },
+    "additive_2019_2025": {
+      "n": 2750,
+      "sse_raw_revision": 261744.0,
+      "sse_after_mapping": 52978.561887441116,
+      "rmse_raw_revision": 9.756005143686444,
+      "rmse_after_mapping": 4.389183477075563,
+      "fraction_squared_error_remaining": 0.2024060222486136,
+      "share_absorbed_by_mapping": 0.7975939777513864
+    }
+  },
+  "residual_distribution": {
+    "onset": "2026-02-28",
+    "pre_onset": {
+      "n": 2615,
+      "mean": -0.027697705076666718,
+      "sd": 3.265698771873636,
+      "rmse": 3.2651917736166096,
+      "mae": 2.5876785220757,
+      "min": -14.39376462145561,
+      "max": 10.084988302835512,
+      "q0.01": -8.557693453509415,
+      "q0.05": -5.612840741537511,
+      "q0.25": -2.1213395718210606,
+      "q0.5": 0.23607378064900075,
+      "q0.75": 2.227574950365451,
+      "q0.95": 5.062041461069921,
+      "q0.99": 7.049218347853936
+    },
+    "post_onset": {
+      "n": 135,
+      "mean": -0.30413720967271307,
+      "sd": 1.1108833137727379,
+      "rmse": 1.1477891710047163,
+      "mae": 0.7147833376656165,
+      "min": -5.319168616194082,
+      "max": 3.8829098433207143,
+      "q0.01": -3.264909951441088,
+      "q0.05": -2.159584308097041,
+      "q0.25": -0.6638337232388163,
+      "q0.5": 0.0,
+      "q0.75": 0.16808313838059186,
+      "q0.95": 1.1876304480327597,
+      "q0.99": 2.238867403229483
+    },
+    "full_overlap": {
+      "n": 2750,
+      "mean": -0.04126837166592717,
+      "sd": 3.1944916338329907,
+      "rmse": 3.194177366584729,
+      "mae": 2.4957363948410234,
+      "min": -14.39376462145561,
+      "max": 10.084988302835512,
+      "q0.01": -8.423595515750877,
+      "q0.05": -5.566522116492157,
+      "q0.25": -2.083094835545083,
+      "q0.5": 0.11048479368616881,
+      "q0.75": 2.0913624255481746,
+      "q0.95": 4.917755047483271,
+      "q0.99": 6.933902825022024
+    }
+  },
+  "changed_rows": {
+    "primary_measure": "n_tanker",
+    "hormuz_pct_changed": 97.45454545454545,
+    "next_highest_unit": "Malacca Strait",
+    "next_highest_pct_changed": 0.1090909090909091,
+    "median_pct_changed_across_units": 0.03636363636363636,
+    "n_overlap_days_per_unit": 2750
+  },
+  "annual_ratios_august_over_july": {
+    "2019": 0.842825016714277,
+    "2020": 0.8483695956149674,
+    "2021": 0.8420485703094399,
+    "2022": 0.8271090291804548,
+    "2023": 0.8253210328682027,
+    "2024": 0.8177710843373494,
+    "2025": 0.8260638014592321,
+    "2026": 0.7867144252686421
+  },
+  "temporal_distribution_monthly": [
+    {
+      "month": "2019-01",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -6.741935483870968,
+      "mean_residual_default": 0.08440874906984328,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2019-02",
+      "n_days": 28,
+      "n_changed": 28,
+      "mean_revision": -7.0,
+      "mean_residual_default": -0.0905824187120994,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.044776119402985
+    },
+    {
+      "month": "2019-03",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -7.387096774193548,
+      "mean_residual_default": -0.4143575497599638,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2019-04",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -7.066666666666666,
+      "mean_residual_default": 0.6371438424437936,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2019-05",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -7.903225806451613,
+      "mean_residual_default": 0.24067334992416076,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2019-06",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -8.4,
+      "mean_residual_default": 0.4915980203333093,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2019-07",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -7.870967741935484,
+      "mean_residual_default": 0.8747774905772479,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2019-08",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -8.838709677419354,
+      "mean_residual_default": 0.06427462003005949,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2019-09",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -7.966666666666667,
+      "mean_residual_default": 0.1573516883952731,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2019-10",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -5.806451612903226,
+      "mean_residual_default": 1.8223540548868635,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2019-11",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -5.066666666666666,
+      "mean_residual_default": 0.8554625756095191,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2019-12",
+      "n_days": 31,
+      "n_changed": 30,
+      "mean_revision": -4.967741935483871,
+      "mean_residual_default": 1.1266273399930724,
+      "pct_changed": 96.7741935483871,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2020-01",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -5.516129032258065,
+      "mean_residual_default": 1.3210592741266556,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2020-02",
+      "n_days": 29,
+      "n_changed": 29,
+      "mean_revision": -5.724137931034483,
+      "mean_residual_default": 1.033963425923107,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.0820895522388059
+    },
+    {
+      "month": "2020-03",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -5.774193548387097,
+      "mean_residual_default": 0.5533233061338932,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2020-04",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -6.7,
+      "mean_residual_default": 1.2503324454019946,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2020-05",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -8.387096774193548,
+      "mean_residual_default": 0.4182908622606828,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2020-06",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -9.466666666666667,
+      "mean_residual_default": 0.5230745244198426,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2020-07",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -9.387096774193548,
+      "mean_residual_default": 0.41594561910032596,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2020-08",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -9.193548387096774,
+      "mean_residual_default": 0.4359888310945525,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2020-09",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -9.333333333333334,
+      "mean_residual_default": 0.39868037890293545,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2020-10",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -8.064516129032258,
+      "mean_residual_default": 1.077037784183157,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2020-11",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -5.566666666666666,
+      "mean_residual_default": 1.5208390017149567,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2020-12",
+      "n_days": 31,
+      "n_changed": 30,
+      "mean_revision": -5.709677419354839,
+      "mean_residual_default": 0.7262801696052431,
+      "pct_changed": 96.7741935483871,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2021-01",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -6.870967741935484,
+      "mean_residual_default": 1.1319584596694703,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2021-02",
+      "n_days": 28,
+      "n_changed": 27,
+      "mean_revision": -8.035714285714286,
+      "mean_residual_default": 0.42847232559409026,
+      "pct_changed": 96.42857142857143,
+      "share_of_all_revisions_pct": 1.007462686567164
+    },
+    {
+      "month": "2021-03",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -7.387096774193548,
+      "mean_residual_default": 0.6592057211870426,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2021-04",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -9.5,
+      "mean_residual_default": 0.28804142502979885,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2021-05",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -9.161290322580646,
+      "mean_residual_default": 0.7285046582645015,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2021-06",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -10.5,
+      "mean_residual_default": 0.2685263989165849,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2021-07",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -9.580645161290322,
+      "mean_residual_default": 0.7266466471453265,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2021-08",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -9.580645161290322,
+      "mean_residual_default": 0.26035148905723354,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2021-09",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -9.466666666666667,
+      "mean_residual_default": 0.472649582905665,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2021-10",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -9.129032258064516,
+      "mean_residual_default": 0.186026830253446,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2021-11",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -8.233333333333333,
+      "mean_residual_default": 0.9215949371295695,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2021-12",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -8.612903225806452,
+      "mean_residual_default": 0.7075778992334648,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2022-01",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -8.96774193548387,
+      "mean_residual_default": 0.9328971188051851,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2022-02",
+      "n_days": 28,
+      "n_changed": 28,
+      "mean_revision": -11.0,
+      "mean_residual_default": 0.45966825601963734,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.044776119402985
+    },
+    {
+      "month": "2022-03",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -11.64516129032258,
+      "mean_residual_default": -0.6492708181987001,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2022-04",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -12.3,
+      "mean_residual_default": 0.02049404329738304,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2022-05",
+      "n_days": 31,
+      "n_changed": 30,
+      "mean_revision": -11.935483870967742,
+      "mean_residual_default": -0.7986204440730432,
+      "pct_changed": 96.7741935483871,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2022-06",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -10.733333333333333,
+      "mean_residual_default": 0.23129006036060862,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2022-07",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -10.838709677419354,
+      "mean_residual_default": -0.10307696794929326,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2022-08",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -12.548387096774194,
+      "mean_residual_default": -1.167532017391538,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2022-09",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -11.5,
+      "mean_residual_default": -0.7987068564356524,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2022-10",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -12.258064516129032,
+      "mean_residual_default": -0.8338331429707406,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2022-11",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -10.033333333333333,
+      "mean_residual_default": -0.9120216905465487,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2022-12",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -8.516129032258064,
+      "mean_residual_default": 0.007312694654528845,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2023-01",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -7.870967741935484,
+      "mean_residual_default": 1.0862369227334754,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2023-02",
+      "n_days": 28,
+      "n_changed": 28,
+      "mean_revision": -9.571428571428571,
+      "mean_residual_default": 0.393500346849375,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.044776119402985
+    },
+    {
+      "month": "2023-03",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -10.193548387096774,
+      "mean_residual_default": -0.4718365446322191,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2023-04",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -10.566666666666666,
+      "mean_residual_default": 0.17944864713250627,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2023-05",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -11.451612903225806,
+      "mean_residual_default": -0.5045207615995172,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2023-06",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -11.133333333333333,
+      "mean_residual_default": -0.7906175516475809,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2023-07",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -11.774193548387096,
+      "mean_residual_default": -1.038560838917037,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2023-08",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -11.612903225806452,
+      "mean_residual_default": -0.6983433045118903,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2023-09",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -12.166666666666666,
+      "mean_residual_default": -1.5438123210132617,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2023-10",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -10.870967741935484,
+      "mean_residual_default": -0.9377964673147009,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2023-11",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -7.933333333333334,
+      "mean_residual_default": 0.392384787785317,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2023-12",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -8.67741935483871,
+      "mean_residual_default": -0.6744931532337554,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2024-01",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -9.64516129032258,
+      "mean_residual_default": -0.6879566256536217,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2024-02",
+      "n_days": 29,
+      "n_changed": 29,
+      "mean_revision": -8.827586206896552,
+      "mean_residual_default": -0.7016358617382836,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.0820895522388059
+    },
+    {
+      "month": "2024-03",
+      "n_days": 31,
+      "n_changed": 30,
+      "mean_revision": -10.548387096774194,
+      "mean_residual_default": -0.035057892904270097,
+      "pct_changed": 96.7741935483871,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2024-04",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -12.533333333333333,
+      "mean_residual_default": -1.6303404237122752,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2024-05",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -12.387096774193548,
+      "mean_residual_default": -1.0279298416987126,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2024-06",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -12.8,
+      "mean_residual_default": -1.8577876914234701,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2024-07",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -12.709677419354838,
+      "mean_residual_default": -0.9980780999329544,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2024-08",
+      "n_days": 31,
+      "n_changed": 30,
+      "mean_revision": -9.548387096774194,
+      "mean_residual_default": -0.30923652256359563,
+      "pct_changed": 96.7741935483871,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2024-09",
+      "n_days": 30,
+      "n_changed": 29,
+      "mean_revision": -9.466666666666667,
+      "mean_residual_default": 0.0020167954400078496,
+      "pct_changed": 96.66666666666667,
+      "share_of_all_revisions_pct": 1.0820895522388059
+    },
+    {
+      "month": "2024-10",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -9.67741935483871,
+      "mean_residual_default": -1.0834911505407065,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2024-11",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -8.5,
+      "mean_residual_default": -1.0539169697397808,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2024-12",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -6.32258064516129,
+      "mean_residual_default": -0.20110118607457406,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2025-01",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -8.064516129032258,
+      "mean_residual_default": -0.13749844153466798,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2025-02",
+      "n_days": 28,
+      "n_changed": 28,
+      "mean_revision": -8.714285714285714,
+      "mean_residual_default": -0.6042742874221576,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.044776119402985
+    },
+    {
+      "month": "2025-03",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -9.548387096774194,
+      "mean_residual_default": -0.31465855928555075,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2025-04",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -10.5,
+      "mean_residual_default": -0.40940892588513583,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2025-05",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -11.35483870967742,
+      "mean_residual_default": -0.6951145143147224,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2025-06",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -9.266666666666667,
+      "mean_residual_default": 0.061947513456181366,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2025-07",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -9.806451612903226,
+      "mean_residual_default": 0.023700964000420596,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2025-08",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -8.03225806451613,
+      "mean_residual_default": 0.7677075352161482,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2025-09",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -9.2,
+      "mean_residual_default": -0.5437183733995191,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2025-10",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -8.870967741935484,
+      "mean_residual_default": -0.5156091534034818,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2025-11",
+      "n_days": 30,
+      "n_changed": 30,
+      "mean_revision": -7.6,
+      "mean_residual_default": -0.6973857838370275,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1194029850746268
+    },
+    {
+      "month": "2025-12",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -6.419354838709677,
+      "mean_residual_default": -0.5906653626085085,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2026-01",
+      "n_days": 31,
+      "n_changed": 31,
+      "mean_revision": -7.870967741935484,
+      "mean_residual_default": -1.4946525569169022,
+      "pct_changed": 100.0,
+      "share_of_all_revisions_pct": 1.1567164179104477
+    },
+    {
+      "month": "2026-02",
+      "n_days": 28,
+      "n_changed": 27,
+      "mean_revision": -10.0,
+      "mean_residual_default": -1.6978935578443373,
+      "pct_changed": 96.42857142857143,
+      "share_of_all_revisions_pct": 1.007462686567164
+    },
+    {
+      "month": "2026-03",
+      "n_days": 31,
+      "n_changed": 7,
+      "mean_revision": -0.45161290322580644,
+      "mean_residual_default": -0.24015347106957802,
+      "pct_changed": 22.580645161290324,
+      "share_of_all_revisions_pct": 0.26119402985074625
+    },
+    {
+      "month": "2026-04",
+      "n_days": 30,
+      "n_changed": 25,
+      "mean_revision": -1.6333333333333333,
+      "mean_residual_default": -0.9778090936490251,
+      "pct_changed": 83.33333333333333,
+      "share_of_all_revisions_pct": 0.9328358208955224
+    },
+    {
+      "month": "2026-05",
+      "n_days": 31,
+      "n_changed": 12,
+      "mean_revision": -0.45161290322580644,
+      "mean_residual_default": -0.16424495696221392,
+      "pct_changed": 38.70967741935484,
+      "share_of_all_revisions_pct": 0.44776119402985076
+    },
+    {
+      "month": "2026-06",
+      "n_days": 30,
+      "n_changed": 18,
+      "mean_revision": -0.9,
+      "mean_residual_default": 0.05247111749002039,
+      "pct_changed": 60.0,
+      "share_of_all_revisions_pct": 0.6716417910447762
+    },
+    {
+      "month": "2026-07",
+      "n_days": 12,
+      "n_changed": 10,
+      "mean_revision": -2.25,
+      "mean_residual_default": -0.3870785496151072,
+      "pct_changed": 83.33333333333333,
+      "share_of_all_revisions_pct": 0.373134328358209
+    }
+  ],
+  "wto_measurement_states": {
+    "n_files": 6,
+    "n_distinct_regimes": 3,
+    "regime_rule": "exact_equality_on_overlap_strict_clique",
+    "files": [
+      {
+        "file": "voy_intake_index_lng_export.csv",
+        "relative_path": "/Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/raw/wto_hormuz/voy_intake_index_lng_export.csv",
+        "sha256": "a7618fe62c8527a898d77f2897da680b541e4c276eb648f10b5fac3d5cf62cbe",
+        "n_rows": 561,
+        "data_start": "2025-01-01",
+        "data_end": "2026-07-15",
+        "n_provenance_records": 7,
+        "retrieved_utc_first": "2026-07-26T18:55:20.582451+00:00",
+        "retrieved_utc_last": "2026-08-09T17:19:10.426097+00:00",
+        "query_start": "2022-01-01;2025-01-01;2025-02-28",
+        "query_end": "2026-06-01;2026-07-07",
+        "artifact_roles": "normalized_analysis_snapshot",
+        "regime_id": 1,
+        "n_pairwise_conflicts": 3,
+        "regime_rule": "exact_equality_on_overlap_strict_clique"
+      },
+      {
+        "file": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__06762530639d.csv",
+        "relative_path": "/Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/raw/wto_hormuz/wto_hormuz_lng_outbound_index__lng_outbound_volume_index__06762530639d.csv",
+        "sha256": "06762530639dde55a7f3b6ab29e74d732f674148106781573316127d100dc207",
+        "n_rows": 459,
+        "data_start": "2025-02-28",
+        "data_end": "2026-06-01",
+        "n_provenance_records": 3,
+        "retrieved_utc_first": "2026-07-15T12:56:06.827147+00:00",
+        "retrieved_utc_last": "2026-07-26T19:12:42.912697+00:00",
+        "query_start": "2025-02-28",
+        "query_end": "2026-06-01",
+        "artifact_roles": "normalized_analysis_snapshot;unspecified",
+        "regime_id": 1,
+        "n_pairwise_conflicts": 2,
+        "regime_rule": "exact_equality_on_overlap_strict_clique"
+      },
+      {
+        "file": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__5dc0ba2e40c6.csv",
+        "relative_path": "/Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/raw/wto_hormuz/wto_hormuz_lng_outbound_index__lng_outbound_volume_index__5dc0ba2e40c6.csv",
+        "sha256": "5dc0ba2e40c69e6245d328c3cea3ee57a3dd053ad599eb3e87168cb60cb5a858",
+        "n_rows": 553,
+        "data_start": "2025-01-01",
+        "data_end": "2026-07-07",
+        "n_provenance_records": 3,
+        "retrieved_utc_first": "2026-07-15T12:51:54.785374+00:00",
+        "retrieved_utc_last": "2026-07-26T22:16:20.726615+00:00",
+        "query_start": "2022-01-01;2025-01-01",
+        "query_end": "2026-07-07",
+        "artifact_roles": "normalized_analysis_snapshot;unspecified",
+        "regime_id": 1,
+        "n_pairwise_conflicts": 3,
+        "regime_rule": "exact_equality_on_overlap_strict_clique"
+      },
+      {
+        "file": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index.csv",
+        "relative_path": "/Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/raw/wto_hormuz/wto_hormuz_lng_outbound_index__lng_outbound_volume_index.csv",
+        "sha256": "c25cefeb47a1e7e84a16b8b450f3a02886612a30899db52a6e8b75424ed3a6c2",
+        "n_rows": 459,
+        "data_start": "2025-02-28",
+        "data_end": "2026-06-01",
+        "n_provenance_records": 4,
+        "retrieved_utc_first": "2026-06-19T22:21:21.822213+00:00",
+        "retrieved_utc_last": "2026-07-26T18:55:20.582451+00:00",
+        "query_start": "2022-01-01;2025-02-28",
+        "query_end": "2026-06-01",
+        "artifact_roles": "normalized_analysis_snapshot;unspecified",
+        "regime_id": 2,
+        "n_pairwise_conflicts": 4,
+        "regime_rule": "exact_equality_on_overlap_strict_clique"
+      },
+      {
+        "file": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__dba08401b24f.csv",
+        "relative_path": "/Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/raw/wto_hormuz/wto_hormuz_lng_outbound_index__lng_outbound_volume_index__dba08401b24f.csv",
+        "sha256": "dba08401b24f35921b9c4b9996a0a8cdcea332a5460872988973ea61417c23db",
+        "n_rows": 517,
+        "data_start": "2025-01-01",
+        "data_end": "2026-06-01",
+        "n_provenance_records": 2,
+        "retrieved_utc_first": "2026-06-22T12:34:14.260199+00:00",
+        "retrieved_utc_last": "2026-07-26T18:55:20.585557+00:00",
+        "query_start": "2022-01-01",
+        "query_end": "2026-06-01",
+        "artifact_roles": "normalized_analysis_snapshot;unspecified",
+        "regime_id": 2,
+        "n_pairwise_conflicts": 4,
+        "regime_rule": "exact_equality_on_overlap_strict_clique"
+      },
+      {
+        "file": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__30549d8cfd3b.csv",
+        "relative_path": "/Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/data/raw/wto_hormuz/wto_hormuz_lng_outbound_index__lng_outbound_volume_index__30549d8cfd3b.csv",
+        "sha256": "30549d8cfd3b73fc1b7640769adbdc9e18ec93d1b56cd557cacf200172e02a2e",
+        "n_rows": 586,
+        "data_start": "2025-01-01",
+        "data_end": "2026-08-09",
+        "n_provenance_records": 1,
+        "retrieved_utc_first": "2026-08-09T17:19:10.426097+00:00",
+        "retrieved_utc_last": "2026-08-09T17:19:10.426097+00:00",
+        "query_start": "2022-01-01",
+        "query_end": "2026-07-07",
+        "artifact_roles": "normalized_analysis_snapshot",
+        "regime_id": 3,
+        "n_pairwise_conflicts": 4,
+        "regime_rule": "exact_equality_on_overlap_strict_clique"
+      }
+    ],
+    "pairwise_comparisons": [
+      {
+        "file_a": "voy_intake_index_lng_export.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index.csv",
+        "n_overlap_dates": 459,
+        "n_differing_dates": 365,
+        "identical_on_overlap": false
+      },
+      {
+        "file_a": "voy_intake_index_lng_export.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__06762530639d.csv",
+        "n_overlap_dates": 459,
+        "n_differing_dates": 0,
+        "identical_on_overlap": true
+      },
+      {
+        "file_a": "voy_intake_index_lng_export.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__30549d8cfd3b.csv",
+        "n_overlap_dates": 561,
+        "n_differing_dates": 1,
+        "identical_on_overlap": false
+      },
+      {
+        "file_a": "voy_intake_index_lng_export.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__5dc0ba2e40c6.csv",
+        "n_overlap_dates": 553,
+        "n_differing_dates": 0,
+        "identical_on_overlap": true
+      },
+      {
+        "file_a": "voy_intake_index_lng_export.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__dba08401b24f.csv",
+        "n_overlap_dates": 517,
+        "n_differing_dates": 423,
+        "identical_on_overlap": false
+      },
+      {
+        "file_a": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__06762530639d.csv",
+        "n_overlap_dates": 459,
+        "n_differing_dates": 365,
+        "identical_on_overlap": false
+      },
+      {
+        "file_a": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__30549d8cfd3b.csv",
+        "n_overlap_dates": 459,
+        "n_differing_dates": 365,
+        "identical_on_overlap": false
+      },
+      {
+        "file_a": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__5dc0ba2e40c6.csv",
+        "n_overlap_dates": 459,
+        "n_differing_dates": 365,
+        "identical_on_overlap": false
+      },
+      {
+        "file_a": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__dba08401b24f.csv",
+        "n_overlap_dates": 459,
+        "n_differing_dates": 0,
+        "identical_on_overlap": true
+      },
+      {
+        "file_a": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__06762530639d.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__30549d8cfd3b.csv",
+        "n_overlap_dates": 459,
+        "n_differing_dates": 0,
+        "identical_on_overlap": true
+      },
+      {
+        "file_a": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__06762530639d.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__5dc0ba2e40c6.csv",
+        "n_overlap_dates": 459,
+        "n_differing_dates": 0,
+        "identical_on_overlap": true
+      },
+      {
+        "file_a": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__06762530639d.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__dba08401b24f.csv",
+        "n_overlap_dates": 459,
+        "n_differing_dates": 365,
+        "identical_on_overlap": false
+      },
+      {
+        "file_a": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__30549d8cfd3b.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__5dc0ba2e40c6.csv",
+        "n_overlap_dates": 553,
+        "n_differing_dates": 1,
+        "identical_on_overlap": false
+      },
+      {
+        "file_a": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__30549d8cfd3b.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__dba08401b24f.csv",
+        "n_overlap_dates": 517,
+        "n_differing_dates": 423,
+        "identical_on_overlap": false
+      },
+      {
+        "file_a": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__5dc0ba2e40c6.csv",
+        "file_b": "wto_hormuz_lng_outbound_index__lng_outbound_volume_index__dba08401b24f.csv",
+        "n_overlap_dates": 517,
+        "n_differing_dates": 423,
+        "identical_on_overlap": false
+      }
+    ]
+  },
+  "invariant_verification": {
+    "enforced": true,
+    "all_passed": true,
+    "checks": [
+      {
+        "check": "hormuz_pct_changed_n_tanker",
+        "expected": 97.4545,
+        "computed": 97.45454545454545,
+        "tolerance": 0.001,
+        "abs_error": 4.5454545457346285e-05,
+        "passed": true,
+        "description": "Percent of overlapping Hormuz n_tanker rows that differ."
+      },
+      {
+        "check": "next_highest_pct_changed_n_tanker",
+        "expected": 0.1091,
+        "computed": 0.1090909090909091,
+        "tolerance": 0.001,
+        "abs_error": 9.090909090903043e-06,
+        "passed": true,
+        "description": "Second-highest chokepoint by changed-row percentage."
+      },
+      {
+        "check": "next_highest_pct_changed_n_tanker__unit",
+        "expected": "Malacca Strait",
+        "computed": "Malacca Strait",
+        "tolerance": "",
+        "abs_error": "",
+        "passed": true,
+        "description": "Second-highest chokepoint by changed-row percentage."
+      },
+      {
+        "check": "median_pct_changed_n_tanker",
+        "expected": 0.0364,
+        "computed": 0.03636363636363636,
+        "tolerance": 0.001,
+        "abs_error": 3.636363636363993e-05,
+        "passed": true,
+        "description": "Median changed-row percentage across all 28 chokepoints."
+      },
+      {
+        "check": "hormuz_annual_ratio_n_tanker[2019]",
+        "expected": 0.843,
+        "computed": 0.842825016714277,
+        "tolerance": 0.0005,
+        "abs_error": 0.00017498328572296273,
+        "passed": true,
+        "description": "August/July annual Hormuz tanker-count ratios."
+      },
+      {
+        "check": "hormuz_annual_ratio_n_tanker[2020]",
+        "expected": 0.848,
+        "computed": 0.8483695956149674,
+        "tolerance": 0.0005,
+        "abs_error": 0.00036959561496741067,
+        "passed": true,
+        "description": "August/July annual Hormuz tanker-count ratios."
+      },
+      {
+        "check": "hormuz_annual_ratio_n_tanker[2021]",
+        "expected": 0.842,
+        "computed": 0.8420485703094399,
+        "tolerance": 0.0005,
+        "abs_error": 4.857030943994367e-05,
+        "passed": true,
+        "description": "August/July annual Hormuz tanker-count ratios."
+      },
+      {
+        "check": "hormuz_annual_ratio_n_tanker[2022]",
+        "expected": 0.827,
+        "computed": 0.8271090291804548,
+        "tolerance": 0.0005,
+        "abs_error": 0.00010902918045485599,
+        "passed": true,
+        "description": "August/July annual Hormuz tanker-count ratios."
+      },
+      {
+        "check": "hormuz_annual_ratio_n_tanker[2023]",
+        "expected": 0.825,
+        "computed": 0.8253210328682027,
+        "tolerance": 0.0005,
+        "abs_error": 0.0003210328682027308,
+        "passed": true,
+        "description": "August/July annual Hormuz tanker-count ratios."
+      },
+      {
+        "check": "hormuz_annual_ratio_n_tanker[2024]",
+        "expected": 0.818,
+        "computed": 0.8177710843373494,
+        "tolerance": 0.0005,
+        "abs_error": 0.00022891566265059726,
+        "passed": true,
+        "description": "August/July annual Hormuz tanker-count ratios."
+      },
+      {
+        "check": "hormuz_annual_ratio_n_tanker[2025]",
+        "expected": 0.826,
+        "computed": 0.8260638014592321,
+        "tolerance": 0.0005,
+        "abs_error": 6.380145923212677e-05,
+        "passed": true,
+        "description": "August/July annual Hormuz tanker-count ratios."
+      }
+    ],
+    "note": "Expected values in the config are verification targets only. Every reported number is computed from the frozen raw states."
+  },
+  "assertions": {
+    "states_never_averaged": true,
+    "states_never_substituted": true,
+    "input_hashes_match_frozen_config": true,
+    "no_raw_data_modified": true,
+    "no_post_hoc_mapping_selection": true,
+    "august_vintage_not_promoted_to_primary": true
+  },
+  "environment": {
+    "python": "3.14.4",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "pandas": "2.3.3",
+    "numpy": "1.26.4"
+  },
+  "limitations": [
+    "Two captures of the same period; the provider-side reason for the revision is not observed and is not claimed.",
+    "The proportional/non-proportional split is relative to one frozen estimator, not a measurement-error model.",
+    "A purely multiplicative revision cancels under within-series normalisation, so cross-state agreement after normalisation is arithmetic, not evidence.",
+    "Post-onset overlap is short relative to pre-onset; post-onset residual statistics are thin and are not a treatment signal.",
+    "WTO regime grouping uses exact equality over unequal overlap windows; the relation is not transitive and the clique rule is a reporting convention.",
+    "No causal, ATT, or provider-intent interpretation is authorised by this phase."
+  ],
+  "claims_not_authorised": [
+    "That the Hormuz disruption caused the PortWatch revision.",
+    "Any causal ATT or structural treatment effect.",
+    "That Hormuz traffic physically stopped.",
+    "That the residual revision is a measurement-error variance.",
+    "Any averaging or blending of the July and August states."
+  ],
+  "outputs": {
+    "by_chokepoint": {
+      "path": "data/processed/portwatch_instrument_shift_by_chokepoint.csv",
+      "sha256": "8d8f2af547e5c28afb32070ff42e292266827b3504608000690ce51adbcca071",
+      "n_rows": 392
+    },
+    "hormuz_daily": {
+      "path": "data/processed/portwatch_hormuz_revision_daily.csv",
+      "sha256": "139da8438ad81326f2a5d0d05ac21d4e7eb6e52404de624b41c148822a7d0d48",
+      "n_rows": 2750
+    },
+    "hormuz_annual": {
+      "path": "data/processed/portwatch_hormuz_revision_annual.csv",
+      "sha256": "e1a7b9a3da827625ab80ed0499123184f13885a9f3d801c3380614ce021af763",
+      "n_rows": 8
+    },
+    "wto_audit": {
+      "path": "data/processed/wto_measurement_state_audit.csv",
+      "sha256": "438b013c4d467798728f609a0d4583d3175ae7599f78bd4ca22e4ed444a93d33",
+      "n_rows": 6
+    }
+  }
+}

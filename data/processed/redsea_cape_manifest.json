@@ -1,0 +1,328 @@
+{
+  "schema": "redsea_cape_manifest/1",
+  "phase": "B2",
+  "status": "frozen",
+  "script": "scripts/run_receiver_test.py",
+  "command": "run_receiver_test.py --phase positive-control",
+  "run_utc": "2026-08-27T10:31:04.040166+00:00",
+  "git": {
+    "commit": "73ae8989f274f06566dd883e6e6e1699a64e07c9",
+    "branch": "ml/hormuz-revision-robust",
+    "dirty": true
+  },
+  "config": {
+    "path": "config/hormuz_receiver_test.yaml",
+    "sha256": "6043f3110e648d664de2010883a8a0db914433c6816a3f1a3cb3c94f3d8710f6"
+  },
+  "inputs": {
+    "panel_registry_variable": "portwatch_chokepoints_snapshot",
+    "measurement_state": "july",
+    "value_column": "n_tanker",
+    "disruption_source": "config/hormuz_event_chronology.yaml",
+    "disruption_source_sha256": "dc14bae0309cac4653106729cad64f12dbc694508a06dfdab4184bc2ab3c4d81"
+  },
+  "anchor_pair": {
+    "emitter": "bab_el_mandeb_strait",
+    "receiver": "cape_of_good_hope",
+    "rationale": "The Cape of Good Hope is the only long-haul substitute for the Bab el-Mandeb/Suez route. It was named on route topology before any post-onset outcome was inspected.\n"
+  },
+  "onsets_reported": [
+    "register_onset",
+    "external_onset"
+  ],
+  "primary_onset": null,
+  "results": [
+    {
+      "label": "register_onset",
+      "onset": "2024-01-13",
+      "onset_role": "declared_sensitivity",
+      "emitter_loss_per_day": 7.8769537827168,
+      "receiver_gain_per_day": 7.0325525555049015,
+      "recovered_fraction": 0.8928010433342087,
+      "eligible_family_size": 15,
+      "spatial": {
+        "same_emitter_alternative_receivers": {
+          "anchor": "cape_of_good_hope",
+          "anchor_standardised": 7.951455574821582,
+          "family_size": 16,
+          "rank_of_anchor": 1,
+          "max_statistic": 7.951455574821582,
+          "max_statistic_unit": "cape_of_good_hope",
+          "anchor_is_family_max": true,
+          "percentile_within_family": 100.0,
+          "family_median": 0.07795953698183133,
+          "standardised_values": {
+            "cape_of_good_hope": 7.951455574821582,
+            "korea_strait": 1.736702729790157,
+            "bosporus_strait": 0.8278185217868393,
+            "tsugaru_strait": 0.7586552060685694,
+            "lombok_strait": 0.6110156415191417,
+            "yucatan_channel": 0.27475281445416144,
+            "oresund_strait": 0.17970950874455857,
+            "luzon_strait": 0.15923816667737356,
+            "dover_strait": -0.0033190927137108995,
+            "taiwan_strait": -0.185186254950865,
+            "malacca_strait": -0.7438675607736647,
+            "bohai_strait": -0.7863385688402306,
+            "sunda_strait": -1.2317085582836258,
+            "makassar_strait": -1.2751877191140781,
+            "gibraltar_strait": -1.390383831565171,
+            "bab_el_mandeb_strait": -6.201274441552536
+          },
+          "inferential_p_value": null,
+          "p_value_withheld_reason": "cross-sectional exchangeability across chokepoints is not defensible"
+        },
+        "same_receiver_alternative_emitters": {
+          "anchor": "bab_el_mandeb_strait",
+          "anchor_standardised": 6.201274441552536,
+          "family_size": 16,
+          "rank_of_anchor": 1,
+          "max_statistic": 6.201274441552536,
+          "max_statistic_unit": "bab_el_mandeb_strait",
+          "anchor_is_family_max": true,
+          "percentile_within_family": 100.0,
+          "family_median": -0.07795953698183133,
+          "standardised_values": {
+            "bab_el_mandeb_strait": 6.201274441552536,
+            "gibraltar_strait": 1.390383831565171,
+            "makassar_strait": 1.2751877191140781,
+            "sunda_strait": 1.2317085582836258,
+            "bohai_strait": 0.7863385688402306,
+            "malacca_strait": 0.7438675607736647,
+            "taiwan_strait": 0.185186254950865,
+            "dover_strait": 0.0033190927137108995,
+            "luzon_strait": -0.15923816667737356,
+            "oresund_strait": -0.17970950874455857,
+            "yucatan_channel": -0.27475281445416144,
+            "lombok_strait": -0.6110156415191417,
+            "tsugaru_strait": -0.7586552060685694,
+            "bosporus_strait": -0.8278185217868393,
+            "korea_strait": -1.736702729790157,
+            "cape_of_good_hope": -7.951455574821582
+          },
+          "inferential_p_value": null,
+          "p_value_withheld_reason": "cross-sectional exchangeability across chokepoints is not defensible"
+        }
+      },
+      "temporal": [
+        {
+          "onset_label": "register_onset",
+          "guard_days": 90,
+          "n_unique_admissible_dates": 1319,
+          "approx_non_overlapping_windows": 20,
+          "attainable_p_value_floor": 0.0007575757575757576,
+          "span_days": 1319,
+          "n_null_with_positive_loss": 511,
+          "n_null_ge_observed": 87,
+          "p_value": 0.171875,
+          "p_value_floor": 0.001953125,
+          "null_median": -0.11914456736251637
+        },
+        {
+          "onset_label": "register_onset",
+          "guard_days": 180,
+          "n_unique_admissible_dates": 1229,
+          "approx_non_overlapping_windows": 19,
+          "attainable_p_value_floor": 0.0008130081300813008,
+          "span_days": 1229,
+          "n_null_with_positive_loss": 463,
+          "n_null_ge_observed": 79,
+          "p_value": 0.1724137931034483,
+          "p_value_floor": 0.0021551724137931034,
+          "null_median": -0.12009463311570363
+        },
+        {
+          "onset_label": "register_onset",
+          "guard_days": 365,
+          "n_unique_admissible_dates": 1044,
+          "approx_non_overlapping_windows": 16,
+          "attainable_p_value_floor": 0.0009569377990430622,
+          "span_days": 1044,
+          "n_null_with_positive_loss": 386,
+          "n_null_ge_observed": 71,
+          "p_value": 0.18604651162790697,
+          "p_value_floor": 0.002583979328165375,
+          "null_median": -0.21610616897050908
+        }
+      ]
+    },
+    {
+      "label": "external_onset",
+      "onset": "2023-12-14",
+      "onset_role": "declared_sensitivity",
+      "emitter_loss_per_day": 12.616039220169498,
+      "receiver_gain_per_day": 5.034700777132796,
+      "recovered_fraction": 0.39907142719433897,
+      "eligible_family_size": 15,
+      "spatial": {
+        "same_emitter_alternative_receivers": {
+          "anchor": "cape_of_good_hope",
+          "anchor_standardised": 5.6925560450386055,
+          "family_size": 16,
+          "rank_of_anchor": 1,
+          "max_statistic": 5.6925560450386055,
+          "max_statistic_unit": "cape_of_good_hope",
+          "anchor_is_family_max": true,
+          "percentile_within_family": 100.0,
+          "family_median": -0.026599772554716905,
+          "standardised_values": {
+            "cape_of_good_hope": 5.6925560450386055,
+            "korea_strait": 1.4277018072706182,
+            "tsugaru_strait": 0.6064438987005739,
+            "bosporus_strait": 0.5646698319674757,
+            "sunda_strait": 0.4421568404413526,
+            "luzon_strait": 0.4236833266889228,
+            "yucatan_channel": 0.17005859484672226,
+            "makassar_strait": 0.16918727164165723,
+            "lombok_strait": -0.22238681675109104,
+            "oresund_strait": -0.23716133485854674,
+            "dover_strait": -0.37575049277767447,
+            "malacca_strait": -0.5224381219192832,
+            "bohai_strait": -0.6270583159823866,
+            "taiwan_strait": -1.6979323627455587,
+            "gibraltar_strait": -2.3690255180497943,
+            "bab_el_mandeb_strait": -9.93220523158607
+          },
+          "inferential_p_value": null,
+          "p_value_withheld_reason": "cross-sectional exchangeability across chokepoints is not defensible"
+        },
+        "same_receiver_alternative_emitters": {
+          "anchor": "bab_el_mandeb_strait",
+          "anchor_standardised": 9.93220523158607,
+          "family_size": 16,
+          "rank_of_anchor": 1,
+          "max_statistic": 9.93220523158607,
+          "max_statistic_unit": "bab_el_mandeb_strait",
+          "anchor_is_family_max": true,
+          "percentile_within_family": 100.0,
+          "family_median": 0.026599772554716905,
+          "standardised_values": {
+            "bab_el_mandeb_strait": 9.93220523158607,
+            "gibraltar_strait": 2.3690255180497943,
+            "taiwan_strait": 1.6979323627455587,
+            "bohai_strait": 0.6270583159823866,
+            "malacca_strait": 0.5224381219192832,
+            "dover_strait": 0.37575049277767447,
+            "oresund_strait": 0.23716133485854674,
+            "lombok_strait": 0.22238681675109104,
+            "makassar_strait": -0.16918727164165723,
+            "yucatan_channel": -0.17005859484672226,
+            "luzon_strait": -0.4236833266889228,
+            "sunda_strait": -0.4421568404413526,
+            "bosporus_strait": -0.5646698319674757,
+            "tsugaru_strait": -0.6064438987005739,
+            "korea_strait": -1.4277018072706182,
+            "cape_of_good_hope": -5.6925560450386055
+          },
+          "inferential_p_value": null,
+          "p_value_withheld_reason": "cross-sectional exchangeability across chokepoints is not defensible"
+        }
+      },
+      "temporal": [
+        {
+          "onset_label": "external_onset",
+          "guard_days": 90,
+          "n_unique_admissible_dates": 1319,
+          "approx_non_overlapping_windows": 20,
+          "attainable_p_value_floor": 0.0007575757575757576,
+          "span_days": 1319,
+          "n_null_with_positive_loss": 511,
+          "n_null_ge_observed": 155,
+          "p_value": 0.3046875,
+          "p_value_floor": 0.001953125,
+          "null_median": -0.11914456736251637
+        },
+        {
+          "onset_label": "external_onset",
+          "guard_days": 180,
+          "n_unique_admissible_dates": 1229,
+          "approx_non_overlapping_windows": 19,
+          "attainable_p_value_floor": 0.0008130081300813008,
+          "span_days": 1229,
+          "n_null_with_positive_loss": 463,
+          "n_null_ge_observed": 140,
+          "p_value": 0.30387931034482757,
+          "p_value_floor": 0.0021551724137931034,
+          "null_median": -0.12009463311570363
+        },
+        {
+          "onset_label": "external_onset",
+          "guard_days": 365,
+          "n_unique_admissible_dates": 1044,
+          "approx_non_overlapping_windows": 16,
+          "attainable_p_value_floor": 0.0009569377990430622,
+          "span_days": 1044,
+          "n_null_with_positive_loss": 386,
+          "n_null_ge_observed": 118,
+          "p_value": 0.30749354005167956,
+          "p_value_floor": 0.002583979328165375,
+          "null_median": -0.21610616897050908
+        }
+      ]
+    }
+  ],
+  "invariant_verification": {
+    "all_passed": true,
+    "checks": [
+      {
+        "check": "emitter_loss_per_day",
+        "expected": 7.877,
+        "computed": 7.8769537827168,
+        "tolerance": 0.01,
+        "passed": true
+      },
+      {
+        "check": "receiver_gain_per_day",
+        "expected": 7.033,
+        "computed": 7.0325525555049015,
+        "tolerance": 0.01,
+        "passed": true
+      },
+      {
+        "check": "recovered_fraction_pct",
+        "expected": 89.28,
+        "computed": 89.28010433342088,
+        "tolerance": 0.1,
+        "passed": true
+      }
+    ]
+  },
+  "design_assertions": {
+    "temporal_null_enumerates_unique_dates_once": true,
+    "temporal_null_uses_resampling_with_replacement": false,
+    "spatial_families_reported_separately": true,
+    "spatial_inferential_p_value_computed": false,
+    "pairs_treated_as_independent": false,
+    "hormuz_excluded": true,
+    "b3_opened": false
+  },
+  "environment": {
+    "python": "3.14.4",
+    "pandas": "2.3.3",
+    "numpy": "1.26.4"
+  },
+  "limitations": [
+    "The recovered fraction moves by a factor of about 2.2 between the two declared onsets; this sensitivity is a finding, not a nuisance.",
+    "The donor median assumes the remaining eligible units were undisrupted over the analysis window.",
+    "Spatial families are descriptive ranks; cross-sectional exchangeability is not claimed.",
+    "Temporal p-values are bounded below by 1/(B+1) and are reported with that floor.",
+    "Aggregate correspondence is not vessel linkage."
+  ],
+  "claims_not_authorised": [
+    "That the same vessels moved from Bab el-Mandeb to the Cape.",
+    "A causal reallocation parameter or ATT.",
+    "Treating roughly 700 ordered pairs as independent observations.",
+    "Presenting either onset's result as the single headline.",
+    "Opening B3 without Mher's acceptance of this gate."
+  ],
+  "outputs": {
+    "positive_control": {
+      "path": "data/processed/redsea_cape_positive_control.csv",
+      "sha256": "c231d6c3d74ed388bb0d9d611f8ee1c65254c280df9d1f1ecca3f14d214cbe30"
+    },
+    "null_distribution": {
+      "path": "data/processed/redsea_cape_null_distribution.csv",
+      "sha256": "783983fc440896eb7d99ad5994bd01b36726227aa3af961086f03499cd5c2419"
+    }
+  }
+}

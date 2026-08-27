@@ -1,0 +1,554 @@
+{
+  "analysis_window": {
+    "context_end": "2023-12-31",
+    "context_start": "2019-01-01",
+    "development_end": "2023-12-31",
+    "development_start": "2019-03-27",
+    "validation_end": "2024-12-31",
+    "validation_start": "2024-01-01"
+  },
+  "claims_not_authorised": [
+    "Any causal effect, ATT, or structural interpretation of these errors.",
+    "Any statement about Hormuz: no Hormuz row was fitted or scored here. The Hormuz column is present in the loaded panel.",
+    "That pooling as such produced the gain: the pooled model carries 17 features and the local AR baseline carries two, so the comparison does not separate pooling from feature richness.",
+    "That the unexplained error is irreducible noise.",
+    "Any detection or alarm claim; the detector is calibrated in A3.",
+    "Treating a global-model win or loss as evidence about the disruption."
+  ],
+  "command": "run_hormuz_detection.py --phase validate",
+  "config": {
+    "path": "config/hormuz_detection.yaml",
+    "sha256": "a0ffb0f41314709958c88839f6b4e297ce0315df695aaefa92fa364da745cdb0"
+  },
+  "environment": {
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.4"
+  },
+  "estimators": {
+    "baselines": [
+      "seasonal_naive",
+      "local_ar_1_7"
+    ],
+    "global_model": "ridge_closed_form",
+    "grid_alpha": [
+      0.1,
+      1.0,
+      10.0,
+      100.0,
+      1000.0
+    ],
+    "seed": 20260612,
+    "seed_note": "recorded for provenance; the closed-form fits are deterministic",
+    "selected_alpha_by_horizon": {
+      "1": 100.0,
+      "30": 1000.0,
+      "7": 1000.0
+    },
+    "selection_metric": "mase",
+    "selection_period": "2024 hyperparameter-validation tasks only",
+    "stochastic_component": false,
+    "tsfm_benchmarks_included": false,
+    "tsfm_exclusion_reason": "Plan v1.1 admits frozen Chronos-2/TimesFM benchmarks only \"where identical task compatibility is demonstrated\". The frozen artefacts score hormuz_tanker_transits and hormuz_tanker_capacity on 30-day rolling folds inside 2023 from Hormuz's own history: a different unit population, a different task geometry, and a unit A1 forbids in fitting. Identical compatibility cannot be demonstrated, so they are excluded. This authorises no new transformer training."
+  },
+  "features": {
+    "columns": [
+      "lag_1",
+      "lag_7",
+      "lag_14",
+      "lag_28",
+      "lag_56",
+      "rolling_mean_7",
+      "rolling_median_7",
+      "rolling_std_7",
+      "rolling_mean_28",
+      "rolling_median_28",
+      "rolling_std_28",
+      "rolling_mean_56",
+      "rolling_median_56",
+      "rolling_std_56",
+      "target_day_of_week",
+      "target_month_sin",
+      "target_month_cos"
+    ],
+    "context_scale_digests": {
+      "bab_el_mandeb_strait": "16f39f7e18ef094fdc91a25b38c7b4b5c47cac0fee16ac35a11f7961ef609920",
+      "balabac_strait": "2495565f2ce7788a674fba48b0512834f2898ee7abf205047ec38a149683d6c8",
+      "bering_strait": "480f8dba323fb56d8efe3494dfc6ec3862e2284b4c38de2dcacc012db64075ad",
+      "bohai_strait": "e6b3864e92090776fd283a79af1b877e0a4e7491a52ec1843e2aa56bc30cf6f3",
+      "bosporus_strait": "0b17fd0c1dd8a558699a18e45d9417cdc4c3d6906939ab2d6b32f4fad7448b90",
+      "cape_of_good_hope": "084e4d541ac3ddc996f6b7a1fb16283d6e04d90b6647f81fe0180a8ad7c753ef",
+      "dover_strait": "a78f44e63d107146886d2013c4e77f6bce151a792a76598526bc9f640694d0e3",
+      "gibraltar_strait": "0024eac318310b09f78365a28b9d216c29d01dc5b2f4839ec3a70ae1f1256a9c",
+      "kerch_strait": "9c422d19c23d77970db2132dd989cacb8537e8d2ace3b974be6d284603a851d4",
+      "korea_strait": "f0d2486448ab889519499a04b0f73f6469022c27373ca54fbe76850a699ccbca",
+      "lombok_strait": "51ac577403509ffe114eafc208509cf29406b481b59acb5d175423ef99398c41",
+      "luzon_strait": "fd461003621c261bd5964d902510947e9d874cc311a1da1f213110bd4ad66fc8",
+      "magellan_strait": "3b054f890112825ab9196bdca4b97cbba19db963a78df40a592fdd97933f8468",
+      "makassar_strait": "57737f3c41e45481411181f46303935f81680883808d7b4219cf90ec81a4525a",
+      "malacca_strait": "72f5e6fcbc459db40ff0a8bea0c01b83d7e1b4d645cdcd728781bf713cf64389",
+      "mindoro_strait": "2495565f2ce7788a674fba48b0512834f2898ee7abf205047ec38a149683d6c8",
+      "mona_passage": "bfbb87728d620191d1762888e8ebc1854062a9e1d42b564d655c4dc25d275a00",
+      "ombai_strait": "08c8c758f5de3a71af77a1e85c30b9d74e739582fe28dc0a8c9cabfde8078d60",
+      "oresund_strait": "2be1bb2d5991861ec60e12d396dbaf1030907082558ae288f335b3a270ae9759",
+      "panama_canal": "469a933107b2cecb4ef4fffb738d53e5408dd28eb4015859b0eb5fe7a8c9ae5d",
+      "suez_canal": "d8ab82659abebb0c6939113c290551dda39f24ccc2845dd859ad17e788bddfeb",
+      "sunda_strait": "084e4d541ac3ddc996f6b7a1fb16283d6e04d90b6647f81fe0180a8ad7c753ef",
+      "taiwan_strait": "e8a69bcd69876dbc7cf070ada01348bcba3da5b3801db03d41f858a9ae05dec9",
+      "torres_strait": "bfbb87728d620191d1762888e8ebc1854062a9e1d42b564d655c4dc25d275a00",
+      "tsugaru_strait": "fd5e9b9047901e74e8c343e31dad06d40bbc23145703554a7f36021c0d6c4ac4",
+      "windward_passage": "bfbb87728d620191d1762888e8ebc1854062a9e1d42b564d655c4dc25d275a00",
+      "yucatan_channel": "ead5f35af68c6fb586afa008071c12c008759c5c947e7be7dc5b1dfc6c1dd65f"
+    },
+    "standardiser_digest": "8599e122184cc48ab675248f118033ea3f9e5edc1441e925bcaaa415cc51b43f",
+    "transform_kinds": {
+      "lag_1": "level",
+      "lag_14": "level",
+      "lag_28": "level",
+      "lag_56": "level",
+      "lag_7": "level",
+      "rolling_mean_28": "level",
+      "rolling_mean_56": "level",
+      "rolling_mean_7": "level",
+      "rolling_median_28": "level",
+      "rolling_median_56": "level",
+      "rolling_median_7": "level",
+      "rolling_std_28": "dispersion",
+      "rolling_std_56": "dispersion",
+      "rolling_std_7": "dispersion",
+      "target_day_of_week": "untransformed",
+      "target_month_cos": "untransformed",
+      "target_month_sin": "untransformed"
+    }
+  },
+  "geometry": {
+    "development_geometry_sha256": "55395db092e6c021f36ff4ab8f2db9954bd15804168a0a59b2477b7b40d1e38f",
+    "development_rows": 141021,
+    "validation_geometry_sha256": "9a91265b6d87d2dcda21de663b63c99a357ee92e86512e226d2936fe3f3a6a19",
+    "validation_rows": 28701
+  },
+  "git": {
+    "branch": "ml/hormuz-revision-robust",
+    "commit": "73ae8989f274f06566dd883e6e6e1699a64e07c9",
+    "dirty": true
+  },
+  "inputs": {
+    "hormuz_handling": {
+      "claim": "The Hormuz column is loaded with the panel. It is never materialised into a task, fitted, selected on, or scored.",
+      "entered_fitting": false,
+      "entered_hyperparameter_selection": false,
+      "materialised_into_tasks": false,
+      "present_in_loaded_panel": true,
+      "scored": false
+    },
+    "measurement_state_used": "july",
+    "measurement_states_verified": [
+      {
+        "available": true,
+        "measurement_state": "july",
+        "outcome_rows_read": true,
+        "path": "data/raw/portwatch/Daily_Chokepoints_Data.csv",
+        "sha256": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d"
+      },
+      {
+        "available": true,
+        "measurement_state": "august",
+        "outcome_rows_read": false,
+        "path": "data/raw/portwatch/vintages/Daily_Chokepoints_Data__vintage_2026-08-09.csv",
+        "sha256": "0bc806a4c384723debff08053d6fcbb915a03ee9fdf7b23c73d76d9bcb885bcb"
+      }
+    ],
+    "outcome_column": "n_tanker",
+    "panel_days": 2192,
+    "panel_units": 28
+  },
+  "limitations": [
+    "Provisional intervals come from in-sample development residuals and are expected to be anti-conservative; the reported 2024 coverage is the honest check on them. Calibrated intervals are an A3 deliverable.",
+    "The global estimator is a regularized linear model, not gradient boosting: scikit-learn is absent from .venv and the plan forbids a new dependency without Mher's documented approval. A nonlinear learner could change the comparison against the local baseline.",
+    "target_day_of_week enters as a numeric code under the frozen A1 feature contract, which a linear model cannot read as a cyclical effect.",
+    "August is not read at A2. Any cross-state statement waits for A4 and needs a registry allowed_consumers entry for the vintage.",
+    "Bering Strait has a zero median absolute deviation over the context window, so its context scale falls back to the standard deviation."
+  ],
+  "outputs": {
+    "manifest": "data/processed/hormuz_detection_validation_manifest.json",
+    "predictions": "data/processed/hormuz_detection_validation_predictions.csv",
+    "predictions_cover_reported_models_only": true,
+    "predictions_sha256": "5b38cb08c1d91f760c79ca61377a55ae7384b1f16ae8321f80171517f4785817",
+    "reported_models": [
+      "global_ridge_alpha_100",
+      "global_ridge_alpha_1000",
+      "local_ar_1_7",
+      "seasonal_naive"
+    ],
+    "reported_models_by_horizon": {
+      "1": [
+        "global_ridge_alpha_100",
+        "local_ar_1_7",
+        "seasonal_naive"
+      ],
+      "30": [
+        "global_ridge_alpha_1000",
+        "local_ar_1_7",
+        "seasonal_naive"
+      ],
+      "7": [
+        "global_ridge_alpha_1000",
+        "local_ar_1_7",
+        "seasonal_naive"
+      ]
+    },
+    "scores": "data/processed/hormuz_detection_validation_scores.csv",
+    "scores_cover_full_grid": true,
+    "scores_sha256": "efcbf7241f49d354993be57d7487ed97fc2382ee647cbc58e6175af3051f68b0"
+  },
+  "phase": "A2",
+  "plan": {
+    "sha256": "3f94689495dab052d5fb802fa9695ba620b254b821143c4437a6053324eb804e",
+    "version": "1.2"
+  },
+  "results": {
+    "aggregate": [
+      {
+        "horizon_days": 1,
+        "mae": 3.3771356781677118,
+        "mase": 0.7418065064066572,
+        "model": "global_ridge_alpha_0.1",
+        "rmse": 4.38058063312988,
+        "scaled_mae": 0.7642723601236686
+      },
+      {
+        "horizon_days": 7,
+        "mae": 3.4125462339293446,
+        "mase": 0.7505249457083899,
+        "model": "global_ridge_alpha_0.1",
+        "rmse": 4.420428154766388,
+        "scaled_mae": 0.7720218261263914
+      },
+      {
+        "horizon_days": 30,
+        "mae": 3.5276073828008045,
+        "mase": 0.7823185108337887,
+        "model": "global_ridge_alpha_0.1",
+        "rmse": 4.540255221201915,
+        "scaled_mae": 0.7977841640955903
+      },
+      {
+        "horizon_days": 1,
+        "mae": 3.3771369640804605,
+        "mase": 0.7418062991667126,
+        "model": "global_ridge_alpha_1",
+        "rmse": 4.38058176540607,
+        "scaled_mae": 0.7642722528788075
+      },
+      {
+        "horizon_days": 7,
+        "mae": 3.4125479131867302,
+        "mase": 0.750524753157401,
+        "model": "global_ridge_alpha_1",
+        "rmse": 4.420430300288258,
+        "scaled_mae": 0.7720217368499407
+      },
+      {
+        "horizon_days": 30,
+        "mae": 3.527605778182067,
+        "mase": 0.7823177902395962,
+        "model": "global_ridge_alpha_1",
+        "rmse": 4.540254037510898,
+        "scaled_mae": 0.7977836810502332
+      },
+      {
+        "horizon_days": 1,
+        "mae": 3.3771500062798037,
+        "mase": 0.7418042834265342,
+        "model": "global_ridge_alpha_10",
+        "rmse": 4.380593142862601,
+        "scaled_mae": 0.7642712361672758
+      },
+      {
+        "horizon_days": 7,
+        "mae": 3.4125646661102653,
+        "mase": 0.7505228262861203,
+        "model": "global_ridge_alpha_10",
+        "rmse": 4.420451722758143,
+        "scaled_mae": 0.7720208423005285
+      },
+      {
+        "horizon_days": 30,
+        "mae": 3.527589942211369,
+        "mase": 0.7823106360656163,
+        "model": "global_ridge_alpha_10",
+        "rmse": 4.5402424757246465,
+        "scaled_mae": 0.7977788902776333
+      },
+      {
+        "horizon_days": 1,
+        "mae": 3.377287762224867,
+        "mase": 0.7417875396296092,
+        "model": "global_ridge_alpha_100",
+        "rmse": 4.380711983286268,
+        "scaled_mae": 0.7642642753638792
+      },
+      {
+        "horizon_days": 7,
+        "mae": 3.4127285377700733,
+        "mase": 0.7505035125929893,
+        "model": "global_ridge_alpha_100",
+        "rmse": 4.42066293113842,
+        "scaled_mae": 0.7720117820825502
+      },
+      {
+        "horizon_days": 30,
+        "mae": 3.527459346890952,
+        "mase": 0.7822461702659871,
+        "model": "global_ridge_alpha_100",
+        "rmse": 4.5401519244162625,
+        "scaled_mae": 0.7977370815036849
+      },
+      {
+        "horizon_days": 1,
+        "mae": 3.3789493299045095,
+        "mase": 0.7417892502699585,
+        "model": "global_ridge_alpha_1000",
+        "rmse": 4.382170986741785,
+        "scaled_mae": 0.7643235405779326
+      },
+      {
+        "horizon_days": 7,
+        "mae": 3.414348953373489,
+        "mase": 0.7503767303633349,
+        "model": "global_ridge_alpha_1000",
+        "rmse": 4.422603269663863,
+        "scaled_mae": 0.771971313229991
+      },
+      {
+        "horizon_days": 30,
+        "mae": 3.527455678930053,
+        "mase": 0.7819276116972903,
+        "model": "global_ridge_alpha_1000",
+        "rmse": 4.540516615439422,
+        "scaled_mae": 0.7975792414945979
+      },
+      {
+        "horizon_days": 1,
+        "mae": 3.75415393556999,
+        "mase": 0.8213598585437973,
+        "model": "local_ar_1_7",
+        "rmse": 4.781222722333517,
+        "scaled_mae": 0.8437045050545658
+      },
+      {
+        "horizon_days": 7,
+        "mae": 3.79269448477777,
+        "mase": 0.8275546727342287,
+        "model": "local_ar_1_7",
+        "rmse": 4.830951363289898,
+        "scaled_mae": 0.8504105835392383
+      },
+      {
+        "horizon_days": 30,
+        "mae": 3.7847766498586926,
+        "mase": 0.8318260046916143,
+        "model": "local_ar_1_7",
+        "rmse": 4.841469268317842,
+        "scaled_mae": 0.8519193338499372
+      },
+      {
+        "horizon_days": 1,
+        "mae": 4.6387370977534905,
+        "mase": 1.0043817211963995,
+        "model": "seasonal_naive",
+        "rmse": 6.013295757277815,
+        "scaled_mae": 1.0427693936415205
+      },
+      {
+        "horizon_days": 7,
+        "mae": 4.646913580246913,
+        "mase": 1.005986828553009,
+        "model": "seasonal_naive",
+        "rmse": 6.0222925859835925,
+        "scaled_mae": 1.0442594801233054
+      },
+      {
+        "horizon_days": 30,
+        "mae": 4.716342455214859,
+        "mase": 1.0278464298565833,
+        "model": "seasonal_naive",
+        "rmse": 6.116592099216393,
+        "scaled_mae": 1.0654892557872069
+      }
+    ],
+    "intervals": [
+      {
+        "coverage_0.8": 0.7863792754503137,
+        "coverage_0.95": 0.9366524994940295,
+        "horizon_days": 1,
+        "mean_width_0.8": 11.214005794167422,
+        "mean_width_0.95": 18.23340993676693,
+        "model": "global_ridge_alpha_100",
+        "pinball_0.025": 0.3023169170062532,
+        "pinball_0.1": 0.7947365148673864,
+        "pinball_0.5": 1.68542962145039,
+        "pinball_0.9": 0.8461518794371999,
+        "pinball_0.975": 0.3216190601858696
+      },
+      {
+        "coverage_0.8": 0.7686703096539163,
+        "coverage_0.95": 0.9270390609188424,
+        "horizon_days": 1,
+        "mean_width_0.8": 11.5651334691618,
+        "mean_width_0.95": 18.465638366168367,
+        "model": "local_ar_1_7",
+        "pinball_0.025": 0.29401946985449195,
+        "pinball_0.1": 0.8141635738950815,
+        "pinball_0.5": 1.8736597644194397,
+        "pinball_0.9": 0.9737485742560402,
+        "pinball_0.975": 0.38592540050361507
+      },
+      {
+        "coverage_0.8": 0.8099574984820886,
+        "coverage_0.95": 0.9478850435134588,
+        "horizon_days": 1,
+        "mean_width_0.8": 15.91599706455219,
+        "mean_width_0.95": 25.465595303283504,
+        "model": "seasonal_naive",
+        "pinball_0.025": 0.4145797336522515,
+        "pinball_0.1": 1.1326983345644754,
+        "pinball_0.5": 2.3193685488767457,
+        "pinball_0.9": 1.1553809898974037,
+        "pinball_0.975": 0.42298896255328394
+      },
+      {
+        "coverage_0.8": 0.7864197530864198,
+        "coverage_0.95": 0.9364197530864198,
+        "horizon_days": 7,
+        "mean_width_0.8": 11.263312756759058,
+        "mean_width_0.95": 18.22791657105864,
+        "model": "global_ridge_alpha_1000",
+        "pinball_0.025": 0.30709912091262187,
+        "pinball_0.1": 0.8012409454362261,
+        "pinball_0.5": 1.7029893916137253,
+        "pinball_0.9": 0.853231857781113,
+        "pinball_0.975": 0.3234347678263932
+      },
+      {
+        "coverage_0.8": 0.7720164609053498,
+        "coverage_0.95": 0.9256172839506173,
+        "horizon_days": 7,
+        "mean_width_0.8": 11.680383085133538,
+        "mean_width_0.95": 18.56050529169812,
+        "model": "local_ar_1_7",
+        "pinball_0.025": 0.3105010391121272,
+        "pinball_0.1": 0.8300534386201048,
+        "pinball_0.5": 1.8931341434126823,
+        "pinball_0.9": 0.9818975426286359,
+        "pinball_0.975": 0.3888912433162802
+      },
+      {
+        "coverage_0.8": 0.8092592592592592,
+        "coverage_0.95": 0.9479423868312757,
+        "horizon_days": 7,
+        "mean_width_0.8": 15.91599706455219,
+        "mean_width_0.95": 25.465595303283504,
+        "model": "seasonal_naive",
+        "pinball_0.025": 0.41475402237267495,
+        "pinball_0.1": 1.1343935561670035,
+        "pinball_0.5": 2.3234567901234566,
+        "pinball_0.9": 1.1570633092534228,
+        "pinball_0.975": 0.42287130632329245
+      },
+      {
+        "coverage_0.8": 0.7838223980657215,
+        "coverage_0.95": 0.9361468293219035,
+        "horizon_days": 30,
+        "mean_width_0.8": 11.381616426671748,
+        "mean_width_0.95": 18.511656802349336,
+        "model": "global_ridge_alpha_1000",
+        "pinball_0.025": 0.31020169982014645,
+        "pinball_0.1": 0.8086713954366637,
+        "pinball_0.5": 1.7566858213158634,
+        "pinball_0.9": 0.8878253444278622,
+        "pinball_0.975": 0.3415935214952194
+      },
+      {
+        "coverage_0.8": 0.7709638421804594,
+        "coverage_0.95": 0.9257061215518189,
+        "horizon_days": 30,
+        "mean_width_0.8": 11.716510443040272,
+        "mean_width_0.95": 18.537133083461093,
+        "model": "local_ar_1_7",
+        "pinball_0.025": 0.31523761540471534,
+        "pinball_0.1": 0.8379275479879019,
+        "pinball_0.5": 1.8891588242824409,
+        "pinball_0.9": 0.9870445279807437,
+        "pinball_0.975": 0.3956436515962446
+      },
+      {
+        "coverage_0.8": 0.8017364545554456,
+        "coverage_0.95": 0.9425211561710078,
+        "horizon_days": 30,
+        "mean_width_0.8": 15.915997064552188,
+        "mean_width_0.95": 25.465595303283504,
+        "model": "seasonal_naive",
+        "pinball_0.025": 0.43174186112261764,
+        "pinball_0.1": 1.170158027789889,
+        "pinball_0.5": 2.3581712276074294,
+        "pinball_0.9": 1.1584364938002996,
+        "pinball_0.975": 0.43117182260915093
+      }
+    ],
+    "mase_denominators": {
+      "bab_el_mandeb_strait": 5.082462891698736,
+      "balabac_strait": 2.0819131390874106,
+      "bering_strait": 0.38592633315008246,
+      "bohai_strait": 8.769653655854865,
+      "bosporus_strait": 5.405167674546454,
+      "cape_of_good_hope": 3.8202308960967564,
+      "dover_strait": 8.877954920285871,
+      "gibraltar_strait": 7.676195711929632,
+      "kerch_strait": 4.26003298515668,
+      "korea_strait": 11.02583837273227,
+      "lombok_strait": 2.8587135788894997,
+      "luzon_strait": 6.986805937328202,
+      "magellan_strait": 0.9956019791094007,
+      "makassar_strait": 2.4661902144035186,
+      "malacca_strait": 9.65695437053326,
+      "mindoro_strait": 2.155030236393623,
+      "mona_passage": 1.7163276525563496,
+      "ombai_strait": 1.9615173172072566,
+      "oresund_strait": 3.749312809235844,
+      "panama_canal": 3.1687740516767455,
+      "suez_canal": 5.0494777350192415,
+      "sunda_strait": 3.3969213853765807,
+      "taiwan_strait": 10.904343045629467,
+      "torres_strait": 1.5173172072567345,
+      "tsugaru_strait": 5.159978009895547,
+      "windward_passage": 1.5953820780648709,
+      "yucatan_channel": 5.055525013743815
+    }
+  },
+  "run_utc": "2026-08-27T15:14:51.348638+00:00",
+  "schema": "hormuz_detection_validation_manifest/1",
+  "script": "scripts/run_hormuz_detection.py",
+  "sealing_assertions": {
+    "development_population_is_27_non_hormuz": true,
+    "development_targets_within_frozen_period": true,
+    "hormuz_materialised_into_tasks": false,
+    "hormuz_row_entered_any_estimator": false,
+    "measurement_states_mixed": false,
+    "scaler_fitted_on_development_only": true,
+    "targets_follow_feature_timestamps": true,
+    "tsfm_benchmarks_excluded": true,
+    "validation_influenced_context_scale": false,
+    "validation_targets_within_frozen_2024": true
+  },
+  "status": "PASS",
+  "status_failures": [],
+  "track_ownership": {
+    "consequence": "Plan section 8 gives Claude the adversarial review of Track A. With Track A reassigned, that independent review is not available for A2 and Mher accepted that cost explicitly.",
+    "plan_default_owner": "ChatGPT",
+    "reassigned_by": "Mher",
+    "reassigned_on": "2026-08-27",
+    "reassigned_to": "Claude"
+  }
+}
