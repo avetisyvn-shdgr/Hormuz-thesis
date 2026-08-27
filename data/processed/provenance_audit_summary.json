@@ -1,9 +1,22 @@
 {
+  "audit_scope": "core_without_optional_sensitivity",
   "configured_free_registry_variables": 43,
-  "current_ledger_paths": 48,
+  "current_ledger_paths": 49,
   "current_paths_without_v2": [],
+  "disclosed_missing_source_payloads": [
+    {
+      "current_restored_sha256": "a7618fe62c8527a898d77f2897da680b541e4c276eb648f10b5fac3d5cf62cbe",
+      "ledger_line": 190,
+      "preserved_derivative": "data/raw/wto_hormuz/wto_hormuz_lng_outbound_index__lng_outbound_volume_index__30549d8cfd3b.csv",
+      "preserved_derivative_sha256": "30549d8cfd3b73fc1b7640769adbdc9e18ec93d1b56cd557cacf200172e02a2e",
+      "reason": "The 2026-08-09 WTO source payload was normalized and then the canonical source path was restored to the pinned v2 bytes. The normalized derivative is preserved, but the intermediate original payload bytes are not; the ledger's source_payload_status='preserved' must not be read literally for this source entry.",
+      "source_file": "data/raw/wto_hormuz/voy_intake_index_lng_export.csv",
+      "status": "historical_source_payload_not_preserved",
+      "unpreserved_sha256": "450ac387ab16ff8d2c84558439f55eb64ff471898742a638a8906b5e7d9ac1e6"
+    }
+  ],
   "frozen_hash_failures": [],
-  "frozen_raw_files": 153,
+  "frozen_raw_files": 154,
   "historical_stale_record_count": 4,
   "historical_stale_record_lines": [
     1,
@@ -15,10 +28,10 @@
   "inventory_channels": {
     "dated_capture_manifest": 95,
     "fixity_only_metadata_gap": 6,
-    "provenance_v2_snapshot": 40,
+    "provenance_v2_snapshot": 41,
     "provenance_v2_source_payload": 12
   },
-  "ledger_records": 189,
+  "ledger_records": 192,
   "mapped_free_registry_variables": 43,
   "missing_ledger_paths": [],
   "resolved_renamed_ledger_paths": [
@@ -55,5 +68,6 @@
   ],
   "source_payload_hash_failures": [],
   "unmapped_free_registry_variables": [],
-  "v2_records": 115
+  "unused_source_payload_exceptions": [],
+  "v2_records": 118
 }

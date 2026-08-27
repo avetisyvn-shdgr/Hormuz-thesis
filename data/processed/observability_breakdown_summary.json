@@ -1,0 +1,275 @@
+{
+  "layer_id": "hormuz_observability_counterfactual_breakdown_frontier_v1",
+  "outcomes": [
+    {
+      "model": "ar_lag1_7",
+      "target": "hormuz_tanker_transits",
+      "role": "primary_outcome",
+      "treatment_cutoff": "2026-02-28",
+      "n_post_days": 130,
+      "observed_sum": 529.0,
+      "counterfactual_point_estimate": 7397.996006081118,
+      "reduction_at_point_estimate": 0.928494149014792,
+      "pretreatment_reference_days": 365,
+      "pretreatment_trailing_daily_mean": 50.778082191780825,
+      "pretreatment_full_daily_mean": 57.09348255431205,
+      "counterfactual_scenarios": [
+        {
+          "name": "point_estimate",
+          "counterfactual_sum": 7397.996006081118,
+          "interval_family": "point",
+          "nominal_coverage": null
+        },
+        {
+          "name": "bootstrap_block_lower",
+          "counterfactual_sum": 6834.208920908447,
+          "interval_family": "block_bootstrap_residual",
+          "nominal_coverage": 0.95
+        },
+        {
+          "name": "bootstrap_block_upper",
+          "counterfactual_sum": 7939.246167671148,
+          "interval_family": "block_bootstrap_residual",
+          "nominal_coverage": 0.95
+        },
+        {
+          "name": "conformal_0.80_lower",
+          "counterfactual_sum": 5727.82465987997,
+          "interval_family": "split_conformal_block_rank",
+          "nominal_coverage": 0.8
+        },
+        {
+          "name": "conformal_0.80_upper",
+          "counterfactual_sum": 9068.167352282268,
+          "interval_family": "split_conformal_block_rank",
+          "nominal_coverage": 0.8
+        }
+      ],
+      "unit": "transits",
+      "dropped_endpoint_notes": [
+        "conformal endpoints at nominal coverage 0.90 are unbounded and were dropped, not clipped.",
+        "conformal endpoints at nominal coverage 0.95 are unbounded and were dropped, not clipped."
+      ],
+      "legacy_bound_cross_check": "passed on 4 shared cells",
+      "binding_breakdown": [
+        {
+          "model": "ar_lag1_7",
+          "target": "hormuz_tanker_transits",
+          "claim_threshold": 0.5,
+          "unit": "transits",
+          "counterfactual_scenario": "conformal_0.80_lower",
+          "interval_family": "split_conformal_block_rank",
+          "nominal_coverage": 0.8,
+          "observed_sum": 529.0,
+          "counterfactual_sum": 5727.82465987997,
+          "reduction_at_zero_error": 0.907643820924664,
+          "breakdown_dark_rate": 0.815287641849328,
+          "breakdown_status": "breaks_within_feasible_dark_rate",
+          "implied_true_total_at_breakdown": 2863.912329939985,
+          "implied_unobserved_total_at_breakdown": 2334.912329939985,
+          "implied_unobserved_per_post_day": 17.960864076461423,
+          "implied_unobserved_share_of_pretreatment_daily_mean": 0.3537129269401327,
+          "n_post_days": 130,
+          "point_estimate_breakdown_dark_rate": 0.8569882980295841,
+          "interval_robustness_discount": 0.04170065618025609
+        },
+        {
+          "model": "ar_lag1_7",
+          "target": "hormuz_tanker_transits",
+          "claim_threshold": 0.75,
+          "unit": "transits",
+          "counterfactual_scenario": "conformal_0.80_lower",
+          "interval_family": "split_conformal_block_rank",
+          "nominal_coverage": 0.8,
+          "observed_sum": 529.0,
+          "counterfactual_sum": 5727.82465987997,
+          "reduction_at_zero_error": 0.907643820924664,
+          "breakdown_dark_rate": 0.630575283698656,
+          "breakdown_status": "breaks_within_feasible_dark_rate",
+          "implied_true_total_at_breakdown": 1431.9561649699924,
+          "implied_unobserved_total_at_breakdown": 902.9561649699924,
+          "implied_unobserved_per_post_day": 6.945816653615326,
+          "implied_unobserved_share_of_pretreatment_daily_mean": 0.1367876917324697,
+          "n_post_days": 130,
+          "point_estimate_breakdown_dark_rate": 0.7139765960591682,
+          "interval_robustness_discount": 0.08340131236051218
+        },
+        {
+          "model": "ar_lag1_7",
+          "target": "hormuz_tanker_transits",
+          "claim_threshold": 0.9,
+          "unit": "transits",
+          "counterfactual_scenario": "conformal_0.80_lower",
+          "interval_family": "split_conformal_block_rank",
+          "nominal_coverage": 0.8,
+          "observed_sum": 529.0,
+          "counterfactual_sum": 5727.82465987997,
+          "reduction_at_zero_error": 0.907643820924664,
+          "breakdown_dark_rate": 0.0764382092466398,
+          "breakdown_status": "breaks_within_feasible_dark_rate",
+          "implied_true_total_at_breakdown": 572.7824659879968,
+          "implied_unobserved_total_at_breakdown": 43.78246598799683,
+          "implied_unobserved_per_post_day": 0.3367881999076679,
+          "implied_unobserved_share_of_pretreatment_daily_mean": 0.0066325506078719525,
+          "n_post_days": 130,
+          "point_estimate_breakdown_dark_rate": 0.28494149014792036,
+          "interval_robustness_discount": 0.20850328090128056
+        },
+        {
+          "model": "ar_lag1_7",
+          "target": "hormuz_tanker_transits",
+          "claim_threshold": 0.95,
+          "unit": "transits",
+          "counterfactual_scenario": "conformal_0.80_lower",
+          "interval_family": "split_conformal_block_rank",
+          "nominal_coverage": 0.8,
+          "observed_sum": 529.0,
+          "counterfactual_sum": 5727.82465987997,
+          "reduction_at_zero_error": 0.907643820924664,
+          "breakdown_dark_rate": -0.8471235815067182,
+          "breakdown_status": "claim_fails_at_zero_incremental_error",
+          "implied_true_total_at_breakdown": 286.39123299399876,
+          "implied_unobserved_total_at_breakdown": -242.60876700600124,
+          "implied_unobserved_per_post_day": -1.866221284661548,
+          "implied_unobserved_share_of_pretreatment_daily_mean": -0.03675249643366057,
+          "n_post_days": 130,
+          "point_estimate_breakdown_dark_rate": -0.4301170197041577,
+          "interval_robustness_discount": 0.41700656180256046
+        }
+      ]
+    },
+    {
+      "model": "ar_lag1_7",
+      "target": "hormuz_tanker_capacity",
+      "role": "robustness_outcome",
+      "treatment_cutoff": "2026-02-28",
+      "n_post_days": 118,
+      "observed_sum": 27499733.0,
+      "counterfactual_point_estimate": 318505792.90571,
+      "reduction_at_point_estimate": 0.9136601794613481,
+      "pretreatment_reference_days": 365,
+      "pretreatment_trailing_daily_mean": 2365198.58630137,
+      "pretreatment_full_daily_mean": 2711289.814351547,
+      "counterfactual_scenarios": [
+        {
+          "name": "point_estimate",
+          "counterfactual_sum": 318505792.90571,
+          "interval_family": "point",
+          "nominal_coverage": null
+        },
+        {
+          "name": "bootstrap_block_lower",
+          "counterfactual_sum": 290459167.82473826,
+          "interval_family": "block_bootstrap_residual",
+          "nominal_coverage": 0.95
+        },
+        {
+          "name": "bootstrap_block_upper",
+          "counterfactual_sum": 345014771.79492754,
+          "interval_family": "block_bootstrap_residual",
+          "nominal_coverage": 0.95
+        }
+      ],
+      "unit": "deadweight_tonnes",
+      "dropped_endpoint_notes": [
+        "no conformal interval exists for model='ar_lag1_7' target='hormuz_tanker_capacity'; the frontier for this cell rests on the bootstrap interval alone.",
+        "SKIPPED: ais_dark_bound_critical_rates.csv has no rows for model='ar_lag1_7' target='hormuz_tanker_capacity', so the point-estimate corner is unchecked."
+      ],
+      "legacy_bound_cross_check": "SKIPPED: ais_dark_bound_critical_rates.csv has no rows for model='ar_lag1_7' target='hormuz_tanker_capacity', so the point-estimate corner is unchecked.",
+      "binding_breakdown": [
+        {
+          "model": "ar_lag1_7",
+          "target": "hormuz_tanker_capacity",
+          "claim_threshold": 0.5,
+          "unit": "deadweight_tonnes",
+          "counterfactual_scenario": "bootstrap_block_lower",
+          "interval_family": "block_bootstrap_residual",
+          "nominal_coverage": 0.95,
+          "observed_sum": 27499733.0,
+          "counterfactual_sum": 290459167.82473826,
+          "reduction_at_zero_error": 0.9053232397312616,
+          "breakdown_dark_rate": 0.8106464794625232,
+          "breakdown_status": "breaks_within_feasible_dark_rate",
+          "implied_true_total_at_breakdown": 145229583.91236913,
+          "implied_unobserved_total_at_breakdown": 117729850.91236913,
+          "implied_unobserved_per_post_day": 997710.6009522808,
+          "implied_unobserved_share_of_pretreatment_daily_mean": 0.42182952701340487,
+          "n_post_days": 118,
+          "point_estimate_breakdown_dark_rate": 0.8273203589226964,
+          "interval_robustness_discount": 0.01667387946017318
+        },
+        {
+          "model": "ar_lag1_7",
+          "target": "hormuz_tanker_capacity",
+          "claim_threshold": 0.75,
+          "unit": "deadweight_tonnes",
+          "counterfactual_scenario": "bootstrap_block_lower",
+          "interval_family": "block_bootstrap_residual",
+          "nominal_coverage": 0.95,
+          "observed_sum": 27499733.0,
+          "counterfactual_sum": 290459167.82473826,
+          "reduction_at_zero_error": 0.9053232397312616,
+          "breakdown_dark_rate": 0.6212929589250464,
+          "breakdown_status": "breaks_within_feasible_dark_rate",
+          "implied_true_total_at_breakdown": 72614791.95618457,
+          "implied_unobserved_total_at_breakdown": 45115058.956184566,
+          "implied_unobserved_per_post_day": 382331.008103259,
+          "implied_unobserved_share_of_pretreatment_daily_mean": 0.16164858643059538,
+          "n_post_days": 118,
+          "point_estimate_breakdown_dark_rate": 0.6546407178453928,
+          "interval_robustness_discount": 0.03334775892034636
+        },
+        {
+          "model": "ar_lag1_7",
+          "target": "hormuz_tanker_capacity",
+          "claim_threshold": 0.9,
+          "unit": "deadweight_tonnes",
+          "counterfactual_scenario": "bootstrap_block_lower",
+          "interval_family": "block_bootstrap_residual",
+          "nominal_coverage": 0.95,
+          "observed_sum": 27499733.0,
+          "counterfactual_sum": 290459167.82473826,
+          "reduction_at_zero_error": 0.9053232397312616,
+          "breakdown_dark_rate": 0.053232397312615753,
+          "breakdown_status": "breaks_within_feasible_dark_rate",
+          "implied_true_total_at_breakdown": 29045916.78247382,
+          "implied_unobserved_total_at_breakdown": 1546183.7824738212,
+          "implied_unobserved_per_post_day": 13103.252393845942,
+          "implied_unobserved_share_of_pretreatment_daily_mean": 0.005540022080909677,
+          "n_post_days": 118,
+          "point_estimate_breakdown_dark_rate": 0.13660179461348176,
+          "interval_robustness_discount": 0.08336939730086601
+        },
+        {
+          "model": "ar_lag1_7",
+          "target": "hormuz_tanker_capacity",
+          "claim_threshold": 0.95,
+          "unit": "deadweight_tonnes",
+          "counterfactual_scenario": "bootstrap_block_lower",
+          "interval_family": "block_bootstrap_residual",
+          "nominal_coverage": 0.95,
+          "observed_sum": 27499733.0,
+          "counterfactual_sum": 290459167.82473826,
+          "reduction_at_zero_error": 0.9053232397312616,
+          "breakdown_dark_rate": -0.8935352053747665,
+          "breakdown_status": "claim_fails_at_zero_incremental_error",
+          "implied_true_total_at_breakdown": 14522958.391236925,
+          "implied_unobserved_total_at_breakdown": -12976774.608763075,
+          "implied_unobserved_per_post_day": -109972.66617595826,
+          "implied_unobserved_share_of_pretreatment_daily_mean": -0.04649616603565216,
+          "n_post_days": 118,
+          "point_estimate_breakdown_dark_rate": -0.7267964107730347,
+          "interval_robustness_discount": 0.1667387946017318
+        }
+      ]
+    }
+  ],
+  "inputs": {
+    "data/processed/counterfactual_post_treatment_summary.csv": "f84da6cf9391a24e031a53b489f06ada43a39a18bc6b065588d3552ed0ca7bb6",
+    "data/processed/counterfactual_intervals_summary.csv": "f3e490e22b965e5f2fdf19236bbc101a812c472fd288d2df6da409ef540abe6c",
+    "data/processed/block_conformal_summary.csv": "431c6c61c2680e862bf102343f123e46f7e82dad0a65a2378ab8f8f0634f18bb",
+    "data/processed/ais_dark_bound_critical_rates.csv": "5c2ea172e24d5e97ff65a7a21990b7d8c64a16a3340c5497e43336d75588b2fe",
+    "data/processed/panel_aligned.csv": "4d26dbe004947cb32896fd801e066adbcf664813a0c8b7c80e855558b3ed7728"
+  },
+  "guard": "Partial-identification sensitivity map over stated assumptions. Not a causal correction, not a measurement of dark activity, and not an estimate of the realised dark rate. The false-positive rate s is claim-reinforcing, so the one-sided AIS-dark bound is the conservative case; the claim-breaking directions are a large incremental dark rate and a counterfactual at the low end of its interval."
+}

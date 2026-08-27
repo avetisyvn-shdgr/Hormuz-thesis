@@ -79,6 +79,17 @@ STEPS = [
     ("Render LNG network rewiring summary", ["scripts/make_network_rewiring_summary.py"]),
     ("Build modeled vessel-day estimates", ["scripts/build_vessel_day_estimates.py"]),
     ("Refresh vessel-data feasibility audit", ["scripts/run_vessel_data_feasibility.py"]),
+    (
+        # PortWatch vintage/regime descriptive layers. Both read the
+        # counterfactual post-treatment summary, so they follow the inference
+        # block. Neither promotes the candidate vintage.
+        "Run PortWatch vintage and window sensitivity",
+        ["scripts/run_portwatch_vintage_sensitivity.py"],
+    ),
+    (
+        "Profile the rebound/relapse regime phases",
+        ["scripts/run_rebound_relapse_profile.py"],
+    ),
     ("Refresh integrated mechanism results", ["scripts/make_mechanism_summary.py"]),
     ("Render inspectable run outputs", ["scripts/make_run_output.py"]),
     ("Refresh working results summary", ["scripts/make_results_summary.py"]),
@@ -87,6 +98,16 @@ STEPS = [
         ["scripts/render_thesis_figures.py"],
     ),
     ("Audit provenance coverage", ["scripts/audit_provenance.py"]),
+    (
+        # Capstone: asserts every thesis claim cites an existing artifact and a
+        # limitation, so it must run after every artifact-producing step above.
+        "Run the final integration audit",
+        ["scripts/run_final_integration_audit.py"],
+    ),
+    (
+        "Freeze the final integration audit",
+        ["scripts/freeze_final_integration_audit.py"],
+    ),
     ("Recheck frozen raw snapshots", ["scripts/freeze_reproducibility.py", "--check"]),
     ("Run full test suite", ["-m", "pytest", "-q"]),
     (
