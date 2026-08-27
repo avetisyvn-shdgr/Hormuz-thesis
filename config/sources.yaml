@@ -347,6 +347,16 @@ variables:
       # vintage, substitute it for the pinned primary, or average the two, so
       # `promotion_policy` above is not engaged.
       - "scripts/run_hormuz_measurement_audit.py"
+      # Added 2026-08-28 on Mher's instruction, SOLELY for Track A phase A4.
+      # A4 scores the frozen detector under July and August as two separate
+      # measurement states and reports their disagreement; that disagreement is
+      # the deliverable. Mher's authorisation is explicit that this "does not
+      # promote or average the August vintage": the config keeps
+      # `measurement_states.never_join_or_average: true`, A4 asserts it at
+      # runtime, and no A4 output mixes the two states into one number. The
+      # pinned July state remains the primary reference, so `promotion_policy`
+      # above is not engaged. This entry authorises no other phase.
+      - "scripts/run_hormuz_detection.py"
     description: "Candidate 2026-08-09 PortWatch chokepoint vintage; vintage-sensitivity use only."
     status: free
     primary:

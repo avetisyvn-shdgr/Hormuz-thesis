@@ -1,10 +1,11 @@
 # Hormuz detection model card
 
-**Current phase:** A3 — detector calibration  
+**Current phase:** A4 — final Hormuz stress test  
 **Model status:** implemented; A2 accepted by Mher on 2026-08-27  
-**Detector status:** design **version 2**, implemented, runs with no outstanding
-ratification item. **Not yet accepted** — A3 acceptance rests with Mher
-explicitly, and A4 does not start before it.  
+**Detector status:** design **version 2**, **accepted by Mher on 2026-08-28**;
+thresholds frozen  
+**A4 status:** implemented and tested; **not executed**. Claude has not scored
+Hormuz and has not inspected any Hormuz outcome.  
 **Track owner:** Claude, reassigned from ChatGPT by Mher on 2026-08-27  
 **Governing plan:** `HORMUZ_TECHNICAL_EXECUTION_PLAN.md`, version 1.2
 
@@ -536,3 +537,88 @@ A3 reads no Hormuz row and scores nothing on Hormuz. It measures false alarms on
 unlabelled development units: there is no disruption label here, so nothing in
 this phase measures detection power. August is not read. No threshold calibrated
 here is claimed to transfer to Hormuz — that is the A4 question.
+
+## A4 — final Hormuz stress test
+
+Implemented in `src/lngfreight/hormuz_stress.py`, run by
+`scripts/run_hormuz_detection.py --phase final`. **Not executed at the time of
+writing.** Claude implemented and tested it; the scoring run is Mher's, and no
+Hormuz outcome has been inspected. The section below therefore describes what
+A4 does and what it may claim, and contains no results.
+
+A4 estimates nothing. It is the only phase that scores Hormuz and the only phase
+authorised to read the August measurement state, on Mher's 2026-08-28
+authorisation scoped to A4 alone.
+
+### What it refuses to run against
+
+- A configuration whose hash differs from the one the operator passes to
+  `--confirm-frozen-spec`. This is the plan's own requirement.
+- A3 artefacts whose hashes differ from the accepted
+  `b2f04b23…` / `7468d403…`, an A3 manifest that is not PASS, one produced under
+  a different design version, or one still carrying a ratification item.
+- Any threshold that disagrees between the accepted CSV and the estimate frozen
+  in `a3_acceptance.operational_thresholds`.
+
+### No tuning after A4, as a mechanism
+
+The stop condition in the plan is "no tuning after A4". A4 does not promise it;
+it is built so that violating it fails.
+
+Every estimated object — pooled standardiser, ridge coefficients, per-state
+Hormuz context scale — is built from pre-surveillance data, and the whole system
+is digested at that point. Loading the surveillance panel trips a one-way latch
+with no reset. Any fit, calibration or threshold load attempted afterwards
+raises `PostHormuzTuningError`; the run makes one such attempt on purpose and
+records that it was refused. After scoring, the digest is recomputed and must
+equal the sealed one. The latch catches an attempt; the digest catches a
+success. Both are sealing assertions, and scoring also refuses to start if the
+latch was never set, so the seal cannot be bypassed by omitting it.
+
+### The four frozen modes
+
+July-state detectors; August-state detectors; the July scale-invariant detector
+transported to August, keeping its July-fitted Hormuz context scale, which is
+what makes it a transport test rather than a refit; and the frozen global model
+and seasonal naive under both states. Local AR(1,7) is **not** scored on Hormuz —
+it needs the unit-specific fit leave-Hormuz-out forbids.
+
+Each state gets its own Hormuz context scale, fitted on that state's own history
+through 2025-11-30 and held fixed, per the frozen `a4_deployment` rule. Fitting
+one scale from a joined series would average the states, which is prohibited.
+
+### The model A4 deploys, and the one thing the config did not pin
+
+Nothing in the frozen configuration said which fit window the "frozen global
+model" uses at deployment. A4 uses **the last frozen rolling fold's fit**: the
+fold geometry is frozen, the final fold is the most recent system it defines,
+and its residuals sit inside the calibration the accepted thresholds were set
+on. The alternative — the 2023-frozen A2 coefficients — would pair a stale model
+with thresholds calibrated on per-fold refits. Claude chose this; it is declared
+in the config and the manifest and is reversible if Mher disagrees.
+
+### The cross-vintage decomposition
+
+A single positive constant is estimated on the **pre-surveillance overlap only**,
+so the surveillance-window split is out of sample with respect to it. The
+revision is then split into what that constant reproduces and the residual it
+does not. The scale-invariant detector is invariant to the first component by
+construction, so only the residual can move it.
+
+A synthetic test multiplies an entire series by a positive constant and verifies
+the scale-invariant detector is unchanged, while the raw-level detector moves.
+**Agreement under that test is mathematical behaviour, not evidence about the
+vintages.** The empirical claim concerns departures from the proportional case
+only.
+
+### What A4 will not support
+
+A4 scores one unit over one event. A fired alarm is not detection performance,
+and no confidence statement about the detector follows from it. The false-alarm
+rate the threshold was set to is a development-unit property whose transfer to
+Hormuz is untestable here — and A3 already showed transfer is uneven, with the
+worst development unit at roughly five times its target rate. `severity_rank`
+orders cells inside the run only; ranking Hormuz against the development
+distribution would need a recalibration A4 must not do. Severity is reported in
+each form's own units and is not comparable across forms. Nothing here licenses
+a causal reading, and the plan's stop condition stands: no tuning after A4.

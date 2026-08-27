@@ -611,3 +611,213 @@ detector:
     calibration: "data/processed/hormuz_detector_calibration.csv"
     false_alarms: "data/processed/hormuz_detector_false_alarms.csv"
     manifest: "data/processed/hormuz_detector_calibration_manifest.json"
+
+# ---------------------------------------------------------------------------
+# A3 acceptance. Recorded on Mher's explicit acceptance of 2026-08-28. The
+# accepted objects are pinned by hash, not by position: the configuration hash
+# moves whenever a later phase is added, so A4 verifies the ARTEFACT hashes
+# below and the configuration hash A3 was accepted under, never mere equality
+# with whatever configuration happens to be live.
+# ---------------------------------------------------------------------------
+a3_acceptance:
+  accepted: true
+  accepted_by: "Mher"
+  accepted_on: "2026-08-28"
+  detector_design_version: 2
+  accepted_config_sha256: "7e877911652d8492aa6bcefd75aea219debcd707323550603b0388f5b151aff1"
+  accepted_artifacts:
+    calibration_sha256: "b2f04b233c1a700d10a780423b5ef130b09bcf8f53018e0fd4ae329983f181f2"
+    false_alarms_sha256: "7468d40322f5e6526ea7338c20a872a0ec76d3149cff7e1aa5408016d570deee"
+  thresholds_frozen: true
+  thresholds_frozen_note: >-
+    These are the accepted estimates, recorded so a drift is visible without
+    reading a CSV. `hormuz_detector_calibration.csv` remains authoritative: A4
+    verifies its hash against `accepted_artifacts` and asserts every threshold
+    it loads equals the value recorded here. A4 never recalibrates.
+  operational_thresholds:
+    - model: "global_ridge"
+      horizon_days: 1
+      form: "raw_level"
+      threshold: 7.91706510591402
+      achieved_episodes_per_year: 1.995759
+      exceedance_share_of_unit_days: 0.049255
+    - model: "global_ridge"
+      horizon_days: 1
+      form: "scale_invariant"
+      threshold: 1.494110917098456
+      achieved_episodes_per_year: 1.991589
+      exceedance_share_of_unit_days: 0.06244
+    - model: "global_ridge"
+      horizon_days: 7
+      form: "raw_level"
+      threshold: 8.023997823429362
+      achieved_episodes_per_year: 1.998853
+      exceedance_share_of_unit_days: 0.047593
+    - model: "global_ridge"
+      horizon_days: 7
+      form: "scale_invariant"
+      threshold: 1.5079867688767528
+      achieved_episodes_per_year: 1.993893
+      exceedance_share_of_unit_days: 0.060779
+    - model: "global_ridge"
+      horizon_days: 30
+      form: "raw_level"
+      threshold: 7.114027873966158
+      achieved_episodes_per_year: 1.997159
+      exceedance_share_of_unit_days: 0.059771
+    - model: "global_ridge"
+      horizon_days: 30
+      form: "scale_invariant"
+      threshold: 1.5209987834122471
+      achieved_episodes_per_year: 1.997879
+      exceedance_share_of_unit_days: 0.058436
+    - model: "seasonal_naive"
+      horizon_days: 1
+      form: "raw_level"
+      threshold: 12.0
+      achieved_episodes_per_year: 1.754416
+      exceedance_share_of_unit_days: 0.041436
+    - model: "seasonal_naive"
+      horizon_days: 1
+      form: "scale_invariant"
+      threshold: 2.023472278429786
+      achieved_episodes_per_year: 1.801178
+      exceedance_share_of_unit_days: 0.060533
+    - model: "seasonal_naive"
+      horizon_days: 7
+      form: "raw_level"
+      threshold: 12.0
+      achieved_episodes_per_year: 1.754416
+      exceedance_share_of_unit_days: 0.041436
+    - model: "seasonal_naive"
+      horizon_days: 7
+      form: "scale_invariant"
+      threshold: 2.023472278429786
+      achieved_episodes_per_year: 1.810645
+      exceedance_share_of_unit_days: 0.060806
+    - model: "seasonal_naive"
+      horizon_days: 30
+      form: "raw_level"
+      threshold: 11.0
+      achieved_episodes_per_year: 1.89541
+      exceedance_share_of_unit_days: 0.050018
+    - model: "seasonal_naive"
+      horizon_days: 30
+      form: "scale_invariant"
+      threshold: 2.023472278429786
+      achieved_episodes_per_year: 1.735704
+      exceedance_share_of_unit_days: 0.063585
+
+# ---------------------------------------------------------------------------
+# A4 -- final Hormuz stress test. Plan v1.2 section 6 A4. This is the only
+# phase that scores Hormuz, and the only phase authorised to read the August
+# measurement state.
+#
+# The governing rule of this block is that NOTHING is estimated here. Every
+# object A4 uses -- model, pooled standardiser, Hormuz context scale, threshold
+# -- is built or loaded before a single Hormuz outcome row is read, and the
+# system is digested at that moment. After scoring, the digest is recomputed and
+# must be identical. That is what "no tuning after A4" is enforced by, rather
+# than promised.
+# ---------------------------------------------------------------------------
+final:
+  status: "frozen"
+  frozen_on: "2026-08-28"
+  frozen_under: "Mher's A3 acceptance and A4 authorisation, 2026-08-28"
+  requires_confirmed_spec_hash: true
+  confirmed_spec_hash_rationale: >-
+    Plan A4 requires the script to refuse a configuration-hash mismatch. The
+    operator passes the hash they recorded at acceptance time, so a silently
+    edited configuration cannot be scored under the accepted design.
+
+  measurement_states:
+    scored: ["july", "august"]
+    never_join_or_average: true
+    august_authorisation:
+      granted_by: "Mher"
+      granted_on: "2026-08-28"
+      scope: "A4 only"
+      registry_entry: "portwatch_chokepoints_vintage_20260809_snapshot"
+      allowed_consumer_added: "scripts/run_hormuz_detection.py"
+      promotes_vintage: false
+      averages_vintages: false
+      note: >-
+        August is scored as a separate state and its disagreement with July is
+        the deliverable. No output mixes the two into one number.
+
+  modes:
+    - id: 1
+      name: "july_state_detectors"
+      description: "July-state raw-level and scale-invariant detectors on Hormuz."
+    - id: 2
+      name: "august_state_detectors"
+      description: "August-state raw-level and scale-invariant detectors on Hormuz."
+    - id: 3
+      name: "july_scale_invariant_transported_to_august"
+      description: >-
+        The frozen July scale-invariant detector applied to the August state,
+        including its July-fitted Hormuz context scale, which is what makes it
+        a transport test rather than a refit.
+    - id: 4
+      name: "frozen_models_under_both_states"
+      description: >-
+        Frozen global model and seasonal naive under both states. Local AR(1,7)
+        is a development-only baseline and is NOT scored on Hormuz: it needs a
+        unit-specific fit that leave-Hormuz-out forbids. Amended in plan v1.2.
+      models_scored_on_hormuz: ["global_ridge", "seasonal_naive"]
+      local_ar_scored_on_hormuz: false
+
+  hormuz_context_scale:
+    rule: "fit_once_through_2025-11-30_and_hold_fixed"
+    fitted_per_state: true
+    fitted_per_state_rationale: >-
+      Each measurement state gets its own Hormuz context scale, fitted on that
+      state's own pre-surveillance history through 2025-11-30. Fitting one from
+      a joined series would average the states, which is prohibited. Mode 3
+      deliberately keeps the JULY scale when scoring August, because reusing the
+      frozen object is the point of a transport test.
+    refit_after_surveillance_starts: false
+
+  comparisons:
+    - "alarm_date"
+    - "detection_delay_days_from_operational_onset"
+    - "severity_7_day"
+    - "severity_30_day"
+    - "severity_rank_within_state"
+    - "cross_state_agreement"
+
+  cross_vintage_decomposition:
+    required: true
+    method: "proportional_rescaling_then_residual"
+    definition: >-
+      Regress the August Hormuz series on the July series through the origin over
+      the pre-surveillance window to obtain a single positive proportionality
+      constant. The component explained by proportional rescaling is what that
+      constant reproduces; the remaining non-proportional residual revision is
+      what it does not. The scale-invariant detector is invariant to the first
+      component by construction, so only the second can move it.
+    invariance_is_mathematical_not_empirical: >-
+      A synthetic test multiplies a whole series by a positive constant and
+      verifies the scale-invariant detector is unchanged. Agreement under that
+      test is mathematical behaviour and is NOT evidence about the vintages. The
+      empirical claim concerns departures from the proportional case only.
+
+  post_hormuz_tuning:
+    prohibited: true
+    enforcement: "system_digest_before_and_after_plus_runtime_latch"
+    enforcement_detail: >-
+      Every estimated object is built before any Hormuz outcome row is read and
+      digested at that point. Reading Hormuz outcomes sets a one-way latch; any
+      fit, calibration or threshold selection attempted while the latch is set
+      raises. After scoring the digest is recomputed and must equal the sealed
+      one. Both the latch and the digest equality are reported as sealing
+      assertions.
+    thresholds_recomputed: false
+    model_refitted: false
+    scale_refitted: false
+
+  outputs:
+    daily: "data/processed/hormuz_detection_final_daily.csv"
+    summary: "data/processed/hormuz_detection_final_summary.csv"
+    cross_vintage: "data/processed/hormuz_detection_cross_vintage.csv"
+    manifest: "data/processed/hormuz_detection_final_manifest.json"

@@ -1408,8 +1408,51 @@ it. One scope decision plus one refreeze clears all eight together.
   version 1 or against the superseded rule name, so the degenerate reading
   cannot silently execute again. Because the configuration hash moved, A2 was
   re-verified under it and returned unchanged score and prediction hashes.
-- **Status:** Plan **v1.2**. A2 **ACCEPTED**. A3 detector design **version 2**,
-  implementation complete, **run with no outstanding ratification item**.
-  **A3 acceptance still rests with Mher explicitly.** A4 not started, and the
-  August-source authorisation stays unchanged and untouched until Mher accepts
-  A3. B3 untouched.
+- **Status:** superseded by the entry below. At the time of writing: A3 design
+  version 2 complete and running with no outstanding ratification item,
+  acceptance still resting with Mher.
+
+## 2026-08-28 · A3 ACCEPTED; August authorised for A4 only; A4 implemented
+
+- **Decision-maker:** Mher (researcher). **Entry written by Claude under Mher's
+  explicit instruction to record the acceptance**; the log otherwise remains his.
+- **A3 ACCEPTED.** Mher accepted detector design version 2 and its confirming
+  artefacts, by hash:
+  - config `7e877911652d8492aa6bcefd75aea219debcd707323550603b0388f5b151aff1`
+  - calibration `b2f04b233c1a700d10a780423b5ef130b09bcf8f53018e0fd4ae329983f181f2`
+  - false alarms `7468d40322f5e6526ea7338c20a872a0ec76d3149cff7e1aa5408016d570deee`
+- **A3 thresholds FROZEN.** The twelve operational thresholds are recorded in
+  `a3_acceptance.operational_thresholds`. Two independent sources must now agree
+  before A4 runs: the accepted CSV, verified by hash, and that record. A4
+  refuses on any drift and never recalibrates.
+- **August authorised, narrowly.** `scripts/run_hormuz_detection.py` is added to
+  `allowed_consumers` for `portwatch_chokepoints_vintage_20260809_snapshot`,
+  **solely for A4**, on Mher's instruction that this "does not promote or average
+  the August vintage". `never_join_or_average` stays true and A4 asserts it at
+  runtime; July remains the pinned primary, so `promotion_policy` is not engaged.
+  The entry authorises no other phase.
+- **A4 implemented, not run.** `--phase final` and
+  `src/lngfreight/hormuz_stress.py` execute plan v1.2 section 6 A4: the four
+  frozen modes, alarm date, delay, 7- and 30-day severity, within-state severity
+  rank, cross-state agreement, and the proportional/residual decomposition of the
+  July-to-August revision. **Claude did not execute final Hormuz scoring and did
+  not inspect any Hormuz outcome**, per Mher's instruction. Only the gate check
+  (`--check-only`), which opens no panel, and synthetic-data tests were run.
+- **No tuning after A4, enforced rather than promised.** Every estimated object
+  is built from pre-surveillance data and the system is digested before any
+  Hormuz surveillance outcome is read. Reading those outcomes trips a one-way
+  latch; any fit, calibration or threshold load attempted afterwards raises. The
+  run makes that attempt deliberately and records that it was refused. After
+  scoring the digest is recomputed and must equal the sealed one. Both the
+  refused attempt and the digest equality are sealing assertions.
+- **One A4 design point the frozen config did not pin, and how it was settled.**
+  Nothing pinned which fit window the "frozen global model" uses at deployment.
+  A4 uses **the last frozen rolling fold's fit** rather than inventing a window:
+  the fold geometry is frozen, the final fold is the most recent system it
+  defines, and its residuals sit inside the calibration the accepted thresholds
+  were set on. Using the 2023-frozen A2 coefficients instead would pair a stale
+  model with thresholds calibrated on per-fold refits. This is declared in
+  `final.frozen_system` and in the manifest; **Claude chose it and it is
+  reversible if Mher disagrees.**
+- **Status:** Plan **v1.2**. A2 **ACCEPTED**. A3 **ACCEPTED**, thresholds frozen.
+  A4 **implemented and tested, not executed**. B3 untouched.

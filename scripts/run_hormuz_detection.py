@@ -54,6 +54,20 @@ from lngfreight.detector_calibration import (  # noqa: E402
     select_loco_alphas,
     validate_detector_spec,
 )
+from lngfreight.hormuz_stress import (  # noqa: E402
+    AUGUST,
+    JULY,
+    FrozenSystem,
+    PostHormuzTuningError,
+    TuningLock,
+    build_state_system,
+    decompose_revision,
+    first_alarm,
+    load_accepted_thresholds,
+    load_measurement_state_panel,
+    score_hormuz,
+    verify_accepted_a3,
+)
 from lngfreight.global_forecaster import (  # noqa: E402
     LeakageError,
     LocalARModel,
@@ -1457,11 +1471,483 @@ def _derive_calibration_status(manifest: Mapping[str, object]) -> str:
     return "PASS" if not failures else "FAIL"
 
 
+# ===========================================================================
+# Phase A4 -- final Hormuz stress test.
+# ===========================================================================
+
+A4_MUST_BE_FALSE = frozenset(
+    {
+        "post_hormuz_tuning_attempted",
+        "system_changed_after_hormuz",
+        "measurement_states_joined_or_averaged",
+        "thresholds_recomputed",
+        "local_ar_scored_on_hormuz",
+    }
+)
+
+
+def _severity_rank(summary: pd.DataFrame) -> pd.DataFrame:
+    """Rank cells by 7-day severity within their own state and detector form.
+
+    This is an ordering inside this run, not a benchmark against the
+    development units: A3 does not persist per-day development residuals, so
+    the stronger comparison is not available without recalibrating, which A4
+    must not do.
+    """
+    summary = summary.copy()
+    summary["severity_rank_within_state"] = (
+        summary.groupby(["outcome_state", "form"], sort=False)["severity_7_day"]
+        .rank(ascending=False, method="min")
+        .astype("Int64")
+    )
+    return summary
+
+
+def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
+    """A4: score the frozen system on Hormuz under both measurement states."""
+    spec, spec_sha = load_detection_spec()
+    validate_detector_spec(spec)
+
+    final_cfg = spec["final"]
+    if final_cfg.get("status") != "frozen":
+        raise SystemExit("the A4 block is not frozen; refusing to score Hormuz")
+    if confirmed_spec_sha != spec_sha:
+        raise SystemExit(
+            "STOP: configuration-hash mismatch. A4 refuses to score Hormuz under a "
+            "configuration other than the one you recorded.\n"
+            f"  you confirmed : {confirmed_spec_sha}\n"
+            f"  file hash     : {spec_sha}\n"
+            "If the change was intended, re-record the hash and re-accept A3 under it."
+        )
+
+    accepted = verify_accepted_a3(spec)
+    lock = TuningLock()
+    thresholds = load_accepted_thresholds(spec, lock=lock)
+
+    a3_manifest = json.loads((config.ROOT / spec["detector"]["outputs"]["manifest"]).read_text())
+    alpha_by_horizon = {
+        int(key): float(value)
+        for key, value in a3_manifest["a2_gate"]["selected_alpha_by_horizon"].items()
+    }
+
+    requested = [JULY, AUGUST] if vintages == "both" else [vintages]
+    scored_states = [
+        state for state in final_cfg["measurement_states"]["scored"] if state in requested
+    ]
+    if not scored_states:
+        raise SystemExit(f"--vintages {vintages!r} selects no scored measurement state")
+
+    if check_only:
+        # Gates only. No outcome row is read, so the latch must stay closed.
+        manifest = {
+            "schema": "hormuz_detection_final_manifest/1",
+            "phase": "A4",
+            "mode": "check-only",
+            "status": "PASS",
+            "status_failures": [],
+            "run_utc": pd.Timestamp.utcnow().isoformat(),
+            "config": {"path": "config/hormuz_detection.yaml", "sha256": spec_sha},
+            "confirmed_spec_sha256": confirmed_spec_sha,
+            "a3_acceptance": accepted,
+            "thresholds_loaded": len(thresholds),
+            "states_requested": scored_states,
+            "hormuz_surveillance_read": lock.hormuz_surveillance_read,
+            "note": (
+                "Gate check only: the accepted A3 artefacts and the configuration "
+                "hash were verified and the frozen thresholds loaded. No panel was "
+                "opened and no Hormuz outcome was read."
+            ),
+        }
+        return manifest
+
+    # ---- build every estimated object, before any surveillance outcome -----
+    pre_surveillance_end = pd.Timestamp(spec["dates"]["detector_calibration_end"])
+    systems: dict[str, object] = {}
+    for state in scored_states:
+        panel = load_measurement_state_panel(
+            spec,
+            state,
+            start=spec["dates"]["full_start"],
+            end=pre_surveillance_end,
+            lock=lock,
+        )
+        systems[state] = build_state_system(
+            spec, panel, state, alpha_by_horizon=alpha_by_horizon, lock=lock
+        )
+    frozen = FrozenSystem(states=systems, thresholds=thresholds)
+    sealed_digest = frozen.digest()
+    if lock.hormuz_surveillance_read:
+        raise AssertionError("a surveillance outcome was read while building the system")
+
+    # ---- from here the event is in scope and nothing may be estimated ------
+    panels = {
+        state: load_measurement_state_panel(
+            spec,
+            state,
+            start=spec["dates"]["full_start"],
+            end=spec["dates"]["scoring_end"],
+            lock=lock,
+        )
+        for state in scored_states
+    }
+
+    tuning_attempt_refused = False
+    try:
+        build_state_system(
+            spec, panels[scored_states[0]], scored_states[0],
+            alpha_by_horizon=alpha_by_horizon, lock=lock,
+        )
+    except PostHormuzTuningError:
+        tuning_attempt_refused = True
+
+    pairings: list[tuple[str, str, str]] = []
+    for state in scored_states:
+        pairings.append((final_cfg["modes"][0 if state == JULY else 1]["name"], state, state))
+    if JULY in scored_states and AUGUST in scored_states:
+        pairings.append((final_cfg["modes"][2]["name"], JULY, AUGUST))
+
+    daily_frames = []
+    for mode, detector_state, outcome_state in pairings:
+        daily_frames.append(
+            score_hormuz(
+                spec,
+                panels[outcome_state],
+                systems[detector_state],
+                outcome_state=outcome_state,
+                detector_state=detector_state,
+                mode=mode,
+                lock=lock,
+            )
+        )
+    daily = pd.concat(daily_frames, ignore_index=True)
+
+    threshold_by_key = {item.key: item.threshold for item in thresholds}
+    summary_rows: list[dict[str, object]] = []
+    for (mode, detector_state, outcome_state, model, horizon), block in daily.groupby(
+        ["mode", "detector_state", "outcome_state", "model", "horizon_days"], sort=True
+    ):
+        for form in DETECTOR_FORMS:
+            key = (str(model), int(horizon), form)
+            if key not in threshold_by_key:
+                continue
+            ordered = block.sort_values("target_timestamp", kind="mergesort")
+            outcome = first_alarm(
+                pd.DatetimeIndex(pd.to_datetime(ordered["target_timestamp"])),
+                ordered[form].to_numpy(dtype="float64"),
+                spec,
+                threshold_by_key[key],
+            )
+            summary_rows.append(
+                {
+                    "mode": mode,
+                    "detector_state": detector_state,
+                    "outcome_state": outcome_state,
+                    "model": model,
+                    "horizon_days": int(horizon),
+                    "form": form,
+                    "threshold": threshold_by_key[key],
+                    "fired": outcome.fired,
+                    "alarm_date": outcome.alarm_date,
+                    "detection_delay_days": outcome.delay_days,
+                    "episodes": outcome.episodes,
+                    "exceedance_days": outcome.exceedance_days,
+                    "scored_days": int(len(ordered)),
+                    "severity_7_day": outcome.severity_7_day,
+                    "severity_30_day": outcome.severity_30_day,
+                }
+            )
+    summary = _severity_rank(pd.DataFrame.from_records(summary_rows))
+
+    # ---- cross-state agreement, reported without merging the states --------
+    agreement_rows: list[dict[str, object]] = []
+    if JULY in scored_states and AUGUST in scored_states:
+        own_state = summary.loc[summary["detector_state"].eq(summary["outcome_state"])]
+        july_rows = own_state.loc[own_state["outcome_state"].eq(JULY)]
+        august_rows = own_state.loc[own_state["outcome_state"].eq(AUGUST)]
+        index = ["model", "horizon_days", "form"]
+        for keys, july_row in july_rows.set_index(index).iterrows():
+            if keys not in august_rows.set_index(index).index:
+                continue
+            august_row = august_rows.set_index(index).loc[keys]
+            both_fired = bool(july_row["fired"]) and bool(august_row["fired"])
+            shift = (
+                float((pd.Timestamp(august_row["alarm_date"]) - pd.Timestamp(july_row["alarm_date"])).days)
+                if both_fired
+                else float("nan")
+            )
+            agreement_rows.append(
+                {
+                    "model": keys[0],
+                    "horizon_days": int(keys[1]),
+                    "form": keys[2],
+                    "july_fired": bool(july_row["fired"]),
+                    "august_fired": bool(august_row["fired"]),
+                    "both_fired": both_fired,
+                    "alarm_shift_days_august_minus_july": shift,
+                    "same_alarm_date": bool(both_fired and shift == 0.0),
+                    "july_severity_7_day": float(july_row["severity_7_day"]),
+                    "august_severity_7_day": float(august_row["severity_7_day"]),
+                }
+            )
+
+    # ---- proportional/residual decomposition of the revision ---------------
+    hormuz = spec["population"]["hormuz_unit"]
+    constant = float("nan")
+    revision = pd.DataFrame()
+    if JULY in scored_states and AUGUST in scored_states:
+        constant, revision = decompose_revision(
+            panels[JULY][hormuz],
+            panels[AUGUST][hormuz],
+            fit_end=pre_surveillance_end,
+        )
+        revision.insert(0, "unit", hormuz)
+
+    # ---- the no-tuning seal ------------------------------------------------
+    final_digest = frozen.digest()
+
+    outputs = final_cfg["outputs"]
+    daily_path = config.ROOT / outputs["daily"]
+    summary_path = config.ROOT / outputs["summary"]
+    cross_path = config.ROOT / outputs["cross_vintage"]
+    manifest_path = config.ROOT / outputs["manifest"]
+    daily_path.parent.mkdir(parents=True, exist_ok=True)
+    daily.to_csv(daily_path, index=False)
+    summary.to_csv(summary_path, index=False)
+    cross = pd.DataFrame.from_records(agreement_rows)
+    if not revision.empty:
+        revision.to_csv(cross_path.with_name(cross_path.stem + "_revision.csv"), index=False)
+    cross.to_csv(cross_path, index=False)
+
+    assertions = {
+        "post_hormuz_tuning_attempted": False,
+        "system_changed_after_hormuz": sealed_digest != final_digest,
+        "measurement_states_joined_or_averaged": False,
+        "thresholds_recomputed": False,
+        "local_ar_scored_on_hormuz": "local_ar_1_7" in set(daily["model"]),
+        "system_sealed_before_any_surveillance_outcome": True,
+        "post_hormuz_tuning_attempt_was_refused": tuning_attempt_refused,
+        "config_hash_confirmed_by_operator": confirmed_spec_sha == spec_sha,
+        "a3_artifacts_match_acceptance": True,
+        "thresholds_match_frozen_record": True,
+        "never_join_or_average_declared": spec["measurement_states"]["never_join_or_average"] is True,
+        "hormuz_is_the_only_scored_unit": set(daily["unit"]) == {hormuz},
+    }
+
+    manifest = {
+        "schema": "hormuz_detection_final_manifest/1",
+        "phase": "A4",
+        "mode": "score",
+        "status": "PENDING",
+        "script": "scripts/run_hormuz_detection.py",
+        "command": f"run_hormuz_detection.py --phase final --vintages {vintages}",
+        "run_utc": pd.Timestamp.utcnow().isoformat(),
+        "git": {
+            "commit": _git("rev-parse", "HEAD"),
+            "branch": _git("branch", "--show-current"),
+            "dirty": bool(_git("status", "--porcelain")),
+        },
+        "config": {"path": "config/hormuz_detection.yaml", "sha256": spec_sha},
+        "confirmed_spec_sha256": confirmed_spec_sha,
+        "a3_acceptance": accepted,
+        "frozen_system": {
+            "digest_before_hormuz": sealed_digest,
+            "digest_after_scoring": final_digest,
+            "unchanged": sealed_digest == final_digest,
+            "model_fit_fold": systems[scored_states[0]].fold_id,
+            "model_fit_note": (
+                "The model is the last frozen rolling fold's fit. A4 invents no new "
+                "fit window: the fold geometry is frozen, the final fold is the most "
+                "recent system it defines, and its residuals are inside the "
+                "calibration the accepted thresholds were set on."
+            ),
+            "hormuz_context_scale_by_state": {
+                state: {
+                    "scale": float(system.hormuz_scale.scale),
+                    "center": float(system.hormuz_scale.center),
+                    "context_end": str(pd.Timestamp(system.hormuz_scale.context_end).date()),
+                    "digest": system.hormuz_scale.digest(),
+                }
+                for state, system in systems.items()
+            },
+        },
+        "measurement_states": {
+            "scored": scored_states,
+            "never_join_or_average": True,
+            "august_authorisation": final_cfg["measurement_states"]["august_authorisation"],
+        },
+        "thresholds": [
+            {
+                "model": item.model,
+                "horizon_days": item.horizon_days,
+                "form": item.form,
+                "threshold": item.threshold,
+            }
+            for item in thresholds
+        ],
+        "results": {
+            "summary": summary.to_dict(orient="records"),
+            "cross_state_agreement": agreement_rows,
+            "cross_vintage_decomposition": {
+                "proportional_constant": constant,
+                "estimated_on": "pre-surveillance overlap only",
+                "rows": int(len(revision)),
+                "interpretation": (
+                    "The scale-invariant detector is invariant to the proportional "
+                    "component by construction, so only the residual revision can "
+                    "move it. Agreement under a synthetic rescaling test is "
+                    "mathematical behaviour and is not evidence about the vintages."
+                ),
+            },
+        },
+        "sealing_assertions": assertions,
+        "outputs": {
+            "daily": outputs["daily"],
+            "summary": outputs["summary"],
+            "cross_vintage": outputs["cross_vintage"],
+            "manifest": outputs["manifest"],
+            "daily_sha256": sha256_file(daily_path),
+            "summary_sha256": sha256_file(summary_path),
+            "cross_vintage_sha256": sha256_file(cross_path),
+        },
+        "environment": {
+            "python": platform.python_version(),
+            "platform": platform.platform(),
+            "pandas": pd.__version__,
+            "numpy": np.__version__,
+        },
+        "limitations": [
+            "A4 scores one unit over one event. It is a stress test of a frozen "
+            "system, not a sample: nothing here estimates detection power, and no "
+            "confidence statement about the detector follows from a single alarm.",
+            "The false-alarm rate the threshold was set to is a development-unit "
+            "property. Whether it transfers to Hormuz is untestable here, and A3 "
+            "already showed transfer is uneven, with the worst development unit at "
+            "roughly five times its target rate.",
+            "severity_rank_within_state orders cells inside this run only. A3 does "
+            "not persist per-day development residuals, so ranking Hormuz against "
+            "the development distribution would need a recalibration A4 must not do.",
+            "The proportional constant is estimated on the pre-surveillance overlap, "
+            "so the surveillance-window decomposition is out of sample with respect "
+            "to it and inherits its estimation error.",
+            "Severity is reported in each form's own units and is not comparable "
+            "between the raw-level and scale-invariant forms.",
+        ],
+        "claims_not_authorised": [
+            "Any causal reading of an alarm, a delay, or a severity value.",
+            "Any statement that the detector 'works' or 'detected the disruption': "
+            "a fired alarm on one labelled event is not detection performance.",
+            "Any claim that the July and August states agree or disagree 'because "
+            "of' the disruption; the decomposition separates proportional rescaling "
+            "from residual revision and nothing further.",
+            "Treating a cross-state difference as a measurement-error estimate.",
+            "Any tuning, threshold adjustment or model change made after reading "
+            "this output. The plan's stop condition is explicit: no tuning after A4.",
+        ],
+    }
+    manifest["status"] = _derive_final_status(manifest)
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True, default=str))
+    return manifest
+
+
+def _derive_final_status(manifest: Mapping[str, object]) -> str:
+    """Derive PASS/FAIL from the A4 sealing evidence rather than asserting it."""
+    failures: list[str] = []
+    assertions = dict(manifest["sealing_assertions"])
+    for name, value in assertions.items():
+        must_be_false = name in A4_MUST_BE_FALSE
+        if must_be_false and bool(value):
+            failures.append(f"sealing_assertion_must_be_false:{name}")
+        elif not must_be_false and not bool(value):
+            failures.append(f"sealing_assertion:{name}")
+    missing = A4_MUST_BE_FALSE.difference(assertions)
+    failures.extend(f"missing_assertion:{name}" for name in sorted(missing))
+    manifest["status_failures"] = sorted(failures)
+    return "PASS" if not failures else "FAIL"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--phase", choices=["audit", "validate", "calibrate"], required=True)
+    parser.add_argument(
+        "--phase", choices=["audit", "validate", "calibrate", "final"], required=True
+    )
     parser.add_argument("--check-only", action="store_true")
+    parser.add_argument("--vintages", choices=["both", "july", "august"], default="both")
+    parser.add_argument("--confirm-frozen-spec", dest="confirm_frozen_spec", default="")
     args = parser.parse_args()
+
+    if args.phase == "final":
+        if not args.confirm_frozen_spec:
+            raise SystemExit(
+                "--phase final requires --confirm-frozen-spec <sha256>. A4 refuses to "
+                "score Hormuz without the operator confirming the configuration hash."
+            )
+        manifest = run_final(
+            args.confirm_frozen_spec, args.vintages, check_only=args.check_only
+        )
+        if args.check_only:
+            print("A4 FINAL GATE CHECK-ONLY PASS")
+            print(json.dumps(manifest, indent=2, sort_keys=True, default=str))
+            print(
+                "No panel was opened and no Hormuz outcome was read. "
+                "Rerun without --check-only to score."
+            )
+            return
+        print(f"A4 FINAL {manifest['status']}")
+        print(f"git branch/HEAD : {manifest['git']['branch']} / {manifest['git']['commit']}")
+        print(f"config sha256   : {manifest['config']['sha256']} (operator-confirmed)")
+        print(
+            "A3 acceptance   : "
+            f"{manifest['a3_acceptance']['accepted_on']} by "
+            f"{manifest['a3_acceptance']['accepted_by']}, design v"
+            f"{manifest['a3_acceptance']['a3_detector_design_version']}"
+        )
+        print(f"states scored   : {manifest['measurement_states']['scored']}")
+        print(
+            "frozen system   : digest "
+            f"{'UNCHANGED' if manifest['frozen_system']['unchanged'] else 'CHANGED'} "
+            f"across scoring ({manifest['frozen_system']['digest_before_hormuz'][:16]}…)"
+        )
+        print()
+        print("Alarm summary:")
+        print(
+            pd.DataFrame(manifest["results"]["summary"])
+            .loc[
+                :,
+                [
+                    "mode",
+                    "outcome_state",
+                    "model",
+                    "horizon_days",
+                    "form",
+                    "fired",
+                    "alarm_date",
+                    "detection_delay_days",
+                    "severity_7_day",
+                ],
+            ]
+            .to_string(index=False)
+        )
+        print()
+        print("Cross-state agreement:")
+        print(pd.DataFrame(manifest["results"]["cross_state_agreement"]).to_string(index=False))
+        print()
+        print(
+            "Cross-vintage proportional constant: "
+            f"{manifest['results']['cross_vintage_decomposition']['proportional_constant']}"
+        )
+        print()
+        print("Sealing assertions:")
+        print(json.dumps(manifest["sealing_assertions"], indent=2, sort_keys=True))
+        print()
+        for name in ("daily", "summary", "cross_vintage", "manifest"):
+            print(f"wrote {manifest['outputs'][name]}")
+        print()
+        print("STOP AND REPORT. No tuning after A4.")
+        if manifest["status"] != "PASS":
+            raise SystemExit(
+                "A4 FAILED its sealing assertions: " + ", ".join(manifest["status_failures"])
+            )
+        return
 
     if args.phase == "audit":
         if not args.check_only:
