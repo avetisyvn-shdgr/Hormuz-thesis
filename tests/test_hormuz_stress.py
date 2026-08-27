@@ -133,6 +133,34 @@ def test_a_configuration_hash_mismatch_refuses_to_score():
         runner.run_final("0" * 64, "both", check_only=True)
 
 
+def test_the_a4_july_panel_is_the_panel_a2_and_a3_actually_used(spec: dict):
+    """A4 must not rebuild the July panel differently from the earlier phases.
+
+    Regression guard: A4 first constructed the panel with `DataFrame.pivot`,
+    which returned a silently malformed index on this data -- 92 unique dates
+    repeated across 2,526 rows. Nothing downstream would have noticed until a
+    context scale refused the duplicated index. Pinning A4's panel to the one
+    A2 and A3 used removes the whole class of divergence, and this reads only
+    pre-surveillance days.
+    """
+    from lngfreight.global_forecaster import load_development_panel
+    from lngfreight.hormuz_stress import load_measurement_state_panel
+
+    start = spec["dates"]["full_start"]
+    end = spec["dates"]["detector_calibration_end"]
+    expected = load_development_panel(spec, JULY, start=start, end=end)
+    actual = load_measurement_state_panel(spec, JULY, start=start, end=end)
+
+    assert actual.index.has_duplicates is False
+    assert actual.index.is_monotonic_increasing
+    assert actual.index.equals(pd.date_range(start, end, freq="D", name="date"))
+    shared = sorted(set(expected.columns) & set(actual.columns))
+    assert set(development_units(spec)).issubset(shared)
+    pd.testing.assert_frame_equal(
+        actual.loc[:, shared], expected.loc[:, shared], check_names=False
+    )
+
+
 # ---------------------------------------------------------------------------
 # The no-tuning seal
 # ---------------------------------------------------------------------------

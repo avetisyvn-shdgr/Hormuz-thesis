@@ -283,16 +283,33 @@ def load_measurement_state_panel(
             f"  expected {state_spec['sha256']}\n  found    {artifact.sha256}"
         )
 
+    value_col = spec["outcome"]["column"]
     frame = artifact.read_csv(encoding="utf-8-sig")
-    frame = frame.loc[:, ["date", "portname", spec["outcome"]["column"]]].copy()
+    frame = frame.loc[:, ["date", "portname", value_col]].copy()
     frame["date"] = pd.to_datetime(frame["date"], format="%Y/%m/%d")
-    frame["unit"] = frame["portname"].map(slugify_portname)
-    window = frame.loc[
-        (frame["date"] >= pd.Timestamp(start)) & (frame["date"] <= pd.Timestamp(end))
-    ]
-    panel = window.pivot(index="date", columns="unit", values=spec["outcome"]["column"])
-    panel = panel.sort_index()
-    panel.columns.name = None
+    frame["slug"] = frame["portname"].map(slugify_portname)
+
+    # Built exactly as `spatial.wide_chokepoint_panel` builds the pinned July
+    # panel, per unit and reindexed onto a complete daily calendar, so A4's July
+    # panel is the same object A2 and A3 saw and August is constructed no
+    # differently.  Reaching for `DataFrame.pivot` here instead produced a
+    # silently malformed index on this data.
+    index = pd.date_range(pd.Timestamp(start), pd.Timestamp(end), freq="D", name="date")
+    columns: dict[str, pd.Series] = {}
+    for slug, part in frame.groupby("slug", sort=True):
+        if part["date"].duplicated().any():
+            raise A4GateError(f"duplicate {state} dates for {slug!r}; refusing to score")
+        columns[slug] = part.set_index("date")[value_col].sort_index().reindex(index)
+    panel = pd.DataFrame(columns, index=index)
+
+    missing = set(spec["population"]["units"]).difference(panel.columns)
+    if missing:
+        raise A4GateError(f"the {state} panel lacks frozen population units {sorted(missing)}")
+    if panel.loc[:, sorted(spec["population"]["units"])].isna().any().any():
+        raise A4GateError(
+            f"the {state} panel has gaps over {index.min().date()}..{index.max().date()}; "
+            "A4 requires a complete daily calendar for every frozen unit"
+        )
 
     surveillance = pd.Timestamp(spec["dates"]["hormuz_surveillance_start"])
     hormuz = spec["population"]["hormuz_unit"]
