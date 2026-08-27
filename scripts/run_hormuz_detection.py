@@ -1718,7 +1718,20 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
         revision.to_csv(cross_path.with_name(cross_path.stem + "_revision.csv"), index=False)
     cross.to_csv(cross_path, index=False)
 
+    transports = [
+        {"mode": mode, "detector_state": detector, "outcome_state": outcome}
+        for mode, detector, outcome in pairings
+        if detector != outcome
+    ]
+    declared_transport_modes = {final_cfg["modes"][2]["name"]}
+
     assertions = {
+        # Every cross-state application must be one the frozen block names.
+        # The standardiser seal refuses any that is not routed through the
+        # declared transport, so an undeclared one cannot reach scoring.
+        "every_cross_state_transport_is_a_declared_mode": all(
+            item["mode"] in declared_transport_modes for item in transports
+        ),
         "post_hormuz_tuning_attempted": False,
         "system_changed_after_hormuz": sealed_digest != final_digest,
         "measurement_states_joined_or_averaged": False,
@@ -1774,6 +1787,18 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
             "scored": scored_states,
             "never_join_or_average": True,
             "august_authorisation": final_cfg["measurement_states"]["august_authorisation"],
+            "cross_state_transports": transports,
+            "cross_state_transport_note": (
+                "Plan A4 mode 3 applies the frozen July detector -- its pooled "
+                "standardiser and its July-fitted Hormuz context scale -- to August "
+                "outcomes. The A1 standardiser seal refuses to transform a state it "
+                "was not fitted on, and a transport test is the one operation that "
+                "cannot satisfy it. The exception is made explicitly and only for the "
+                "pairing named here: the task table is still validated, no row is "
+                "relabelled, and the frame keeps its true measurement_state, so the "
+                "artefacts never claim August rows were July. Any cross-state "
+                "application not routed through that declared path still raises."
+            ),
         },
         "thresholds": [
             {

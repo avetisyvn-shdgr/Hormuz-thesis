@@ -19,7 +19,11 @@ import pandas as pd
 import pytest
 
 from lngfreight.detector_calibration import RAW_LEVEL, SCALE_INVARIANT
-from lngfreight.global_forecaster import development_units, load_detection_spec
+from lngfreight.global_forecaster import (
+    MeasurementStateError,
+    development_units,
+    load_detection_spec,
+)
 from lngfreight.hormuz_stress import (
     AUGUST,
     JULY,
@@ -159,6 +163,110 @@ def test_the_a4_july_panel_is_the_panel_a2_and_a3_actually_used(spec: dict):
     pd.testing.assert_frame_equal(
         actual.loc[:, shared], expected.loc[:, shared], check_names=False
     )
+
+
+# ---------------------------------------------------------------------------
+# The declared cross-state transport (plan A4 mode 3)
+# ---------------------------------------------------------------------------
+
+
+def _scoring_rows(spec: dict, state: str, panel: pd.DataFrame) -> pd.DataFrame:
+    from lngfreight.global_forecaster import (
+        apply_context_normalisation,
+        build_hormuz_scoring_geometry,
+        materialize_task_features,
+    )
+    from lngfreight.disruption_detector import fit_context_scale
+
+    hormuz = spec["population"]["hormuz_unit"]
+    rows = materialize_task_features(panel, build_hormuz_scoring_geometry(spec, state), spec)
+    scale = fit_context_scale(
+        panel[hormuz],
+        spec,
+        measurement_state=state,
+        context_start=spec["model"]["context_normalisation"]["context_start"],
+        context_end=spec["scaling"]["context_end"],
+    )
+    return apply_context_normalisation(rows, {hormuz: scale}, spec)
+
+
+def test_same_state_standardising_goes_through_the_sealed_transform(spec: dict):
+    """Modes 1, 2 and 4 must bypass nothing at all."""
+    from lngfreight.hormuz_stress import apply_frozen_standardiser
+
+    panel = _synthetic_panel(spec)
+    lock = TuningLock()
+    system = build_state_system(
+        spec, panel, JULY, alpha_by_horizon={1: 100.0, 7: 1000.0, 30: 1000.0}, lock=lock
+    )
+    rows = _scoring_rows(spec, JULY, panel)
+    subset = rows.loc[rows["horizon_days"].eq(7)]
+    standardiser = system.standardisers[7]
+
+    direct = standardiser.transform(subset, spec)
+    routed = apply_frozen_standardiser(
+        standardiser, subset, spec, detector_state=JULY, outcome_state=JULY
+    )
+    pd.testing.assert_frame_equal(routed, direct)
+
+
+def test_the_transport_applies_july_constants_without_relabelling_august(spec: dict):
+    """Mode 3: the exception is declared, narrow, and leaves provenance intact."""
+    from lngfreight.hormuz_stress import apply_frozen_standardiser
+
+    panel = _synthetic_panel(spec)
+    lock = TuningLock()
+    july_system = build_state_system(
+        spec, panel, JULY, alpha_by_horizon={1: 100.0, 7: 1000.0, 30: 1000.0}, lock=lock
+    )
+    august_rows = _scoring_rows(spec, AUGUST, panel)
+    subset = august_rows.loc[august_rows["horizon_days"].eq(7)]
+    standardiser = july_system.standardisers[7]
+
+    # The sealed path still refuses: the seal is not weakened.
+    with pytest.raises(MeasurementStateError, match="cannot silently transform"):
+        standardiser.transform(subset, spec)
+
+    transported = apply_frozen_standardiser(
+        standardiser, subset, spec, detector_state=JULY, outcome_state=AUGUST
+    )
+    # No row is relabelled; the artefacts never claim August rows were July.
+    assert set(transported["measurement_state"]) == {AUGUST}
+    # And the July constants were the ones applied.
+    for column, mean, scale in zip(
+        standardiser.feature_columns, standardiser.means, standardiser.scales
+    ):
+        assert np.allclose(
+            transported[column].to_numpy(dtype="float64"),
+            (subset[column].to_numpy(dtype="float64") - mean) / scale,
+        )
+
+
+def test_a_transport_that_misdeclares_its_states_is_refused(spec: dict):
+    """The declaration must match reality or the exception does not apply."""
+    from lngfreight.hormuz_stress import apply_frozen_standardiser
+
+    panel = _synthetic_panel(spec)
+    lock = TuningLock()
+    july_system = build_state_system(
+        spec, panel, JULY, alpha_by_horizon={1: 100.0, 7: 1000.0, 30: 1000.0}, lock=lock
+    )
+    august_rows = _scoring_rows(spec, AUGUST, panel)
+    subset = august_rows.loc[august_rows["horizon_days"].eq(7)]
+
+    # Rows are August but the caller claims the outcomes are July.
+    with pytest.raises(MeasurementStateError, match="rows carry"):
+        apply_frozen_standardiser(
+            july_system.standardisers[7], subset, spec,
+            detector_state=AUGUST, outcome_state=JULY,
+        )
+    # Outcomes declared correctly, but the detector state claimed is not the
+    # state the standardiser that was handed over was actually fitted on.
+    with pytest.raises(MeasurementStateError, match="fitted on"):
+        apply_frozen_standardiser(
+            july_system.standardisers[7], subset, spec,
+            detector_state="not_a_fitted_state", outcome_state=AUGUST,
+        )
 
 
 # ---------------------------------------------------------------------------

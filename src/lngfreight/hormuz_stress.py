@@ -48,6 +48,7 @@ from .detector_calibration import (
 from .disruption_detector import fit_context_scale
 from .global_forecaster import (
     LeakageError,
+    MeasurementStateError,
     RidgeGlobalModel,
     TrainingOnlyStandardizer,
     apply_context_normalisation,
@@ -60,6 +61,7 @@ from .global_forecaster import (
     rolling_origin_folds,
     seasonal_naive_predictions,
     sha256_file,
+    validate_task_table,
 )
 
 CONSUMER = "scripts/run_hormuz_detection.py"
@@ -477,7 +479,13 @@ def score_hormuz(
         subset = normalised.loc[normalised["horizon_days"].eq(horizon)]
         if subset.empty:
             continue
-        standardised = system.standardisers[horizon].transform(subset, spec)
+        standardised = apply_frozen_standardiser(
+            system.standardisers[horizon],
+            subset,
+            spec,
+            detector_state=detector_state,
+            outcome_state=outcome_state,
+        )
         z_prediction = system.models[horizon].predict(standardised)
         block = subset.loc[
             :, ["unit", "horizon_days", "target_timestamp", "feature_timestamp", "y_target"]
@@ -510,6 +518,61 @@ def score_hormuz(
     return scored.sort_values(
         ["model", "horizon_days", "target_timestamp"], kind="mergesort"
     ).reset_index(drop=True)
+
+
+def apply_frozen_standardiser(
+    standardiser: TrainingOnlyStandardizer,
+    tasks: pd.DataFrame,
+    spec: Mapping,
+    *,
+    detector_state: str,
+    outcome_state: str,
+) -> pd.DataFrame:
+    """Standardise scoring rows, permitting the declared cross-state transport.
+
+    `TrainingOnlyStandardizer.transform` refuses to *silently* transform a state
+    it was not fitted on, and that seal is right: an accidental cross-state
+    application is exactly the kind of mixing the A1 contract exists to stop.
+
+    Plan v1.2 A4 mode 3 asks for one deliberate exception -- the frozen July
+    scale-invariant detector transported to August -- and a transport test is
+    the one operation that cannot satisfy the seal, because applying the July
+    objects to August outcomes is the whole point of it.
+
+    So the exception is made here, explicitly and narrowly, rather than by
+    loosening the sealed class:
+
+    * When the states match, the sealed `transform` is called and nothing is
+      bypassed.  Modes 1, 2 and 4 all take that path.
+    * When they differ, this applies the frozen means and scales directly.  The
+      task table is still validated, no row is relabelled, and the frame keeps
+      its true `measurement_state`, so the artefacts never claim August rows
+      were July.  The **only** thing skipped is the state-equality check, and
+      only for a pairing the caller named.
+
+    Any cross-state application that is not routed through here still raises.
+    """
+    if detector_state == outcome_state:
+        return standardiser.transform(tasks, spec)
+
+    validate_task_table(tasks, spec)
+    observed = str(tasks["measurement_state"].iloc[0])
+    if observed != outcome_state:
+        raise MeasurementStateError(
+            f"transport declared {outcome_state!r} outcomes but the rows carry {observed!r}"
+        )
+    if standardiser.measurement_state != detector_state:
+        raise MeasurementStateError(
+            f"transport declared a {detector_state!r} detector but the standardiser "
+            f"was fitted on {standardiser.measurement_state!r}"
+        )
+
+    output = tasks.copy()
+    for column, mean, scale in zip(
+        standardiser.feature_columns, standardiser.means, standardiser.scales
+    ):
+        output[column] = (pd.to_numeric(output[column], errors="raise") - mean) / scale
+    return output
 
 
 @dataclass(frozen=True)
@@ -640,6 +703,7 @@ __all__ = [
     "PostHormuzTuningError",
     "StateSystem",
     "TuningLock",
+    "apply_frozen_standardiser",
     "build_state_system",
     "decompose_revision",
     "first_alarm",
