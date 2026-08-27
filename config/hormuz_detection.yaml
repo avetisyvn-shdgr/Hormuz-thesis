@@ -1,0 +1,538 @@
+schema_version: 1
+phase: "A2"
+status: "phase_a2_candidate_for_mher_freeze"
+plan:
+  version: "1.2"
+  path: "docs/HORMUZ_TECHNICAL_EXECUTION_PLAN.md"
+  sha256: "3f94689495dab052d5fb802fa9695ba620b254b821143c4437a6053324eb804e"
+foundation:
+  code_commit: "6ef6191aa8340928ca439a02244dfec68439f2b3"
+  phase0_freeze_commit: "73ae8989f274f06566dd883e6e6e1699a64e07c9"
+
+outcome:
+  column: "n_tanker"
+  unit: "tanker_transits_per_day"
+
+measurement_states:
+  july:
+    registry_variable: "portwatch_chokepoints_snapshot"
+    path: "data/raw/portwatch/Daily_Chokepoints_Data.csv"
+    sha256: "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d"
+    reporting_role: "pinned_primary_reference"
+  august:
+    registry_variable: "portwatch_chokepoints_vintage_20260809_snapshot"
+    path: "data/raw/portwatch/vintages/Daily_Chokepoints_Data__vintage_2026-08-09.csv"
+    sha256: "0bc806a4c384723debff08053d6fcbb915a03ee9fdf7b23c73d76d9bcb885bcb"
+    reporting_role: "separate_measurement_state"
+  never_join_or_average: true
+
+population:
+  hormuz_unit: "strait_of_hormuz"
+  expected_total_units: 28
+  expected_development_units: 27
+  units:
+    - "bab_el_mandeb_strait"
+    - "balabac_strait"
+    - "bering_strait"
+    - "bohai_strait"
+    - "bosporus_strait"
+    - "cape_of_good_hope"
+    - "dover_strait"
+    - "gibraltar_strait"
+    - "kerch_strait"
+    - "korea_strait"
+    - "lombok_strait"
+    - "luzon_strait"
+    - "magellan_strait"
+    - "makassar_strait"
+    - "malacca_strait"
+    - "mindoro_strait"
+    - "mona_passage"
+    - "ombai_strait"
+    - "oresund_strait"
+    - "panama_canal"
+    - "strait_of_hormuz"
+    - "suez_canal"
+    - "sunda_strait"
+    - "taiwan_strait"
+    - "torres_strait"
+    - "tsugaru_strait"
+    - "windward_passage"
+    - "yucatan_channel"
+
+dates:
+  full_start: "2019-01-01"
+  development_end: "2023-12-31"
+  hyperparameter_validation_start: "2024-01-01"
+  hyperparameter_validation_end: "2024-12-31"
+  detector_calibration_end: "2025-11-30"
+  hormuz_surveillance_start: "2025-12-01"
+  hormuz_pre_onset_end: "2026-02-27"
+  operational_onset: "2026-02-28"
+  scoring_end: "2026-07-07"
+
+tasks:
+  horizons_days: [1, 7, 30]
+  chronological_only: true
+  random_split_prohibited: true
+  target_strictly_after_feature_timestamp: true
+  hormuz_training_prohibited: true
+  hormuz_surveillance_role: "scoring_only"
+  seed: 20260612
+
+features:
+  # lag_1 is the value observed at the feature timestamp. lag_k is the value
+  # observed k-1 calendar days before that timestamp.
+  lag_days: [1, 7, 14, 28, 56]
+  rolling_windows_days: [7, 28, 56]
+  rolling_statistics: ["mean", "median", "std"]
+  rolling_std_ddof: 0
+  calendar:
+    source: "target_calendar_known_at_forecast_time"
+    fields: ["target_day_of_week", "target_month_sin", "target_month_cos"]
+  network_factors:
+    enabled: false
+    reentry_rule: "estimate independently inside each training fold"
+  identity_embedding:
+    enabled: false
+
+scaling:
+  feature_scaler: "training_only_standard_zscore"
+  zero_variance_scale: 1.0
+  permitted_fit_roles: ["development_fit", "rolling_fit"]
+  context_scaler: "context_only_median_mad"
+  context_end: "2025-11-30"
+  hormuz_scoring_values_permitted_in_scale_fit: false
+
+rolling_origin:
+  scheme: "expanding"
+  train_start: "2019-01-01"
+  first_score_start: "2021-01-01"
+  last_score_end: "2025-11-30"
+  assessment_days: 30
+  step_days: 30
+  include_partial_last_fold: true
+  residual_roles:
+    development_oof:
+      start: "2021-01-01"
+      end: "2023-12-31"
+      detector_calibration_eligible: true
+    hyperparameter_validation_oof:
+      start: "2024-01-01"
+      end: "2024-12-31"
+      detector_calibration_eligible: false
+    post_selection_prequential:
+      start: "2025-01-01"
+      end: "2025-11-30"
+      detector_calibration_eligible: true
+
+event_mask:
+  status: "frozen_before_detector_calibration"
+  unit_day_scope: true
+  source_policy: "frozen_external_or_event_records_only"
+  residual_inference_prohibited: true
+  coverage_end: "2025-11-30"
+  # Mask boundaries come from the EXTERNAL chronology, not from the propagation
+  # register. Three of the register's four onsets are data-derived (fixed by a
+  # rule applied to the PortWatch panel), and using them would draw the mask
+  # boundary from the outcome being calibrated on. The propagation register is
+  # NOT modified; it keeps its own dates for its own estimator.
+  # Authorized by Mher on 2026-08-27; selection rules declared before use in
+  # config/hormuz_event_chronology.yaml.
+  sources:
+    - source_id: "external_chronology_v1"
+      kind: "frozen_external_record"
+      path: "config/hormuz_event_chronology.yaml"
+      sha256: "dc14bae0309cac4653106729cad64f12dbc694508a06dfdab4184bc2ab3c4d81"
+  records:
+    # Agrees with the propagation register; the external record confirms it.
+    - event_id: "suez_ever_given_2021"
+      source_id: "external_chronology_v1"
+      source_event_key: "suez_ever_given"
+      units: ["suez_canal"]
+      start: "2021-03-23"
+      end: "2021-03-29"
+      residual_derived: false
+    # Agrees with the propagation register; already externally anchored there.
+    - event_id: "black_sea_kerch_2022"
+      source_id: "external_chronology_v1"
+      source_event_key: "black_sea_kerch"
+      units: ["kerch_strait"]
+      start: "2022-02-24"
+      end: null
+      residual_derived: false
+    # Onset moved from the register's data-derived 2023-12-19 to the first
+    # announced cut in daily transits (announced 2023-07-25, effective
+    # 2023-07-30). Adds 142 externally documented restricted days.
+    - event_id: "panama_drought_2023_2024"
+      source_id: "external_chronology_v1"
+      source_event_key: "panama_drought"
+      units: ["panama_canal"]
+      start: "2023-07-30"
+      end: "2024-07-31"
+      residual_derived: false
+    # Onset moved from the register's data-derived 2024-01-13 (which tracked
+    # the US/UK airstrikes) to the first major carrier suspension. Adds 30 days
+    # at each of two chokepoints.
+    - event_id: "red_sea_disruption_2024"
+      source_id: "external_chronology_v1"
+      source_event_key: "red_sea"
+      units: ["bab_el_mandeb_strait", "suez_canal"]
+      start: "2023-12-14"
+      end: null
+      residual_derived: false
+
+detector_contract:
+  calibration_population: "non_hormuz_only"
+  hormuz_calibration_prohibited: true
+  eligible_residual_roles: ["development_oof", "post_selection_prequential"]
+  forms: ["raw_level", "scale_invariant"]
+  fitting_status: "fitted_in_A2"
+  calibration_status: "deferred_to_A3"
+
+audit:
+  check_only: true
+  output_files: []
+  print_hormuz_post_outcomes: false
+  report_geometry_hashes: true
+  report_leakage_checks: true
+
+# ---------------------------------------------------------------------------
+# A2 -- global forecasting model, declared baselines, and 2024 hyperparameter
+# selection. Added under plan v1.1 section 6. Track A was reassigned from
+# ChatGPT to Claude by Mher on 2026-08-27; every A1 clause above is unchanged.
+# ---------------------------------------------------------------------------
+model:
+  development_measurement_state: "july"
+  development_state_rationale: >-
+    July is the pinned primary reference state. A2 fits and validates on it
+    alone. August is a separate measurement state, is never averaged with July,
+    and is read only by a phase that genuinely needs it (A4). Reading August
+    also requires an allowed_consumers entry in config/sources.yaml that Mher
+    has not granted to this script.
+
+  context_normalisation:
+    method: "context_only_median_mad"
+    scope: "per_unit"
+    context_start: "2019-01-01"
+    context_end: "2023-12-31"
+    context_end_rationale: >-
+      Nothing selected on 2024 may be influenced by 2024. The frozen
+      scaling.context_end of 2025-11-30 is the A4 scoring context, not the
+      development context, so A2 closes its context at development_end.
+    feature_transform:
+      rule: "prefix_classification"
+      dispersion_prefixes: ["rolling_std_"]
+      untransformed_source: "features.calendar.fields"
+      default_kind: "level"
+
+  global_model:
+    estimator: "ridge_closed_form"
+    library: "numpy_only"
+    dependency_status: "no_new_dependency"
+    estimator_rationale: >-
+      Plan v1.1 section 6 permits "a defensible global gradient-boosting or
+      regularized model supported by the existing environment". scikit-learn is
+      absent from .venv and requirements.txt defers modelling libraries by
+      design, so the regularized branch is taken. A boosting library would need
+      Mher's documented dependency approval and a new configuration version.
+    fit_intercept: true
+    pooled_across_units: true
+    one_model_per_horizon: true
+    grid:
+      alpha: [0.1, 1.0, 10.0, 100.0, 1000.0]
+    selection:
+      period: "hyperparameter_validation"
+      metric: "mase"
+      aggregate: "mean_over_units"
+      per_horizon: true
+      tie_break: "smallest_alpha"
+
+  baselines:
+    - name: "seasonal_naive"
+      scoring_scope: "all_units_including_hormuz"
+      scoring_scope_reason: "A lookup, not a fit, so leave-Hormuz-out does not bind it."
+      definition: >-
+        Predict the most recent observation at or before the forecast origin
+        whose weekday matches the target weekday. Defined for every horizon
+        without ever reading past the origin.
+    - name: "local_ar_1_7"
+      scoring_scope: "development_units_only"
+      scoring_scope_reason: >-
+        Needs a unit-specific fit, which leave-Hormuz-out forbids for Hormuz.
+        Mher classified it as a development-only baseline on 2026-08-27.
+      definition: >-
+        Per unit and per horizon, ordinary least squares of the target on lag_1
+        and lag_7 with an intercept, fitted on development targets only. Direct
+        multi-horizon form, so its task is identical to the global model's.
+
+  tsfm_benchmarks:
+    included: false
+    reason: >-
+      Plan v1.1 admits frozen Chronos-2/TimesFM benchmarks only "where identical
+      task compatibility is demonstrated". The frozen artefacts score
+      hormuz_tanker_transits and hormuz_tanker_capacity on 30-day rolling folds
+      inside 2023 from Hormuz's own history: a different unit population, a
+      different task geometry, and a unit A1 forbids in fitting. Identical
+      compatibility cannot be demonstrated, so they are excluded. This
+      authorises no new transformer training.
+
+  scoring:
+    metrics: ["mae", "rmse", "mase", "scaled_mae"]
+    mase_denominator:
+      definition: "mean absolute seasonal-7 difference of the unit's own series"
+      window: "development"
+      minimum: 1.0e-08
+    scaled_mae_denominator: "unit_context_scale"
+    intervals:
+      nominal_levels: [0.8, 0.95]
+      method: "empirical_development_residual_quantiles"
+      provisional: true
+      provisional_reason: >-
+        Development residuals are in-sample for the fitted model, so these
+        intervals are expected to be anti-conservative. The reported 2024
+        coverage is the honest check on them. Calibrated intervals are an A3
+        deliverable and are not claimed here.
+      pinball_quantiles: [0.025, 0.1, 0.5, 0.9, 0.975]
+    winner_score_prohibited: true
+
+  outputs:
+    scores: "data/processed/hormuz_detection_validation_scores.csv"
+    predictions: "data/processed/hormuz_detection_validation_predictions.csv"
+    manifest: "data/processed/hormuz_detection_validation_manifest.json"
+
+# ---------------------------------------------------------------------------
+# A3 -- detector calibration. NOT FROZEN. The design direction below came from
+# Mher's 2026-08-27 review, which rejected a per-chokepoint threshold: Hormuz is
+# excluded from calibration, so no Hormuz-specific threshold could exist to
+# apply to it. Transferability is therefore a design requirement.
+#
+# Mher's follow-up review found the first draft of this block under-specified.
+# It is recorded here as PROPOSED. Mher freezes it explicitly, and resolves the
+# open item under `unresolved`, before any A3 calibration runs.
+# ---------------------------------------------------------------------------
+detector:
+  status: "frozen"
+  frozen: true
+  frozen_on: "2026-08-27"
+  frozen_under: "Mher's directive, step 2 of the 2026-08-27 review sequence"
+  provenance:
+    decided_by_mher:
+      - "transferable threshold only; per-unit thresholds prohibited"
+      - "macro-average episode rate as the calibration target"
+      - "threshold_loco and end_to_end_loco named and run separately"
+      - "unstandardised raw score, s_raw = yhat - y"
+      - "local AR is a development-only baseline, not scored on Hormuz"
+      - "masked gaps are segment boundaries with right-censored episodes"
+      - "end-to-end LOCO withholds cross-unit objects but keeps the unit's own context scale"
+      - "context scale refitted per fold; the algorithm is frozen, not a constant"
+    proposed_by_claude_reviewed_by_mher_without_objection:
+      - "strict greater-than for exceedance"
+      - "smallest threshold whose achieved rate is at or below target, on ties"
+      - "exposure denominator: eligible days after masking over 365.25"
+  veto: >-
+    If Mher rejects any item attributed to Claude above, this freeze is void and
+    the design takes a new version rather than being edited in place.
+
+  threshold_scope:
+    rule: "one_transferable_threshold_per_model_horizon_and_form"
+    per_unit_thresholds_prohibited: true
+    prohibition_reason: >-
+      Hormuz never enters calibration, so a unit-specific threshold would have
+      no Hormuz counterpart at scoring time. Transferability is the design
+      requirement, not a convenience.
+    operational_threshold_fitted_on: "all_27_development_units"
+    loco_thresholds_are_evaluation_only: true
+
+  nonconformity:
+    orientation: "positive score means the outcome fell BELOW the forecast"
+    raw_level:
+      formula: "s_raw[i,t] = yhat[i,t] - y[i,t]"
+      units: "tanker transits per day"
+      standardised: false
+      scale_invariant_by_construction: false
+      decided_by: "Mher, 2026-08-27"
+      decision_note: >-
+        Mher chose the unstandardised form over a pooled-sigma variant. This
+        settles the "standardised versus raw units" tension in plan v1.1 in
+        favour of raw units for this form.
+      expected_behaviour: >-
+        One transferable threshold in transits per day is dominated by the
+        high-volume units. Small units such as Bering, Magellan and Torres will
+        essentially never exceed a threshold that controls Malacca, Korea and
+        Dover, so this form is expected to have little sensitivity on them. That
+        degeneracy is the informative contrast against the scale-invariant form,
+        not a defect to be tuned away. Hormuz itself averages roughly 54.6 transits
+        per day in the July state over 2019-01-01 to 2025-11-30, and roughly 45.4 in
+        the August state over the same window, so it sits among the high-volume
+        units in either state and this form is expected to retain sensitivity
+        there. These are design expectations stated before
+        calibration, not results.
+    scale_invariant:
+      formula: "s_scaled[i,t] = (yhat[i,t] - y[i,t]) / context_scale[i]"
+      units: "dimensionless"
+      scale_invariant_by_construction: true
+      invariance_argument: >-
+        Under y -> c*y for c > 0 the context median and MAD both scale by c, so
+        the refitted context scale scales by c and the score is unchanged.
+      invariance_test_required: true
+    comparison: "strict_greater_than"
+    comparison_rationale: >-
+      Counts are discrete and scores tie. Under strict `>`, a score exactly at
+      the threshold does not fire, which is the conservative direction.
+
+  episodes:
+    alarm_begins_after_consecutive_exceedances: 2
+    quiet_days_required_for_new_episode: 7
+    masked_days_are_observations: false
+    masked_gap_rule: "segment_boundary"
+    masked_gap_state_machine:
+      reset_exceedance_counter: true
+      reset_quiet_counter: true
+      bridge_episodes_across_gap: false
+      episode_reaching_a_gap: "right_censored, terminated on the last eligible day"
+      after_gap_requires_fresh_consecutive_exceedances: 2
+      censored_episodes_reported_separately: true
+    mask_interaction_rationale: >-
+      Corrected on Mher's 2026-08-27 review. The first rule only interrupted the
+      exceedance run without letting masked days count as quiet, which would
+      leave an episode open across Panama's masked interval of roughly a year,
+      and across the open-ended Red Sea and Kerch masks. Masked gaps are
+      therefore segment boundaries: both counters reset, no episode spans a gap,
+      an episode running into a gap is recorded as right-censored and terminated
+      on its last eligible day, and a new episode after the gap needs a fresh
+      pair of consecutive exceedances. Censored episodes are reported separately
+      so a truncated episode is never counted as a clean one.
+
+  calibration_target:
+    statistic: "macro_average_episode_rate_across_units"
+    statistic_rationale: >-
+      A pooled row-level residual quantile lets high-volume or long series
+      dominate the threshold. Averaging the per-unit episode rate gives each
+      chokepoint equal weight in the quantity actually being controlled.
+    max_episodes_per_chokepoint_year: 2
+    pooled_row_quantile_as_primary: false
+    exposure_denominator:
+      definition: "eligible unit-days for that unit after masking, divided by 365.25"
+      masked_days_excluded: true
+
+  discrete_ties:
+    rule: "smallest_threshold_whose_achieved_rate_is_at_or_below_target"
+    report_achieved_rate: true
+    report_requested_rate: true
+    reason: >-
+      Scores tie, so the requested rate may be unattainable. Take the attainable
+      threshold on the conservative side and report the rate actually achieved
+      next to the rate requested, never the requested rate alone.
+
+  evaluation:
+    # Two distinct objects are both called "scaling" in A2. Naming them apart
+    # here is what the first draft got wrong.
+    scaling_vocabulary:
+      pooled_feature_standardiser: >-
+        TrainingOnlyStandardizer. Fitted across the pooled development rows of
+        many units at once, so it is a cross-unit object and a held-out unit
+        must never enter it.
+      unit_context_scale: >-
+        fit_context_scale. The median and MAD of a single unit's own history.
+        Unit-local, so a held-out unit keeps its own and Hormuz will have one.
+
+    # Raised by Claude on 2026-08-27; decided by Mher the same day.
+    context_scale_timing:
+      rule: "refit_per_fold_and_horizon_on_history_through_that_fold_fit_end"
+      status: "decided_by_mher_2026-08-27"
+      frozen_object: "the scaling algorithm, not one numerical scale"
+      frozen_object_rationale: >-
+        Mher's ruling. Freezing a single 2019-2020 constant would freeze an
+        estimate that can be badly stale by 2025, and reporting the staleness
+        would not correct the resulting calibration mismatch. Freezing the
+        transformation instead keeps every fold on the scale that would actually
+        have been available at that time.
+      comparability: >-
+        Fold-specific normalised residuals stay comparable because the same
+        predeclared dimensionless transformation is applied everywhere, even
+        though the constant it uses differs by fold.
+      specification:
+        per_fold_and_horizon: >-
+          For each rolling fold and each horizon, fit every unit's median and MAD
+          using only observations available through that fold's horizon-specific
+          fit_end.
+        end_to_end_loco: >-
+          The held-out unit may use its own historical values through fit_end for
+          context normalisation. It stays excluded from global-model fitting,
+          pooled feature standardiser fitting, hyperparameter selection and
+          threshold calibration.
+        a4_deployment: >-
+          At A4, fit the Hormuz context scale once through 2025-11-30 and hold it
+          fixed across surveillance and final scoring. Historical folds use the
+          scale available then; A4 uses the scale available at deployment.
+      drift_diagnostic:
+        required: true
+        report: "each unit's context-scale trajectory across folds"
+        purpose: "expose instability or drift in the normaliser itself"
+
+    # Mher's review: these are different tests and must be named and run
+    # separately. The first isolates threshold transfer; the second reproduces
+    # the actual Hormuz situation, where the forecaster never saw the unit.
+    threshold_loco:
+      enabled: true
+      held_out_unit_excluded_from: ["threshold_calibration"]
+      held_out_unit_included_in:
+        - "global_model_fitting"
+        - "pooled_feature_standardiser_fitting"
+        - "hyperparameter_selection"
+        - "its_own_unit_context_scale"
+      tests: "whether a threshold calibrated on other units transfers to an unseen unit"
+    end_to_end_loco:
+      enabled: true
+      held_out_unit_excluded_from:
+        - "global_model_fitting"
+        - "pooled_feature_standardiser_fitting"
+        - "hyperparameter_selection"
+        - "threshold_calibration"
+      held_out_unit_retains:
+        - "its_own_unit_context_scale"
+      context_scale_rule: >-
+        Corrected on Mher's 2026-08-27 review. The held-out unit keeps a context
+        scale fitted on its own history alone, because that is exactly how unseen
+        Hormuz is normalised at A4. Excluding it would leave the scale-invariant
+        score undefined and would not resemble deployment. Only the cross-unit
+        objects are withheld.
+      tests: "the Hormuz-like case, where the forecaster never trained on the unit"
+      cost_note: >-
+        Refits the model and reselects the penalty once per held-out unit and
+        horizon. With 27 units, 3 horizons and 5 penalties this is 405 closed-form
+        fits plus rolling residuals, which the Cholesky solve makes tractable.
+    report:
+      - "per_unit_false_alarm_episodes_per_year"
+      - "worst_unit_behaviour"
+      - "dispersion_across_units"
+      - "pooled_summary"
+      - "system_wide_episodes_across_27_units"
+      - "achieved_versus_requested_alarm_rate"
+
+  eligibility:
+    residual_roles: ["development_oof", "post_selection_prequential"]
+    hyperparameter_validation_excluded: true
+    hormuz_excluded: true
+    event_masked_unit_days_excluded: true
+    calibration_end: "2025-11-30"
+
+  resolved:
+    local_ar_cannot_score_hormuz:
+      raised_by: "Mher, 2026-08-27"
+      decided_by: "Mher, 2026-08-27"
+      decision: "development_only_baseline"
+      effect: >-
+        local_ar_1_7 is a development-population comparator and is not scored on
+        Hormuz. Leave-Hormuz-out stays intact and tasks.hormuz_training_prohibited
+        is unchanged. A4 compares the global model against seasonal naive on
+        Hormuz, seasonal naive needing no fit.
+      cost_accepted: >-
+        A4 carries no pooled-versus-local contrast on Hormuz itself. The contrast
+        is reported on the 27 development units only.
+
+  outputs:
+    calibration: "data/processed/hormuz_detector_calibration.csv"
+    false_alarms: "data/processed/hormuz_detector_false_alarms.csv"
+    manifest: "data/processed/hormuz_detector_calibration_manifest.json"

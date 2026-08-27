@@ -1,0 +1,229 @@
+# Frozen specification for the B1 instrument revision audit (Track B).
+#
+# SCOPE. This spec governs the measurement audit only. It does not touch
+# `config/settings.yaml`, the locked `primary_treatment_cutoff` (2026-02-28),
+# Track A's `config/hormuz_detection.yaml`, or any raw data. It describes how
+# two PortWatch measurement states are compared; it does not define a model,
+# a detector, or an estimand.
+#
+# ESTIMAND CLASS. Descriptive measurement comparison between two frozen
+# captures of the same historical period. There is NO causal content here.
+# Establishing that a unit-specific retrospective revision occurred is
+# permitted. Attributing that revision to the Hormuz disruption, or to any
+# provider-side reason, is NOT permitted without documentary evidence
+# (docs/HORMUZ_TECHNICAL_EXECUTION_PLAN.md v1.1, section 2, claim boundaries).
+#
+# ANTI-SHOPPING RULE. The mapping estimator and its sample are fixed HERE,
+# before the fit is inspected. `mapping.default` is the reporting basis named
+# by the plan. Every other entry under `mapping.forms` is a DECLARED
+# sensitivity that must be reported whatever it shows. Changing the default
+# after seeing residuals invalidates the run and requires a new version.
+version: 1
+status: "frozen"
+drafted_on: "2026-08-27"
+plan: "docs/HORMUZ_TECHNICAL_EXECUTION_PLAN.md"
+plan_version: "1.1"
+phase: "B1"
+
+# ---------------------------------------------------------------------------
+# Measurement states. NEVER averaged, never concatenated, never substituted
+# for one another. Each is loaded separately through registry.get_variable()
+# and its SHA-256 is checked against the Phase 0 freeze record below.
+# ---------------------------------------------------------------------------
+states:
+  july:
+    label: "july"
+    registry_variable: "portwatch_chokepoints_snapshot"
+    path: "data/raw/portwatch/Daily_Chokepoints_Data.csv"
+    expected_sha256: "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d"
+    captured_note: "Pinned reporting basis; coverage to 2026-07-12."
+    allow_sensitivity: false
+  august:
+    label: "august"
+    registry_variable: "portwatch_chokepoints_vintage_20260809_snapshot"
+    path: "data/raw/portwatch/vintages/Daily_Chokepoints_Data__vintage_2026-08-09.csv"
+    expected_sha256: "0bc806a4c384723debff08053d6fcbb915a03ee9fdf7b23c73d76d9bcb885bcb"
+    captured_note: "Sensitivity vintage captured 2026-08-09; coverage to 2026-08-02."
+    # The August vintage is registered `analysis_scope: sensitivity_only` with a
+    # closed consumer allowlist in `config/sources.yaml`. B1 is a declared
+    # sensitivity consumer: it reads this vintage as the SECOND measurement
+    # state of a revision audit. It never promotes the vintage, never
+    # substitutes it for the pinned primary, and never averages the two states,
+    # so it does not engage the entry's `promotion_policy`. The opt-in is
+    # declared here, in the frozen spec, rather than hard-coded in the script.
+    allow_sensitivity: true
+
+# Consumer identity presented to the registry's sensitivity gate. The registry
+# matches the substring before ":" against `allowed_consumers`; the suffix is
+# recorded in provenance. This script must be listed in that allowlist before
+# B1 can run. Adding it is a data-access governance decision owned by Mher.
+consumer: "scripts/run_hormuz_measurement_audit.py:b1_instrument_revision_audit"
+
+panel:
+  unit_column: "portname"
+  date_column: "date"
+  date_format: "%Y/%m/%d"
+  n_units_expected: 28
+  focus_unit: "Strait of Hormuz"
+  primary_measure: "n_tanker"
+  # Vessel-class counts and the matching capacity columns. The audit reports
+  # the changed-row percentage for every one of these, by chokepoint.
+  count_measures:
+    - "n_tanker"
+    - "n_container"
+    - "n_dry_bulk"
+    - "n_general_cargo"
+    - "n_roro"
+    - "n_cargo"
+    - "n_total"
+  capacity_measures:
+    - "capacity_tanker"
+    - "capacity_container"
+    - "capacity_dry_bulk"
+    - "capacity_general_cargo"
+    - "capacity_roro"
+    - "capacity_cargo"
+    - "capacity"
+
+# ---------------------------------------------------------------------------
+# Windows. The overlap window is derived from the data (intersection of the
+# two states' date coverage) and then checked against `expected_overlap`.
+# ---------------------------------------------------------------------------
+windows:
+  full_start: "2019-01-01"
+  # Locked operational onset from Phase 0. Used ONLY to split residual
+  # reporting into pre-onset and post-onset; never to select a sample.
+  operational_onset: "2026-02-28"
+  expected_overlap:
+    start: "2019-01-01"
+    end: "2026-07-12"
+    n_days: 2750
+
+# ---------------------------------------------------------------------------
+# Mapping specification. Frozen before the fit.
+#
+# Forms (all least squares, July -> August, on the SAME frozen sample unless
+# a form declares its own):
+#   proportional : y = b * x          (zero intercept)   <- plan default
+#   affine       : y = a + b * x                          <- declared sensitivity
+#   additive     : y = x + c          (unit slope)        <- declared sensitivity
+#
+# `default` names the reporting basis. Everything else is a sensitivity and is
+# reported regardless of outcome.
+# ---------------------------------------------------------------------------
+mapping:
+  default: "proportional_2019_2025"
+  # Residuals are always evaluated on the FULL overlap, not only on the
+  # estimation sample, so post-onset behaviour is visible.
+  residual_evaluation: "full_overlap"
+  forms:
+    proportional_2019_2025:
+      form: "proportional"
+      sample_start: "2019-01-01"
+      sample_end: "2025-12-31"
+      role: "default"
+      note: >
+        Plan-declared default. Zero-intercept July-to-August mapping on
+        overlapping daily observations, sample ending before the pre-onset
+        surveillance interval.
+    affine_2019_2025:
+      form: "affine"
+      sample_start: "2019-01-01"
+      sample_end: "2025-12-31"
+      role: "declared_sensitivity"
+      note: "Plan-declared sensitivity: allows a non-zero intercept."
+    proportional_2019_2026_02_27:
+      form: "proportional"
+      sample_start: "2019-01-01"
+      sample_end: "2026-02-27"
+      role: "declared_sensitivity"
+      note: >
+        Plan-declared sensitivity: extends the estimation sample through the
+        pre-onset surveillance interval, ending the day before the locked
+        operational onset.
+    additive_2019_2025:
+      form: "additive"
+      sample_start: "2019-01-01"
+      sample_end: "2025-12-31"
+      role: "declared_sensitivity"
+      note: "Constant-shift comparator; the plan requires an additive mapping."
+
+residual_reporting:
+  quantiles: [0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99]
+  split_on: "operational_onset"
+
+# ---------------------------------------------------------------------------
+# WTO Hormuz measurement-state audit. File count, retrieval horizons, and
+# distinct historical value regimes.
+#
+# Regime rule: two files belong to the same regime only if their values agree
+# EXACTLY on every date in their overlap. Because overlaps differ between
+# files, this relation is not transitive, so grouping uses a strict clique
+# rule in deterministic filename order and the full pairwise comparison
+# matrix is written to the manifest. Nothing is merged silently.
+# ---------------------------------------------------------------------------
+wto:
+  directory: "data/raw/wto_hormuz"
+  glob: "*.csv"
+  provenance: "data/raw/provenance.jsonl"
+  provenance_variable: "wto_hormuz_lng_outbound_index"
+  # Column aliases: the normalised snapshots use (date, value); the preserved
+  # original source payload uses the provider's own column names.
+  date_aliases: ["date", "voy_load_date"]
+  value_aliases: ["value", "voy_intake_index"]
+  regime_rule: "exact_equality_on_overlap_strict_clique"
+  value_tolerance: 0.0
+
+# ---------------------------------------------------------------------------
+# Known numerical invariants (plan v1.1, section 2).
+#
+# These are VERIFICATION TARGETS, never inputs. Every value below is computed
+# from the frozen raw states at run time and then compared to these numbers.
+# No audit output is ever taken from this block. A mismatch outside tolerance
+# STOPS the phase (plan section 12: "failure to reproduce raw-data invariants").
+# ---------------------------------------------------------------------------
+invariants:
+  enforce: true
+  checks:
+    hormuz_pct_changed_n_tanker:
+      expected: 97.4545
+      tolerance: 0.001
+      description: "Percent of overlapping Hormuz n_tanker rows that differ."
+    next_highest_pct_changed_n_tanker:
+      expected: 0.1091
+      tolerance: 0.001
+      expected_unit: "Malacca Strait"
+      description: "Second-highest chokepoint by changed-row percentage."
+    median_pct_changed_n_tanker:
+      expected: 0.0364
+      tolerance: 0.001
+      description: "Median changed-row percentage across all 28 chokepoints."
+    hormuz_annual_ratio_n_tanker:
+      # August annual mean divided by July annual mean, 2019 through 2025.
+      # 2026 is a partial year in both states and is reported but NOT an
+      # invariant target.
+      expected:
+        2019: 0.843
+        2020: 0.848
+        2021: 0.842
+        2022: 0.827
+        2023: 0.825
+        2024: 0.818
+        2025: 0.826
+      tolerance: 0.0005
+      description: "August/July annual Hormuz tanker-count ratios."
+
+outputs:
+  by_chokepoint: "data/processed/portwatch_instrument_shift_by_chokepoint.csv"
+  hormuz_daily: "data/processed/portwatch_hormuz_revision_daily.csv"
+  hormuz_annual: "data/processed/portwatch_hormuz_revision_annual.csv"
+  wto_audit: "data/processed/wto_measurement_state_audit.csv"
+  manifest: "data/processed/hormuz_measurement_state_manifest.json"
+
+limitations:
+  - "Two captures of the same period; the provider-side reason for the revision is not observed and is not claimed."
+  - "The proportional/non-proportional split is relative to one frozen estimator, not a measurement-error model."
+  - "A purely multiplicative revision cancels under within-series normalisation, so cross-state agreement after normalisation is arithmetic, not evidence."
+  - "Post-onset overlap is short relative to pre-onset; post-onset residual statistics are thin and are not a treatment signal."
+  - "WTO regime grouping uses exact equality over unequal overlap windows; the relation is not transitive and the clique rule is a reporting convention."
+  - "No causal, ATT, or provider-intent interpretation is authorised by this phase."

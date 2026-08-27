@@ -2,7 +2,7 @@
 
 **Prepared:** 2026-08-27
 
-**Version:** 1.1 (methodological review incorporated)
+**Version:** 1.2 (A4 baseline scope corrected; Track A reassigned)
 
 **Status:** Revised shared implementation contract. Mher must approve and
 freeze Phase 0 before implementation.
@@ -15,6 +15,31 @@ measurement rescaling from non-proportional revision, makes receiver analysis
 a gated extension, and removes the LNG-darkness pilot from the committed thesis
 scope. It also records the current branch dependency and the permitted negative
 result if the global model loses to a local baseline.
+
+## Amendment record
+
+### Version 1.2 -- 2026-08-27, directed by Mher
+
+Two corrections, both arising from Mher's review of the completed A2 run. The
+rest of version 1.1 is unchanged and remains controlling.
+
+1. **A4 baseline scope.** Section 6 A4 mode 4 previously said "all predeclared
+   baselines". A local AR(1,7) needs a unit-specific fit, and the leave-Hormuz-out
+   contract in Phase 0 forbids fitting anything on Hormuz, so no Hormuz local AR
+   can exist. Mode 4 now names the baselines that can actually be scored on
+   Hormuz. Local AR remains a development-population comparator, reported on the
+   27 development units. `tasks.hormuz_training_prohibited` is unchanged, and the
+   alternative of fitting a local AR on pre-surveillance Hormuz history was
+   considered and declined.
+
+2. **Track ownership.** Section 5 assigns Track A to ChatGPT. On 2026-08-27 Mher
+   reassigned Track A to Claude, accepting on the record that the cross-review in
+   section 8, under which Claude reviews Track A, is not available for work Claude
+   itself wrote. The file lists in section 5 are unchanged; only the owner is.
+
+Amending this document supersedes the plan hash recorded in the Phase 0 freeze
+entry of `docs/DECISION_LOG.md`. Mher owns that log and records the new hash
+there; no assistant edits it.
 
 ## 1. Purpose and governance
 
@@ -455,7 +480,10 @@ Run the frozen system in the following modes:
 1. July-state raw-level and scale-invariant detectors.
 2. August-state raw-level and scale-invariant detectors.
 3. Frozen July scale-invariant detector transported to August.
-4. Frozen global model and all predeclared baselines under both states.
+4. Frozen global model and seasonal naive under both states. Local AR(1,7) is
+   a development-only baseline and is not scored on Hormuz: it needs a
+   unit-specific fit that leave-Hormuz-out forbids. Seasonal naive is a lookup
+   rather than a fit, so it is scored on Hormuz normally. (Amended in 1.2.)
 
 Compare alarm date, delay, 7-day and 30-day severity, rank, and cross-state
 agreement. Decompose the cross-vintage difference into the component explained

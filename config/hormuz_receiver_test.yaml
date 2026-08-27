@@ -1,0 +1,228 @@
+# Frozen specification for the B2 Red Sea positive control.
+#
+# SCOPE. B2 only. This spec does not open B3, does not touch `settings.yaml`,
+# the locked 2026-02-28 cutoff, Track A files, or raw data. The Hormuz receiver
+# test (B3) has its own phase and opens only if Mher accepts this gate.
+#
+# ESTIMAND CLASS. Descriptive aggregate correspondence between one emitter's
+# loss and one receiver's gain. NOT vessel linkage, NOT a causal reallocation
+# parameter, NOT evidence that the same ships moved.
+#
+# ANTI-SHOPPING RULE. The eligible pair families, support rules,
+# standardisation, horizon, and null designs below are fixed BEFORE the
+# post-onset gains of the placebo family are inspected. Only the
+# pre-registered anchor pair's arithmetic (already published in the plan and in
+# docs/PROPAGATION_MODEL_RESULTS.md) was computed before this freeze.
+version: 1
+status: "frozen"
+drafted_on: "2026-08-27"
+plan: "docs/HORMUZ_TECHNICAL_EXECUTION_PLAN.md"
+plan_version: "1.1"
+phase: "B2"
+
+# ---------------------------------------------------------------------------
+# Data
+# ---------------------------------------------------------------------------
+panel:
+  registry_variable: "portwatch_chokepoints_snapshot"
+  measurement_state: "july"
+  value_column: "n_tanker"
+  start: "2019-01-01"
+  end: "2026-07-12"
+  n_units_expected: 28
+
+# ---------------------------------------------------------------------------
+# The pre-registered pair. Named before the event was examined; recorded in
+# docs/PROPAGATION_MODEL_RESULTS.md before this phase began.
+# ---------------------------------------------------------------------------
+anchor_pair:
+  emitter: "bab_el_mandeb_strait"
+  receiver: "cape_of_good_hope"
+  rationale: >
+    The Cape of Good Hope is the only long-haul substitute for the Bab
+    el-Mandeb/Suez route. It was named on route topology before any post-onset
+    outcome was inspected.
+
+# ---------------------------------------------------------------------------
+# Onsets. BOTH are declared and BOTH are reported. Neither is the headline.
+#
+# Mher's decision, 2026-08-27: the anchor arithmetic differs by a factor of
+# about 2.2 between these two dates, and both values were already known when
+# the decision was made (the register value is a plan invariant that had to be
+# reproduced; the external value had to be checked because A1's event mask was
+# re-anchored to it). Declaring one as primary after seeing both would be
+# specification shopping. The onset sensitivity is therefore itself a reported
+# B2 finding.
+# ---------------------------------------------------------------------------
+onsets:
+  register_onset:
+    date: "2024-01-13"
+    label: "register_data_derived"
+    provenance: "config/multi_event_propagation.yaml, marked data-derived"
+    role: "declared_sensitivity"
+    known_limitation: >
+      The 28-day pre-onset reference window (2023-12-16 to 2024-01-12) lies
+      inside the disruption, so the measured loss is incremental from an
+      already-depressed level and the gain is measured from an already-elevated
+      receiver. Both errors inflate the recovered fraction.
+  external_onset:
+    date: "2023-12-14"
+    label: "external_carrier_suspension"
+    provenance: "config/hormuz_event_chronology.yaml, red_sea"
+    role: "declared_sensitivity"
+    known_limitation: >
+      The reference window is clean, but the post-onset window begins at the
+      start of a gradual diversion, so early weeks dilute the receiver gain.
+  report_both: true
+  primary: null      # deliberately unset; see the decision note above
+
+# ---------------------------------------------------------------------------
+# Statistic
+# ---------------------------------------------------------------------------
+statistic:
+  horizon_weeks: 8                 # nine weekly blocks, h = 0..8
+  baseline_days: 365               # matches propagation.BASELINE_DAYS
+  pre_window_days: 28              # matches propagation.PRE_WINDOW_DAYS
+  definition: >
+    Each chokepoint is divided by its own 365-day pre-onset mean, a donor
+    median over unaffected units is subtracted, and the mean post-onset weekly
+    residual is rescaled by the unit's own baseline to give transits per day.
+    Emitter loss is the negated emitter value; receiver gain is the receiver
+    value; recovered fraction is gain divided by loss.
+  recovered_fraction_requires_positive_loss: true
+
+# Standardisation. Raw transits-per-day changes are NOT exchangeable between a
+# 83/day chokepoint and a 9/day one, so every pair statistic is divided by the
+# same statistic's own PRE-ONSET variability, computed from pseudo-onsets that
+# fall strictly before the onset under test.
+standardisation:
+  method: "pre_onset_pseudo_onset_sd"
+  min_pre_onset_draws: 30
+  note: >
+    Uses only information available before the onset under test. A unit whose
+    pre-onset variability cannot be estimated from at least `min_pre_onset_draws`
+    admissible pseudo-onsets is dropped from the family rather than compared on
+    a raw scale.
+
+# ---------------------------------------------------------------------------
+# Support rules for the eligible family. Frozen before the placebo family's
+# post-onset gains were inspected. The 5.0 threshold was set from PRE-ONSET
+# baseline volumes only; no post-onset outcome informed it.
+# ---------------------------------------------------------------------------
+support:
+  min_baseline_transits_per_day: 5.0
+  min_baseline_note: >
+    Below roughly five transits per day a single vessel is a large fraction of
+    the baseline and the ratio statistic becomes unstable. Nine of 28 units are
+    excluded by this rule; the anchor receiver sits at about 9.1/day.
+  always_excluded:
+    - unit: "strait_of_hormuz"
+      reason: "Held-out unit. Hormuz may not enter the positive control."
+  exclude_units_with_documented_disruption: true
+  disruption_source: "config/hormuz_event_chronology.yaml"
+  disruption_source_note: >
+    Reuses the same external chronology that anchors the A1 detector mask, so
+    the two phases cannot disagree about when a unit was disrupted.
+
+# ---------------------------------------------------------------------------
+# Spatial placebo families. Reported SEPARATELY, and DESCRIPTIVELY.
+#
+# No inferential p-value is computed from these. Chokepoints differ in
+# geography, volume, and route role, so cross-sectional exchangeability cannot
+# be defended; plan v1.1 section 7 permits a standardised rank in that case and
+# forbids presenting roughly 700 ordered pairs as independent observations.
+# The dependence-aware summary is a maximum statistic over the eligible family.
+# ---------------------------------------------------------------------------
+spatial_placebo:
+  inferential_p_value: false
+  reason_no_p_value: >
+    Cross-sectional exchangeability across chokepoints is not defensible, so
+    these families are reported as standardised ranks and a maximum statistic,
+    not as a test.
+  families:
+    same_emitter_alternative_receivers:
+      description: >
+        Emitter fixed at the anchor. The standardised gain of every eligible
+        alternative receiver is computed at the same onset. Answers: was the
+        Cape cherry-picked as the receiver?
+      statistic: "standardised_receiver_gain"
+    same_receiver_alternative_emitters:
+      description: >
+        Receiver fixed at the anchor. The standardised loss of every eligible
+        alternative emitter is computed at the same onset. Answers: was Bab
+        el-Mandeb cherry-picked as the emitter?
+      statistic: "standardised_emitter_loss"
+  dependence_summary: "max_statistic_over_eligible_family"
+  report_rank_and_family_size: true
+
+# ---------------------------------------------------------------------------
+# Temporal placebo null. This is where the inferential p-value comes from.
+#
+# Every unique admissible pseudo-onset is used EXACTLY ONCE. No resampling with
+# replacement. The legacy 250-draw sampler is preserved for reproducibility of
+# the old result but is not used for inference here.
+# ---------------------------------------------------------------------------
+temporal_placebo:
+  enumeration: "every_unique_admissible_date_once"
+  resampling_with_replacement: false
+  seed_required: false
+  seed_note: >
+    Full enumeration is deterministic, so no seed is needed. Plan v1.1 permits
+    a fixed seed only where a dependence-aware randomisation actually requires
+    one.
+  statistic: "recovered_fraction"
+  guards_days: [90, 180, 365]
+  guard_note: >
+    A pseudo-onset is admissible only if it is at least `guard` days from every
+    documented disruption onset AND its analysis window does not intersect a
+    documented disruption window.
+  report_per_guard:
+    - "n_unique_admissible_dates"
+    - "approx_non_overlapping_windows"
+    - "attainable_p_value_floor"
+  p_value_formula: "p = (1 + n_null_ge_observed) / (B + 1)"
+  p_value_note: >
+    B counts unique admissible pseudo-onsets under the frozen design, not
+    repeated draws presented as new temporal information.
+
+# ---------------------------------------------------------------------------
+# Invariants. Verification targets computed from the frozen panel at run time
+# and compared. Never inputs to any reported number.
+# ---------------------------------------------------------------------------
+invariants:
+  enforce: true
+  anchor_at_register_onset:
+    emitter_loss_per_day:
+      expected: 7.877
+      tolerance: 0.01
+    receiver_gain_per_day:
+      expected: 7.033
+      tolerance: 0.01
+    recovered_fraction_pct:
+      expected: 89.28
+      tolerance: 0.1
+  legacy_import_path_identical: true
+
+outputs:
+  positive_control: "data/processed/redsea_cape_positive_control.csv"
+  null_distribution: "data/processed/redsea_cape_null_distribution.csv"
+  manifest: "data/processed/redsea_cape_manifest.json"
+
+claim_boundaries:
+  permitted:
+    - "Aggregate correspondence at the Cape consistent with rerouting."
+    - "Standardised rank of the anchor pair within its eligible family."
+    - "A finite-sample temporal p-value under the declared guard."
+  prohibited:
+    - "That the same vessels moved from Bab el-Mandeb to the Cape."
+    - "A causal reallocation parameter or ATT."
+    - "Treating roughly 700 ordered pairs as independent observations."
+    - "Presenting either onset's result as the single headline."
+    - "Opening B3 without Mher's acceptance of this gate."
+
+limitations:
+  - "The recovered fraction moves by a factor of about 2.2 between the two declared onsets; this sensitivity is a finding, not a nuisance."
+  - "The donor median assumes the remaining eligible units were undisrupted over the analysis window."
+  - "Spatial families are descriptive ranks; cross-sectional exchangeability is not claimed."
+  - "Temporal p-values are bounded below by 1/(B+1) and are reported with that floor."
+  - "Aggregate correspondence is not vessel linkage."

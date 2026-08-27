@@ -341,6 +341,12 @@ variables:
       - "scripts/run_rebound_relapse_profile.py"
       - "scripts/run_revision_and_basin_exploration.py"
       - "src/lngfreight/vintage_matrix.py"
+      # Added 2026-08-27 on Mher's instruction for Track B phase B1. The audit
+      # reads this vintage as the SECOND measurement state of a revision audit
+      # (see config/hormuz_measurement_audit.yaml). It does not promote the
+      # vintage, substitute it for the pinned primary, or average the two, so
+      # `promotion_policy` above is not engaged.
+      - "scripts/run_hormuz_measurement_audit.py"
     description: "Candidate 2026-08-09 PortWatch chokepoint vintage; vintage-sensitivity use only."
     status: free
     primary:

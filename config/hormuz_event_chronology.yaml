@@ -1,0 +1,186 @@
+# External event chronology for the A1 detector-calibration mask.
+#
+# PURPOSE. Supplies externally sourced onset and end dates for the disruption
+# events excluded from detector calibration, so that no mask boundary is taken
+# from the PortWatch series being masked.
+#
+# WHY THIS FILE EXISTS. `config/multi_event_propagation.yaml` records the same
+# four events, but three of its four onset dates are marked "data-derived"
+# (fixed by applying a rule to the PortWatch panel). Using those dates to trim
+# the detector-calibration pool would draw the mask boundary from the outcome
+# being calibrated on, which inflates apparent false-alarm control. This file
+# replaces them with dates taken from external reporting.
+#
+# NOT A SUBSTITUTE. The propagation register keeps its own dates for its own
+# estimator and is NOT modified by this file. Phase 2 propagation results are
+# unaffected. This chronology governs the A1 event mask only.
+#
+# SELECTION RULES, DECLARED BEFORE APPLICATION (Mher, 2026-08-27):
+#   - Panama: the first announced reduction in the NUMBER of daily transits.
+#   - Red Sea: the first suspension of transits by a major carrier.
+#   - Suez and Kerch: unchanged; already agree with the external record.
+#
+# OUTCOME-RELEVANCE RULE. The A1 outcome is `n_tanker`, a transit COUNT.
+# Anchors are therefore events that reduce the number of transits. Panama draft
+# restrictions (from 2023-05-22) limited cargo per vessel, not the number of
+# vessels, and are recorded below as context but are NOT used as the anchor.
+#
+# CLAIM BOUNDARY. These are dated records of publicly reported events. They do
+# not establish a causal effect on any chokepoint series, and nothing here is
+# evidence about the Hormuz disruption.
+status: "frozen"
+schema_version: 1
+record_kind: "frozen_external_record"
+compiled_on: "2026-08-27"
+compiled_by: "Track B, on Mher's instruction, for the A1 mask provenance gate"
+sources_accessed_on: "2026-08-27"
+
+events:
+  suez_ever_given:
+    onset: "2021-03-23"
+    end: "2021-03-29"
+    units: ["Suez Canal"]
+    role: "external_record"
+    description: >
+      Container ship Ever Given grounded in the Suez Canal on 2021-03-23 and
+      was refloated on 2021-03-29, blocking transits for six days.
+    anchor_rule: "grounding date to refloat date"
+    agrees_with_propagation_register: true
+    citations:
+      - title: "Ever Given: The grounding that changed the world's view of shipping"
+        publisher: "SAFETY4SEA"
+        url: "https://safety4sea.com/cm-ever-given-the-grounding-that-changed-the-worlds-view-of-shipping/"
+        supports: "grounding 2021-03-23; refloated 2021-03-29"
+
+  black_sea_kerch:
+    onset: "2022-02-24"
+    end: null
+    units: ["Kerch Strait"]
+    role: "external_record"
+    description: >
+      Russian invasion of Ukraine beginning 2022-02-24, after which Kerch
+      Strait and Black Sea commercial transits were disrupted by conflict and
+      subsequent sanctions. No end date is declared; the mask runs to the
+      configured coverage end.
+    anchor_rule: "externally anchored invasion date"
+    agrees_with_propagation_register: true
+    citations:
+      - title: "Recorded in the propagation register as an external anchor"
+        publisher: "config/multi_event_propagation.yaml"
+        url: ""
+        supports: >
+          onset 2022-02-24. This date was already marked "external anchor" in
+          the propagation register rather than data-derived, and is carried
+          forward unchanged. It is the only one of the four not restated from
+          an independent source in this file.
+
+  panama_drought:
+    onset: "2023-07-30"
+    end: "2024-07-31"
+    units: ["Panama Canal"]
+    role: "external_record"
+    description: >
+      Panama Canal Authority drought restrictions. On 2023-07-25 the authority
+      announced a reduction in daily transits from 36 to an average of 32,
+      effective 2023-07-30. Restrictions then tightened repeatedly, reaching 24
+      crossings per day on 2023-11-07 and 22 booking slots in December 2023,
+      before slots were raised to 35 in August 2024.
+    anchor_rule: >
+      First announced reduction in the number of daily transits, taken at its
+      effective date (2023-07-30), not its announcement date (2023-07-25).
+    agrees_with_propagation_register: false
+    propagation_register_onset: "2023-12-19"
+    divergence_note: >
+      The propagation register's 2023-12-19 is data-derived and falls about
+      five months after the first externally reported transit cut. Using it
+      would leave 142 externally documented restricted days inside the
+      detector-calibration pool.
+    context_not_used_as_anchor:
+      draft_restrictions_began: "2023-05-22"
+      draft_restriction_note: >
+        Draft limits reduce cargo per vessel, not the number of transits, so
+        they are not used to anchor a count-based outcome.
+      subsequent_transit_steps:
+        - date: "2023-09-03"
+          note: "34 to 32 daily transits"
+        - date: "2023-11-07"
+          note: "24 crossings per day"
+        - date: "2023-12-01"
+          note: "22 booking slots"
+        - date: "2024-01-01"
+          note: "20 booking slots"
+    citations:
+      - title: "Panama Canal restrictions influence shipping reliability and capacity in the Americas"
+        publisher: "Kuehne+Nagel"
+        url: "https://mykn.kuehne-nagel.com/news/article/panama-canal-restrictions-influence-shipping-28-Jul-2023"
+        supports: >
+          Announced 2023-07-25, effective 2023-07-30, 36 to 32 vessels per day;
+          draft restrictions from 2023-05-22.
+      - title: "Panama Canal traffic to increase as drought conditions ease"
+        publisher: "U.S. Energy Information Administration"
+        url: "https://www.eia.gov/todayinenergy/detail.php?id=62408"
+        supports: >
+          24 crossings per day from 2023-11-07; daily booking slots raised to
+          35 in August 2024, supporting the 2024-07-31 end date.
+      - title: "Panama Canal Begins Reducing Daily Transits Due to Declining Water Levels"
+        publisher: "The Maritime Executive"
+        url: "https://maritime-executive.com/article/panama-canal-begins-reducing-daily-transits-due-to-declining-water-levels"
+        supports: "2023-09-03 reduction from 34 to 32; further step 2023-09-15"
+
+  red_sea:
+    onset: "2023-12-14"
+    end: null
+    units: ["Bab el-Mandeb Strait", "Suez Canal"]
+    role: "external_record"
+    description: >
+      Houthi attacks on shipping in the southern Red Sea. A missile narrowly
+      missed the Maersk Gibraltar near the Bab el-Mandeb Strait on 2023-12-14,
+      prompting Maersk to halt Red Sea operations; other carriers followed and
+      traffic diverted around the Cape of Good Hope. Treated as ONE event
+      because Bab el-Mandeb and Suez lie on the same route and must not be
+      counted twice. No end date is declared.
+    anchor_rule: "first suspension of transits by a major carrier"
+    agrees_with_propagation_register: false
+    propagation_register_onset: "2024-01-13"
+    divergence_note: >
+      The propagation register's 2024-01-13 tracks the first US and UK
+      airstrikes rather than the shipping disruption, which began about a month
+      earlier. Using it would leave 30 days of already-diverted traffic inside
+      the detector-calibration pool at two chokepoints. The register's own
+      earlier draft date, 2023-12-15, was within a day of the external record.
+    context_not_used_as_anchor:
+      campaign_start: "2023-11-19"
+      campaign_start_note: >
+        Galaxy Leader hijacking. Attacks began here, but transits had not yet
+        measurably diverted, so this is not used as the anchor.
+      subsequent_events:
+        - date: "2023-12-18"
+          note: "Operation Prosperity Guardian launched"
+        - date: "2023-12-30"
+          note: "Maersk Hangzhou attacked; Maersk suspends indefinitely"
+        - date: "2024-01-11"
+          note: "First US and UK airstrikes on Houthi targets"
+    citations:
+      - title: "Red Sea Crisis: A Timeline of Maritime Chaos Over the Past Year"
+        publisher: "gCaptain"
+        url: "https://gcaptain.com/red-sea-crisis-a-timeline-of-maritime-chaos-over-the-past-year/"
+        supports: >
+          Galaxy Leader hijacked 2023-11-19; Maersk Gibraltar attacked and
+          Maersk halts Red Sea operations 2023-12-14; Operation Prosperity
+          Guardian 2023-12-18; Maersk Hangzhou attacked and indefinite
+          suspension 2023-12-30; first US and UK airstrikes 2024-01-11.
+
+# Cape of Good Hope is deliberately absent. It received diverted traffic during
+# the Red Sea disruption, but it was not itself disrupted, and the A1 mask
+# excludes exposed units rather than substitution destinations.
+excluded_from_mask:
+  cape_of_good_hope: >
+    Observed as a substitution route during the Red Sea disruption. Not an
+    exposed unit, so not masked.
+
+limitations:
+  - "Press and agency reporting, not a vessel-level operational record."
+  - "Panama restrictions tightened in steps; a single onset date is a declared convention, not a physical threshold."
+  - "The Kerch date is carried forward from the propagation register's external-anchor marking and is not independently restated here."
+  - "Red Sea carrier suspensions were staggered across operators; the anchor uses the first major suspension."
+  - "These records date events. They establish no causal effect on any chokepoint series."
