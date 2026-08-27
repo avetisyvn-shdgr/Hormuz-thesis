@@ -7,7 +7,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-for rel in ("src", "scripts"):
-    path = str(ROOT / rel)
+# ROOT itself is required for `import scripts.foo`; `python -m pytest` supplies
+# it via the working directory, but a bare `pytest` invocation does not.
+for candidate in (ROOT, ROOT / "src", ROOT / "scripts"):
+    path = str(candidate)
     if path not in sys.path:
         sys.path.insert(0, path)
