@@ -1227,3 +1227,48 @@ it. One scope decision plus one refreeze clears all eight together.
 - **Status:** Phase 2 **fitted, pending Mher's confirming run**. Two open
   decisions: what replaces the aggregate reallocation term, and whether the
   pre-cutoff excursion changes the primary counterfactual.
+
+## 2026-08-27 · Hormuz revision-robust ML Phase 0 design freeze
+
+- **Decision-maker:** Mher (researcher).
+- **Technical plan:** `docs/HORMUZ_TECHNICAL_EXECUTION_PLAN.md`, version 1.1.
+- **Plan commit:** `87bd3464b8074ab769030473689cb5e46dbac24e`.
+- **Code foundation:** `6ef6191aa8340928ca439a02244dfec68439f2b3`.
+- **Primary outcome:** `n_tanker`.
+- **Development population:** 27 non-Hormuz chokepoints.
+- **Full data start:** 2019-01-01.
+- **Model-development period:** 2019-01-01 through 2023-12-31.
+- **Hyperparameter-validation period:** 2024-01-01 through 2024-12-31.
+- **Detector calibration:** multi-year out-of-fold/prequential residuals from
+  the 27 non-Hormuz units, excluding pre-declared exposed unit-days. Hormuz is
+  excluded from calibration.
+- **Hormuz pre-onset surveillance:** 2025-12-01 through 2026-02-27, scoring
+  only.
+- **Locked operational onset:** 2026-02-28.
+- **Common scoring end:** 2026-07-07.
+- **Forecast horizons:** 1, 7, and 30 days.
+- **Detector forms:** raw-level and scale-invariant.
+- **Measurement states:** July and August remain separate and are never
+  averaged.
+- **Core scope:** B1 and A1--A4.
+- **Gated extension:** B2 positive control; B3 opens only if B2 passes its
+  design and support gate.
+- **Outside committed scope:** B4 LNG-darkness pilot and any new causal layer.
+- **Model-loss rule:** global-model underperformance against AR or
+  seasonal-naive benchmarks is a valid negative result and does not authorize
+  post-hoc tuning.
+- **Claim boundary:** predictive and descriptive evidence is not a causal ATT
+  or structural effect.
+- **Post-Hormuz tuning:** prohibited.
+- **Input hashes:**
+  - Plan:
+    `480ccd5ca9b7e8d70c75c19f9aa60974e3fd5adc2ec06a5ac33c380f94d17ef9`.
+  - July PortWatch state:
+    `66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d`.
+  - August PortWatch state:
+    `0bc806a4c384723debff08053d6fcbb915a03ee9fdf7b23c73d76d9bcb885bcb`.
+- **Executable configuration status:** design frozen now; executable
+  configurations will be hash-frozen after A1 and B1 create them and before
+  any real-data run.
+- **Status:** Phase 0 design **FROZEN**. Changes require Mher's explicit
+  approval and a new plan/configuration version.
