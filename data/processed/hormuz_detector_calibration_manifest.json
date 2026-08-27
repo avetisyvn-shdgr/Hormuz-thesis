@@ -1,7 +1,7 @@
 {
   "a2_gate": {
-    "config_sha256": "2e96df590fbc8ab4df80cf1d0c59bb251a1e769f8ad76299d871d1950ebb4b32",
-    "git_commit": "3581896b02dffe0b4c34f7e0044cb32e2e1e572b",
+    "config_sha256": "7e877911652d8492aa6bcefd75aea219debcd707323550603b0388f5b151aff1",
+    "git_commit": "0f0d6dc6c33e3ced81e4d98804ecb0541465f104",
     "git_dirty": false,
     "manifest": "data/processed/hormuz_detection_validation_manifest.json",
     "predictions_sha256": "5b38cb08c1d91f760c79ca61377a55ae7384b1f16ae8321f80171517f4785817",
@@ -23,7 +23,7 @@
   "command": "run_hormuz_detection.py --phase calibrate",
   "config": {
     "path": "config/hormuz_detection.yaml",
-    "sha256": "2e96df590fbc8ab4df80cf1d0c59bb251a1e769f8ad76299d871d1950ebb4b32"
+    "sha256": "7e877911652d8492aa6bcefd75aea219debcd707323550603b0388f5b151aff1"
   },
   "context_scale_drift": {
     "fitted_through_each_folds_fit_end": true,
@@ -5750,6 +5750,7 @@
       }
     }
   },
+  "detector_design_version": 2,
   "environment": {
     "numpy": "1.26.4",
     "pandas": "2.3.3",
@@ -5882,8 +5883,8 @@
   },
   "git": {
     "branch": "ml/hormuz-revision-robust",
-    "commit": "6dc39c8f098a96ac5611cae653089bebee70862f",
-    "dirty": false
+    "commit": "3ea446e5870216e75e6e2ccf463c697a67b2b712",
+    "dirty": true
   },
   "inputs": {
     "august_state_read": false,
@@ -5910,7 +5911,7 @@
   ],
   "outputs": {
     "calibration": "data/processed/hormuz_detector_calibration.csv",
-    "calibration_sha256": "f86ade38b4e17d75307942736a3db6a75662ddbb565bafdb9f5c48961026d733",
+    "calibration_sha256": "b2f04b233c1a700d10a780423b5ef130b09bcf8f53018e0fd4ae329983f181f2",
     "false_alarms": "data/processed/hormuz_detector_false_alarms.csv",
     "false_alarms_sha256": "7468d40322f5e6526ea7338c20a872a0ec76d3149cff7e1aa5408016d570deee",
     "manifest": "data/processed/hormuz_detector_calibration_manifest.json"
@@ -5920,19 +5921,31 @@
     "sha256": "3f94689495dab052d5fb802fa9695ba620b254b821143c4437a6053324eb804e",
     "version": "1.2"
   },
-  "ratification_required": [
+  "ratification_required": [],
+  "ratifications": [
     {
-      "affected_rows": 12,
-      "detail": "The frozen rule says 'smallest threshold whose achieved rate is at or below target'. The episode rate is not monotone in the threshold: when every day exceeds, a unit's record collapses into one unending episode per segment, so the rate falls back below target at the bottom of the range. Read word by word, the rule therefore selects a threshold that fires on almost every unit-day. This run instead takes the smallest threshold from which the rate stays at or below target for every higher threshold too, which is what the block's own stated reason asks for ('take the attainable threshold on the conservative side'). Both are reported per row. Mher rules on which is the frozen rule before A3 is accepted.",
-      "item": "discrete_ties.rule reads degenerately on this data",
+      "design_version": 2,
+      "item": "discrete_ties.rule",
       "literal_rule_exceedance_share": [
-        0.999065,
-        0.999083,
-        0.999419,
-        0.99942,
-        0.999485,
         0.999973
-      ]
+      ],
+      "operational_rows_where_the_readings_differ": 12,
+      "ratified_by": "Mher",
+      "ratified_on": "2026-08-28",
+      "ratified_rule": "smallest_threshold_at_or_below_target_that_holds_for_every_higher_threshold",
+      "superseded_rule": "smallest_threshold_whose_achieved_rate_is_at_or_below_target",
+      "unchanged_by_the_amendment": [
+        "strict greater-than exceedance",
+        "the scaling algorithm, which Mher did not authorise changing"
+      ],
+      "why_superseded": "The episode rate is not monotone in the threshold, and at the bottom of the range every day exceeds, so a unit's record collapses into one unending episode per segment and the rate falls back below target. The literal reading therefore selected a threshold firing on almost every unit-day."
+    },
+    {
+      "disposition": "accepted as a documented limitation, not corrected",
+      "item": "context_scale_quantisation",
+      "ratified_by": "Mher",
+      "ratified_on": "2026-08-28",
+      "scaling_algorithm_change_authorised": false
     }
   ],
   "results": {
@@ -5952,6 +5965,7 @@
       {
         "achieved_episodes_per_year": 1.9957590421096951,
         "attainable": true,
+        "exceedance_share_of_unit_days": 0.049254910507532626,
         "form": "raw_level",
         "held_out_censored_episodes": "",
         "held_out_episodes": "",
@@ -5960,7 +5974,7 @@
         "held_out_unit": "",
         "horizon_days": 1,
         "literal_tie_rule_degenerate": true,
-        "literal_tie_rule_exceedance_share": 0.9999725922271556,
+        "literal_tie_rule_exceedance_share": 0.9999727572397635,
         "literal_tie_rule_rate": 0.5268325476188649,
         "literal_tie_rule_threshold": -73.81238950035141,
         "max_upward_rate_step": 0.03228586581808646,
@@ -5976,6 +5990,7 @@
       {
         "achieved_episodes_per_year": 1.9915890521697879,
         "attainable": true,
+        "exceedance_share_of_unit_days": 0.06244040646198273,
         "form": "scale_invariant",
         "held_out_censored_episodes": "",
         "held_out_episodes": "",
@@ -5984,7 +5999,7 @@
         "held_out_unit": "",
         "horizon_days": 1,
         "literal_tie_rule_degenerate": true,
-        "literal_tie_rule_exceedance_share": 0.9999725922271556,
+        "literal_tie_rule_exceedance_share": 0.9999727572397635,
         "literal_tie_rule_rate": 0.5268325476188649,
         "literal_tie_rule_threshold": -7.112253521839184,
         "max_upward_rate_step": 0.03228586581808646,
@@ -6000,6 +6015,7 @@
       {
         "achieved_episodes_per_year": 1.9988530483966154,
         "attainable": true,
+        "exceedance_share_of_unit_days": 0.04759310213310813,
         "form": "raw_level",
         "held_out_censored_episodes": "",
         "held_out_episodes": "",
@@ -6008,7 +6024,7 @@
         "held_out_unit": "",
         "horizon_days": 7,
         "literal_tie_rule_degenerate": true,
-        "literal_tie_rule_exceedance_share": 0.9999725944805283,
+        "literal_tie_rule_exceedance_share": 0.9999727572397635,
         "literal_tie_rule_rate": 0.5268325476188649,
         "literal_tie_rule_threshold": -72.3483893896835,
         "max_upward_rate_step": 0.03228586581808646,
@@ -6024,6 +6040,7 @@
       {
         "achieved_episodes_per_year": 1.9938925430517054,
         "attainable": true,
+        "exceedance_share_of_unit_days": 0.060778598087558235,
         "form": "scale_invariant",
         "held_out_censored_episodes": "",
         "held_out_episodes": "",
@@ -6032,7 +6049,7 @@
         "held_out_unit": "",
         "horizon_days": 7,
         "literal_tie_rule_degenerate": true,
-        "literal_tie_rule_exceedance_share": 0.9999725944805283,
+        "literal_tie_rule_exceedance_share": 0.9999727572397635,
         "literal_tie_rule_rate": 0.5268325476188649,
         "literal_tie_rule_threshold": -7.006642633316836,
         "max_upward_rate_step": 0.03228586581808601,
@@ -6048,6 +6065,7 @@
       {
         "achieved_episodes_per_year": 1.997158548791048,
         "attainable": true,
+        "exceedance_share_of_unit_days": 0.05977061595880895,
         "form": "raw_level",
         "held_out_censored_episodes": "",
         "held_out_episodes": "",
@@ -6056,7 +6074,7 @@
         "held_out_unit": "",
         "horizon_days": 30,
         "literal_tie_rule_degenerate": true,
-        "literal_tie_rule_exceedance_share": 0.9999726124941801,
+        "literal_tie_rule_exceedance_share": 0.9999727572397635,
         "literal_tie_rule_rate": 0.5268325476188649,
         "literal_tie_rule_threshold": -71.62763365821313,
         "max_upward_rate_step": 0.03228586581808646,
@@ -6072,6 +6090,7 @@
       {
         "achieved_episodes_per_year": 1.997879478126113,
         "attainable": true,
+        "exceedance_share_of_unit_days": 0.058435720707222055,
         "form": "scale_invariant",
         "held_out_censored_episodes": "",
         "held_out_episodes": "",
@@ -6080,7 +6099,7 @@
         "held_out_unit": "",
         "horizon_days": 30,
         "literal_tie_rule_degenerate": true,
-        "literal_tie_rule_exceedance_share": 0.9999726124941801,
+        "literal_tie_rule_exceedance_share": 0.9999727572397635,
         "literal_tie_rule_rate": 0.5268325476188649,
         "literal_tie_rule_threshold": -7.0704832918861324,
         "max_upward_rate_step": 0.03228586581808601,
@@ -6096,6 +6115,7 @@
       {
         "achieved_episodes_per_year": 1.75441583196144,
         "attainable": true,
+        "exceedance_share_of_unit_days": 0.04143623831966655,
         "form": "raw_level",
         "held_out_censored_episodes": "",
         "held_out_episodes": "",
@@ -6104,7 +6124,7 @@
         "held_out_unit": "",
         "horizon_days": 1,
         "literal_tie_rule_degenerate": true,
-        "literal_tie_rule_exceedance_share": 0.9990825688073395,
+        "literal_tie_rule_exceedance_share": 0.9999727572397635,
         "literal_tie_rule_rate": 0.5268325476188649,
         "literal_tie_rule_threshold": -70.0,
         "max_upward_rate_step": 2.352000468777614,
@@ -6120,6 +6140,7 @@
       {
         "achieved_episodes_per_year": 1.8011779177810001,
         "attainable": true,
+        "exceedance_share_of_unit_days": 0.060533413245430025,
         "form": "scale_invariant",
         "held_out_censored_episodes": "",
         "held_out_episodes": "",
@@ -6128,7 +6149,7 @@
         "held_out_unit": "",
         "horizon_days": 1,
         "literal_tie_rule_degenerate": true,
-        "literal_tie_rule_exceedance_share": 0.9994199535962877,
+        "literal_tie_rule_exceedance_share": 0.9999727572397635,
         "literal_tie_rule_rate": 0.5268325476188649,
         "literal_tie_rule_threshold": -8.093889113719143,
         "max_upward_rate_step": 2.352000468777614,
@@ -6144,6 +6165,7 @@
       {
         "achieved_episodes_per_year": 1.75441583196144,
         "attainable": true,
+        "exceedance_share_of_unit_days": 0.04143623831966655,
         "form": "raw_level",
         "held_out_censored_episodes": "",
         "held_out_episodes": "",
@@ -6152,7 +6174,7 @@
         "held_out_unit": "",
         "horizon_days": 7,
         "literal_tie_rule_degenerate": true,
-        "literal_tie_rule_exceedance_share": 0.9990825688073395,
+        "literal_tie_rule_exceedance_share": 0.9999727572397635,
         "literal_tie_rule_rate": 0.5268325476188649,
         "literal_tie_rule_threshold": -70.0,
         "max_upward_rate_step": 2.352000468777614,
@@ -6168,6 +6190,7 @@
       {
         "achieved_episodes_per_year": 1.8106445222441057,
         "attainable": true,
+        "exceedance_share_of_unit_days": 0.060805840847794695,
         "form": "scale_invariant",
         "held_out_censored_episodes": "",
         "held_out_episodes": "",
@@ -6176,7 +6199,7 @@
         "held_out_unit": "",
         "horizon_days": 7,
         "literal_tie_rule_degenerate": true,
-        "literal_tie_rule_exceedance_share": 0.9994192799070848,
+        "literal_tie_rule_exceedance_share": 0.9999727572397635,
         "literal_tie_rule_rate": 0.5268325476188649,
         "literal_tie_rule_threshold": -8.093889113719143,
         "max_upward_rate_step": 2.352000468777614,
@@ -6192,6 +6215,7 @@
       {
         "achieved_episodes_per_year": 1.8954100320618184,
         "attainable": true,
+        "exceedance_share_of_unit_days": 0.0500177077941537,
         "form": "raw_level",
         "held_out_censored_episodes": "",
         "held_out_episodes": "",
@@ -6200,7 +6224,7 @@
         "held_out_unit": "",
         "horizon_days": 30,
         "literal_tie_rule_degenerate": true,
-        "literal_tie_rule_exceedance_share": 0.9990645463049579,
+        "literal_tie_rule_exceedance_share": 0.9999727572397635,
         "literal_tie_rule_rate": 0.5268325476188649,
         "literal_tie_rule_threshold": -77.0,
         "max_upward_rate_step": 1.8655653499708587,
@@ -6216,6 +6240,7 @@
       {
         "achieved_episodes_per_year": 1.73570373268111,
         "attainable": true,
+        "exceedance_share_of_unit_days": 0.06358460239191435,
         "form": "scale_invariant",
         "held_out_censored_episodes": "",
         "held_out_episodes": "",
@@ -6224,7 +6249,7 @@
         "held_out_unit": "",
         "horizon_days": 30,
         "literal_tie_rule_degenerate": true,
-        "literal_tie_rule_exceedance_share": 0.9994853319608852,
+        "literal_tie_rule_exceedance_share": 0.9999727572397635,
         "literal_tie_rule_rate": 0.5268325476188649,
         "literal_tie_rule_threshold": -7.4193983542425475,
         "max_upward_rate_step": 1.7774252453132835,
@@ -6239,7 +6264,7 @@
       }
     ]
   },
-  "run_utc": "2026-08-27T22:22:07.798445+00:00",
+  "run_utc": "2026-08-27T22:36:28.462959+00:00",
   "schema": "hormuz_detector_calibration_manifest/1",
   "script": "scripts/run_hormuz_detection.py",
   "sealing_assertions": {
