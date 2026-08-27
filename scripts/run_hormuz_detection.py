@@ -956,6 +956,7 @@ def _solution_record(
         "threshold": solution.threshold,
         "requested_episodes_per_year": solution.requested_rate,
         "achieved_episodes_per_year": solution.achieved_rate,
+        "exceedance_share_of_unit_days": solution.exceedance_share,
         "attainable": solution.attainable,
         "n_calibration_units": solution.n_units,
         "n_candidate_thresholds": solution.n_candidates,
@@ -1227,6 +1228,7 @@ def run_calibration() -> dict:
             "dirty": bool(_git("status", "--porcelain")),
         },
         "config": {"path": "config/hormuz_detection.yaml", "sha256": spec_sha},
+        "detector_design_version": int(spec["detector"]["design_version"]),
         "plan": {"version": spec["plan"]["version"], "sha256": spec["plan"]["sha256"]},
         "a2_gate": {
             "manifest": spec["model"]["outputs"]["manifest"],
@@ -1351,30 +1353,43 @@ def run_calibration() -> dict:
             },
         },
         "sealing_assertions": assertions,
-        "ratification_required": [
+        # Nothing is outstanding: the one item this phase raised was ratified by
+        # Mher on 2026-08-28 and is recorded below rather than left open.
+        "ratification_required": [],
+        "ratifications": [
             {
-                "item": "discrete_ties.rule reads degenerately on this data",
-                "detail": (
-                    "The frozen rule says 'smallest threshold whose achieved rate is at "
-                    "or below target'. The episode rate is not monotone in the "
-                    "threshold: when every day exceeds, a unit's record collapses into "
-                    "one unending episode per segment, so the rate falls back below "
-                    "target at the bottom of the range. Read word by word, the rule "
-                    "therefore selects a threshold that fires on almost every unit-day. "
-                    "This run instead takes the smallest threshold from which the rate "
-                    "stays at or below target for every higher threshold too, which is "
-                    "what the block's own stated reason asks for ('take the attainable "
-                    "threshold on the conservative side'). Both are reported per row. "
-                    "Mher rules on which is the frozen rule before A3 is accepted."
+                "item": "discrete_ties.rule",
+                "ratified_by": "Mher",
+                "ratified_on": "2026-08-28",
+                "design_version": int(spec["detector"]["design_version"]),
+                "superseded_rule": (
+                    "smallest_threshold_whose_achieved_rate_is_at_or_below_target"
                 ),
-                "affected_rows": int(len(degenerate)),
+                "ratified_rule": spec["detector"]["discrete_ties"]["rule"],
+                "why_superseded": (
+                    "The episode rate is not monotone in the threshold, and at the "
+                    "bottom of the range every day exceeds, so a unit's record "
+                    "collapses into one unending episode per segment and the rate "
+                    "falls back below target. The literal reading therefore selected "
+                    "a threshold firing on almost every unit-day."
+                ),
+                "operational_rows_where_the_readings_differ": int(len(degenerate)),
                 "literal_rule_exceedance_share": sorted(
                     set(degenerate["literal_tie_rule_exceedance_share"].round(6))
                 ),
-            }
-        ]
-        if len(degenerate)
-        else [],
+                "unchanged_by_the_amendment": [
+                    "strict greater-than exceedance",
+                    "the scaling algorithm, which Mher did not authorise changing",
+                ],
+            },
+            {
+                "item": "context_scale_quantisation",
+                "ratified_by": "Mher",
+                "ratified_on": "2026-08-28",
+                "disposition": "accepted as a documented limitation, not corrected",
+                "scaling_algorithm_change_authorised": False,
+            },
+        ],
         "outputs": {
             "calibration": outputs["calibration"],
             "false_alarms": outputs["false_alarms"],
@@ -1493,8 +1508,9 @@ def main() -> None:
                     "form",
                     "threshold",
                     "achieved_episodes_per_year",
-                    "rate_curve_monotone",
-                    "literal_tie_rule_degenerate",
+                    "exceedance_share_of_unit_days",
+                    "literal_tie_rule_threshold",
+                    "literal_tie_rule_exceedance_share",
                 ],
             ].to_string(index=False)
         )
@@ -1504,8 +1520,8 @@ def main() -> None:
         print()
         print("Sealing assertions:")
         print(json.dumps(manifest["sealing_assertions"], indent=2, sort_keys=True))
+        print()
         if manifest["ratification_required"]:
-            print()
             print("=" * 72)
             print("RATIFICATION REQUIRED BEFORE A3 CAN BE ACCEPTED")
             print("=" * 72)
@@ -1513,6 +1529,13 @@ def main() -> None:
                 print(f"- {item['item']}")
                 print(f"  {item['detail']}")
                 print(f"  affected operational rows: {item['affected_rows']}")
+        else:
+            print(
+                f"No outstanding ratification item. Detector design version "
+                f"{manifest['detector_design_version']}, ratified by Mher on 2026-08-28: "
+                + ", ".join(str(item["item"]) for item in manifest["ratifications"])
+                + "."
+            )
         print()
         print(f"wrote {manifest['outputs']['calibration']}")
         print(f"wrote {manifest['outputs']['false_alarms']}")

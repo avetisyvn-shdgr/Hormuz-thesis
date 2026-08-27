@@ -19,9 +19,12 @@ import pandas as pd
 import pytest
 
 from lngfreight.detector_calibration import (
+    DETECTOR_DESIGN_VERSION,
     DETECTOR_FORMS,
     RAW_LEVEL,
     SCALE_INVARIANT,
+    SUPERSEDED_TIE_RULE,
+    TIE_RULE,
     DetectorSpecError,
     build_episode_curve,
     build_rolling_fit_geometry,
@@ -30,6 +33,7 @@ from lngfreight.detector_calibration import (
     count_episodes,
     curves_by_unit,
     eligible_residuals,
+    exceedance_share,
     fold_context_scales,
     macro_average_rate,
     raw_level_score,
@@ -77,6 +81,19 @@ def _episode_spec() -> dict:
             "calibration_target": {"max_episodes_per_chokepoint_year": 2},
         }
     }
+
+
+def _calibration_curves(seed: int, n_units: int) -> list:
+    """Curves over the real eligible geometry: 2021-2023 and 2025, 2024 withheld."""
+    rng = np.random.default_rng(seed)
+    dates = pd.DatetimeIndex(
+        list(pd.date_range("2021-01-01", "2023-12-31", freq="D"))
+        + list(pd.date_range("2025-01-01", "2025-11-30", freq="D"))
+    )
+    return [
+        build_episode_curve(f"unit_{index:02d}", dates, rng.normal(size=len(dates)), _episode_spec())
+        for index in range(n_units)
+    ]
 
 
 def _pattern(pattern: str, dates: pd.DatetimeIndex | None = None):
@@ -220,22 +237,15 @@ def test_exceedance_is_strict_so_a_tied_score_does_not_fire():
 
 
 def test_calibration_meets_the_target_and_reports_the_achieved_rate():
-    """A synthetic panel with a controllable tail: the rule must hit target."""
-    rng = np.random.default_rng(3)
-    dates = pd.DatetimeIndex(
-        list(pd.date_range("2021-01-01", "2023-12-31", freq="D"))
-        + list(pd.date_range("2025-01-01", "2025-11-30", freq="D"))
-    )
-    curves = [
-        build_episode_curve(f"unit_{index:02d}", dates, rng.normal(size=len(dates)), _episode_spec())
-        for index in range(10)
-    ]
+    """The ratified stable-tail rule must hit target and be the smallest that does."""
+    curves = _calibration_curves(seed=3, n_units=10)
     solution = calibrate_threshold(curves, _episode_spec())
     assert solution.attainable
     assert solution.achieved_rate <= solution.requested_rate
     assert solution.n_units == 10
 
-    # No lower attainable threshold keeps every higher one at or below target.
+    # This is the ratified rule stated directly: at the chosen threshold and at
+    # every higher one the rate holds, and no lower candidate manages that.
     grid = candidate_thresholds(curves)
     rates = macro_average_rate(curves, grid)
     index = int(np.searchsorted(grid, solution.threshold))
@@ -244,31 +254,49 @@ def test_calibration_meets_the_target_and_reports_the_achieved_rate():
         assert rates[index - 1 :].max() > solution.requested_rate
 
 
-def test_the_episode_rate_is_not_monotone_and_the_literal_rule_is_degenerate():
-    """The frozen tie rule, read literally, selects a fire-every-day threshold.
+def test_the_episode_rate_is_not_monotone_and_the_superseded_rule_was_degenerate():
+    """Why design version 1's tie rule was superseded, kept as a regression guard.
 
-    This is the finding that must not be quietly smoothed over: when every day
-    exceeds, a unit's record collapses into one unending episode per segment, so
-    the macro rate drops back below target at the very bottom of the range.
+    When every day exceeds, a unit's record collapses into one unending episode
+    per segment, so the macro rate drops back below target at the very bottom of
+    the range and a word-by-word reading selects a fire-every-day threshold.
     """
-    rng = np.random.default_rng(7)
-    dates = pd.DatetimeIndex(
-        list(pd.date_range("2021-01-01", "2023-12-31", freq="D"))
-        + list(pd.date_range("2025-01-01", "2025-11-30", freq="D"))
-    )
-    curves = [
-        build_episode_curve(f"unit_{index:02d}", dates, rng.normal(size=len(dates)), _episode_spec())
-        for index in range(12)
-    ]
+    curves = _calibration_curves(seed=7, n_units=12)
     solution = calibrate_threshold(curves, _episode_spec())
 
     assert not solution.monotone
     assert solution.monotonicity_violations > 0
     assert solution.literal_rule_degenerate
     assert solution.literal_rule_threshold < solution.threshold
-    # The literal reading fires on essentially every unit-day yet still "passes".
+    # The superseded reading fires on essentially every unit-day yet still "passes".
     assert solution.literal_rule_exceedance_share > 0.9
     assert solution.literal_rule_achieved_rate <= solution.requested_rate
+    # The ratified rule does not.
+    assert solution.exceedance_share < 0.5
+
+
+def test_exceedance_share_counts_unit_days_not_distinct_scores():
+    """Counts are integers, so scores tie: the two denominators differ."""
+    dates = pd.date_range("2021-01-01", periods=10, freq="D")
+    scores = np.array([1.0] * 8 + [5.0, 9.0])
+    curve = build_episode_curve("ties", dates, scores, _episode_spec())
+
+    # Eight of ten unit-days exceed 0.0, but only one of three distinct values.
+    assert curve.exceeding_days(0.0) == 10
+    assert curve.exceeding_days(1.0) == 2
+    assert exceedance_share([curve], 1.0) == pytest.approx(0.2)
+    assert exceedance_share([curve], 9.0) == pytest.approx(0.0)
+
+
+def test_the_reported_operational_share_matches_the_selected_threshold():
+    curves = _calibration_curves(seed=13, n_units=8)
+    solution = calibrate_threshold(curves, _episode_spec())
+    assert solution.exceedance_share == pytest.approx(
+        exceedance_share(curves, solution.threshold)
+    )
+    assert solution.literal_rule_exceedance_share == pytest.approx(
+        exceedance_share(curves, solution.literal_rule_threshold)
+    )
 
 
 def test_the_largest_observed_score_always_gives_a_non_firing_threshold():
@@ -441,6 +469,48 @@ def test_moment_subsetting_equals_refitting_without_the_held_out_unit(spec: dict
 def test_detector_spec_validates_against_the_frozen_configuration(spec: dict):
     validate_detector_spec(spec)
     assert tuple(spec["detector_contract"]["forms"]) == DETECTOR_FORMS
+    assert int(spec["detector"]["design_version"]) == DETECTOR_DESIGN_VERSION
+    assert spec["detector"]["discrete_ties"]["rule"] == TIE_RULE
+
+
+def test_the_superseded_design_version_cannot_be_run(spec: dict):
+    """Version 1's degenerate tie rule must not silently execute again."""
+    stale = deepcopy(spec)
+    stale["detector"]["design_version"] = 1
+    with pytest.raises(DetectorSpecError):
+        validate_detector_spec(stale)
+
+    reverted = deepcopy(spec)
+    reverted["detector"]["discrete_ties"]["rule"] = SUPERSEDED_TIE_RULE
+    with pytest.raises(DetectorSpecError):
+        validate_detector_spec(reverted)
+
+
+def test_the_superseded_reading_must_stay_reported_for_audit(spec: dict):
+    drifted = deepcopy(spec)
+    drifted["detector"]["discrete_ties"]["literal_rule_preserved_for_audit"] = False
+    with pytest.raises(DetectorSpecError):
+        validate_detector_spec(drifted)
+
+    dropped = deepcopy(spec)
+    dropped["detector"]["discrete_ties"]["report_operational_exceedance_share"] = False
+    with pytest.raises(DetectorSpecError):
+        validate_detector_spec(dropped)
+
+
+def test_the_scaling_algorithm_change_stays_unauthorised(spec: dict):
+    """Quantisation was accepted as a limitation, not as licence to retune."""
+    drifted = deepcopy(spec)
+    drifted["detector"]["known_limitations"]["context_scale_quantisation"][
+        "scaling_algorithm_change_authorised"
+    ] = True
+    with pytest.raises(DetectorSpecError):
+        validate_detector_spec(drifted)
+    # The frozen scaling rule itself is untouched by the amendment.
+    assert (
+        spec["detector"]["evaluation"]["context_scale_timing"]["rule"]
+        == "refit_per_fold_and_horizon_on_history_through_that_fold_fit_end"
+    )
 
 
 def test_calibration_is_blocked_while_the_design_is_unfrozen(spec: dict):

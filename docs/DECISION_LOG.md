@@ -1366,8 +1366,50 @@ it. One scope decision plus one refreeze clears all eight together.
      per-fold refit is real and runs through each fold's own `fit_end`; the
      estimate is coarse. This narrows the intended contrast between the two
      detector forms on those units.
-- **Status:** Plan **v1.2**. A2 **ACCEPTED**. A3 design **FROZEN**;
-  implementation **complete and run by Claude**, **acceptance pending Mher's own
-  run and his ruling on the two items above**. A4 not started and not to be
-  started before that acceptance; the August-source authorisation is unchanged
-  and untouched. B3 untouched.
+- **Status:** superseded by the 2026-08-28 entry below. At the time of writing:
+  plan v1.2, A2 accepted, A3 implemented and run by Claude under detector design
+  version 1, acceptance pending Mher's ruling on the two items above.
+
+## 2026-08-28 · A3 detector design version 2; tie rule amended and ratified
+
+- **Decision-maker:** Mher (researcher), on his own run of `--phase calibrate`
+  at commit `6dc39c8`. **Entry written by Claude under Mher's explicit
+  instruction to record the ratification**; the log otherwise remains Mher's.
+- **Mher's verification of the version-1 run.** `A3 CALIBRATE PASS` from a clean
+  commit, A2 gate reproduced, 110,121 admitted residuals and 5,628 event-masked
+  unit-days over 60 folds, every leakage and sealing assertion in its required
+  state, no Hormuz or August data in calibration, output hashes reproduced. The
+  numerical warnings are the known Apple Accelerate BLAS artefact and did not
+  produce invalid results; the only `NaN` are the deliberately blank held-out
+  columns on operational rows.
+- **Ratified: the stable-tail tie rule.** `discrete_ties.rule` becomes *the
+  smallest candidate threshold whose macro-average episode rate is at or below
+  two episodes per chokepoint-year and remains at or below that target for every
+  higher candidate threshold*. Strict greater-than exceedance is unchanged.
+  Version 1's rule — "smallest threshold whose achieved rate is at or below
+  target" — read word by word selected a threshold firing on 99.997% of
+  unit-days, because the episode rate is not monotone in the threshold and at
+  the bottom of the range every day exceeds, collapsing each unit's record into
+  one unending episode per segment. **No A3 result was ever accepted under
+  version 1.**
+- **Also ratified:** the superseded reading stays computed and written to every
+  row for audit, and the selected operational threshold's **unit-day exceedance
+  share** is now reported alongside it. Shares are counted over unit-days rather
+  than distinct score values, which differ materially because integer counts
+  make scores tie.
+- **Accepted as a documented limitation, not corrected:** the context scale is
+  quantised for 15 of the 27 units, because `n_tanker` is an integer count so a
+  low-volume unit's MAD is an integer and its scale is a small integer multiple
+  of 1.4826 that longer history does not move. **Mher did not authorise changing
+  the scaling algorithm**, and `evaluation.context_scale_timing` is untouched.
+- **Config pin moved.** Detector `design_version: 2`, config
+  `7e877911652d8492aa6bcefd75aea219debcd707323550603b0388f5b151aff1`,
+  superseding `2e96df59…`. `validate_detector_spec` refuses to run against
+  version 1 or against the superseded rule name, so the degenerate reading
+  cannot silently execute again. Because the configuration hash moved, A2 was
+  re-verified under it and returned unchanged score and prediction hashes.
+- **Status:** Plan **v1.2**. A2 **ACCEPTED**. A3 detector design **version 2**,
+  implementation complete, **run with no outstanding ratification item**.
+  **A3 acceptance still rests with Mher explicitly.** A4 not started, and the
+  August-source authorisation stays unchanged and untouched until Mher accepts
+  A3. B3 untouched.

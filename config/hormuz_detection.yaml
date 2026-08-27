@@ -319,10 +319,34 @@ model:
 # here is carried on silence. The block's own `change_rule` governs later edits.
 # ---------------------------------------------------------------------------
 detector:
+  design_version: 2
+  design_version_history:
+    - version: 1
+      frozen_on: "2026-08-27"
+      superseded_on: "2026-08-28"
+      superseded_because: >-
+        Its discrete-tie rule read degenerately on the real residuals. The
+        episode rate is not monotone in the threshold, and at the bottom of the
+        range every day exceeds, so each unit's record collapses into one
+        unending episode per segment and the macro rate falls back below target.
+        A word-by-word reading therefore selected a threshold firing on 99.997%
+        of unit-days. No A3 result was ever accepted under version 1.
+    - version: 2
+      frozen_on: "2026-08-28"
+      frozen_under: "Mher's ratification instruction, 2026-08-28"
+      changes:
+        - "discrete_ties.rule replaced by the stable-tail rule"
+        - "the literal reading is preserved as an audit diagnostic"
+        - "the operational threshold's unit-day exceedance share is reported"
+        - "context-scale quantisation accepted as a documented limitation"
+      unchanged:
+        - "the scaling algorithm; Mher did not authorise changing it"
+        - "strict greater-than exceedance"
+        - "every other clause of version 1"
   status: "frozen"
   frozen: true
-  frozen_on: "2026-08-27"
-  frozen_under: "Mher's explicit freeze instruction, 2026-08-27"
+  frozen_on: "2026-08-28"
+  frozen_under: "Mher's ratification instruction, 2026-08-28"
   a2_status: "accepted by Mher, 2026-08-27"
   provenance:
     decided_by_mher:
@@ -429,13 +453,52 @@ detector:
       masked_days_excluded: true
 
   discrete_ties:
-    rule: "smallest_threshold_whose_achieved_rate_is_at_or_below_target"
+    rule: "smallest_threshold_at_or_below_target_that_holds_for_every_higher_threshold"
+    ratified_by: "Mher, 2026-08-28"
+    supersedes: "smallest_threshold_whose_achieved_rate_is_at_or_below_target"
+    comparison_unchanged: "strict_greater_than"
     report_achieved_rate: true
     report_requested_rate: true
+    report_operational_exceedance_share: true
+    literal_rule_preserved_for_audit: true
     reason: >-
       Scores tie, so the requested rate may be unattainable. Take the attainable
       threshold on the conservative side and report the rate actually achieved
       next to the rate requested, never the requested rate alone.
+    stability_requirement: >-
+      "On the conservative side" is now stated as a requirement the threshold
+      must satisfy rather than left to the reader. The macro-average episode
+      rate is not monotone in the threshold: raising a threshold can split one
+      long episode into two by opening a quiet gap wide enough to close the
+      first, and at the bottom of the range every day exceeds, so a unit's whole
+      record becomes one unending episode per segment and the rate falls back
+      below target. The selected threshold is therefore the smallest candidate
+      whose rate is at or below target AND whose rate stays at or below target
+      at every higher candidate. This excludes the degenerate floor by
+      construction rather than by inspection.
+    audit_requirement: >-
+      The literal reading and its unit-day exceedance share are still computed
+      and written to every row, so the difference the amendment makes stays
+      visible and auditable instead of disappearing into the rule.
+
+  known_limitations:
+    context_scale_quantisation:
+      accepted_by: "Mher, 2026-08-28"
+      accepted_as: "documented limitation"
+      scaling_algorithm_change_authorised: false
+      finding: >-
+        n_tanker is an integer count, so a low-volume unit's median absolute
+        deviation is an integer and its context scale is a small integer
+        multiple of 1.4826 that a longer history does not move. Fifteen of the
+        27 development units carry a scale that is constant across all 60 folds.
+      consequence: >-
+        The per-fold refit is real and runs through each fold's own fit_end, but
+        its estimate is coarse for those units, so the scale-invariant score
+        there is the raw error over a constant and the intended contrast between
+        the two detector forms is narrower than the design assumed.
+      disposition: >-
+        Reported, not corrected. Mher explicitly did not authorise changing the
+        scaling algorithm, so `evaluation.context_scale_timing` is untouched.
 
   evaluation:
     # Two distinct objects are both called "scaling" in A2. Naming them apart

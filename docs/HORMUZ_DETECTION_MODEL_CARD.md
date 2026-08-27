@@ -2,9 +2,9 @@
 
 **Current phase:** A3 — detector calibration  
 **Model status:** implemented; A2 accepted by Mher on 2026-08-27  
-**Detector status:** implemented and run by Claude; **not accepted**. Mher's
-verification run and ruling on two open items are outstanding, and A4 does not
-start before that.  
+**Detector status:** design **version 2**, implemented, runs with no outstanding
+ratification item. **Not yet accepted** — A3 acceptance rests with Mher
+explicitly, and A4 does not start before it.  
 **Track owner:** Claude, reassigned from ChatGPT by Mher on 2026-08-27  
 **Governing plan:** `HORMUZ_TECHNICAL_EXECUTION_PLAN.md`, version 1.2
 
@@ -457,9 +457,12 @@ design.
 ## A3 — implementation, and what Claude's run found
 
 `scripts/run_hormuz_detection.py --phase calibrate` implements the frozen design
-in `src/lngfreight/detector_calibration.py`. **These are Claude's numbers, not a
-verified result.** Mher's own run and his ruling on the two open items below come
-first; nothing here is accepted and A4 does not start.
+in `src/lngfreight/detector_calibration.py`. Mher ran the version-1 build himself
+on 2026-08-28 and verified it: PASS from a clean commit, A2 gate reproduced,
+every leakage and sealing assertion in its required state, output hashes
+reproduced. He then ratified the two items below, which moved the design to
+version 2. **A3 is still not accepted** — that is a separate, explicit step, and
+A4 does not start before it.
 
 The phase refuses to run unless the accepted A2 manifest is `PASS`, was made
 under the current configuration hash, was made from a clean tree, and its scores
@@ -470,28 +473,35 @@ Claude's run: 110,121 admissible residual rows over 60 expanding folds spanning
 2021-01-01 to 2025-11-30, with 5,628 unit-days removed by the frozen event mask,
 all sealing assertions in their required state.
 
-### Two items that need Mher's ruling before A3 can be accepted
+### Two items Mher ruled on, 2026-08-28
 
-**The tie rule reads degenerately.** `discrete_ties.rule` says "smallest
+Both were raised by the version-1 run and are now settled. The detector design is
+at **version 2**; `validate_detector_spec` refuses to run against version 1.
+
+**The tie rule was degenerate and has been replaced.** Version 1 said "smallest
 threshold whose achieved rate is at or below target". The episode rate is not
 monotone in the threshold, and at the bottom of the range it collapses: when
 every day exceeds, a unit's whole record becomes one unending episode per
 segment, so the macro rate falls back *below* target. Read word by word the rule
-therefore selects a threshold that fires on 99.997% of unit-days and still
-"passes" at well under 2 episodes per chokepoint-year. The run instead takes the
-smallest threshold from which the rate stays at or below target for every higher
-threshold too, which is what the block's own stated reason asks for — "take the
-attainable threshold on the conservative side". Both are written to every row of
-`hormuz_detector_calibration.csv`. This is a defect in the frozen rule, not a
-choice the implementation is entitled to make.
+therefore selected a threshold firing on 99.997% of unit-days that still "passed"
+at well under 2 episodes per chokepoint-year. Mher ratified the **stable-tail
+rule**: the smallest candidate whose rate is at or below target *and* whose rate
+stays at or below target at every higher candidate. Strict greater-than
+exceedance is unchanged. The superseded reading and the unit-day exceedance
+share of both are written to every row of `hormuz_detector_calibration.csv`, so
+the difference the amendment makes stays auditable. No A3 result was ever
+accepted under version 1.
 
-**The context scale is quantised for 15 of the 27 units.** `n_tanker` is an
-integer count, so a low-volume unit's median absolute deviation is an integer and
-its context scale is a small integer multiple of 1.4826 that a longer history
-does not move. The per-fold refit is real and runs through each fold's own
+**Context-scale quantisation is an accepted limitation, not a defect to fix.**
+`n_tanker` is an integer count, so a low-volume unit's median absolute deviation
+is an integer and its context scale is a small integer multiple of 1.4826 that a
+longer history does not move; 15 of the 27 units carry a scale constant across
+all 60 folds. The per-fold refit is real and runs through each fold's own
 `fit_end`; its estimate is simply coarse there. For those units the
 scale-invariant score is the raw error over a constant, which narrows the
-contrast between the two detector forms that the design exists to expose.
+contrast between the two detector forms that the design exists to expose. Mher
+accepted this as documented and **did not authorise changing the scaling
+algorithm**, so `evaluation.context_scale_timing` is untouched.
 
 ### What the calibration shows
 

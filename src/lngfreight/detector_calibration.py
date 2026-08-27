@@ -67,6 +67,13 @@ DETECTOR_FORMS = (RAW_LEVEL, SCALE_INVARIANT)
 
 DAYS_PER_YEAR = 365.25
 
+# The detector design this module implements. Version 1's discrete-tie rule read
+# degenerately on the real residuals and was superseded by Mher on 2026-08-28;
+# the code refuses to run against a configuration pinned to another version.
+DETECTOR_DESIGN_VERSION = 2
+TIE_RULE = "smallest_threshold_at_or_below_target_that_holds_for_every_higher_threshold"
+SUPERSEDED_TIE_RULE = "smallest_threshold_whose_achieved_rate_is_at_or_below_target"
+
 # Seasonal naive is a lookup rather than a fit, so withholding a unit from
 # "model fitting" withholds nothing from it.  Its end-to-end LOCO is its
 # threshold LOCO by construction, and claiming two distinct tests for it would
@@ -141,11 +148,28 @@ def validate_detector_spec(spec: Mapping) -> None:
     if target["exposure_denominator"].get("masked_days_excluded") is not True:
         raise DetectorSpecError("exposure must exclude masked days")
 
+    if int(detector.get("design_version", 0)) != DETECTOR_DESIGN_VERSION:
+        raise DetectorSpecError(
+            f"this code implements detector design version {DETECTOR_DESIGN_VERSION}, "
+            f"got {detector.get('design_version')!r}"
+        )
+
     ties = detector["discrete_ties"]
-    if ties.get("rule") != "smallest_threshold_whose_achieved_rate_is_at_or_below_target":
+    if ties.get("rule") != TIE_RULE:
         raise DetectorSpecError("the discrete-tie rule drifted")
     if ties.get("report_achieved_rate") is not True or ties.get("report_requested_rate") is not True:
         raise DetectorSpecError("both requested and achieved rates must be reported")
+    if ties.get("literal_rule_preserved_for_audit") is not True:
+        raise DetectorSpecError("the superseded literal reading must stay reported for audit")
+    if ties.get("report_operational_exceedance_share") is not True:
+        raise DetectorSpecError("the operational threshold's exceedance share must be reported")
+
+    quantisation = detector["known_limitations"]["context_scale_quantisation"]
+    if quantisation.get("scaling_algorithm_change_authorised") is not False:
+        raise DetectorSpecError(
+            "context-scale quantisation is an accepted limitation; changing the "
+            "scaling algorithm was not authorised"
+        )
 
     timing = detector["evaluation"]["context_scale_timing"]
     if timing.get("rule") != "refit_per_fold_and_horizon_on_history_through_that_fold_fit_end":
@@ -246,8 +270,19 @@ class EpisodeCurve:
     episodes: np.ndarray
     censored: np.ndarray
     total_duration: np.ndarray
+    # The unit's own scores, ascending. Kept so an exceedance share counts
+    # unit-days rather than distinct score values, which differ sharply here
+    # because integer counts make scores tie heavily.
+    sorted_scores: np.ndarray
     eligible_days: int
     exposure_years: float
+
+    def exceeding_days(self, threshold: float) -> int:
+        """Eligible unit-days whose score exceeds `threshold`, strictly."""
+        return int(
+            len(self.sorted_scores)
+            - np.searchsorted(self.sorted_scores, float(threshold), side="right")
+        )
 
     def episodes_at(self, thresholds: np.ndarray) -> np.ndarray:
         index = np.searchsorted(self.breakpoints, np.asarray(thresholds, dtype="float64"), side="right") - 1
@@ -351,6 +386,7 @@ def build_episode_curve(
         episodes=episodes,
         censored=censored,
         total_duration=duration,
+        sorted_scores=np.sort(scores),
         eligible_days=eligible_days,
         exposure_years=eligible_days / DAYS_PER_YEAR,
     )
@@ -375,6 +411,7 @@ class ThresholdSolution:
     threshold: float
     requested_rate: float
     achieved_rate: float
+    exceedance_share: float
     attainable: bool
     n_units: int
     n_candidates: int
@@ -395,6 +432,19 @@ def candidate_thresholds(curves: Sequence[EpisodeCurve]) -> np.ndarray:
         else np.zeros(0, dtype="float64")
     )
     return values
+
+
+def exceedance_share(curves: Sequence[EpisodeCurve], threshold: float) -> float:
+    """Share of eligible unit-days across all units whose score exceeds `threshold`.
+
+    Counted over unit-days, not over distinct score values: `n_tanker` is an
+    integer count, so scores tie heavily and the two differ substantially.
+    """
+    total = sum(curve.eligible_days for curve in curves)
+    if total == 0:
+        return 0.0
+    exceeding = sum(curve.exceeding_days(threshold) for curve in curves)
+    return float(exceeding / total)
 
 
 def macro_average_rate(
@@ -425,23 +475,23 @@ def calibrate_threshold(
     frozen rule takes the attainable threshold on the conservative side and
     reports the achieved rate next to the requested one.
 
-    The episode rate is **not** monotone in the threshold, which the frozen rule
-    was written without.  Raising a threshold can split one long episode in two
-    by opening a quiet gap wide enough to close the first, so the curve rises
-    before it falls.  At the bottom of the range the effect is extreme: when
-    every day exceeds, a unit's whole record collapses into one unending episode
-    per segment, so the rate falls back *below* target for a detector that fires
-    every single day.
+    The episode rate is **not** monotone in the threshold.  Raising a threshold
+    can split one long episode in two by opening a quiet gap wide enough to
+    close the first, so the curve rises before it falls.  At the bottom of the
+    range the effect is extreme: when every day exceeds, a unit's whole record
+    collapses into one unending episode per segment, so the rate falls back
+    *below* target for a detector that fires every single day.
 
-    A word-by-word reading of `discrete_ties.rule` -- "smallest threshold whose
-    achieved rate is at or below target" -- therefore selects that degenerate
-    floor.  The block's own stated reason says to "take the attainable threshold
-    on the conservative side", which the floor plainly is not, so the operational
-    answer is the smallest threshold from which the rate stays at or below target
-    for every higher threshold too.  Both are returned, and the literal reading's
-    exceedance share is reported so the difference is visible rather than
-    asserted.  This discrepancy is flagged for Mher's ratification; it is not a
-    silent rewrite of a frozen rule.
+    Detector design version 1 said "smallest threshold whose achieved rate is at
+    or below target", which read word by word selects that degenerate floor.
+    Mher superseded it on 2026-08-28 with the stable-tail rule implemented here:
+    the smallest candidate whose rate is at or below target **and** whose rate
+    stays at or below target at every higher candidate.  Strict greater-than
+    exceedance is unchanged.
+
+    The superseded reading is still computed and returned, with the unit-day
+    exceedance share of both, so the difference the amendment makes stays
+    auditable instead of disappearing into the rule.
     """
     target = float(spec["detector"]["calibration_target"]["max_episodes_per_chokepoint_year"])
     grid = candidate_thresholds(curves) if candidates is None else np.asarray(candidates, dtype="float64")
@@ -468,13 +518,14 @@ def calibrate_threshold(
         index = int(operational_idx[0])
         attainable = True
 
-    observed = np.concatenate([curve.breakpoints[1:] for curve in curves])
-    literal_share = float(np.mean(observed > grid[literal_index])) if len(observed) else 0.0
+    literal_share = exceedance_share(curves, float(grid[literal_index]))
+    operational_share = exceedance_share(curves, float(grid[index]))
 
     return ThresholdSolution(
         threshold=float(grid[index]),
         requested_rate=target,
         achieved_rate=float(rates[index]),
+        exceedance_share=operational_share,
         attainable=attainable,
         n_units=len(curves),
         n_candidates=int(len(grid)),
@@ -904,6 +955,7 @@ def digest_payload(payload: object) -> str:
 
 
 __all__ = [
+    "DETECTOR_DESIGN_VERSION",
     "DETECTOR_FORMS",
     "RAW_LEVEL",
     "SCALE_INVARIANT",
@@ -921,6 +973,7 @@ __all__ = [
     "digest_frame",
     "digest_payload",
     "eligible_residuals",
+    "exceedance_share",
     "fold_context_scales",
     "macro_average_rate",
     "raw_level_score",

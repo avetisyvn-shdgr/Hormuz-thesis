@@ -5882,8 +5882,8 @@
   },
   "git": {
     "branch": "ml/hormuz-revision-robust",
-    "commit": "5a39f4787092fe39ce4e14206f7f3218453ed6d8",
-    "dirty": true
+    "commit": "6dc39c8f098a96ac5611cae653089bebee70862f",
+    "dirty": false
   },
   "inputs": {
     "august_state_read": false,
@@ -6239,7 +6239,7 @@
       }
     ]
   },
-  "run_utc": "2026-08-27T22:05:48.011117+00:00",
+  "run_utc": "2026-08-27T22:22:07.798445+00:00",
   "schema": "hormuz_detector_calibration_manifest/1",
   "script": "scripts/run_hormuz_detection.py",
   "sealing_assertions": {
