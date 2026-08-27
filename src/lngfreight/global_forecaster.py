@@ -25,13 +25,19 @@ SPEC_PATH = config.CONFIG_DIR / "hormuz_detection.yaml"
 # Phases extend the specification in order.  A later phase inherits every
 # earlier obligation; it may only add.  `fitting_status` is the seal that stops
 # A1 from quietly fitting a model and stops A2 from pretending it did not.
+#
+# The `status` token records where the phase stands in Mher's review, so it
+# moves when he accepts a phase.  A1's token is left at its pre-freeze value
+# because the A1 audit returning PASS is not the same event as Mher accepting
+# it, and no such acceptance is on the record.  A2's is not: Mher accepted A2
+# on 2026-08-27.
 PHASE_LADDER: Mapping[str, Mapping[str, str]] = {
     "A1": {
         "status": "phase_a1_candidate_for_mher_freeze",
         "fitting_status": "deferred_to_A2",
     },
     "A2": {
-        "status": "phase_a2_candidate_for_mher_freeze",
+        "status": "phase_a2_accepted_by_mher",
         "fitting_status": "fitted_in_A2",
     },
 }

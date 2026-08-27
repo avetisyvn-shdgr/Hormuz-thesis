@@ -1,6 +1,10 @@
 schema_version: 1
+# `phase` stays "A2" and detector_contract.calibration_status stays
+# "deferred_to_A3" until an A3 calibration run exists and Mher accepts it.
+# A2 itself is no longer a freeze candidate: Mher accepted it on 2026-08-27
+# (docs/DECISION_LOG.md, "plan amended to v1.2; A2 accepted; A3 frozen").
 phase: "A2"
-status: "phase_a2_candidate_for_mher_freeze"
+status: "phase_a2_accepted_by_mher"
 plan:
   version: "1.2"
   path: "docs/HORMUZ_TECHNICAL_EXECUTION_PLAN.md"
@@ -302,20 +306,24 @@ model:
     manifest: "data/processed/hormuz_detection_validation_manifest.json"
 
 # ---------------------------------------------------------------------------
-# A3 -- detector calibration. NOT FROZEN. The design direction below came from
-# Mher's 2026-08-27 review, which rejected a per-chokepoint threshold: Hormuz is
-# excluded from calibration, so no Hormuz-specific threshold could exist to
-# apply to it. Transferability is therefore a design requirement.
+# A3 -- detector calibration. FROZEN by Mher on 2026-08-27. The design direction
+# came from Mher's review of the same day, which rejected a per-chokepoint
+# threshold: Hormuz is excluded from calibration, so no Hormuz-specific
+# threshold could exist to apply to it. Transferability is therefore a design
+# requirement.
 #
-# Mher's follow-up review found the first draft of this block under-specified.
-# It is recorded here as PROPOSED. Mher freezes it explicitly, and resolves the
-# open item under `unresolved`, before any A3 calibration runs.
+# An earlier draft of this block was under-specified and was recorded as
+# PROPOSED with one open item. That item is now decided -- see `resolved` below,
+# which replaced the former `unresolved` key -- and the three remaining Claude
+# proposals were named individually in Mher's freeze instruction, so nothing
+# here is carried on silence. The block's own `change_rule` governs later edits.
 # ---------------------------------------------------------------------------
 detector:
   status: "frozen"
   frozen: true
   frozen_on: "2026-08-27"
-  frozen_under: "Mher's directive, step 2 of the 2026-08-27 review sequence"
+  frozen_under: "Mher's explicit freeze instruction, 2026-08-27"
+  a2_status: "accepted by Mher, 2026-08-27"
   provenance:
     decided_by_mher:
       - "transferable threshold only; per-unit thresholds prohibited"
@@ -326,13 +334,17 @@ detector:
       - "masked gaps are segment boundaries with right-censored episodes"
       - "end-to-end LOCO withholds cross-unit objects but keeps the unit's own context scale"
       - "context scale refitted per fold; the algorithm is frozen, not a constant"
-    proposed_by_claude_reviewed_by_mher_without_objection:
+    proposed_by_claude_then_explicitly_ratified_by_mher:
+      # Named individually in Mher's 2026-08-27 freeze instruction, so these are
+      # no longer carried on silence.
       - "strict greater-than for exceedance"
       - "smallest threshold whose achieved rate is at or below target, on ties"
       - "exposure denominator: eligible days after masking over 365.25"
-  veto: >-
-    If Mher rejects any item attributed to Claude above, this freeze is void and
-    the design takes a new version rather than being edited in place.
+  outstanding_unratified_items: []
+  change_rule: >-
+    Every item in this block is now either decided or explicitly ratified by
+    Mher. Any later change takes a new configuration version rather than being
+    edited in place, and invalidates any run made under this hash.
 
   threshold_scope:
     rule: "one_transferable_threshold_per_model_horizon_and_form"

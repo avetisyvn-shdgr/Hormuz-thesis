@@ -1,10 +1,10 @@
 # Hormuz detection model card
 
 **Current phase:** A2 — global forecasting model and 2024 selection  
-**Model status:** implemented, pending Mher's verification run  
+**Model status:** implemented; A2 accepted by Mher on 2026-08-27  
 **Detector status:** not calibrated (A3)  
 **Track owner:** Claude, reassigned from ChatGPT by Mher on 2026-08-27  
-**Governing plan:** `HORMUZ_TECHNICAL_EXECUTION_PLAN.md`, version 1.1
+**Governing plan:** `HORMUZ_TECHNICAL_EXECUTION_PLAN.md`, version 1.2
 
 ## Purpose
 
@@ -345,10 +345,11 @@ handled by taking the conservative attainable threshold.
 ## A3 — detector design, frozen 2026-08-27
 
 The `detector:` block in `config/hormuz_detection.yaml` carries the design and
-is frozen. It records per-item provenance: eight items Mher decided, three
-Claude proposed and Mher reviewed without objection. If Mher rejects any Claude
-item, the freeze is void and the design takes a new version rather than being
-edited in place.
+is frozen. It records per-item provenance: eight items Mher decided, and three
+Claude proposed that Mher then named individually and ratified in his freeze
+instruction, so none of them is carried on silence. Nothing in the block is
+outstanding. Any later change to it takes a new configuration version rather
+than being edited in place, and invalidates any run made under the old hash.
 
 The direction came from Mher's 2026-08-27 review, which rejected per-chokepoint
 thresholds outright: Hormuz never enters calibration, so a unit-specific

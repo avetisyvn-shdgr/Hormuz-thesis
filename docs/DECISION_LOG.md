@@ -1272,3 +1272,73 @@ it. One scope decision plus one refreeze clears all eight together.
   any real-data run.
 - **Status:** Phase 0 design **FROZEN**. Changes require Mher's explicit
   approval and a new plan/configuration version.
+
+## 2026-08-27 · Technical execution plan amended to v1.2; A2 accepted; A3 frozen
+
+- **Decision-maker:** Mher (researcher). **Entry written by Claude under Mher's
+  explicit bounded assignment to append this amendment**; the log otherwise
+  remains Mher's alone.
+- **Supersedes a hash in the Phase 0 entry above.** That entry records the plan
+  at `480ccd5ca9b7e8d70c75c19f9aa60974e3fd5adc2ec06a5ac33c380f94d17ef9`. The
+  amended plan is
+  `3f94689495dab052d5fb802fa9695ba620b254b821143c4437a6053324eb804e`. The Phase 0
+  design itself is unchanged; only the plan document moved.
+- **Plan v1.2, two corrections**, both from Mher's review of the completed A2 run:
+  1. **A4 baseline scope.** Mode 4 said "all predeclared baselines". A local
+     AR(1,7) needs a unit-specific fit and the leave-Hormuz-out contract forbids
+     fitting on Hormuz, so no Hormuz local AR can exist. Mode 4 now scores the
+     global model and seasonal naive on Hormuz; local AR stays a
+     development-population comparator on the 27 units. `hormuz_training_prohibited`
+     is unchanged, and fitting a local AR on pre-surveillance Hormuz history was
+     considered and declined.
+  2. **Track ownership.** Section 5 assigned Track A to ChatGPT. Mher reassigned
+     Track A to Claude on 2026-08-27, accepting on the record that the section 8
+     cross-review of Track A is unavailable for work Claude wrote itself. The
+     section 5 file lists are unchanged; only the owner is.
+- **Config pin moved:** `config/hormuz_detection.yaml` now pins plan v1.2 and its
+  new hash, and `validate_detection_spec` requires v1.2. The A1 audit returns
+  PASS against the amended document.
+- **A2 accepted.** Pooled 17-feature ridge beat both declared baselines on the
+  frozen 2024 tasks: mean MASE about 0.74-0.78, against about 0.82-0.83 for local
+  AR(1,7) and about 1.0 for seasonal naive, winning at 22/27, 23/27 and 20/27
+  chokepoints across the three horizons. Mher's review struck three overclaims
+  from the interpretation: that pooling as such produced the gain (the models
+  differ by 17 features against two), that a share of variance was "learned" (the
+  pooled R-squared is dominated by cross-unit scale; within units the mean
+  correlations are about 0.14, 0.13 and 0.05 and R-squared against each unit's own
+  2024 mean is about 0.01, -0.01 and -0.09), and that "no Hormuz row was read"
+  (Hormuz is loaded with the 28-unit panel but never materialised into a task,
+  fitted, selected on, or scored). Penalty selection was insensitive across the
+  grid: at most 0.000391 MASE, about 0.05%.
+- **A3 design FROZEN** at config
+  `2e96df590fbc8ab4df80cf1d0c59bb251a1e769f8ad76299d871d1950ebb4b32`. One
+  transferable threshold per model, horizon and detector form; per-unit thresholds
+  prohibited because Hormuz never enters calibration and would have no threshold to
+  receive. Macro-average episode rate as the calibration target, not a pooled
+  row-level quantile. `threshold_loco` and `end_to_end_loco` named and run
+  separately, the latter withholding only cross-unit objects while the held-out
+  unit keeps its own context scale. Unstandardised raw score `s_raw = yhat - y`.
+  Masked gaps are segment boundaries with right-censored episodes. The frozen
+  object is the scaling algorithm, not a constant: context scales refit per fold
+  and horizon through each fold's `fit_end`, with Hormuz fixed at 2025-11-30 for
+  A4 and a per-unit drift diagnostic reported. Strict greater-than exceedance, the
+  conservative discrete-tie rule and eligible-days-over-365.25 exposure were
+  proposed by Claude and explicitly ratified by Mher.
+- **Why the config pin above is not `9163449d…`.** That earlier hash was recorded
+  before a reconciliation pass Mher directed on 2026-08-27, and no run was ever
+  made under it. The pass changed no design clause. It moved the phase-status
+  token from `phase_a2_candidate_for_mher_freeze` to `phase_a2_accepted_by_mher`
+  (with the matching `PHASE_LADDER` entry in `src/lngfreight/global_forecaster.py`),
+  because the old token contradicted A2 having been accepted; and it rewrote the
+  narrative comment above the `detector:` block, which still read "NOT FROZEN",
+  described the block as "PROPOSED", and pointed at an `unresolved` key that had
+  already been renamed `resolved`. `phase` stays `A2` and
+  `detector_contract.calibration_status` stays `deferred_to_A3`, so the A2
+  contract the accepted run was made under is unchanged. Two matching
+  contradictions were cleared in `docs/HORMUZ_DETECTION_MODEL_CARD.md`: a header
+  claiming A2 was "pending Mher's verification run" and citing plan v1.1, and an
+  A3 paragraph still describing the three Claude items as "reviewed without
+  objection" under a veto clause the config no longer carries.
+- **Status:** Plan **v1.2**. A2 **ACCEPTED**. A3 design **FROZEN**, implementation
+  **not started**: it is gated on a final A2 validation rerun returning unchanged
+  score and prediction hashes (`efcbf724…`, `5b38cb08…`). A4 and B3 untouched.
