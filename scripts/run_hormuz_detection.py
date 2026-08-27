@@ -8,9 +8,16 @@ baselines on the 27 non-Hormuz development units, selects the ridge penalty on
 the frozen 2024 tasks alone, and writes the validation artefacts.  It fits no
 detector.
 
+``--phase calibrate`` is A3: it produces rolling-origin residuals across the 27
+development units, calibrates one transferable threshold per model, horizon and
+detector form against the macro-average episode rate, and runs both
+leave-one-chokepoint-out tests.  It refuses to start unless the accepted A2 run
+reproduces from the current configuration.  It reads no Hormuz row and scores
+nothing on Hormuz; that is A4.
+
 The Hormuz column is present in the loaded 28-unit panel but is never
 materialised into a task, fitted, selected on, or scored.  That, and not "no
-Hormuz row is read", is the safety claim this phase supports.
+Hormuz row is read", is the safety claim these phases support.
 """
 from __future__ import annotations
 
@@ -33,6 +40,19 @@ from lngfreight.disruption_detector import (  # noqa: E402
     apply_event_mask,
     load_event_mask,
     validate_detector_calibration_tasks,
+)
+from lngfreight.detector_calibration import (  # noqa: E402
+    DETECTOR_FORMS,
+    calibrate_threshold,
+    candidate_thresholds,
+    curves_by_unit,
+    digest_frame,
+    eligible_residuals,
+    residuals_for_fold,
+    scale_invariant_score,
+    score_frame,
+    select_loco_alphas,
+    validate_detector_spec,
 )
 from lngfreight.global_forecaster import (  # noqa: E402
     LeakageError,
@@ -835,9 +855,596 @@ def _derive_validation_status(manifest: Mapping[str, object]) -> str:
     manifest["status_failures"] = sorted(failures)
     return "PASS" if not failures else "FAIL"
 
+
+# ===========================================================================
+# Phase A3 -- detector calibration.
+# ===========================================================================
+
+A3_MUST_BE_FALSE = frozenset(
+    {
+        "hormuz_entered_calibration",
+        "masked_unit_days_entered_calibration",
+        "selection_year_entered_calibration",
+        "residuals_reach_past_calibration_end",
+        "per_unit_thresholds_used",
+        "august_state_read",
+    }
+)
+
+RIDGE_MODEL = "global_ridge"
+SEASONAL_NAIVE = "seasonal_naive"
+
+
+def _a2_gate(spec: Mapping, spec_sha: str) -> dict:
+    """A3 may only run behind an A2 run that reproduces from this configuration.
+
+    The gate is the accepted A2 manifest itself, not a remembered number: it must
+    be PASS, made under this exact configuration hash, and made from a clean
+    tree.  Anything else means the model A3 is about to calibrate is not the
+    model Mher accepted.
+    """
+    path = config.ROOT / spec["model"]["outputs"]["manifest"]
+    if not path.is_file():
+        raise SystemExit(
+            "A3 requires the accepted A2 validation manifest; run --phase validate first"
+        )
+    manifest = json.loads(path.read_text())
+    problems: list[str] = []
+    if manifest.get("status") != "PASS":
+        problems.append(f"A2 manifest status is {manifest.get('status')!r}, not PASS")
+    if manifest.get("config", {}).get("sha256") != spec_sha:
+        problems.append(
+            "A2 was run under a different configuration hash "
+            f"({manifest.get('config', {}).get('sha256')} against {spec_sha})"
+        )
+    if manifest.get("git", {}).get("dirty") is not False:
+        problems.append("the accepted A2 run was not made from a clean tree")
+    for name in ("scores", "predictions"):
+        artefact = config.ROOT / manifest["outputs"][name]
+        if not artefact.is_file():
+            problems.append(f"A2 {name} artefact is missing")
+        elif sha256_file(artefact) != manifest["outputs"][f"{name}_sha256"]:
+            problems.append(f"A2 {name} artefact no longer matches its recorded hash")
+    if problems:
+        raise SystemExit(
+            "A3 is gated on a reproduced A2 run and that gate is not met:\n  - "
+            + "\n  - ".join(problems)
+        )
+    return manifest
+
+
+def _episode_rows(
+    curves: Mapping[str, object],
+    threshold: float,
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    point = np.array([float(threshold)])
+    for unit, curve in sorted(curves.items()):
+        episodes = int(curve.episodes_at(point)[0])
+        days = int(curve.duration_at(point)[0])
+        rows.append(
+            {
+                "unit": unit,
+                "episodes": episodes,
+                "censored_episodes": int(curve.censored_at(point)[0]),
+                "episode_days": days,
+                "eligible_days": int(curve.eligible_days),
+                "exposure_years": float(curve.exposure_years),
+                "episodes_per_year": float(episodes / curve.exposure_years),
+                "mean_episode_days": float(days / episodes) if episodes else 0.0,
+            }
+        )
+    return rows
+
+
+def _solution_record(
+    solution,
+    *,
+    model: str,
+    horizon: int,
+    form: str,
+    scope: str,
+    held_out_unit: str = "",
+    held_out: Mapping[str, object] | None = None,
+) -> dict[str, object]:
+    record: dict[str, object] = {
+        "model": model,
+        "horizon_days": int(horizon),
+        "form": form,
+        "scope": scope,
+        "held_out_unit": held_out_unit,
+        "threshold": solution.threshold,
+        "requested_episodes_per_year": solution.requested_rate,
+        "achieved_episodes_per_year": solution.achieved_rate,
+        "attainable": solution.attainable,
+        "n_calibration_units": solution.n_units,
+        "n_candidate_thresholds": solution.n_candidates,
+        "rate_curve_monotone": solution.monotone,
+        "monotonicity_violations": solution.monotonicity_violations,
+        "max_upward_rate_step": solution.max_upward_step,
+        "literal_tie_rule_threshold": solution.literal_rule_threshold,
+        "literal_tie_rule_rate": solution.literal_rule_achieved_rate,
+        "literal_tie_rule_exceedance_share": solution.literal_rule_exceedance_share,
+        "literal_tie_rule_degenerate": solution.literal_rule_degenerate,
+        "held_out_episodes": "",
+        "held_out_censored_episodes": "",
+        "held_out_exposure_years": "",
+        "held_out_episodes_per_year": "",
+    }
+    if held_out is not None:
+        record.update(
+            {
+                "held_out_episodes": held_out["episodes"],
+                "held_out_censored_episodes": held_out["censored_episodes"],
+                "held_out_exposure_years": held_out["exposure_years"],
+                "held_out_episodes_per_year": held_out["episodes_per_year"],
+            }
+        )
+    return record
+
+
+def run_calibration() -> dict:
+    """A3: rolling residuals, one transferable threshold, and both LOCO tests."""
+    spec, spec_sha = load_detection_spec()
+    validate_detector_spec(spec)
+    a2 = _a2_gate(spec, spec_sha)
+
+    state = str(spec["model"]["development_measurement_state"])
+    units = list(development_units(spec))
+    horizons = [int(value) for value in spec["tasks"]["horizons_days"]]
+    selected_alpha = {
+        int(key): float(value)
+        for key, value in a2["estimators"]["selected_alpha_by_horizon"].items()
+    }
+
+    panel = load_development_panel(
+        spec,
+        state,
+        start=spec["dates"]["full_start"],
+        end=spec["dates"]["detector_calibration_end"],
+    )
+    mask = load_event_mask(spec)
+    residual_geometry = build_rolling_residual_geometry(spec, state)
+    folds = rolling_origin_folds(spec)
+
+    # Penalty reselection for end-to-end LOCO: the held-out unit is withheld
+    # from hyperparameter selection too, so it cannot inherit A2's penalty.
+    loco_alphas = select_loco_alphas(spec, panel, measurement_state=state)
+
+    frames: list[pd.DataFrame] = []
+    loco_blocks: list[np.ndarray] = []
+    drift: dict[str, dict[str, list[float]]] = {
+        unit: {str(horizon): [] for horizon in horizons} for unit in units
+    }
+    # Every fold's scale must have been fitted through that fold's own
+    # horizon-specific fit_end.  This is the check that the algorithm was
+    # refitted; whether the resulting number moves is a property of the data.
+    context_end_matches = True
+    for horizon in horizons:
+        for fold in folds:
+            produced = residuals_for_fold(
+                spec,
+                panel,
+                fold,
+                horizon,
+                residual_geometry,
+                measurement_state=state,
+                alpha=selected_alpha[horizon],
+                loco_alphas={unit: loco_alphas[horizon][unit] for unit in units},
+            )
+            frames.append(produced.frame)
+            loco_blocks.append(produced.loco_predictions)
+            expected_end = fold.score_start - pd.Timedelta(days=horizon)
+            for unit in units:
+                drift[unit][str(horizon)].append(produced.context_scales[unit])
+                if produced.context_ends[unit] != expected_end:
+                    context_end_matches = False
+
+    residuals = pd.concat(frames, ignore_index=True)
+    loco_matrix = np.vstack(loco_blocks)
+    residuals["row_id"] = np.arange(len(residuals), dtype="int64")
+
+    # Seasonal naive is a lookup on the same rows, so it needs no fold refit.
+    residuals["seasonal_naive_prediction"] = seasonal_naive_predictions(
+        panel,
+        residuals.assign(
+            feature_timestamp=pd.to_datetime(residuals["target_timestamp"])
+            - pd.to_timedelta(residuals["horizon_days"], unit="D")
+        ),
+    )
+
+    admitted, excluded = eligible_residuals(residuals, spec, mask)
+    kept = admitted["row_id"].to_numpy()
+    loco_matrix = loco_matrix[kept]
+
+    # The frozen design requires the invariance test to be executed, not claimed.
+    factor = 3.7
+    invariance_holds = bool(
+        np.allclose(
+            scale_invariant_score(
+                admitted["prediction"].to_numpy(dtype="float64") * factor,
+                admitted["y_target"].to_numpy(dtype="float64") * factor,
+                admitted["context_scale"].to_numpy(dtype="float64") * factor,
+            ),
+            score_frame(admitted, "scale_invariant"),
+        )
+    )
+
+    calibration_rows: list[dict[str, object]] = []
+    false_alarm_rows: list[dict[str, object]] = []
+    operational: dict[tuple[str, int, str], object] = {}
+
+    model_columns = {RIDGE_MODEL: "prediction", SEASONAL_NAIVE: "seasonal_naive_prediction"}
+    for model, column in model_columns.items():
+        for horizon in horizons:
+            rows = admitted.loc[admitted["horizon_days"].eq(horizon)]
+            for form in DETECTOR_FORMS:
+                curves = curves_by_unit(rows, spec, form, prediction_column=column)
+                solution = calibrate_threshold(list(curves.values()), spec)
+                operational[(model, horizon, form)] = solution
+                calibration_rows.append(
+                    _solution_record(
+                        solution, model=model, horizon=horizon, form=form, scope="operational"
+                    )
+                )
+                for record in _episode_rows(curves, solution.threshold):
+                    false_alarm_rows.append(
+                        {"model": model, "horizon_days": horizon, "form": form, **record}
+                    )
+
+                # threshold_loco: same residuals, the unit withheld only from
+                # the threshold. This isolates whether a threshold transfers.
+                grid = candidate_thresholds(list(curves.values()))
+                for held_out in units:
+                    retained = [curves[unit] for unit in units if unit != held_out]
+                    loco = calibrate_threshold(retained, spec, candidates=grid)
+                    point = np.array([loco.threshold])
+                    curve = curves[held_out]
+                    calibration_rows.append(
+                        _solution_record(
+                            loco,
+                            model=model,
+                            horizon=horizon,
+                            form=form,
+                            scope="threshold_loco",
+                            held_out_unit=held_out,
+                            held_out={
+                                "episodes": int(curve.episodes_at(point)[0]),
+                                "censored_episodes": int(curve.censored_at(point)[0]),
+                                "exposure_years": float(curve.exposure_years),
+                                "episodes_per_year": float(
+                                    curve.episodes_at(point)[0] / curve.exposure_years
+                                ),
+                            },
+                        )
+                    )
+
+    # end_to_end_loco: the held-out unit was never in the model, the pooled
+    # standardiser, the penalty selection or the threshold. Seasonal naive is a
+    # lookup, so withholding a unit from "fitting" withholds nothing and its
+    # end-to-end test would be its threshold test under another name.
+    horizon_index = {
+        horizon: admitted["horizon_days"].to_numpy() == horizon for horizon in horizons
+    }
+    for horizon in horizons:
+        rows = admitted.loc[horizon_index[horizon]]
+        block = loco_matrix[horizon_index[horizon]]
+        for form in DETECTOR_FORMS:
+            for column, held_out in enumerate(units):
+                scoped = rows.assign(loco_prediction=block[:, column])
+                curves = curves_by_unit(
+                    scoped, spec, form, prediction_column="loco_prediction"
+                )
+                retained = [curves[unit] for unit in units if unit != held_out]
+                solution = calibrate_threshold(
+                    retained, spec, candidates=candidate_thresholds(list(curves.values()))
+                )
+                point = np.array([solution.threshold])
+                curve = curves[held_out]
+                calibration_rows.append(
+                    _solution_record(
+                        solution,
+                        model=RIDGE_MODEL,
+                        horizon=horizon,
+                        form=form,
+                        scope="end_to_end_loco",
+                        held_out_unit=held_out,
+                        held_out={
+                            "episodes": int(curve.episodes_at(point)[0]),
+                            "censored_episodes": int(curve.censored_at(point)[0]),
+                            "exposure_years": float(curve.exposure_years),
+                            "episodes_per_year": float(
+                                curve.episodes_at(point)[0] / curve.exposure_years
+                            ),
+                        },
+                    )
+                )
+
+    calibration = pd.DataFrame.from_records(calibration_rows).sort_values(
+        ["model", "horizon_days", "form", "scope", "held_out_unit"], kind="mergesort"
+    ).reset_index(drop=True)
+    false_alarms = pd.DataFrame.from_records(false_alarm_rows).sort_values(
+        ["model", "horizon_days", "form", "unit"], kind="mergesort"
+    ).reset_index(drop=True)
+
+    outputs = spec["detector"]["outputs"]
+    calibration_path = config.ROOT / outputs["calibration"]
+    false_alarms_path = config.ROOT / outputs["false_alarms"]
+    manifest_path = config.ROOT / outputs["manifest"]
+    calibration_path.parent.mkdir(parents=True, exist_ok=True)
+    calibration.to_csv(calibration_path, index=False)
+    false_alarms.to_csv(false_alarms_path, index=False)
+
+    hormuz = spec["population"]["hormuz_unit"]
+    calibration_end = pd.Timestamp(spec["detector"]["eligibility"]["calibration_end"])
+    degenerate = calibration.loc[
+        calibration["scope"].eq("operational") & calibration["literal_tie_rule_degenerate"]
+    ]
+    assertions = {
+        "hormuz_entered_calibration": hormuz in set(admitted["unit"]),
+        "masked_unit_days_entered_calibration": bool(admitted.get("event_masked", pd.Series(dtype=bool)).any()),
+        "selection_year_entered_calibration": bool(
+            admitted["residual_role"].eq("hyperparameter_validation_oof").any()
+        ),
+        "residuals_reach_past_calibration_end": bool(
+            pd.to_datetime(admitted["target_timestamp"]).max() > calibration_end
+        ),
+        "per_unit_thresholds_used": False,
+        "august_state_read": state != "july",
+        "calibration_population_is_27_non_hormuz": len(set(admitted["unit"]))
+        == int(spec["population"]["expected_development_units"]),
+        "both_frozen_forms_calibrated": set(calibration["form"]) == set(DETECTOR_FORMS),
+        "threshold_loco_and_end_to_end_loco_reported_separately": {
+            "threshold_loco",
+            "end_to_end_loco",
+        }.issubset(set(calibration["scope"])),
+        # The frozen object is the scaling algorithm, so the seal is that every
+        # fold refitted through its own fit_end -- not that the resulting number
+        # moved. It does not move for the low-count units: `n_tanker` is an
+        # integer count, so a small unit's MAD is an integer and its scale is a
+        # small integer multiple of 1.4826 that a longer history does not
+        # change. The second assertion keeps the first from passing on a
+        # constant-by-construction no-op.
+        "context_scales_fitted_through_each_folds_fit_end": context_end_matches,
+        "context_scale_varies_across_folds_for_some_unit": any(
+            len(set(drift[unit][str(horizon)])) > 1 for unit in units for horizon in horizons
+        ),
+        "scale_invariance_verified": invariance_holds,
+        "a2_gate_reproduced": True,
+        "event_mask_applied": len(excluded) > 0,
+    }
+
+    manifest = {
+        "schema": "hormuz_detector_calibration_manifest/1",
+        "phase": "A3",
+        "status": "PENDING",
+        "script": "scripts/run_hormuz_detection.py",
+        "command": "run_hormuz_detection.py --phase calibrate",
+        "run_utc": pd.Timestamp.utcnow().isoformat(),
+        "git": {
+            "commit": _git("rev-parse", "HEAD"),
+            "branch": _git("branch", "--show-current"),
+            "dirty": bool(_git("status", "--porcelain")),
+        },
+        "config": {"path": "config/hormuz_detection.yaml", "sha256": spec_sha},
+        "plan": {"version": spec["plan"]["version"], "sha256": spec["plan"]["sha256"]},
+        "a2_gate": {
+            "manifest": spec["model"]["outputs"]["manifest"],
+            "status": a2["status"],
+            "config_sha256": a2["config"]["sha256"],
+            "git_commit": a2["git"]["commit"],
+            "git_dirty": a2["git"]["dirty"],
+            "scores_sha256": a2["outputs"]["scores_sha256"],
+            "predictions_sha256": a2["outputs"]["predictions_sha256"],
+            "selected_alpha_by_horizon": a2["estimators"]["selected_alpha_by_horizon"],
+        },
+        "inputs": {
+            "measurement_state_used": state,
+            "august_state_read": False,
+            "event_mask_sha256": mask.sha256,
+            "event_mask_sources": dict(mask.source_sha256),
+            "panel_days": int(len(panel)),
+            "panel_units": int(panel.shape[1]),
+            "hormuz_handling": {
+                "present_in_loaded_panel": hormuz in panel.columns,
+                "entered_calibration": hormuz in set(admitted["unit"]),
+                "claim": (
+                    "The Hormuz column is loaded with the panel. No Hormuz row is "
+                    "materialised into a residual task, calibrated on, or scored here."
+                ),
+            },
+        },
+        "geometry": {
+            "folds": len(folds),
+            "horizons": horizons,
+            "residual_rows_produced": int(len(residuals)),
+            "residual_rows_admitted": int(len(admitted)),
+            "residual_rows_event_masked": int(len(excluded)),
+            "eligible_residual_roles": sorted(set(admitted["residual_role"])),
+            "calibration_window": {
+                "start": str(pd.to_datetime(admitted["target_timestamp"]).min().date()),
+                "end": str(pd.to_datetime(admitted["target_timestamp"]).max().date()),
+            },
+            "residuals_digest": digest_frame(
+                admitted.loc[:, ["unit", "horizon_days", "target_timestamp", "fold_id"]]
+            ),
+        },
+        "estimators": {
+            "models_calibrated": sorted(model_columns),
+            "ridge_alpha_by_horizon": {str(k): v for k, v in sorted(selected_alpha.items())},
+            "loco_alpha_by_horizon": {
+                str(horizon): dict(sorted(loco_alphas[horizon].items()))
+                for horizon in horizons
+            },
+            "end_to_end_loco_models": [RIDGE_MODEL],
+            "end_to_end_loco_exclusion_note": (
+                "Seasonal naive is a lookup, not a fit, so withholding a unit from "
+                "model fitting withholds nothing from it. Its end-to-end LOCO would "
+                "be its threshold LOCO under another name and is not reported twice."
+            ),
+        },
+        "context_scale_drift": {
+            "rule": spec["detector"]["evaluation"]["context_scale_timing"]["rule"],
+            "fitted_through_each_folds_fit_end": context_end_matches,
+            "quantised_units": {
+                "note": (
+                    "n_tanker is an integer count, so a low-volume unit's median "
+                    "absolute deviation is an integer and its context scale is a small "
+                    "integer multiple of 1.4826 that a longer history does not move. "
+                    "For these units the scale-invariant score is the raw error divided "
+                    "by a coarse constant, so the two detector forms are closer to each "
+                    "other there than the design assumes."
+                ),
+                "constant_across_all_folds": sorted(
+                    {
+                        unit
+                        for unit in units
+                        for horizon in horizons
+                        if len(set(drift[unit][str(horizon)])) == 1
+                    }
+                ),
+            },
+            "summary": {
+                unit: {
+                    str(horizon): {
+                        "first": drift[unit][str(horizon)][0],
+                        "last": drift[unit][str(horizon)][-1],
+                        "min": min(drift[unit][str(horizon)]),
+                        "max": max(drift[unit][str(horizon)]),
+                        "max_over_min": (
+                            max(drift[unit][str(horizon)]) / min(drift[unit][str(horizon)])
+                            if min(drift[unit][str(horizon)]) > 0
+                            else float("inf")
+                        ),
+                    }
+                    for horizon in horizons
+                }
+                for unit in units
+            },
+            "trajectories": drift,
+        },
+        "results": {
+            "operational_thresholds": [
+                record for record in calibration_rows if record["scope"] == "operational"
+            ],
+            "loco_summary": {
+                scope: {
+                    "n_rows": int(calibration["scope"].eq(scope).sum()),
+                    "worst_held_out_episodes_per_year": float(
+                        pd.to_numeric(
+                            calibration.loc[
+                                calibration["scope"].eq(scope), "held_out_episodes_per_year"
+                            ],
+                            errors="coerce",
+                        ).max()
+                    ),
+                    "mean_held_out_episodes_per_year": float(
+                        pd.to_numeric(
+                            calibration.loc[
+                                calibration["scope"].eq(scope), "held_out_episodes_per_year"
+                            ],
+                            errors="coerce",
+                        ).mean()
+                    ),
+                }
+                for scope in ("threshold_loco", "end_to_end_loco")
+            },
+        },
+        "sealing_assertions": assertions,
+        "ratification_required": [
+            {
+                "item": "discrete_ties.rule reads degenerately on this data",
+                "detail": (
+                    "The frozen rule says 'smallest threshold whose achieved rate is at "
+                    "or below target'. The episode rate is not monotone in the "
+                    "threshold: when every day exceeds, a unit's record collapses into "
+                    "one unending episode per segment, so the rate falls back below "
+                    "target at the bottom of the range. Read word by word, the rule "
+                    "therefore selects a threshold that fires on almost every unit-day. "
+                    "This run instead takes the smallest threshold from which the rate "
+                    "stays at or below target for every higher threshold too, which is "
+                    "what the block's own stated reason asks for ('take the attainable "
+                    "threshold on the conservative side'). Both are reported per row. "
+                    "Mher rules on which is the frozen rule before A3 is accepted."
+                ),
+                "affected_rows": int(len(degenerate)),
+                "literal_rule_exceedance_share": sorted(
+                    set(degenerate["literal_tie_rule_exceedance_share"].round(6))
+                ),
+            }
+        ]
+        if len(degenerate)
+        else [],
+        "outputs": {
+            "calibration": outputs["calibration"],
+            "false_alarms": outputs["false_alarms"],
+            "manifest": outputs["manifest"],
+            "calibration_sha256": sha256_file(calibration_path),
+            "false_alarms_sha256": sha256_file(false_alarms_path),
+        },
+        "environment": {
+            "python": platform.python_version(),
+            "platform": platform.platform(),
+            "pandas": pd.__version__,
+            "numpy": np.__version__,
+        },
+        "limitations": [
+            "The ridge penalty was selected on 2024, which is after the 2021-2023 "
+            "development_oof residual window. Those residuals are out-of-fold with "
+            "respect to model fitting but not with respect to penalty selection. A2 "
+            "measured that selection to be near-insensitive (at most 0.000391 MASE, "
+            "about 0.05%), which bounds the practical size of this, but the structural "
+            "point stands and the frozen roles admit the window regardless.",
+            "The 2024 selection year carries no admissible residual, so it acts as a "
+            "segment boundary: no episode spans it. That follows the frozen masked-gap "
+            "rule, but the rule was written about event masks rather than the withheld "
+            "selection year.",
+            "Censored episodes are counted in the episode rate and reported separately. "
+            "An episode that began is an episode; only its duration is censored.",
+            "These are false-alarm rates on development units with no disruption label. "
+            "Nothing here measures detection power, which needs a positive control.",
+            "The event mask removes exposed unit-days from calibration; it does not "
+            "make the remaining days a clean null, only a pre-declared one.",
+            "For the low-count units the context scale is an integer multiple of "
+            "1.4826 and does not move across folds, because the MAD of an integer "
+            "count series is an integer. The refit is real but its estimate is "
+            "quantised there, which the frozen design did not anticipate and which "
+            "narrows the intended contrast between the two detector forms.",
+        ],
+        "claims_not_authorised": [
+            "Any statement about Hormuz: no Hormuz row is calibrated on or scored here.",
+            "Any detection-power, sensitivity or true-positive claim; this phase "
+            "measures false alarms on unlabelled development units only.",
+            "Any causal reading of an exceedance or an episode.",
+            "That a threshold transferring across development units will transfer to "
+            "Hormuz; that is the A4 question and it is not answered here.",
+            "Any cross-measurement-state statement: August is not read at A3.",
+        ],
+    }
+    manifest["status"] = _derive_calibration_status(manifest)
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True, default=str))
+    return manifest
+
+
+def _derive_calibration_status(manifest: Mapping[str, object]) -> str:
+    """Derive PASS/FAIL from the A3 sealing evidence rather than asserting it."""
+    failures: list[str] = []
+    assertions = dict(manifest["sealing_assertions"])
+    for name, value in assertions.items():
+        must_be_false = name in A3_MUST_BE_FALSE
+        if must_be_false and bool(value):
+            failures.append(f"sealing_assertion_must_be_false:{name}")
+        elif not must_be_false and not bool(value):
+            failures.append(f"sealing_assertion:{name}")
+    missing = A3_MUST_BE_FALSE.difference(assertions)
+    failures.extend(f"missing_assertion:{name}" for name in sorted(missing))
+    manifest["status_failures"] = sorted(failures)
+    return "PASS" if not failures else "FAIL"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--phase", choices=["audit", "validate"], required=True)
+    parser.add_argument("--phase", choices=["audit", "validate", "calibrate"], required=True)
     parser.add_argument("--check-only", action="store_true")
     args = parser.parse_args()
 
@@ -852,6 +1459,72 @@ def main() -> None:
             raise SystemExit(
                 "A1 audit FAILED; the phase is not freezable. Failing evidence: "
                 + ", ".join(audit["status_failures"])
+            )
+        return
+
+    if args.phase == "calibrate":
+        if args.check_only:
+            raise SystemExit("--phase calibrate fits estimators and cannot run check-only")
+        manifest = run_calibration()
+        print(f"A3 CALIBRATE {manifest['status']}")
+        print(f"git branch/HEAD : {manifest['git']['branch']} / {manifest['git']['commit']}")
+        print(f"config sha256   : {manifest['config']['sha256']}")
+        print(f"A2 gate         : {manifest['a2_gate']['status']} at {manifest['a2_gate']['git_commit'][:10]}, dirty={manifest['a2_gate']['git_dirty']}")
+        print(
+            "residual rows   : "
+            f"{manifest['geometry']['residual_rows_admitted']} admitted, "
+            f"{manifest['geometry']['residual_rows_event_masked']} event-masked, "
+            f"over {manifest['geometry']['folds']} folds"
+        )
+        print(
+            "window          : "
+            f"{manifest['geometry']['calibration_window']['start']} to "
+            f"{manifest['geometry']['calibration_window']['end']}"
+        )
+        print()
+        print("Operational thresholds (calibrated on all 27 development units):")
+        operational = pd.DataFrame(manifest["results"]["operational_thresholds"])
+        print(
+            operational.loc[
+                :,
+                [
+                    "model",
+                    "horizon_days",
+                    "form",
+                    "threshold",
+                    "achieved_episodes_per_year",
+                    "rate_curve_monotone",
+                    "literal_tie_rule_degenerate",
+                ],
+            ].to_string(index=False)
+        )
+        print()
+        print("Leave-one-chokepoint-out behaviour:")
+        print(json.dumps(manifest["results"]["loco_summary"], indent=2, sort_keys=True))
+        print()
+        print("Sealing assertions:")
+        print(json.dumps(manifest["sealing_assertions"], indent=2, sort_keys=True))
+        if manifest["ratification_required"]:
+            print()
+            print("=" * 72)
+            print("RATIFICATION REQUIRED BEFORE A3 CAN BE ACCEPTED")
+            print("=" * 72)
+            for item in manifest["ratification_required"]:
+                print(f"- {item['item']}")
+                print(f"  {item['detail']}")
+                print(f"  affected operational rows: {item['affected_rows']}")
+        print()
+        print(f"wrote {manifest['outputs']['calibration']}")
+        print(f"wrote {manifest['outputs']['false_alarms']}")
+        print(f"wrote {manifest['outputs']['manifest']}")
+        print(
+            "STOP AND REPORT. No Hormuz row was calibrated on or scored; that is A4, "
+            "and A4 must not start until Mher accepts this calibration."
+        )
+        if manifest["status"] != "PASS":
+            raise SystemExit(
+                "A3 calibration FAILED its sealing assertions: "
+                + ", ".join(manifest["status_failures"])
             )
         return
 

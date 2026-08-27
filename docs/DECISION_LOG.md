@@ -1339,6 +1339,35 @@ it. One scope decision plus one refreeze clears all eight together.
   claiming A2 was "pending Mher's verification run" and citing plan v1.1, and an
   A3 paragraph still describing the three Claude items as "reviewed without
   objection" under a veto clause the config no longer carries.
-- **Status:** Plan **v1.2**. A2 **ACCEPTED**. A3 design **FROZEN**, implementation
-  **not started**: it is gated on a final A2 validation rerun returning unchanged
-  score and prediction hashes (`efcbf724…`, `5b38cb08…`). A4 and B3 untouched.
+- **A2 gate cleared.** The validation rerun from the clean checkpoint returned
+  `PASS`, `git.dirty: false`, and both artefact hashes unchanged (`efcbf724…`,
+  `5b38cb08…`). That was the condition on starting A3.
+- **A3 implemented, not accepted.** `--phase calibrate` and
+  `src/lngfreight/detector_calibration.py` execute the frozen design; the phase
+  refuses to start unless the accepted A2 manifest is PASS, made under the
+  current config hash, made from a clean tree, and still matching its artefact
+  hashes. Claude's run: 110,121 admissible residual rows over 60 folds,
+  2021-01-01 to 2025-11-30, 5,628 unit-days event-masked, all sealing assertions
+  in their required state. **Mher has not run or accepted this**, and A4 stays
+  closed until he does.
+- **Two items await Mher's ruling.**
+  1. **`discrete_ties.rule` is degenerate as written.** The episode rate is not
+     monotone in the threshold; at the bottom of the range every day exceeds and
+     a unit's record becomes one unending episode per segment, so the rate falls
+     back below target. Read literally the rule selects a threshold firing on
+     99.997% of unit-days that still "passes". The run uses the smallest
+     threshold from which the rate stays at or below target for every higher
+     threshold, which is what the block's own stated reason ("the attainable
+     threshold on the conservative side") asks for. Both are reported per row.
+     Claude proposes the second reading; the ruling is Mher's.
+  2. **The context scale is quantised for 15 of 27 units.** `n_tanker` is an
+     integer count, so a low-volume unit's MAD is an integer and its scale is a
+     small integer multiple of 1.4826 that a longer history does not move. The
+     per-fold refit is real and runs through each fold's own `fit_end`; the
+     estimate is coarse. This narrows the intended contrast between the two
+     detector forms on those units.
+- **Status:** Plan **v1.2**. A2 **ACCEPTED**. A3 design **FROZEN**;
+  implementation **complete and run by Claude**, **acceptance pending Mher's own
+  run and his ruling on the two items above**. A4 not started and not to be
+  started before that acceptance; the August-source authorisation is unchanged
+  and untouched. B3 untouched.

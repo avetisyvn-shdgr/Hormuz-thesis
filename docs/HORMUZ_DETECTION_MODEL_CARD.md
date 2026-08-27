@@ -1,8 +1,10 @@
 # Hormuz detection model card
 
-**Current phase:** A2 — global forecasting model and 2024 selection  
+**Current phase:** A3 — detector calibration  
 **Model status:** implemented; A2 accepted by Mher on 2026-08-27  
-**Detector status:** not calibrated (A3)  
+**Detector status:** implemented and run by Claude; **not accepted**. Mher's
+verification run and ruling on two open items are outstanding, and A4 does not
+start before that.  
 **Track owner:** Claude, reassigned from ChatGPT by Mher on 2026-08-27  
 **Governing plan:** `HORMUZ_TECHNICAL_EXECUTION_PLAN.md`, version 1.2
 
@@ -177,7 +179,8 @@ data with possible reporting bias, historical revision, missingness risk, and
 unit heterogeneity. Later predictive results cannot be interpreted as causal
 effects.
 
-A3 and A4 have not been started by this implementation.
+A3 is implemented and has been run by Claude; it is not accepted. A4 has not
+been started.
 
 ## A2 — global forecasting model
 
@@ -450,3 +453,76 @@ That contrast is reported on the 27 development units only. The alternative,
 fitting a local AR on pre-surveillance Hormuz history, was considered and
 declined because it puts a Hormuz-trained model inside a leave-Hormuz-out
 design.
+
+## A3 — implementation, and what Claude's run found
+
+`scripts/run_hormuz_detection.py --phase calibrate` implements the frozen design
+in `src/lngfreight/detector_calibration.py`. **These are Claude's numbers, not a
+verified result.** Mher's own run and his ruling on the two open items below come
+first; nothing here is accepted and A4 does not start.
+
+The phase refuses to run unless the accepted A2 manifest is `PASS`, was made
+under the current configuration hash, was made from a clean tree, and its scores
+and predictions still match their recorded hashes. A3 cannot calibrate a model
+other than the one Mher accepted.
+
+Claude's run: 110,121 admissible residual rows over 60 expanding folds spanning
+2021-01-01 to 2025-11-30, with 5,628 unit-days removed by the frozen event mask,
+all sealing assertions in their required state.
+
+### Two items that need Mher's ruling before A3 can be accepted
+
+**The tie rule reads degenerately.** `discrete_ties.rule` says "smallest
+threshold whose achieved rate is at or below target". The episode rate is not
+monotone in the threshold, and at the bottom of the range it collapses: when
+every day exceeds, a unit's whole record becomes one unending episode per
+segment, so the macro rate falls back *below* target. Read word by word the rule
+therefore selects a threshold that fires on 99.997% of unit-days and still
+"passes" at well under 2 episodes per chokepoint-year. The run instead takes the
+smallest threshold from which the rate stays at or below target for every higher
+threshold too, which is what the block's own stated reason asks for — "take the
+attainable threshold on the conservative side". Both are written to every row of
+`hormuz_detector_calibration.csv`. This is a defect in the frozen rule, not a
+choice the implementation is entitled to make.
+
+**The context scale is quantised for 15 of the 27 units.** `n_tanker` is an
+integer count, so a low-volume unit's median absolute deviation is an integer and
+its context scale is a small integer multiple of 1.4826 that a longer history
+does not move. The per-fold refit is real and runs through each fold's own
+`fit_end`; its estimate is simply coarse there. For those units the
+scale-invariant score is the raw error over a constant, which narrows the
+contrast between the two detector forms that the design exists to expose.
+
+### What the calibration shows
+
+The raw-level form behaves as the frozen design predicted before calibration.
+One threshold in transits per day is dominated by the high-volume units: the
+median held-out unit never fires at all, while Taiwan, Korea and Malacca fire at
+8 to 10 episodes per chokepoint-year against a target of 2. That degeneracy is
+the informative contrast, not a defect to tune away.
+
+The scale-invariant form spreads alarms more evenly and so puts *more* units over
+target — 14 or 15 of 27 against 9 or 10 for the raw form — but its worst unit
+sits at 5.6 rather than 10.5 episodes per year.
+
+`end_to_end_loco` lands close to `threshold_loco` throughout (mean held-out rate
+2.08 against 2.04 raw, 2.05 against 1.90 scale-invariant). Withholding a unit
+from the model, the pooled standardiser and penalty selection costs little beyond
+withholding it from the threshold alone. That is a result about 27 development
+units and says nothing yet about Hormuz.
+
+### The penalty is not a stable object
+
+End-to-end LOCO reselects the ridge penalty per held-out unit, as the design
+requires. At h=1, dropping one unit changes the selected penalty for 16 of 27
+units; at h=7 dropping Bering alone moves it from 1000 to 0.1. This corroborates
+A2's finding that the selection surface is nearly flat rather than contradicting
+it — where the surface is flat the argmin wanders — but it means "the selected
+penalty" should not be reported as a determinate quantity.
+
+### What A3 does not do
+
+A3 reads no Hormuz row and scores nothing on Hormuz. It measures false alarms on
+unlabelled development units: there is no disruption label here, so nothing in
+this phase measures detection power. August is not read. No threshold calibrated
+here is claimed to transfer to Hormuz — that is the A4 question.
