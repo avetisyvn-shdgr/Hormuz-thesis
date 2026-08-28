@@ -1,0 +1,13 @@
+model,horizon_days,form,july_fired,august_fired,both_fired,alarm_shift_days_august_minus_july,same_alarm_date,july_severity_7_day,august_severity_7_day
+global_ridge,1,raw_level,True,True,True,17.0,False,5.872175167655121,9.818269758239053
+global_ridge,1,scale_invariant,True,True,True,0.0,True,2.924088639770296,2.6375471635960848
+global_ridge,7,raw_level,True,True,True,0.0,True,6.952695828182727,7.0163930454697345
+global_ridge,7,scale_invariant,True,True,True,0.0,True,3.1612396964778178,2.840132902422915
+global_ridge,30,raw_level,True,True,True,1.0,False,11.664066713442354,11.280731829093554
+global_ridge,30,scale_invariant,True,True,True,0.0,True,1.389673917499557,1.2658752096284804
+seasonal_naive,1,raw_level,True,True,True,74.0,False,7.142857142857143,39.857142857142854
+seasonal_naive,1,scale_invariant,True,True,True,2.0,False,3.439902873330636,3.2332731644751074
+seasonal_naive,7,raw_level,True,True,True,74.0,False,7.142857142857143,39.857142857142854
+seasonal_naive,7,scale_invariant,True,True,True,2.0,False,3.439902873330636,3.2332731644751074
+seasonal_naive,30,raw_level,True,True,True,0.0,True,12.142857142857142,10.857142857142858
+seasonal_naive,30,scale_invariant,True,True,True,1.0,False,2.9099458480275966,2.505251392341639
