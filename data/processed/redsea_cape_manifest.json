@@ -4,11 +4,11 @@
   "status": "frozen",
   "script": "scripts/run_receiver_test.py",
   "command": "run_receiver_test.py --phase positive-control",
-  "run_utc": "2026-08-27T10:31:04.040166+00:00",
+  "run_utc": "2026-08-28T09:24:27.723403+00:00",
   "git": {
-    "commit": "73ae8989f274f06566dd883e6e6e1699a64e07c9",
+    "commit": "855f1162c02687404426784928d89d82b70cdc84",
     "branch": "ml/hormuz-revision-robust",
-    "dirty": true
+    "dirty": false
   },
   "config": {
     "path": "config/hormuz_receiver_test.yaml",
