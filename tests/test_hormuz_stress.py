@@ -527,3 +527,241 @@ def test_the_decomposition_needs_a_pre_surveillance_overlap(spec: dict):
     series = pd.Series(np.ones(len(index)), index=index)
     with pytest.raises(ValueError, match="pre-surveillance overlap"):
         decompose_revision(series, series, fit_end=pd.Timestamp("2025-11-30"))
+
+
+# ---------------------------------------------------------------------------
+# Execution-artifact contract: what A4 evaluates and what it records
+#
+# These guard the 2026-08-28 correction. Every one of them is about scope and
+# provenance; none touches a model, a threshold, a scale, a prediction, an
+# alarm or a severity value, and none may be satisfied by changing one.
+# ---------------------------------------------------------------------------
+
+
+def test_every_scoring_mode_declares_the_forms_it_evaluates(spec: dict):
+    import run_hormuz_detection as runner
+
+    final_cfg = spec["final"]
+    for mode in final_cfg["modes"][:3]:
+        forms = runner._declared_forms(final_cfg, mode["name"])
+        assert forms, f"{mode['name']} declares no evaluated forms"
+        assert set(forms).issubset({RAW_LEVEL, SCALE_INVARIANT})
+
+
+def test_the_transport_mode_declares_the_scale_invariant_form_only(spec: dict):
+    """Plan v1.2 A4 mode 3 is a scale-invariant transport and nothing else.
+
+    Regression guard: the runner looped every detector form for every mode and
+    produced six raw-level transport cells the plan never declared. A raw-level
+    score is not invariant to the proportional component of the vintage
+    revision, so such a cell confounds the transport with the rescaling that
+    the decomposition exists to separate.
+    """
+    import run_hormuz_detection as runner
+
+    final_cfg = spec["final"]
+    transport = final_cfg["modes"][2]
+    assert transport["name"] == "july_scale_invariant_transported_to_august"
+    assert runner._declared_forms(final_cfg, transport["name"]) == (SCALE_INVARIANT,)
+    assert RAW_LEVEL not in transport["evaluated_forms"]
+
+
+def test_an_undeclared_form_is_refused_rather_than_silently_evaluated(spec: dict):
+    import run_hormuz_detection as runner
+
+    drifted = deepcopy(spec)
+    drifted["final"]["modes"][2]["evaluated_forms"] = ["raw_level", "not_a_form"]
+    with pytest.raises(runner.A4CoverageError, match="not detector forms"):
+        runner._declared_forms(drifted["final"], "july_scale_invariant_transported_to_august")
+
+    empty = deepcopy(spec)
+    empty["final"]["modes"][2]["evaluated_forms"] = []
+    with pytest.raises(runner.A4CoverageError, match="no evaluated_forms"):
+        runner._declared_forms(empty["final"], "july_scale_invariant_transported_to_august")
+
+    with pytest.raises(runner.A4CoverageError, match="not declared"):
+        runner._declared_forms(spec["final"], "a_mode_that_does_not_exist")
+
+
+def test_the_declared_cell_set_is_the_declared_cross_product(spec: dict):
+    import run_hormuz_detection as runner
+
+    final_cfg = spec["final"]
+    pairings = runner._final_pairings(final_cfg, [JULY, AUGUST])
+    declared = runner._declared_cells(spec, final_cfg, pairings)
+
+    models = set(final_cfg["modes"][3]["models_scored_on_hormuz"])
+    horizons = {int(h) for h in spec["tasks"]["horizons_days"]}
+    # Two same-state modes at both forms, plus one transport at one form.
+    assert len(declared) == (2 * 2 + 1 * 1) * len(models) * len(horizons)
+
+    transport = final_cfg["modes"][2]["name"]
+    transport_cells = {cell for cell in declared if cell[0] == transport}
+    assert {cell[3] for cell in transport_cells} == {SCALE_INVARIANT}
+    assert len(transport_cells) == len(models) * len(horizons)
+
+
+def test_a_single_vintage_run_declares_only_its_own_mode(spec: dict):
+    import run_hormuz_detection as runner
+
+    final_cfg = spec["final"]
+    pairings = runner._final_pairings(final_cfg, [JULY])
+    assert pairings == [(final_cfg["modes"][0]["name"], JULY, JULY)]
+    declared = runner._declared_cells(spec, final_cfg, pairings)
+    assert {cell[0] for cell in declared} == {final_cfg["modes"][0]["name"]}
+
+
+def _summary_from_cells(cells) -> pd.DataFrame:
+    return pd.DataFrame.from_records(
+        [
+            {"mode": mode, "model": model, "horizon_days": horizon, "form": form}
+            for mode, model, horizon, form in sorted(cells)
+        ]
+    )
+
+
+def test_coverage_is_exact_when_the_evaluated_cells_are_the_declared_ones(spec: dict):
+    import run_hormuz_detection as runner
+
+    final_cfg = spec["final"]
+    declared = runner._declared_cells(
+        spec, final_cfg, runner._final_pairings(final_cfg, [JULY, AUGUST])
+    )
+    report = runner._coverage_report(declared, _summary_from_cells(declared))
+    assert report["exact"] is True
+    assert report["missing"] == []
+    assert report["unexpected"] == []
+    assert report["declared_cells"] == report["evaluated_cells"] == len(declared)
+
+
+def test_coverage_catches_an_undeclared_cell(spec: dict):
+    """The direction the mode 3 raw-level rows failed."""
+    import run_hormuz_detection as runner
+
+    final_cfg = spec["final"]
+    declared = runner._declared_cells(
+        spec, final_cfg, runner._final_pairings(final_cfg, [JULY, AUGUST])
+    )
+    transport = final_cfg["modes"][2]["name"]
+    intruder = (transport, RIDGE_MODEL, 7, RAW_LEVEL)
+    assert intruder not in declared
+
+    report = runner._coverage_report(declared, _summary_from_cells(declared | {intruder}))
+    assert report["exact"] is False
+    assert report["unexpected"] == [list(intruder)]
+    assert report["missing"] == []
+
+
+def test_coverage_catches_a_missing_cell(spec: dict):
+    """The other direction: a silently dropped model must not pass either."""
+    import run_hormuz_detection as runner
+
+    final_cfg = spec["final"]
+    declared = runner._declared_cells(
+        spec, final_cfg, runner._final_pairings(final_cfg, [JULY, AUGUST])
+    )
+    dropped = sorted(declared)[0]
+    report = runner._coverage_report(declared, _summary_from_cells(declared - {dropped}))
+    assert report["exact"] is False
+    assert report["missing"] == [list(dropped)]
+    assert report["unexpected"] == []
+
+
+def test_the_git_checkpoint_records_that_it_was_taken_before_writing(spec: dict):
+    import run_hormuz_detection as runner
+
+    checkpoint = runner._git_checkpoint()
+    assert checkpoint["captured"] == "before_writing_outputs"
+    assert set(checkpoint) == {"commit", "branch", "dirty", "dirty_entries", "captured"}
+    # `dirty` must be derived from the porcelain listing it also reports, so the
+    # two can never disagree about the same checkout.
+    assert checkpoint["dirty"] is bool(checkpoint["dirty_entries"])
+
+
+def test_the_plan_hash_is_declared_and_matches_the_plan_on_disk(spec: dict):
+    from lngfreight.global_forecaster import sha256_file
+    from lngfreight import config as lngconfig
+
+    plan = spec["plan"]
+    assert len(plan["sha256"]) == 64
+    assert sha256_file(lngconfig.ROOT / plan["path"]) == plan["sha256"]
+
+
+def test_the_input_hashes_cover_every_file_the_phase_reads(spec: dict):
+    import run_hormuz_detection as runner
+
+    inputs = runner._final_input_hashes(spec, [JULY, AUGUST])
+    roles = {entry["role"] for entry in inputs["files"]}
+    assert roles == {
+        "measurement_state:july",
+        "measurement_state:august",
+        "a3_calibration",
+        "a3_false_alarms",
+        "a3_manifest",
+    }
+    assert inputs["all_declared_hashes_match"] is True
+    assert inputs["mismatched"] == []
+    for entry in inputs["files"]:
+        assert len(entry["observed_sha256"]) == 64
+        if entry["declared_sha256"] is not None:
+            assert entry["observed_sha256"] == entry["declared_sha256"]
+
+
+def test_a_drifted_input_is_reported_as_a_mismatch(spec: dict):
+    import run_hormuz_detection as runner
+
+    drifted = deepcopy(spec)
+    drifted["measurement_states"][AUGUST]["sha256"] = "0" * 64
+    inputs = runner._final_input_hashes(drifted, [JULY, AUGUST])
+    assert inputs["all_declared_hashes_match"] is False
+    assert inputs["mismatched"] == [drifted["measurement_states"][AUGUST]["path"]]
+
+
+def test_every_output_the_run_writes_is_declared_in_the_config(spec: dict):
+    """Regression guard: the revision file was written to a derived path.
+
+    `cross_path.with_name(stem + "_revision.csv")` named no declaration, so no
+    hash covered it and the plan's expected-output list did not mention it.
+    """
+    outputs = spec["final"]["outputs"]
+    assert set(outputs) == {
+        "daily",
+        "summary",
+        "cross_vintage",
+        "cross_vintage_revision",
+        "manifest",
+    }
+    assert outputs["cross_vintage_revision"] == (
+        "data/processed/hormuz_detection_cross_vintage_revision.csv"
+    )
+    assert len(set(outputs.values())) == len(outputs)
+
+
+def test_the_plan_lists_every_declared_output(spec: dict):
+    from lngfreight import config as lngconfig
+
+    plan_text = (lngconfig.ROOT / spec["plan"]["path"]).read_text()
+    for path in spec["final"]["outputs"].values():
+        assert path in plan_text, f"{path} is written but the plan does not list it"
+
+
+def test_the_frozen_block_forbids_suppressing_pre_onset_alarms(spec: dict):
+    """A4 reports pre-onset alarms; it does not tune them away."""
+    block = spec["final"]["pre_onset_alarms"]
+    assert block["report"] is True
+    assert block["suppress"] is False
+    assert block["tuning_in_response_prohibited"] is True
+    assert spec["final"]["post_hormuz_tuning"]["prohibited"] is True
+
+
+def test_the_coverage_contract_is_declared_as_exact_in_both_directions(spec: dict):
+    coverage = spec["final"]["coverage"]
+    assert coverage["assert_exact"] is True
+    assert coverage["dimensions"] == ["mode", "model", "horizon_days", "form"]
+
+
+def test_the_provenance_contract_is_declared(spec: dict):
+    provenance = spec["final"]["provenance"]
+    assert provenance["git_checkpoint_before_writing_outputs"] is True
+    assert provenance["record_plan_hash"] is True
+    assert provenance["record_input_hashes"] is True

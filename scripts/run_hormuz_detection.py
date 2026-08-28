@@ -18,6 +18,13 @@ nothing on Hormuz; that is A4.
 The Hormuz column is present in the loaded 28-unit panel but is never
 materialised into a task, fitted, selected on, or scored.  That, and not "no
 Hormuz row is read", is the safety claim these phases support.
+
+``--phase final`` is A4.  It evaluates exactly the (mode, model, horizon, form)
+cells the frozen block declares -- the coverage assertion fails the run on a
+missing or an undeclared one -- takes its git checkpoint before writing
+anything, and hashes the plan, every input it reads, and every output it
+declares.  It tunes nothing, and a pre-onset alarm is a result it reports, not
+a defect it corrects.
 """
 from __future__ import annotations
 
@@ -456,6 +463,25 @@ def _git(*args: str) -> str:
         ).stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         return ""
+
+
+def _git_checkpoint() -> dict[str, object]:
+    """Describe the checkout this run is being made from.
+
+    Call this *before* the first output is written.  Called afterwards, the
+    porcelain listing contains the run's own artefacts, `dirty` is always True,
+    and the field says nothing about the state the run was made from -- which
+    is the only thing it is there to record.
+    """
+    porcelain = _git("status", "--porcelain")
+    entries = [line for line in porcelain.splitlines() if line.strip()]
+    return {
+        "commit": _git("rev-parse", "HEAD"),
+        "branch": _git("branch", "--show-current"),
+        "dirty": bool(entries),
+        "dirty_entries": entries,
+        "captured": "before_writing_outputs",
+    }
 
 
 def _selected_alpha(scores: pd.DataFrame, spec: Mapping, horizon: int) -> float:
@@ -1486,6 +1512,147 @@ A4_MUST_BE_FALSE = frozenset(
 )
 
 
+def _final_input_hashes(spec: Mapping, scored_states: Sequence[str]) -> dict[str, object]:
+    """Hash every file this phase reads, as it is on disk at run time.
+
+    The configuration already carries an expected hash for each of these; what
+    is recorded here is what was actually read, plus whether the two agree.  A
+    declared hash on its own only says what was intended.
+    """
+    entries: list[dict[str, object]] = []
+
+    for state in scored_states:
+        state_spec = spec["measurement_states"][state]
+        path = config.ROOT / state_spec["path"]
+        entries.append(
+            {
+                "role": f"measurement_state:{state}",
+                "path": state_spec["path"],
+                "declared_sha256": state_spec["sha256"],
+                "observed_sha256": sha256_file(path),
+                "registry_variable": state_spec.get("registry_variable"),
+            }
+        )
+
+    detector_outputs = spec["detector"]["outputs"]
+    accepted = spec["a3_acceptance"]["accepted_artifacts"]
+    for role, key, declared in (
+        ("a3_calibration", "calibration", accepted["calibration_sha256"]),
+        ("a3_false_alarms", "false_alarms", accepted["false_alarms_sha256"]),
+        ("a3_manifest", "manifest", None),
+    ):
+        path = config.ROOT / detector_outputs[key]
+        entries.append(
+            {
+                "role": role,
+                "path": detector_outputs[key],
+                "declared_sha256": declared,
+                "observed_sha256": sha256_file(path),
+            }
+        )
+
+    mismatched = [
+        entry["path"]
+        for entry in entries
+        if entry["declared_sha256"] is not None
+        and entry["declared_sha256"] != entry["observed_sha256"]
+    ]
+    return {
+        "files": entries,
+        "count": len(entries),
+        "all_declared_hashes_match": not mismatched,
+        "mismatched": mismatched,
+    }
+
+
+class A4CoverageError(RuntimeError):
+    """The evaluated cells are not exactly the cells the frozen block declares."""
+
+
+def _final_pairings(
+    final_cfg: Mapping, scored_states: Sequence[str]
+) -> list[tuple[str, str, str]]:
+    """The (mode, detector_state, outcome_state) pairings this run will score."""
+    pairings = [
+        (final_cfg["modes"][0 if state == JULY else 1]["name"], state, state)
+        for state in scored_states
+    ]
+    if JULY in scored_states and AUGUST in scored_states:
+        pairings.append((final_cfg["modes"][2]["name"], JULY, AUGUST))
+    return pairings
+
+
+def _mode_block(final_cfg: Mapping, name: str) -> Mapping:
+    for mode in final_cfg["modes"]:
+        if mode.get("name") == name:
+            return mode
+    raise A4CoverageError(f"mode {name!r} is not declared in the frozen A4 block")
+
+
+def _declared_forms(final_cfg: Mapping, mode: str) -> tuple[str, ...]:
+    """The detector forms the frozen block declares for one pairing mode.
+
+    A4 evaluates what the plan declares, not every form the scorer happens to
+    compute.  Mode 3 is a scale-invariant transport: the raw-level score is not
+    invariant to the proportional component of the vintage revision, so a
+    raw-level cell under that pairing would confound the transport with the
+    rescaling.  The score is still computed and kept in the daily record; it is
+    simply not an evaluated cell.
+    """
+    block = _mode_block(final_cfg, mode)
+    forms = block.get("evaluated_forms")
+    if not forms:
+        raise A4CoverageError(f"mode {mode!r} declares no evaluated_forms")
+    unknown = [form for form in forms if form not in DETECTOR_FORMS]
+    if unknown:
+        raise A4CoverageError(
+            f"mode {mode!r} declares forms that are not detector forms: {unknown}"
+        )
+    return tuple(forms)
+
+
+def _declared_cells(
+    spec: Mapping, final_cfg: Mapping, pairings: Sequence[tuple[str, str, str]]
+) -> set[tuple[str, str, int, str]]:
+    """Every (mode, model, horizon, form) cell the frozen block declares."""
+    models = list(final_cfg["modes"][3]["models_scored_on_hormuz"])
+    horizons = [int(h) for h in spec["tasks"]["horizons_days"]]
+    return {
+        (mode, model, horizon, form)
+        for mode, _detector, _outcome in pairings
+        for form in _declared_forms(final_cfg, mode)
+        for model in models
+        for horizon in horizons
+    }
+
+
+def _coverage_report(
+    declared: set[tuple[str, str, int, str]], summary: pd.DataFrame
+) -> dict[str, object]:
+    """Compare declared against evaluated cells in both directions.
+
+    Both directions matter.  Checking only for missing cells would let a
+    silently dropped model pass; checking only for extras would let a silently
+    dropped one pass.  The undeclared-cell direction is the one the mode 3
+    raw-level rows failed.
+    """
+    evaluated = {
+        (str(mode), str(model), int(horizon), str(form))
+        for mode, model, horizon, form in zip(
+            summary["mode"], summary["model"], summary["horizon_days"], summary["form"]
+        )
+    }
+    missing = sorted(declared - evaluated)
+    unexpected = sorted(evaluated - declared)
+    return {
+        "declared_cells": len(declared),
+        "evaluated_cells": len(evaluated),
+        "missing": [list(cell) for cell in missing],
+        "unexpected": [list(cell) for cell in unexpected],
+        "exact": not missing and not unexpected,
+    }
+
+
 def _severity_rank(summary: pd.DataFrame) -> pd.DataFrame:
     """Rank cells by 7-day severity within their own state and detector form.
 
@@ -1507,6 +1674,10 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
     """A4: score the frozen system on Hormuz under both measurement states."""
     spec, spec_sha = load_detection_spec()
     validate_detector_spec(spec)
+
+    # Provenance first: the checkpoint has to describe the checkout the run is
+    # made from, so it is taken before this phase writes anything at all.
+    git_checkpoint = _git_checkpoint()
 
     final_cfg = spec["final"]
     if final_cfg.get("status") != "frozen":
@@ -1547,10 +1718,21 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
             "status_failures": [],
             "run_utc": pd.Timestamp.utcnow().isoformat(),
             "config": {"path": "config/hormuz_detection.yaml", "sha256": spec_sha},
+            "plan": {
+                "version": spec["plan"]["version"],
+                "path": spec["plan"]["path"],
+                "sha256": spec["plan"]["sha256"],
+            },
+            "git": git_checkpoint,
             "confirmed_spec_sha256": confirmed_spec_sha,
             "a3_acceptance": accepted,
             "thresholds_loaded": len(thresholds),
             "states_requested": scored_states,
+            "declared_cells": len(
+                _declared_cells(
+                    spec, final_cfg, _final_pairings(final_cfg, scored_states)
+                )
+            ),
             "hormuz_surveillance_read": lock.hormuz_surveillance_read,
             "note": (
                 "Gate check only: the accepted A3 artefacts and the configuration "
@@ -1600,11 +1782,7 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
     except PostHormuzTuningError:
         tuning_attempt_refused = True
 
-    pairings: list[tuple[str, str, str]] = []
-    for state in scored_states:
-        pairings.append((final_cfg["modes"][0 if state == JULY else 1]["name"], state, state))
-    if JULY in scored_states and AUGUST in scored_states:
-        pairings.append((final_cfg["modes"][2]["name"], JULY, AUGUST))
+    pairings = _final_pairings(final_cfg, scored_states)
 
     daily_frames = []
     for mode, detector_state, outcome_state in pairings:
@@ -1626,7 +1804,8 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
     for (mode, detector_state, outcome_state, model, horizon), block in daily.groupby(
         ["mode", "detector_state", "outcome_state", "model", "horizon_days"], sort=True
     ):
-        for form in DETECTOR_FORMS:
+        # The forms this mode declares, not every form the scorer computed.
+        for form in _declared_forms(final_cfg, str(mode)):
             key = (str(model), int(horizon), form)
             if key not in threshold_by_key:
                 continue
@@ -1657,6 +1836,55 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
                 }
             )
     summary = _severity_rank(pd.DataFrame.from_records(summary_rows))
+
+    # ---- exact coverage: what ran must be what the block declares ----------
+    coverage = _coverage_report(_declared_cells(spec, final_cfg, pairings), summary)
+
+    # ---- pre-onset alarms, counted and kept ---------------------------------
+    # A detector firing inside the surveillance window before the operational
+    # onset is a finding about this unit, not a defect to be tuned out. It is
+    # counted here so the manifest reports it rather than leaving it implicit.
+    fired = summary.loc[summary["fired"].astype(bool)]
+    pre_onset = fired.loc[pd.to_numeric(fired["detection_delay_days"]) < 0]
+    pre_onset_alarms = {
+        "operational_onset": str(pd.Timestamp(spec["dates"]["operational_onset"]).date()),
+        "surveillance_start": str(
+            pd.Timestamp(spec["dates"]["hormuz_surveillance_start"]).date()
+        ),
+        "evaluated_cells": int(len(summary)),
+        "cells_that_fired": int(len(fired)),
+        "cells_firing_before_onset": int(len(pre_onset)),
+        "earliest_alarm_date": (
+            str(pd.Timestamp(pre_onset["alarm_date"].min()).date())
+            if not pre_onset.empty
+            else None
+        ),
+        "largest_lead_days": (
+            float(-pd.to_numeric(pre_onset["detection_delay_days"]).min())
+            if not pre_onset.empty
+            else None
+        ),
+        "cells": [
+            {
+                "mode": str(row["mode"]),
+                "model": str(row["model"]),
+                "horizon_days": int(row["horizon_days"]),
+                "form": str(row["form"]),
+                "alarm_date": str(pd.Timestamp(row["alarm_date"]).date()),
+                "detection_delay_days": float(row["detection_delay_days"]),
+            }
+            for _, row in pre_onset.sort_values(
+                ["mode", "model", "horizon_days", "form"], kind="mergesort"
+            ).iterrows()
+        ],
+        "reading": (
+            "A negative delay is an alarm raised before the operational onset, "
+            "not an early detection of it. Under a threshold calibrated to a "
+            "development-unit episode rate, these are the cost side of that "
+            "calibration on Hormuz. They are reported, not suppressed: no "
+            "threshold, window or scale may be changed in response to them."
+        ),
+    }
 
     # ---- cross-state agreement, reported without merging the states --------
     agreement_rows: list[dict[str, object]] = []
@@ -1693,7 +1921,19 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
     # ---- proportional/residual decomposition of the revision ---------------
     hormuz = spec["population"]["hormuz_unit"]
     constant = float("nan")
-    revision = pd.DataFrame()
+    # A declared output always exists, so the single-vintage case writes the
+    # schema with no rows rather than a headerless empty file.
+    revision = pd.DataFrame(
+        columns=[
+            "unit",
+            "date",
+            "july_outcome",
+            "august_outcome",
+            "proportional_component",
+            "residual_revision",
+            "pre_surveillance",
+        ]
+    )
     if JULY in scored_states and AUGUST in scored_states:
         constant, revision = decompose_revision(
             panels[JULY][hormuz],
@@ -1704,18 +1944,21 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
 
     # ---- the no-tuning seal ------------------------------------------------
     final_digest = frozen.digest()
+    input_hashes = _final_input_hashes(spec, scored_states)
 
     outputs = final_cfg["outputs"]
     daily_path = config.ROOT / outputs["daily"]
     summary_path = config.ROOT / outputs["summary"]
     cross_path = config.ROOT / outputs["cross_vintage"]
+    # Declared, not derived from another output's stem: a path no declaration
+    # names is a path no hash covers.
+    revision_path = config.ROOT / outputs["cross_vintage_revision"]
     manifest_path = config.ROOT / outputs["manifest"]
     daily_path.parent.mkdir(parents=True, exist_ok=True)
     daily.to_csv(daily_path, index=False)
     summary.to_csv(summary_path, index=False)
     cross = pd.DataFrame.from_records(agreement_rows)
-    if not revision.empty:
-        revision.to_csv(cross_path.with_name(cross_path.stem + "_revision.csv"), index=False)
+    revision.to_csv(revision_path, index=False)
     cross.to_csv(cross_path, index=False)
 
     transports = [
@@ -1731,6 +1974,37 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
         # declared transport, so an undeclared one cannot reach scoring.
         "every_cross_state_transport_is_a_declared_mode": all(
             item["mode"] in declared_transport_modes for item in transports
+        ),
+        # Exact, both directions: no declared cell missing, no undeclared cell
+        # evaluated. The second half is what the mode 3 raw-level rows failed.
+        "evaluated_cells_are_exactly_the_declared_cells": bool(coverage["exact"]),
+        "no_undeclared_cell_evaluated": not coverage["unexpected"],
+        "no_declared_cell_missing": not coverage["missing"],
+        "every_mode_evaluated_only_its_declared_forms": all(
+            set(block["form"].unique()).issubset(set(_declared_forms(final_cfg, mode)))
+            for mode, block in summary.groupby("mode", sort=False)
+        ),
+        # Checked against the declaration, not asserted. The manifest itself is
+        # excluded because it is this object: it is written last, and a file
+        # found here would be a previous run's.
+        "every_declared_output_was_written": all(
+            (config.ROOT / path).is_file()
+            for name, path in outputs.items()
+            if name != "manifest"
+        ),
+        "git_checkpoint_captured_before_writing_outputs": (
+            git_checkpoint["captured"] == "before_writing_outputs"
+        ),
+        "plan_hash_matches_the_plan_on_disk": (
+            sha256_file(config.ROOT / spec["plan"]["path"]) == spec["plan"]["sha256"]
+        ),
+        "input_hashes_match_their_declarations": bool(
+            input_hashes["all_declared_hashes_match"]
+        ),
+        "pre_onset_alarms_reported_not_suppressed": (
+            final_cfg["pre_onset_alarms"]["suppress"] is False
+            and int(pre_onset_alarms["cells_firing_before_onset"])
+            == int(len(pre_onset))
         ),
         "post_hormuz_tuning_attempted": False,
         "system_changed_after_hormuz": sealed_digest != final_digest,
@@ -1754,14 +2028,19 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
         "script": "scripts/run_hormuz_detection.py",
         "command": f"run_hormuz_detection.py --phase final --vintages {vintages}",
         "run_utc": pd.Timestamp.utcnow().isoformat(),
-        "git": {
-            "commit": _git("rev-parse", "HEAD"),
-            "branch": _git("branch", "--show-current"),
-            "dirty": bool(_git("status", "--porcelain")),
-        },
+        "git": git_checkpoint,
         "config": {"path": "config/hormuz_detection.yaml", "sha256": spec_sha},
+        "plan": {
+            "version": spec["plan"]["version"],
+            "path": spec["plan"]["path"],
+            "sha256": spec["plan"]["sha256"],
+            "verified": sha256_file(config.ROOT / spec["plan"]["path"])
+            == spec["plan"]["sha256"],
+        },
+        "inputs": input_hashes,
         "confirmed_spec_sha256": confirmed_spec_sha,
         "a3_acceptance": accepted,
+        "coverage": coverage,
         "frozen_system": {
             "digest_before_hormuz": sealed_digest,
             "digest_after_scoring": final_digest,
@@ -1788,6 +2067,11 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
             "never_join_or_average": True,
             "august_authorisation": final_cfg["measurement_states"]["august_authorisation"],
             "cross_state_transports": transports,
+            "cross_state_transport_evaluated_forms": {
+                mode["name"]: list(mode["evaluated_forms"])
+                for mode in final_cfg["modes"]
+                if mode.get("name") in declared_transport_modes
+            },
             "cross_state_transport_note": (
                 "Plan A4 mode 3 applies the frozen July detector -- its pooled "
                 "standardiser and its July-fitted Hormuz context scale -- to August "
@@ -1797,7 +2081,13 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
                 "pairing named here: the task table is still validated, no row is "
                 "relabelled, and the frame keeps its true measurement_state, so the "
                 "artefacts never claim August rows were July. Any cross-state "
-                "application not routed through that declared path still raises."
+                "application not routed through that declared path still raises. "
+                "Mode 3 evaluates the scale-invariant form only, which is what "
+                "the plan declares: the raw-level score is not invariant to the "
+                "proportional component of the vintage revision, so a raw-level "
+                "cell here would confound the transport with the rescaling. That "
+                "score is still computed and kept for every scored day in the "
+                "daily artefact; it is not an evaluated cell."
             ),
         },
         "thresholds": [
@@ -1811,6 +2101,7 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
         ],
         "results": {
             "summary": summary.to_dict(orient="records"),
+            "pre_onset_alarms": pre_onset_alarms,
             "cross_state_agreement": agreement_rows,
             "cross_vintage_decomposition": {
                 "proportional_constant": constant,
@@ -1829,10 +2120,12 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
             "daily": outputs["daily"],
             "summary": outputs["summary"],
             "cross_vintage": outputs["cross_vintage"],
+            "cross_vintage_revision": outputs["cross_vintage_revision"],
             "manifest": outputs["manifest"],
             "daily_sha256": sha256_file(daily_path),
             "summary_sha256": sha256_file(summary_path),
             "cross_vintage_sha256": sha256_file(cross_path),
+            "cross_vintage_revision_sha256": sha256_file(revision_path),
         },
         "environment": {
             "python": platform.python_version(),
@@ -1856,6 +2149,13 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
             "to it and inherits its estimation error.",
             "Severity is reported in each form's own units and is not comparable "
             "between the raw-level and scale-invariant forms.",
+            "severity_rank_within_state is a rank over the evaluated cells of "
+            "this run. It moves when the evaluated set changes, so ranks are not "
+            "comparable across runs with different declared coverage.",
+            "A pre-onset alarm is an alarm raised before the operational onset, "
+            "not an early detection of it. The count is a property of this unit "
+            "under a threshold calibrated on the development units, and it is "
+            "reported rather than corrected.",
         ],
         "claims_not_authorised": [
             "Any causal reading of an alarm, a delay, or a severity value.",
@@ -1867,6 +2167,8 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
             "Treating a cross-state difference as a measurement-error estimate.",
             "Any tuning, threshold adjustment or model change made after reading "
             "this output. The plan's stop condition is explicit: no tuning after A4.",
+            "Reading a pre-onset alarm as an early warning of the event, or as "
+            "grounds to change a threshold, a window or a scale.",
         ],
     }
     manifest["status"] = _derive_final_status(manifest)

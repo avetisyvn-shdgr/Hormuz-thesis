@@ -8,7 +8,7 @@ status: "phase_a2_accepted_by_mher"
 plan:
   version: "1.2"
   path: "docs/HORMUZ_TECHNICAL_EXECUTION_PLAN.md"
-  sha256: "3f94689495dab052d5fb802fa9695ba620b254b821143c4437a6053324eb804e"
+  sha256: "5dea3cb784c4a06adbbeb511daf64efbca22d4d89715b1ffedde8967c347b884"
 foundation:
   code_commit: "6ef6191aa8340928ca439a02244dfec68439f2b3"
   phase0_freeze_commit: "73ae8989f274f06566dd883e6e6e1699a64e07c9"
@@ -745,19 +745,35 @@ final:
         August is scored as a separate state and its disagreement with July is
         the deliverable. No output mixes the two into one number.
 
+  # `evaluated_forms` is the declaration the runner reads. It does not loop over
+  # every detector form: a form that is not named here is not an evaluated cell
+  # for that mode, and the coverage assertion below fails the run if one appears.
   modes:
     - id: 1
       name: "july_state_detectors"
       description: "July-state raw-level and scale-invariant detectors on Hormuz."
+      evaluated_forms: ["raw_level", "scale_invariant"]
     - id: 2
       name: "august_state_detectors"
       description: "August-state raw-level and scale-invariant detectors on Hormuz."
+      evaluated_forms: ["raw_level", "scale_invariant"]
     - id: 3
       name: "july_scale_invariant_transported_to_august"
       description: >-
         The frozen July scale-invariant detector applied to the August state,
         including its July-fitted Hormuz context scale, which is what makes it
         a transport test rather than a refit.
+      evaluated_forms: ["scale_invariant"]
+      evaluated_forms_rationale: >-
+        Plan v1.2 A4 mode 3 declares a scale-invariant transport and nothing
+        else. A raw-level transport is not a declared result: the raw-level
+        score is not invariant to the proportional component of the vintage
+        revision, so a raw-level cell under this pairing would confound the
+        transport with the rescaling the decomposition exists to separate. The
+        raw-level score is still computed and retained in the daily record for
+        every scored day; it is simply not an evaluated cell. Nothing is hidden
+        and no alarm is suppressed -- the six cells removed here were never
+        declared, and their scores remain in the daily artefact.
     - id: 4
       name: "frozen_models_under_both_states"
       description: >-
@@ -816,8 +832,40 @@ final:
     model_refitted: false
     scale_refitted: false
 
+  # Exact-coverage contract. The evaluated cells must equal, as a set, the cross
+  # product of each declared pairing mode's `evaluated_forms` with
+  # `modes[4].models_scored_on_hormuz` and `tasks.horizons_days`. The run asserts
+  # equality in both directions and fails on a missing or an undeclared cell.
+  coverage:
+    assert_exact: true
+    dimensions: ["mode", "model", "horizon_days", "form"]
+    note: >-
+      Both directions matter. Missing cells alone would let a silently dropped
+      model pass; undeclared cells alone would let an undeclared form pass. The
+      undeclared-cell direction is what the mode 3 raw-level rows failed.
+
+  # Every path a run writes is declared here and hashed into the manifest. The
+  # revision file was previously written to a path derived from `cross_vintage`,
+  # so no declaration named it and no hash covered it.
   outputs:
     daily: "data/processed/hormuz_detection_final_daily.csv"
     summary: "data/processed/hormuz_detection_final_summary.csv"
     cross_vintage: "data/processed/hormuz_detection_cross_vintage.csv"
+    cross_vintage_revision: "data/processed/hormuz_detection_cross_vintage_revision.csv"
     manifest: "data/processed/hormuz_detection_final_manifest.json"
+
+  # The checkpoint must be captured before the first output is written. Captured
+  # afterwards it reports the run's own outputs as working-tree dirt, so it can
+  # never distinguish a clean checkout from a dirty one.
+  provenance:
+    git_checkpoint_before_writing_outputs: true
+    record_plan_hash: true
+    record_input_hashes: true
+
+  # A4 is a stress test; a pre-onset alarm is one of its findings. Counting them
+  # is a reporting duty, never a licence to change a threshold or a window to
+  # reduce the count. The stop condition after A4 is unchanged: no tuning.
+  pre_onset_alarms:
+    report: true
+    suppress: false
+    tuning_in_response_prohibited: true

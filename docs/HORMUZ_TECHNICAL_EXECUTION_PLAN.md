@@ -37,6 +37,42 @@ rest of version 1.1 is unchanged and remains controlling.
    section 8, under which Claude reviews Track A, is not available for work Claude
    itself wrote. The file lists in section 5 are unchanged; only the owner is.
 
+### Execution-artifact correction -- 2026-08-28, directed by Mher
+
+Not a version bump. The design of A1--A4 is unchanged: no model, threshold,
+scale, prediction, alarm date or severity value is altered by anything in this
+addendum, and none may be. The corrections are to what the A4 run *records* and
+to which cells it *evaluates*, both of which had drifted from what section 6
+declares.
+
+1. **Mode 3 form scope.** The runner evaluated both detector forms under the
+   transport pairing, producing six raw-level cells the plan never declared.
+   Mode 3 now states its evaluated form explicitly and the runner reads the
+   declaration rather than looping every form. Removing those six cells
+   mechanically re-ranks the `august` raw-level group, which is the only
+   permitted consequence; every declared alarm date and severity value is
+   byte-identical to the run before the correction.
+
+2. **Coverage assertion.** The run now asserts exact set equality between the
+   declared mode/model/form/horizon cells and the cells actually evaluated,
+   in both directions, and fails on any difference.
+
+3. **Git checkpoint before writing.** The checkpoint was taken after the
+   outputs were written, so it reported the run's own untracked outputs as
+   dirt and could not distinguish a clean checkout from a dirty one.
+
+4. **Plan and input hashes.** The manifest recorded the configuration hash
+   only. It now records the plan hash and the hash of every input read.
+
+5. **Cross-vintage revision artifact.** It was written to a path derived from
+   another output's name, so no declaration named it and no hash covered it.
+   It is now declared in `final.outputs` and hashed like every other output.
+
+None of this suppresses a result. In particular the pre-onset alarms -- the
+detectors that fire during the surveillance window well before the operational
+onset -- are preserved, counted, and reported in the manifest. They are a
+finding about detector behaviour on this unit and are not to be tuned away.
+
 Amending this document supersedes the plan hash recorded in the Phase 0 freeze
 entry of `docs/DECISION_LOG.md`. Mher owns that log and records the new hash
 there; no assistant edits it.
@@ -479,11 +515,22 @@ Run the frozen system in the following modes:
 
 1. July-state raw-level and scale-invariant detectors.
 2. August-state raw-level and scale-invariant detectors.
-3. Frozen July scale-invariant detector transported to August.
+3. Frozen July scale-invariant detector transported to August. Mode 3 evaluates
+   the scale-invariant form **only**. A raw-level transport is not declared
+   here and is not a result: the raw-level score is not invariant to the
+   proportional component of the vintage revision, so a raw-level cell under
+   this pairing would confound transport with rescaling. The raw-level score is
+   still computed and kept in the daily record; it is simply not an evaluated
+   cell. (Made explicit as an execution-artifact correction; no design change.)
 4. Frozen global model and seasonal naive under both states. Local AR(1,7) is
    a development-only baseline and is not scored on Hormuz: it needs a
    unit-specific fit that leave-Hormuz-out forbids. Seasonal naive is a lookup
    rather than a fit, so it is scored on Hormuz normally. (Amended in 1.2.)
+
+The evaluated cells are exactly the cross product of each mode's declared forms
+with the models of mode 4 and the frozen horizons. The script asserts that set
+equality in both directions -- no declared cell missing, no undeclared cell
+present -- and fails the run on any difference.
 
 Compare alarm date, delay, 7-day and 30-day severity, rank, and cross-state
 agreement. Decompose the cross-vintage difference into the component explained
@@ -512,8 +559,20 @@ Expected outputs:
 data/processed/hormuz_detection_final_daily.csv
 data/processed/hormuz_detection_final_summary.csv
 data/processed/hormuz_detection_cross_vintage.csv
+data/processed/hormuz_detection_cross_vintage_revision.csv
 data/processed/hormuz_detection_final_manifest.json
 ```
+
+Every one of those paths is declared in the configuration's `final.outputs`
+block and hashed into the manifest. The revision file carries the per-day
+proportional/residual decomposition behind the cross-vintage summary; it was
+previously written to a derived path that no declaration named, which is
+corrected here.
+
+The manifest records the plan hash, the configuration hash, the hash of every
+input the run reads, and the git checkpoint captured **before** any output is
+written -- a checkpoint captured afterwards reports the run's own outputs as
+working-tree dirt and says nothing about the state the run was made from.
 
 **Stop and report:** No tuning after A4.
 
