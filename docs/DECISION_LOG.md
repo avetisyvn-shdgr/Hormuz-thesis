@@ -1456,3 +1456,108 @@ it. One scope decision plus one refreeze clears all eight together.
   reversible if Mher disagrees.**
 - **Status:** Plan **v1.2**. A2 **ACCEPTED**. A3 **ACCEPTED**, thresholds frozen.
   A4 **implemented and tested, not executed**. B3 untouched.
+
+## 2026-08-28 · A4 EXECUTED, corrected without tuning, and FROZEN
+
+- **Decision-maker:** Mher (researcher). **Entry written by Claude under Mher's
+  explicit instruction to record the A4 result**; the log otherwise remains his.
+- **A4 EXECUTED.** The frozen system was scored on Hormuz under both measurement
+  states. Manifest status **PASS**, no sealing failures, all 22 sealing
+  assertions in their required state, system digest `1606c568…` identical before
+  and after scoring, model fit `fold_060` (the last frozen rolling fold).
+- **Corrected without tuning.** The first run's outputs carried six execution
+  artefacts. **No model, threshold, scale, prediction, alarm date or severity
+  value was changed to fix any of them**, and the accepted A3 objects were not
+  touched:
+  1. Mode 3 evaluated both detector forms, though plan v1.2 declares a
+     scale-invariant transport only, producing **six raw-level transport cells
+     no declaration named**. A raw-level score is not invariant to the
+     proportional component of the vintage revision, so such a cell confounds
+     the transport with the rescaling the decomposition exists to separate.
+     Each mode now declares `evaluated_forms`; the runner reads the declaration.
+  2. Nothing checked that what ran was what was declared. The run now asserts
+     **exact set equality over (mode, model, horizon, form) in both directions**
+     and fails on any difference.
+  3. The git checkpoint was captured *after* the outputs were written, so it
+     reported the run's own untracked artefacts as working-tree dirt and `dirty`
+     was necessarily true. It is now captured before the phase writes anything.
+  4. Only the configuration hash was recorded. The manifest now records the plan
+     hash, verified against the plan on disk, and the observed hash of every
+     input read.
+  5. The cross-vintage revision file was written to a path derived from another
+     output's stem, so no declaration named it and no hash covered it. It is now
+     declared in `final.outputs` and hashed.
+  6. Pre-onset alarms were implicit in the summary. They are now counted and
+     listed in the manifest, with `final.pre_onset_alarms.suppress: false`
+     asserted at runtime.
+- **Verified effect of the correction.** Summary rows 36 → 30. On the 30 that
+  remain, `threshold`, `fired`, `alarm_date`, `detection_delay_days`,
+  `episodes`, `exceedance_days`, `scored_days`, `severity_7_day` and
+  `severity_30_day` are **bit-identical** to the pre-correction run. Exactly
+  **four ranks move** — `global_ridge` at h=1, 7 and 30 and `seasonal_naive` at
+  h=30, all raw-level, all in the `august` group — mechanically, because
+  `severity_rank_within_state` ranks within the evaluated set and six cells left
+  it. No rank in any other group moves. The daily, cross-vintage and revision
+  artefacts are byte-identical, and mode 3's raw-level score remains recorded
+  for all 1,314 of its scored days: **out of the evaluated set, not out of the
+  record.**
+- **Coverage: exact.** 30 declared cells = 30 evaluated cells; no missing cell,
+  no undeclared cell. Two same-state modes at both forms plus one transport at
+  one form, over two models and three horizons.
+- **RESULT, and the caveat that travels with it.** All 30 evaluated cells fire.
+  **Sixteen of the thirty fire before the operational onset** of 2026-02-28, the
+  earliest on 2025-12-01 — the first day of the surveillance window, 89 days
+  early. **These are pre-onset false alarms, not early detection of the event.**
+  They are the cost side of a threshold calibrated to a development-unit episode
+  rate, and A3 had already shown that transfer is uneven. They are recorded as a
+  finding and **must not prompt any post-A4 tuning**: no threshold, window,
+  scale or model change in response to them. The plan's stop condition stands.
+- **A4 is a one-unit stress test.** It scores one unit over one event. Nothing
+  here estimates detection power; no confidence statement about the detector
+  follows from a single alarm; no causal reading of an alarm, a delay or a
+  severity value is authorised; and a cross-state difference is not a
+  measurement-error estimate. `severity_rank_within_state` orders cells inside
+  this run only — A3 does not persist per-day development residuals, so ranking
+  Hormuz against the development distribution would need a recalibration A4 must
+  not do. Severity is in each form's own units and is not comparable between the
+  raw-level and scale-invariant forms.
+- **Hashes. Configuration pin moved** to
+  `8eed44731628b1db613e4722e764b0236134018803bf7e9d40c301fc662e2d23`,
+  superseding `477fe803…`; this is the value `--confirm-frozen-spec` requires.
+  **Plan v1.2 hash moved** to
+  `5dea3cb784c4a06adbbeb511daf64efbca22d4d89715b1ffedde8967c347b884`,
+  superseding `3f946894…` — the plan gained an addendum under its amendment
+  record, **not a version bump**: the design is unchanged and the loader still
+  requires plan 1.2. This supersedes the plan hash in the Phase 0 freeze entry
+  above.
+- **Output hashes, from the final manifest:**
+  - daily `67a349a3ab10c2e0fd67e1cfc1965dd9c3f154964a83eaa9e06d5a134af1812c`
+  - summary `c9a2af17a01b3eed48cc27a5b353972fa1c7730792652809ca52618781063508`
+  - cross-vintage `85f6230ee2edb9af4f10cfa734f3bd41d57511d48b0fd1cd768414babce20761`
+  - cross-vintage revision
+    `4aae80087ed19f161ca3f1d6ab17fbf0670e5b1a813f1b10b61ad90194619776`
+- **Commits.** Correction `ead5500`; artefacts from the clean-checkpoint rerun
+  `e080b49`. The run was made from `ead5500` with an **empty working tree**, so
+  the manifest's checkpoint reads `dirty: false` and describes the checkout the
+  run was actually made from.
+- **Documented provenance imperfection, accepted rather than corrected.** The
+  A3 calibration manifest is recorded in `inputs` with observed hash
+  `3331c978a1b7dda3…` and a **null declared hash**: the configuration pins the
+  two A3 artefacts that carry the thresholds (`calibration`, `false_alarms`) but
+  never pinned the manifest itself. `all_declared_hashes_match` skips null
+  entries rather than claiming a match it cannot check. The exposure is small:
+  `verify_accepted_a3` still gates on that manifest's `status`, its
+  `detector_design_version` and its ratification flag, the two threshold-bearing
+  artefacts *are* hash-verified against acceptance, and the clean git checkpoint
+  pins the file's contents at `ead5500`. **Mher's decision: document it here
+  rather than move the configuration hash again and rerun.**
+- **Affected files:** `config/hormuz_detection.yaml`,
+  `docs/HORMUZ_TECHNICAL_EXECUTION_PLAN.md` (addendum under the amendment
+  record), `scripts/run_hormuz_detection.py`, `tests/test_hormuz_stress.py`
+  (45 tests, 17 new and all on scope and provenance rather than on any scored
+  quantity), and the five declared A4 artefacts in `data/processed/`.
+- **Status:** **A4 FROZEN.** Plan v1.2; A2 **ACCEPTED**; A3 **ACCEPTED**,
+  thresholds frozen; A4 **EXECUTED, CORRECTED AND FROZEN**. Track A is complete.
+  Next work is thesis interpretation and write-up. **The detector is not to be
+  tuned from these results.** B3 remains untouched and still requires the B2
+  gate to be accepted.
