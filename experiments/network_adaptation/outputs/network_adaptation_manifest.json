@@ -1,0 +1,95 @@
+{
+  "claim": "Positive abnormal tanker activity compatible with network adaptation or alternative-source substitution; not physical rerouting, displaced volume, or a causal treatment effect.",
+  "created_utc": "2026-08-29T09:02:19.622715+00:00",
+  "inference": {
+    "draws": 10000,
+    "horizon_days": 130,
+    "method": "synchronized_circular_moving_block_bootstrap_plus_Romano_Wolf",
+    "primary_block_length_days": 14,
+    "seed": 20260829,
+    "sensitivity_block_lengths_days": [
+      7,
+      28
+    ]
+  },
+  "interpretation_guard": "Positive abnormal tanker activity compatible with network adaptation or alternative-source substitution; not physical rerouting, displaced volume, or a causal treatment effect.",
+  "models": [
+    "chronos2_univariate",
+    "ar_lag1_7"
+  ],
+  "negative_controls": [
+    {
+      "portname": "Cape of Good Hope",
+      "vessel_class": "n_roro"
+    },
+    {
+      "portname": "Malacca Strait",
+      "vessel_class": "n_roro"
+    },
+    {
+      "portname": "Gibraltar Strait",
+      "vessel_class": "n_roro"
+    },
+    {
+      "portname": "Panama Canal",
+      "vessel_class": "n_roro"
+    },
+    {
+      "portname": "Yucatan Channel",
+      "vessel_class": "n_roro"
+    },
+    {
+      "portname": "Cape of Good Hope",
+      "vessel_class": "n_dry_bulk"
+    },
+    {
+      "portname": "Malacca Strait",
+      "vessel_class": "n_dry_bulk"
+    },
+    {
+      "portname": "Gibraltar Strait",
+      "vessel_class": "n_dry_bulk"
+    },
+    {
+      "portname": "Panama Canal",
+      "vessel_class": "n_dry_bulk"
+    },
+    {
+      "portname": "Yucatan Channel",
+      "vessel_class": "n_dry_bulk"
+    }
+  ],
+  "outputs_sha256": {
+    "experiments/network_adaptation/outputs/event_forecasts.csv.gz": "a335f13c5baa4104f700d18c0580f9f653cd9afd1d24d448555dec9f6749fe1b",
+    "experiments/network_adaptation/outputs/network_adaptation_global_tests.csv": "1c8e1779c412be80c2a93ae7eb42b3a4ea4731098ea29422cd79d9922cfd6307",
+    "experiments/network_adaptation/outputs/network_adaptation_inference.csv": "e42246a6055c4923a0dc9982a29151d872d9a98b9fa113bf64216c72e750546e",
+    "experiments/network_adaptation/outputs/network_adaptation_model_comparison.csv": "9a472b0c60fcc99c37dcc001e5a886971787dbd910a8ca190d10bbcfd0d165ee",
+    "experiments/network_adaptation/outputs/network_adaptation_validation.json": "288598000ab16ca939fe68f8f9a3ee4b152fc0201b326e07e03b67c810416c59",
+    "reports/figures/network_adaptation_counterfactuals.pdf": "2fe23ba6f44d82f63cc648423e869be2294b906ee4497d59cc91fba50bc30c73",
+    "reports/figures/network_adaptation_counterfactuals.png": "2e338a4fec70eeecb2b8307fe28c1a30b8602be9978a07de5a170c2366024247"
+  },
+  "primary_family": [
+    {
+      "portname": "Cape of Good Hope",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Malacca Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Gibraltar Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Panama Canal",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Yucatan Channel",
+      "vessel_class": "n_tanker"
+    }
+  ],
+  "raw_sha256": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d",
+  "status": "exploratory_retrospective_restriction"
+}

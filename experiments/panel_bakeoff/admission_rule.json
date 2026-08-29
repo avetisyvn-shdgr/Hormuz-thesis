@@ -1,0 +1,26 @@
+{
+  "status": "frozen_before_full_chronos_results_not_a_preregistration",
+  "frozen_local_date": "2026-08-29",
+  "primary_panel": "composition_28x5",
+  "rules": {
+    "chronos_vs_ar17": {
+      "macro_mean_mase_reduction_minimum_each_horizon": 0.05,
+      "paired_unit_window_win_rate_minimum_each_horizon": 0.50,
+      "common_95_coverage_absolute_error_maximum": 0.05,
+      "common_interval_scaled_width_ratio_to_baseline_maximum": 1.10,
+      "must_pass_horizons": [30, 130]
+    },
+    "multivariate_vs_univariate_chronos": {
+      "macro_mean_mase_reduction_minimum_each_horizon": 0.02,
+      "must_not_worsen_common_coverage_error": true,
+      "must_pass_horizons": [30, 130]
+    },
+    "latent_factor_vs_synthetic_control": {
+      "macro_mean_mase_reduction_minimum_each_horizon": 0.05,
+      "paired_unit_window_win_rate_minimum_each_horizon": 0.50,
+      "common_95_coverage_absolute_error_maximum": 0.05,
+      "must_pass_horizons": [30, 130]
+    }
+  },
+  "interpretation": "Passing admits the model as a defensible technical renovation. Failing supports a rigorous negative benchmark. Neither outcome alone supplies an academic literature gap or makes an aggregate transit shortfall substantively non-obvious."
+}

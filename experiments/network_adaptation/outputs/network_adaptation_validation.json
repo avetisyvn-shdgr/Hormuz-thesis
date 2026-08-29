@@ -1,0 +1,63 @@
+{
+  "created_utc": "2026-08-29T09:02:19.616924+00:00",
+  "event_forecasts": {
+    "days_per_series": 130,
+    "models": [
+      "ar_lag1_7",
+      "chronos2_univariate"
+    ],
+    "rows": 36400,
+    "training_end_precedes_cutoff": true,
+    "unit_series_per_model": 140
+  },
+  "historical_oos_residuals": {
+    "ar_lag1_7": {
+      "all_pre_cutoff": true,
+      "columns": 18,
+      "end": "2025-11-05",
+      "origins": 8,
+      "rows": 1040,
+      "start": "2023-01-01"
+    },
+    "chronos2_univariate": {
+      "all_pre_cutoff": true,
+      "columns": 18,
+      "end": "2025-11-05",
+      "origins": 8,
+      "rows": 1040,
+      "start": "2023-01-01"
+    }
+  },
+  "inference": {
+    "chronos_primary_rw_p_below_0_05": 3,
+    "draws": 10000,
+    "joint_resampling_preserves_cross_series_indices": true,
+    "model_sign_agreement_fraction": 0.8,
+    "negative_control_family_size": 10,
+    "negative_controls_rw_p_below_0_05": 1,
+    "primary_block_length_days": 14,
+    "primary_family_size": 5,
+    "sensitivity_block_lengths_days": [
+      7,
+      28
+    ]
+  },
+  "overall_assessment": "share_with_noted_caveats",
+  "raw_data": {
+    "chokepoints": 28,
+    "date_max": "2026-07-12",
+    "date_min": "2019-01-01",
+    "duplicate_port_dates": 0,
+    "primary_and_control_nulls": 0,
+    "rows": 77000,
+    "sha256_verified": true
+  },
+  "required_caveats": [
+    "The restricted corridor set was frozen after an earlier post-event AR map existed; p-values are descriptive, not preregistered confirmatory evidence.",
+    "PortWatch n_tanker aggregates tanker types and cannot isolate LNG carriers.",
+    "No vessel identity or origin-destination linkage is available; positive anomalies do not identify physical rerouting or displaced Hormuz volume.",
+    "The block bootstrap is a historical forecast-error reference, not a causal confidence interval.",
+    "Concurrent Red Sea and other shocks can affect the same corridors."
+  ],
+  "status": "exploratory_retrospective_restriction"
+}

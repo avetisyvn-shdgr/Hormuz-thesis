@@ -1,0 +1,177 @@
+{
+  "composition_models": [
+    "ar_lag1_7",
+    "chronos2_multivariate_5class",
+    "chronos2_univariate",
+    "interactive_fixed_effects",
+    "nuclear_norm_mc",
+    "seasonal_naive_7d",
+    "synthetic_control"
+  ],
+  "coverage_protocol": "lead-specific symmetric absolute-error intervals, scaled by each unit-series' training MASE denominator and calibrated using earlier outer folds only; spatial pooling is within vessel class, so coverage is an empirical diagnostic rather than a formal exchangeability guarantee",
+  "created_utc": "2026-08-29T00:20:52.747405+00:00",
+  "daily_rows": 1469440,
+  "duplicate_daily_keys": 0,
+  "duplicate_score_keys": 0,
+  "maximum_truth_disagreement": 0.0,
+  "model_cell_counts": [
+    {
+      "horizon": 30,
+      "model": "ar_lag1_7",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 30,
+      "model": "chronos2_multivariate_5class",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 30,
+      "model": "chronos2_univariate",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 30,
+      "model": "interactive_fixed_effects",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 30,
+      "model": "nuclear_norm_mc",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 30,
+      "model": "seasonal_naive_7d",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 30,
+      "model": "synthetic_control",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 130,
+      "model": "ar_lag1_7",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 130,
+      "model": "chronos2_multivariate_5class",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 130,
+      "model": "chronos2_univariate",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 130,
+      "model": "interactive_fixed_effects",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 130,
+      "model": "nuclear_norm_mc",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 130,
+      "model": "seasonal_naive_7d",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 130,
+      "model": "synthetic_control",
+      "n": 1120,
+      "panel": "composition_28x5"
+    },
+    {
+      "horizon": 30,
+      "model": "ar_lag1_7",
+      "n": 224,
+      "panel": "total_28x1"
+    },
+    {
+      "horizon": 30,
+      "model": "chronos2_univariate",
+      "n": 224,
+      "panel": "total_28x1"
+    },
+    {
+      "horizon": 30,
+      "model": "interactive_fixed_effects",
+      "n": 224,
+      "panel": "total_28x1"
+    },
+    {
+      "horizon": 30,
+      "model": "nuclear_norm_mc",
+      "n": 224,
+      "panel": "total_28x1"
+    },
+    {
+      "horizon": 30,
+      "model": "seasonal_naive_7d",
+      "n": 224,
+      "panel": "total_28x1"
+    },
+    {
+      "horizon": 30,
+      "model": "synthetic_control",
+      "n": 224,
+      "panel": "total_28x1"
+    },
+    {
+      "horizon": 130,
+      "model": "ar_lag1_7",
+      "n": 224,
+      "panel": "total_28x1"
+    },
+    {
+      "horizon": 130,
+      "model": "chronos2_univariate",
+      "n": 224,
+      "panel": "total_28x1"
+    },
+    {
+      "horizon": 130,
+      "model": "interactive_fixed_effects",
+      "n": 224,
+      "panel": "total_28x1"
+    },
+    {
+      "horizon": 130,
+      "model": "nuclear_norm_mc",
+      "n": 224,
+      "panel": "total_28x1"
+    },
+    {
+      "horizon": 130,
+      "model": "seasonal_naive_7d",
+      "n": 224,
+      "panel": "total_28x1"
+    },
+    {
+      "horizon": 130,
+      "model": "synthetic_control",
+      "n": 224,
+      "panel": "total_28x1"
+    }
+  ],
+  "paired_uncertainty_protocol": "5000-draw product cluster bootstrap resampling chokepoints and rolling origins independently with replacement; all vessel classes remain nested within the resampled chokepoint-origin cells",
+  "score_rows": 18368
+}

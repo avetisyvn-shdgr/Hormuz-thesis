@@ -1,0 +1,64 @@
+{
+  "created_utc": "2026-08-29T00:13:41.759968+00:00",
+  "explicit_classes": [
+    "n_container",
+    "n_dry_bulk",
+    "n_general_cargo",
+    "n_roro",
+    "n_tanker"
+  ],
+  "horizons": [
+    30,
+    130
+  ],
+  "information_sets": {
+    "contemporaneous_spatial_donors": [
+      "synthetic_control",
+      "interactive_fixed_effects",
+      "nuclear_norm_mc"
+    ],
+    "past_only_forecast": [
+      "seasonal_naive_7d",
+      "ar_lag1_7"
+    ]
+  },
+  "n_daily_rows": 1075200,
+  "n_score_rows": 13440,
+  "numpy": "1.26.4",
+  "pandas": "2.3.3",
+  "panels": {
+    "composition_28x5": [
+      2750,
+      140
+    ],
+    "total_28x1": [
+      2750,
+      28
+    ]
+  },
+  "python": "3.14.4",
+  "raw_path": "raw/portwatch/Daily_Chokepoints_Data.csv",
+  "raw_sha256": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d",
+  "selected_hyperparameters": {
+    "composition_28x5": {
+      "30": {
+        "ife_rank": 1.0,
+        "mc_lambda_fraction": 0.5
+      },
+      "130": {
+        "ife_rank": 1.0,
+        "mc_lambda_fraction": 0.35
+      }
+    },
+    "total_28x1": {
+      "30": {
+        "ife_rank": 1.0,
+        "mc_lambda_fraction": 0.35
+      },
+      "130": {
+        "ife_rank": 1.0,
+        "mc_lambda_fraction": 0.2
+      }
+    }
+  }
+}

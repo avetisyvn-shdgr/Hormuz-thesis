@@ -1,0 +1,6 @@
+comparison,challenger,baseline,admitted,details
+chronos_vs_ar17,chronos2_univariate,ar_lag1_7,True,"h30:reduction=0.1760,win=0.7241,coverage=0.9550,width_ratio=0.9163,pass=True | h130:reduction=0.1449,win=0.7411,coverage=0.9529,width_ratio=0.9164,pass=True"
+chronos_vs_ar17,chronos2_multivariate_5class,ar_lag1_7,True,"h30:reduction=0.1745,win=0.7196,coverage=0.9568,width_ratio=0.9229,pass=True | h130:reduction=0.1709,win=0.7259,coverage=0.9545,width_ratio=0.9183,pass=True"
+multivariate_vs_univariate_chronos,chronos2_multivariate_5class,chronos2_univariate,False,"h30:reduction=-0.0018,win=0.4670,coverage=0.9568,width_ratio=nan,pass=False | h130:reduction=0.0304,win=0.4938,coverage=0.9545,width_ratio=nan,pass=False"
+latent_factor_vs_synthetic,interactive_fixed_effects,synthetic_control,False,"h30:reduction=0.0443,win=0.6054,coverage=0.9472,width_ratio=nan,pass=False | h130:reduction=0.0438,win=0.6714,coverage=0.9481,width_ratio=nan,pass=False"
+latent_factor_vs_synthetic,nuclear_norm_mc,synthetic_control,False,"h30:reduction=0.0375,win=0.6241,coverage=0.9507,width_ratio=nan,pass=False | h130:reduction=0.0510,win=0.7580,coverage=0.9518,width_ratio=nan,pass=True"

@@ -1,0 +1,99 @@
+version: 1
+status: "exploratory_retrospective_restriction"
+frozen_on: "2026-08-29"
+
+# This is a reproducibility freeze, not a preregistration. The repository already
+# contained an all-corridor post-event AR map before this restricted design was
+# written. Multiplicity-adjusted p-values are therefore descriptive screening
+# measures and must not be presented as confirmatory discoveries.
+claim: >-
+  Positive abnormal tanker activity compatible with network adaptation or
+  alternative-source substitution; not physical rerouting, displaced volume,
+  or a causal treatment effect.
+
+data:
+  source: "IMF PortWatch Daily Chokepoints Data"
+  file: "data/raw/portwatch/Daily_Chokepoints_Data.csv"
+  sha256: "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d"
+  cutoff_exclusive: "2026-02-28"
+  event_horizon_days: 130
+  event_end_inclusive: "2026-07-07"
+  calibration_start: "2023-01-01"
+  calibration_end_inclusive: "2025-11-05"
+
+models:
+  primary:
+    name: "chronos2_univariate"
+    revision: "29ec3766d36d6f73f0696f85560a422f50e8498c"
+    context_length: 2048
+    cross_learning: false
+  robustness:
+    name: "ar_lag1_7"
+    lags: [1, 7]
+
+inference:
+  statistic: "mean_observed_minus_counterfactual_scaled_by_pre_event_mean"
+  alternative: "greater"
+  bootstrap: "synchronized_circular_moving_block"
+  primary_block_length_days: 14
+  sensitivity_block_lengths_days: [7, 28]
+  draws: 10000
+  seed: 20260829
+  multiplicity: "Romano-Wolf step-down within each explicitly named family"
+  historical_residuals: >-
+    Pre-event out-of-sample 130-day forecast residual vectors from eight common,
+    disjoint rolling origins in the executed 28 x 5 panel bake-off. Blocks are
+    sampled at common time indices across hypotheses to preserve contemporaneous
+    cross-corridor dependence.
+
+# These corridors are an explicitly restricted economic-adaptation screen. The
+# set is theory-facing but retrospective: Cape/Panama/Yucatan were visible in an
+# earlier AR map. This fact is carried into every output and chapter caveat.
+primary_family:
+  vessel_class: "n_tanker"
+  corridors:
+    - portname: "Cape of Good Hope"
+      rationale: "Atlantic/Indian Ocean long-haul route and supply-reorganization screen."
+    - portname: "Malacca Strait"
+      rationale: "Major Asia-bound energy gateway and destination-side adaptation screen."
+    - portname: "Gibraltar Strait"
+      rationale: "Atlantic-Mediterranean gateway and European alternative-supply screen."
+    - portname: "Panama Canal"
+      rationale: "Americas-to-Pacific fleet-deployment and alternative-supply screen."
+    - portname: "Yucatan Channel"
+      rationale: "US Gulf/Caribbean export gateway and Atlantic-supply screen."
+
+context_series:
+  vessel_class: "n_tanker"
+  corridors:
+    - "Strait of Hormuz"
+    - "Suez Canal"
+    - "Bab el-Mandeb Strait"
+  role: >-
+    Descriptive sign and timing checks only. Hormuz is the disruption anchor;
+    Suez and Bab el-Mandeb are exposed to concurrent regional shocks and are not
+    untreated donors or positive-adaptation hypotheses.
+
+negative_control_family:
+  vessel_classes: ["n_roro", "n_dry_bulk"]
+  corridors:
+    - "Cape of Good Hope"
+    - "Malacca Strait"
+    - "Gibraltar Strait"
+    - "Panama Canal"
+    - "Yucatan Channel"
+  interpretation: >-
+    Positive control-class anomalies at the same corridors weaken a
+    tanker-specific adaptation interpretation; null controls do not prove the
+    tanker mechanism.
+
+outputs:
+  event_forecasts: "experiments/network_adaptation/outputs/event_forecasts.csv.gz"
+  event_manifest: "experiments/network_adaptation/outputs/event_forecasts_manifest.json"
+  inference: "experiments/network_adaptation/outputs/network_adaptation_inference.csv"
+  global_tests: "experiments/network_adaptation/outputs/network_adaptation_global_tests.csv"
+  model_comparison: "experiments/network_adaptation/outputs/network_adaptation_model_comparison.csv"
+  validation: "experiments/network_adaptation/outputs/network_adaptation_validation.json"
+  manifest: "experiments/network_adaptation/outputs/network_adaptation_manifest.json"
+  figure_png: "reports/figures/network_adaptation_counterfactuals.png"
+  figure_pdf: "reports/figures/network_adaptation_counterfactuals.pdf"

@@ -1,0 +1,12 @@
+{
+  "components_for_50pct_energy": 39,
+  "components_for_80pct_energy": 86,
+  "components_for_90pct_energy": 108,
+  "components_for_95pct_energy": 121,
+  "composition_panel_shape_series_by_days": [
+    140,
+    2615
+  ],
+  "entropy_effective_rank": 133.48414965404442,
+  "interpretation": "The standardized composition panel is not strongly low-rank; aggregate columns n_cargo and n_total were excluded because they are exact sums of explicit classes."
+}

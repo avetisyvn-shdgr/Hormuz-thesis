@@ -1,0 +1,43 @@
+{
+  "checks": {
+    "finite_interval_levels": {
+      "expected": [
+        0.8
+      ],
+      "observed": [
+        0.8
+      ],
+      "reproduced": true
+    },
+    "finite_radius_is_finite": {
+      "expected": true,
+      "observed": true,
+      "reproduced": true
+    },
+    "n_reference_blocks": {
+      "expected": 8,
+      "observed": 8,
+      "reproduced": true
+    },
+    "rank_p_value_floor": {
+      "expected": 0.1111111111111111,
+      "observed": 0.1111111111111111,
+      "reproduced": true
+    },
+    "unbounded_interval_levels": {
+      "expected": [
+        0.9,
+        0.95
+      ],
+      "observed": [
+        0.9,
+        0.95
+      ],
+      "reproduced": true
+    }
+  },
+  "fully_reproduced": true,
+  "horizon_days": 130,
+  "investigation_note": "Direct one-horizon tiling from the locked anchor attains the calendar packing bound; the locked primary artifact reports fewer blocks because its candidate origins are coarsened to a 30-day lattice before the greedy disjoint pass.",
+  "rule": "forward_anchored_direct"
+}

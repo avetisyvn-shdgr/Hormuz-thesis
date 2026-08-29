@@ -1,0 +1,304 @@
+{
+  "analysis_role": "block_inference_design_frontier_audit_and_extension",
+  "calendar": {
+    "anchor_origin": "2023-01-01",
+    "available_reference_days": 1154,
+    "n_pre_cutoff_days": 1519,
+    "panel_end": "2026-07-07",
+    "panel_start": "2022-01-01"
+  },
+  "cells": [
+    {
+      "blocks_forgone_vs_upper_bound": 0,
+      "finite_interval_levels": [
+        0.8,
+        0.9,
+        0.95
+      ],
+      "five_percent_floor_attainable": true,
+      "horizon_days": 30,
+      "is_primary_reporting_resolution": false,
+      "maximum_attainable_coverage": 0.9743589743589743,
+      "n_reference_blocks": 38,
+      "origin_rule": "backward_anchored_from_cutoff",
+      "packing_upper_bound": 38,
+      "rank_p_value_floor": 0.02564102564102564,
+      "rank_p_value_greater": 0.02564102564102564,
+      "role": "sensitivity",
+      "unbounded_interval_levels": []
+    },
+    {
+      "blocks_forgone_vs_upper_bound": 0,
+      "finite_interval_levels": [
+        0.8,
+        0.9
+      ],
+      "five_percent_floor_attainable": false,
+      "horizon_days": 65,
+      "is_primary_reporting_resolution": false,
+      "maximum_attainable_coverage": 0.9444444444444444,
+      "n_reference_blocks": 17,
+      "origin_rule": "backward_anchored_from_cutoff",
+      "packing_upper_bound": 17,
+      "rank_p_value_floor": 0.05555555555555555,
+      "rank_p_value_greater": 0.05555555555555555,
+      "role": "sensitivity",
+      "unbounded_interval_levels": [
+        0.95
+      ]
+    },
+    {
+      "blocks_forgone_vs_upper_bound": 0,
+      "finite_interval_levels": [
+        0.8,
+        0.9
+      ],
+      "five_percent_floor_attainable": false,
+      "horizon_days": 91,
+      "is_primary_reporting_resolution": false,
+      "maximum_attainable_coverage": 0.9230769230769231,
+      "n_reference_blocks": 12,
+      "origin_rule": "backward_anchored_from_cutoff",
+      "packing_upper_bound": 12,
+      "rank_p_value_floor": 0.07692307692307693,
+      "rank_p_value_greater": 0.07692307692307693,
+      "role": "sensitivity",
+      "unbounded_interval_levels": [
+        0.95
+      ]
+    },
+    {
+      "blocks_forgone_vs_upper_bound": 0,
+      "finite_interval_levels": [
+        0.8
+      ],
+      "five_percent_floor_attainable": false,
+      "horizon_days": 130,
+      "is_primary_reporting_resolution": false,
+      "maximum_attainable_coverage": 0.8888888888888888,
+      "n_reference_blocks": 8,
+      "origin_rule": "backward_anchored_from_cutoff",
+      "packing_upper_bound": 8,
+      "rank_p_value_floor": 0.1111111111111111,
+      "rank_p_value_greater": 0.1111111111111111,
+      "role": "sensitivity",
+      "unbounded_interval_levels": [
+        0.9,
+        0.95
+      ]
+    },
+    {
+      "blocks_forgone_vs_upper_bound": 0,
+      "finite_interval_levels": [
+        0.8,
+        0.9,
+        0.95
+      ],
+      "five_percent_floor_attainable": true,
+      "horizon_days": 30,
+      "is_primary_reporting_resolution": false,
+      "maximum_attainable_coverage": 0.9743589743589743,
+      "n_reference_blocks": 38,
+      "origin_rule": "forward_anchored_direct",
+      "packing_upper_bound": 38,
+      "rank_p_value_floor": 0.02564102564102564,
+      "rank_p_value_greater": 0.02564102564102564,
+      "role": "primary",
+      "unbounded_interval_levels": []
+    },
+    {
+      "blocks_forgone_vs_upper_bound": 0,
+      "finite_interval_levels": [
+        0.8,
+        0.9
+      ],
+      "five_percent_floor_attainable": false,
+      "horizon_days": 65,
+      "is_primary_reporting_resolution": false,
+      "maximum_attainable_coverage": 0.9444444444444444,
+      "n_reference_blocks": 17,
+      "origin_rule": "forward_anchored_direct",
+      "packing_upper_bound": 17,
+      "rank_p_value_floor": 0.05555555555555555,
+      "rank_p_value_greater": 0.05555555555555555,
+      "role": "primary",
+      "unbounded_interval_levels": [
+        0.95
+      ]
+    },
+    {
+      "blocks_forgone_vs_upper_bound": 0,
+      "finite_interval_levels": [
+        0.8,
+        0.9
+      ],
+      "five_percent_floor_attainable": false,
+      "horizon_days": 91,
+      "is_primary_reporting_resolution": false,
+      "maximum_attainable_coverage": 0.9230769230769231,
+      "n_reference_blocks": 12,
+      "origin_rule": "forward_anchored_direct",
+      "packing_upper_bound": 12,
+      "rank_p_value_floor": 0.07692307692307693,
+      "rank_p_value_greater": 0.07692307692307693,
+      "role": "primary",
+      "unbounded_interval_levels": [
+        0.95
+      ]
+    },
+    {
+      "blocks_forgone_vs_upper_bound": 0,
+      "finite_interval_levels": [
+        0.8
+      ],
+      "five_percent_floor_attainable": false,
+      "horizon_days": 130,
+      "is_primary_reporting_resolution": true,
+      "maximum_attainable_coverage": 0.8888888888888888,
+      "n_reference_blocks": 8,
+      "origin_rule": "forward_anchored_direct",
+      "packing_upper_bound": 8,
+      "rank_p_value_floor": 0.1111111111111111,
+      "rank_p_value_greater": 0.1111111111111111,
+      "role": "primary",
+      "unbounded_interval_levels": [
+        0.9,
+        0.95
+      ]
+    },
+    {
+      "blocks_forgone_vs_upper_bound": 0,
+      "finite_interval_levels": [
+        0.8,
+        0.9,
+        0.95
+      ],
+      "five_percent_floor_attainable": true,
+      "horizon_days": 30,
+      "is_primary_reporting_resolution": false,
+      "maximum_attainable_coverage": 0.9743589743589743,
+      "n_reference_blocks": 38,
+      "origin_rule": "legacy_greedy_step30",
+      "packing_upper_bound": 38,
+      "rank_p_value_floor": 0.02564102564102564,
+      "rank_p_value_greater": 0.02564102564102564,
+      "role": "audit_reproduction",
+      "unbounded_interval_levels": []
+    },
+    {
+      "blocks_forgone_vs_upper_bound": 4,
+      "finite_interval_levels": [
+        0.8,
+        0.9
+      ],
+      "five_percent_floor_attainable": false,
+      "horizon_days": 65,
+      "is_primary_reporting_resolution": false,
+      "maximum_attainable_coverage": 0.9285714285714286,
+      "n_reference_blocks": 13,
+      "origin_rule": "legacy_greedy_step30",
+      "packing_upper_bound": 17,
+      "rank_p_value_floor": 0.07142857142857142,
+      "rank_p_value_greater": 0.07142857142857142,
+      "role": "audit_reproduction",
+      "unbounded_interval_levels": [
+        0.95
+      ]
+    },
+    {
+      "blocks_forgone_vs_upper_bound": 3,
+      "finite_interval_levels": [
+        0.8,
+        0.9
+      ],
+      "five_percent_floor_attainable": false,
+      "horizon_days": 91,
+      "is_primary_reporting_resolution": false,
+      "maximum_attainable_coverage": 0.9,
+      "n_reference_blocks": 9,
+      "origin_rule": "legacy_greedy_step30",
+      "packing_upper_bound": 12,
+      "rank_p_value_floor": 0.1,
+      "rank_p_value_greater": 0.1,
+      "role": "audit_reproduction",
+      "unbounded_interval_levels": [
+        0.95
+      ]
+    },
+    {
+      "blocks_forgone_vs_upper_bound": 1,
+      "finite_interval_levels": [
+        0.8
+      ],
+      "five_percent_floor_attainable": false,
+      "horizon_days": 130,
+      "is_primary_reporting_resolution": false,
+      "maximum_attainable_coverage": 0.875,
+      "n_reference_blocks": 7,
+      "origin_rule": "legacy_greedy_step30",
+      "packing_upper_bound": 8,
+      "rank_p_value_floor": 0.125,
+      "rank_p_value_greater": 0.125,
+      "role": "audit_reproduction",
+      "unbounded_interval_levels": [
+        0.9,
+        0.95
+      ]
+    }
+  ],
+  "design_id": "hormuz_horizon_resolution_inference_frontier_v1",
+  "design_sha256": "8fa1a980971dbcc5fbe3d2d8cb401e64c0cddfe053a4931fc4b06a6804999730",
+  "freeze_status": "frozen_before_generation_not_preregistered",
+  "held_fixed": {
+    "exog_cols": [],
+    "min_initial_train_days": 365,
+    "model_id": "ar_lag1_7",
+    "outcome": "hormuz_tanker_transits",
+    "training_cutoff_exclusive": "2026-02-28",
+    "treated_window_end": "2026-07-07",
+    "treated_window_start": "2026-02-28",
+    "unit": "transits_per_day",
+    "y_lags": [
+      1,
+      7
+    ]
+  },
+  "outcome_independent_geometry": {
+    "geometry_columns_contain_no_outcome_value": true,
+    "geometry_rows": 217,
+    "rules_are_calendar_functions_only": true
+  },
+  "primary_cell": {
+    "blocks_forgone_vs_upper_bound": 0,
+    "finite_interval_levels": [
+      0.8
+    ],
+    "five_percent_floor_attainable": false,
+    "horizon_days": 130,
+    "is_primary_reporting_resolution": true,
+    "maximum_attainable_coverage": 0.8888888888888888,
+    "n_reference_blocks": 8,
+    "origin_rule": "forward_anchored_direct",
+    "packing_upper_bound": 8,
+    "rank_p_value_floor": 0.1111111111111111,
+    "rank_p_value_greater": 0.1111111111111111,
+    "role": "primary",
+    "unbounded_interval_levels": [
+      0.9,
+      0.95
+    ]
+  },
+  "reporting_guards": {
+    "claim_vocabulary": "counterfactual_forecast_shortfall_not_treatment_effect",
+    "core_reproducibility_manifest_dependency": "none",
+    "core_run_all_dependency": "none",
+    "five_percent_significance_claim_permitted": false,
+    "is_ATT": false,
+    "is_causal_identification": false,
+    "overwrite_policy": "locked_primary_block_artifacts_are_read_only_in_this_phase",
+    "p_value_interpretation": "A finite-sample rank position among pre-treatment reference blocks under the same forecast machinery. With K reference blocks the smallest attainable value is 1/(K+1). The primary reporting resolution cannot reach 0.05, and no cell at any resolution may be described as significant at the 5% level.",
+    "reference_blocks_are_treated_units": false,
+    "resolution_floor_policy": "A shorter block length packs more blocks into the same fixed pre-period and therefore mechanically lowers the 1/(K+1) floor without adding any observation, while shortening the accumulation each block measures and weakening block independence. Finer-resolution floors are reported for completeness only. The reporting resolution is fixed at primary_horizon_days by this file and must never be replaced by whichever horizon produced the smallest floor.",
+    "unbounded_interval_policy": "When the required order statistic exceeds K the conformal radius is infinite and the interval is reported as unbounded. Clipping the rank to K would silently understate the requested coverage and is prohibited."
+  }
+}

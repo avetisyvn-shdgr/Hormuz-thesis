@@ -1,0 +1,91 @@
+-- Timeline-aligned SeaOrbis Hormuz extract.
+--
+-- The Snowflake Marketplace share does not contain a continuous history. It
+-- contains two one-hour snapshots only:
+--   * 2026-02-10 05:00-06:00 UTC (pre-onset)
+--   * 2026-03-15 05:00-06:00 UTC (post-onset)
+--
+-- This query scans every available message, excludes records without a vessel
+-- identifier, and returns one representative position per vessel per snapshot.
+-- It deliberately has no arbitrary LIMIT. The count columns make truncation
+-- visible in every exported row.
+
+WITH positions AS (
+    SELECT
+        'PRE_2026-02-10' AS SNAPSHOT,
+        TIMESTAMP AS AIS_TIMESTAMP,
+        VESSEL_ID,
+        VESSEL_IMO,
+        MMSI,
+        VESSEL_NAME,
+        LATITUDE,
+        LONGITUDE,
+        SPEED_OVER_GROUND,
+        COURSE_OVER_GROUND,
+        TRUE_HEADING,
+        NAVIGATION_STATUS,
+        DRAUGHT,
+        TYPE_CARGO,
+        DESTINATION,
+        ETA
+    FROM INSIGHTS_INTO_STRAIT_OF_HORMUZ_AND_USIRAN_CONFLICT.MARKETPLACE_LISTINGS_SCHEMA.SEAORBIS_HORMUZ_20260210_SAMPLE_DATA_SV
+    WHERE TIMESTAMP >= '2026-02-10 05:00:00'::TIMESTAMP_NTZ
+      AND TIMESTAMP <  '2026-02-10 06:00:00'::TIMESTAMP_NTZ
+      AND VESSEL_ID IS NOT NULL
+
+    UNION ALL
+
+    SELECT
+        'POST_2026-03-15' AS SNAPSHOT,
+        TIMESTAMP AS AIS_TIMESTAMP,
+        VESSEL_ID,
+        VESSEL_IMO,
+        MMSI,
+        VESSEL_NAME,
+        LATITUDE,
+        LONGITUDE,
+        SPEED_OVER_GROUND,
+        COURSE_OVER_GROUND,
+        TRUE_HEADING,
+        NAVIGATION_STATUS,
+        DRAUGHT,
+        TYPE_CARGO,
+        DESTINATION,
+        ETA
+    FROM INSIGHTS_INTO_STRAIT_OF_HORMUZ_AND_USIRAN_CONFLICT.MARKETPLACE_LISTINGS_SCHEMA.SEAORBIS_HORMUZ_20260315_SAMPLE_DATA_SV
+    WHERE TIMESTAMP >= '2026-03-15 05:00:00'::TIMESTAMP_NTZ
+      AND TIMESTAMP <  '2026-03-15 06:00:00'::TIMESTAMP_NTZ
+      AND VESSEL_ID IS NOT NULL
+),
+one_position_per_vessel AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY SNAPSHOT, VESSEL_ID
+            ORDER BY AIS_TIMESTAMP
+        ) AS POSITION_RANK
+    FROM positions
+)
+SELECT
+    COUNT(*) OVER () AS TOTAL_EXTRACT_ROWS,
+    COUNT_IF(SNAPSHOT = 'PRE_2026-02-10') OVER () AS PRE_SNAPSHOT_VESSELS,
+    COUNT_IF(SNAPSHOT = 'POST_2026-03-15') OVER () AS POST_SNAPSHOT_VESSELS,
+    SNAPSHOT,
+    AIS_TIMESTAMP,
+    VESSEL_ID,
+    VESSEL_IMO,
+    MMSI,
+    VESSEL_NAME,
+    LATITUDE,
+    LONGITUDE,
+    SPEED_OVER_GROUND,
+    COURSE_OVER_GROUND,
+    TRUE_HEADING,
+    NAVIGATION_STATUS,
+    DRAUGHT,
+    TYPE_CARGO,
+    DESTINATION,
+    ETA
+FROM one_position_per_vessel
+WHERE POSITION_RANK = 1
+ORDER BY IFF(SNAPSHOT = 'PRE_2026-02-10', 0, 1), AIS_TIMESTAMP, VESSEL_ID;

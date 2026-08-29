@@ -41,10 +41,27 @@ data/raw_staging/
 data/processed/lng_freight_weekly_panel.csv
 data/processed/lng_freight_descriptive_weekly.csv
 data/processed/freight_market_context.csv
+
+# Fujairah FEDCom weekly inventories (decision of 2026-08-28: cite, do not
+# redistribute). The underlying statistic is an official FEDCom publication and
+# individual weekly figures are cited to their own freely-readable articles, but
+# the assembled series is not ours to republish: S&P Global Commodity Insights
+# is the appointed distributor. Raw rows are already covered by data/raw/*;
+# this keeps the derived series local for the same reason.
+data/processed/fujairah_weekly_stocks.csv
 # Workbook-inspection scratch (contains Raw Data sheet screenshots) and
 # unrelated Cowork session outputs.
 .work/
-outputs/
+# Cowork session scratch at the repo ROOT only. Anchored on 2026-08-29: the
+# bare pattern also matched experiments/*/outputs/, which hid the bake-off and
+# network-adaptation results from git entirely.
+/outputs/
+
+# Chronos per-specification crash-resume checkpoints. Verified 2026-08-29 to be
+# an exact 100% partition of the committed chronos_forecasts.csv.gz (394,240
+# rows) and chronos_scores.csv (4,928 rows); run_chronos.py writes them and
+# nothing reads them back. Regenerated on every run. 12.7 MB of duplicate bytes.
+experiments/panel_bakeoff/outputs/chronos_checkpoint__*
 
 # Machine-local assistant settings and write probes
 .claude/settings.local.json

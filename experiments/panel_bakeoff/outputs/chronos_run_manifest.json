@@ -1,0 +1,25 @@
+{
+  "batch_size": 100,
+  "chronos_forecasting": "2.3.0",
+  "context_length": 2048,
+  "created_utc": "2026-08-29T00:19:46.588315+00:00",
+  "cross_learning": false,
+  "horizons": [
+    30,
+    130
+  ],
+  "model_revision": "29ec3766d36d6f73f0696f85560a422f50e8498c",
+  "model_snapshot": "/Users/mheravetisyan/.cache/huggingface/hub/models--amazon--chronos-2/snapshots/29ec3766d36d6f73f0696f85560a422f50e8498c",
+  "n_daily_rows": 394240,
+  "n_score_rows": 4928,
+  "numpy": "1.26.4",
+  "pandas": "2.1.4",
+  "python": "3.11.15",
+  "raw_sha256": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d",
+  "seed": 20260612,
+  "specifications": [
+    "univariate",
+    "within_chokepoint_multivariate_5class"
+  ],
+  "torch": "2.4.1"
+}

@@ -1,0 +1,24 @@
+{
+  "chronos_batch_size": 100,
+  "chronos_context_length": 2048,
+  "chronos_cross_learning": false,
+  "chronos_revision": "29ec3766d36d6f73f0696f85560a422f50e8498c",
+  "created_utc": "2026-08-29T09:00:07.076786+00:00",
+  "cutoff_exclusive": "2026-02-28",
+  "event_end_inclusive": "2026-07-07",
+  "horizon_days": 130,
+  "interpretation_guard": "Positive abnormal tanker activity compatible with network adaptation or alternative-source substitution; not physical rerouting, displaced volume, or a causal treatment effect.",
+  "models": [
+    "chronos2_univariate",
+    "ar_lag1_7"
+  ],
+  "n_rows": 36400,
+  "n_unit_series": 140,
+  "numpy": "1.26.4",
+  "pandas": "2.1.4",
+  "python": "3.11.15",
+  "raw_sha256": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d",
+  "status": "exploratory_retrospective_restriction",
+  "torch": "2.4.1",
+  "training_end_inclusive": "2026-02-27"
+}
