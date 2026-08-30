@@ -1,70 +1,141 @@
-# AGENTS.md — Operating rules for AI assistance on this thesis
+# AGENTS.md — Canonical operating rules for the technical thesis repository
 
-This is a Bachelor thesis at TUM (Transportation Analytics): a **causal-inference**
-study of the 2026 Strait of Hormuz disruption and LNG freight markets (the
-"ton-mile multiplier" mechanism). Methodological discipline outranks speed.
-Read these rules at the start of every session and follow them.
+This repository implements the technical evidence for a TUM Bachelor thesis on
+the 2026 Strait of Hormuz disruption. The implemented study is an explicitly
+non-causal, public-data analysis of the disruption-associated shortfall in
+observable daily tanker throughput, supplemented by descriptive LNG and
+shipping-network adaptation evidence. Methodological discipline outranks speed.
 
-## Current implementation status
+This is the canonical AI-assistance instruction file for `Technical/`.
+`CLAUDE.md` is only a compatibility pointer and must not contain a second set of
+rules.
 
-- Prof. Li authorized proceeding with the free PortWatch dataset as the working
-  primary. The locked engineering specification is in `config/settings.yaml`.
-- On 2026-07-23, Zhenyu Wang explicitly confirmed that the revised title,
-  research question, estimand, claim strength, and completed empirical scope are
-  acceptable. This is recorded as written advisor-side acceptance, but it is not
-  attributed to Prof. Li because no direct Prof. Li confirmation is on record.
-  Do not edit the formal proposal until that governance distinction is resolved.
-  Proposed language remains staged in
-  `docs/PENDING_ESTIMAND_REALIGNMENT_DRAFT.md`.
-- Spark remains dormant and optional. Follow `docs/SPARK_REENTRY.md`; never make
-  it a blocker or silently replace a working-primary result.
-- The active next-phase roadmap is `docs/CURRENT_PLAN.md`. Preserve the existing
-  PortWatch work and keep Spark open through thesis completion while testing the
-  vessel-data branch and its documented simulation fallback.
-- Transformers are disabled unless the configured re-entry condition is met.
+## Source-of-truth order
+
+When two files disagree, use this order and report the conflict rather than
+silently choosing a convenient interpretation:
+
+1. The researcher's explicit instruction for the current task.
+2. `LITERATURE_REVIEW_THEMATIC_BLUEPRINT.md` in the separate clean literature
+   workspace for the thesis plot, research questions, contribution, and claim
+   boundaries. Its folder may be renamed during cleanup; if the file is not
+   available, use the current research design below and report the missing
+   source instead of substituting an older technical document.
+3. `config/settings.yaml`, `config/sources.yaml`, and the applicable frozen
+   manifests for locked computational specifications and data provenance.
+4. `docs/DECISION_LOG.md` for adopted engineering decisions, known failures, and
+   approval-gated reproducibility boundaries.
+5. `README.md` and current method-specific documentation for commands and
+   repository navigation.
+
+`docs/CURRENT_PLAN.md` and documents describing causal ATT, dose-response,
+mediation, g-formula, PCMCI, freight rates as the dependent variable, or an
+aggregate ton-mile multiplier are historical design records. They are not the
+active thesis roadmap unless the researcher explicitly re-adopts them.
+
+## Current research design
+
+- **Primary outcome:** daily IMF PortWatch tanker transit count at Hormuz. It is
+  an AIS-derived aggregate observation, not LNG cargo, laden state, a freight
+  rate, welfare, or a complete physical census.
+- **Primary estimand:** the cumulative disruption-associated counterfactual
+  shortfall over the locked post-onset window.
+- **Primary estimator:** transparent target-only AR forecasting trained strictly
+  on pre-onset information.
+- **Corroborating layers:** chronological and horizon-matched validation,
+  uncertainty calibration, temporal and spatial placebos, and
+  contamination-aware donor checks.
+- **Interpretive layer:** LNG-specific activity, routed-voyage nominal
+  capacity-distance, alternative-corridor activity, and importer-origin
+  portfolios. These are descriptive evidence of contraction, substitution, or
+  network reallocation.
+- **Model hierarchy:** Chronos, TimesFM, Moirai, and other foundation models are
+  benchmark or robustness evidence only. Better forecasting cannot strengthen
+  identification by itself.
 
 ## Non-negotiable rules
 
 1. **Never fabricate.** Do not invent datasets, access rights, model results,
-   numbers, dates, or citations. If something has not been run in code, say so
-   and label it a hypothesis. If a fact is not from a primary source, flag it.
-2. **Prediction ≠ identification.** A forecaster's accuracy is never evidence of
-   a causal effect. The working fallback reports counterfactual shortfalls and
-   triangulates them with placebos and donor methods; it does not label them ATT.
-3. **One phase at a time.** Build incrementally (see README roadmap). Do not
-   generate the whole pipeline or large monolithic notebooks at once.
-4. **Verify before claiming.** Run available local tests and scripts; distinguish
-   verified outputs from hypotheses and from credential-gated checks.
-5. **Chronological splits.** This is time-series data. Never random-split.
-   All trained models use pre-treatment data only, with rolling-origin validation.
-6. **Treat news data as observation, not truth.** Mention reporting bias,
-   missingness, temporal leakage, class imbalance and overfitting where relevant.
-7. **All external data goes through `registry.get_variable()`** so provenance is
-   logged. No ad-hoc `requests.get` in analysis code or notebooks.
-8. **Free vs proprietary honesty.** Respect `config/sources.yaml` status flags.
-   Never silently substitute a proxy for a proprietary target; a proxy swap is a
-   documented methodological decision (see docs/DATA_SOURCES.md).
+   numbers, dates, citations, or execution success. Label untested ideas as
+   hypotheses. Verify claims against primary or authoritative sources whenever
+   the claim requires it.
+2. **Prediction is not identification.** Forecast accuracy, synthetic control,
+   donor comparisons, and placebos do not turn the estimated shortfall into a
+   causal ATT. Use `disruption-associated counterfactual shortfall`; do not use
+   `causal effect`, `treatment effect`, or equivalent language without a newly
+   approved identification design.
+3. **Work one bounded phase at a time.** Make the smallest useful, testable
+   change. Do not generate a new monolithic pipeline or redesign the thesis in
+   one step.
+4. **Verify before claiming.** Run available local tests and scripts when the
+   environment permits, record the exact result, and distinguish verified
+   outputs from hypotheses and credential-gated checks. Never claim that code
+   works merely because it was written.
+5. **Use chronological evaluation.** Never random-split time-series data. Train
+   models on pre-onset observations only and use rolling-origin or otherwise
+   justified chronological validation.
+6. **Treat observation systems as measurements, not truth.** For AIS, satellite,
+   news, or customs data, carry forward reporting and coverage bias,
+   treatment-correlated missingness, classification error, temporal leakage,
+   class imbalance, and overfitting where relevant.
+7. **Use the registry and preserve provenance.** External analysis inputs must go
+   through `registry.get_variable()` or an explicitly governed equivalent, with
+   `config/sources.yaml` updated first. Do not add ad-hoc network pulls to
+   analysis scripts or silently substitute a proxy.
+8. **Keep the public/proprietary boundary explicit.** The default thesis design
+   uses admitted public data. Bloomberg, Fearnleys, ClearLynx, Spark, Platts,
+   Kpler, and similar inputs are excluded from the default evidence set unless
+   rights and provenance are separately cleared. Bloomberg is excluded, not a
+   pending layer. Never place credentials or restricted source bytes in a public
+   release.
 
-## Project structure
+## Governance and reproducibility guards
 
-- `config/sources.yaml` — series registry (the swap-in layer). Edit this, not code,
-  when data access changes.
-- `config/settings.yaml` — paths, study window, treatment-date candidates, seed.
-- `src/lngfreight/` — the package. `registry.get_variable(name)` is the entry point.
-- `scripts/` — runnable, one concern each.
-- `docs/` — data-source registry, setup, go/no-go checklist.
-- `data/raw/` — immutable; provenance.jsonl logs every pull.
+- Do not regenerate, refresh, or re-pin a frozen manifest merely to make a test
+  pass. If the applicable decision log marks a pin or manifest as requiring
+  explicit approval, stop and request that approval.
+- Never weaken a validation gate without documenting the measured failure mode,
+  the proposed tolerance or rule, and the resulting claim boundary.
+- Preserve source-native units. China, Japan, Korea, and Taiwan importer data are
+  mass-based; India is value-based; EU27 is a volume-basis aggregate comparator.
+  Do not pool these as if they were a homogeneous panel.
+- Do not interpret routed nominal capacity-distance as observed cargo, observed
+  sailed distance, ton-miles, or one-to-one cargo replacement.
+- The primary cutoff is `2026-02-28`. Training is strictly before that date and
+  scoring begins on that date. Describe it as externally anchored and inspected
+  during audit, not as ex ante preregistered. Later event milestones can change
+  scored windows but cannot admit affected observations to training.
+- Before deleting or relocating technical files, check Git tracking, imports,
+  configuration references, tests, manifests, and documentation dependencies.
+  Archive governance or provenance records even when their substantive design
+  is historical.
 
-## When asked to add modelling code
+## Repository map
 
-State first, in order: (a) methodological justification, (b) data requirement,
-(c) expected limitations, (d) the next practical action. Then write *only* the
-code for the current phase. Keep research logic separate from implementation.
+- `config/` — locked settings, source registry, experiment specifications, and
+  approval gates.
+- `src/lngfreight/` — reusable acquisition, cleaning, modelling, inference, and
+  audit code.
+- `scripts/` — bounded acquisition, build, run, freeze, audit, and rendering
+  entry points.
+- `experiments/` — admitted robustness and descriptive adaptation experiments;
+  not independent thesis plots.
+- `tests/` — offline unit, governance, and integration checks.
+- `data/raw/` — immutable local source snapshots with provenance; redistribution
+  rights must be assessed separately.
+- `data/processed/` — governed model inputs, outputs, diagnostics, and manifests.
+- `reports/` — technical summaries, transcripts, and generated figures.
+- `docs/` — current documentation plus historical design and decision records.
+- `references/` — technical bibliographic seed data.
+- The clean manuscript and current literature review are maintained outside this
+  repository. Do not assume their folder name during cleanup, and do not write
+  generated technical output into them unless the researcher explicitly requests
+  a controlled transfer.
 
-## Treatment dates
+## When adding or changing modelling code
 
-The working throughput specification locks `2026-02-28` as the operational-onset
-cutoff. Training must remain strictly before it. Later dates are event milestones
-and sensitivity scoring windows, not alternative training cutoffs. The chronology
-was re-audited on 2026-06-19; see `docs/EVENT_CHRONOLOGY.md` before changing any
-date or label.
+State, in order: (a) methodological justification, (b) data requirement,
+(c) expected limitation, and (d) next practical action. Then implement only the
+current bounded phase. Keep research logic separate from computational mechanics,
+preserve the primary-versus-robustness hierarchy, and report the tests actually
+run.
