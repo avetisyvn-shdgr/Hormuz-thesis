@@ -130,17 +130,18 @@ LNG/energy and remote-sensing items were full-text or abstract screened.
 
 Nine pre-specified Scopus queries were run through TUM institutional access for
 2000--2026 and filtered to English articles, reviews, and conference papers.
-The relevance-ranked results were screened up to a 200-record cap per query:
-1,037 query-record appearances were captured and exact normalized-title
-deduplication left 982 unique titles. A 34-reference diversified proposal was
-retained after title screening and high-priority abstract/full-record checks.
-The complete strings, raw/filtered counts, capture counts, and dispositions are
-recorded in `../../Research Record/literature-search/scopus-query-pack.md`.
-The run log and the curated 34-reference set that held the raw counts and
-dispositions were deleted on 2026-08-30 when the literature review was rebuilt;
-the six references they carried that did not survive into the new bibliography
-are preserved in `../../THESIS_OPEN_ITEMS_2026-08-30.md` §3. Do not cite the
-counts above without confirming them against the current review's own protocol.
+The deleted run log recorded 1,037 capped query-record appearances, 982 unique
+normalized titles, and a 34-reference diversified proposal after screening.
+The query strings and intended deduplication procedure survive in the external
+archive at
+`Bachelor Thesis/Archive/Research Record/literature-search/scopus-query-pack.md`.
+The Scopus captures/exports, generated flow counts, run log, and human screening
+decisions do not survive in the retained record, so those historical counts are
+not independently reproducible from the current files. The six references that
+did not carry into the new bibliography are preserved in
+`Bachelor Thesis/Archive/Research Record/THESIS_OPEN_ITEMS_2026-08-30.md` §3.
+Do not cite the old counts as reproducible; recover the missing artifacts or use
+the current review's newly documented protocol and counts.
 
 The intended Web of Science replication was not run because the tested
 Clarivate institution selector did not offer TUM. Scopus RIS export also

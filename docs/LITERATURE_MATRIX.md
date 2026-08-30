@@ -116,9 +116,12 @@ protocol.** See `GAP_VALIDATION.md`.
 ## Outstanding for full systematic status
 
 1. The 25 August Scopus Boolean run and capped screening are complete; the query
-   strings survive in `../../Research Record/literature-search/`, but the run log
+   strings survive in the external archive at
+   `Bachelor Thesis/Archive/Research Record/literature-search/`, but the run log
    and curated set were deleted on 2026-08-30 when the literature review was
-   rebuilt — see `../../THESIS_OPEN_ITEMS_2026-08-30.md` §3. Web of Science was
+   rebuilt — see
+   `Bachelor Thesis/Archive/Research Record/THESIS_OPEN_ITEMS_2026-08-30.md` §3.
+   Web of Science was
    unavailable through the tested TUM/Clarivate route, so coverage remains
    explicitly Scopus-only and non-exhaustive.
 2. Resolve every remaining **△** by full-text screening
