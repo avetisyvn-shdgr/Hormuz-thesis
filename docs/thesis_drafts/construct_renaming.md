@@ -45,7 +45,6 @@ negative-result context, or live thesis branding before replacing it.
 - `docs/SUPERVISOR_SCOPE_MEMO_OPTION_D.md`
 - `docs/VALIDATION_REPORT_2026-07-15.md`
 - `docs/VESSEL_DATA_FEASIBILITY.md`
-- `docs/pipeline_health_graph.html`
 - `docs/pipeline_health_graph.mermaid`
 - `reports/transmission_chain_summary.md`
 
