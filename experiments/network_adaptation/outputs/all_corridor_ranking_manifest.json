@@ -1,0 +1,119 @@
+{
+  "corridors_flagged_below_0_05": {
+    "ar_lag1_7::14": [
+      "Cape of Good Hope",
+      "Mindoro Strait",
+      "Panama Canal",
+      "Yucatan Channel"
+    ],
+    "ar_lag1_7::28": [
+      "Mindoro Strait",
+      "Panama Canal",
+      "Yucatan Channel"
+    ],
+    "ar_lag1_7::7": [
+      "Cape of Good Hope",
+      "Kerch Strait",
+      "Mindoro Strait",
+      "Panama Canal",
+      "Yucatan Channel"
+    ],
+    "chronos2_univariate::14": [
+      "Balabac Strait",
+      "Mindoro Strait",
+      "Panama Canal",
+      "Yucatan Channel"
+    ],
+    "chronos2_univariate::28": [
+      "Balabac Strait",
+      "Mindoro Strait",
+      "Panama Canal",
+      "Yucatan Channel"
+    ],
+    "chronos2_univariate::7": [
+      "Balabac Strait",
+      "Cape of Good Hope",
+      "Mindoro Strait",
+      "Panama Canal",
+      "Yucatan Channel"
+    ]
+  },
+  "corridors_flagged_outside_the_restricted_five": [
+    "Balabac Strait",
+    "Kerch Strait",
+    "Mindoro Strait"
+  ],
+  "created_utc": "2026-08-29T16:33:22.984474+00:00",
+  "family_size": 28,
+  "global_by_weighting_primary_block": {
+    "ar_lag1_7::all_28_corridors::equal": {
+      "observed_global_statistic": -0.0684483895586679,
+      "one_sided_bootstrap_p_value": 0.9999000099990001
+    },
+    "ar_lag1_7::all_28_corridors::inverse_reference_variance": {
+      "observed_global_statistic": -0.038041704382201405,
+      "one_sided_bootstrap_p_value": 1.0
+    },
+    "ar_lag1_7::all_28_corridors::pre_event_volume": {
+      "observed_global_statistic": -0.1138942572734551,
+      "one_sided_bootstrap_p_value": 1.0
+    },
+    "ar_lag1_7::volume_eligible_corridors::equal": {
+      "observed_global_statistic": -0.05760114492636228,
+      "one_sided_bootstrap_p_value": 0.9998000199980002
+    },
+    "chronos2_univariate::all_28_corridors::equal": {
+      "observed_global_statistic": 0.016498828924872616,
+      "one_sided_bootstrap_p_value": 0.6112388761123888
+    },
+    "chronos2_univariate::all_28_corridors::inverse_reference_variance": {
+      "observed_global_statistic": -0.06423398967142135,
+      "one_sided_bootstrap_p_value": 1.0
+    },
+    "chronos2_univariate::all_28_corridors::pre_event_volume": {
+      "observed_global_statistic": -0.11556315596520433,
+      "one_sided_bootstrap_p_value": 1.0
+    },
+    "chronos2_univariate::volume_eligible_corridors::equal": {
+      "observed_global_statistic": -0.04309285869538002,
+      "one_sided_bootstrap_p_value": 0.9133086691330867
+    }
+  },
+  "purpose": "Descriptive disclosure of the full corridor ranking. The restricted five were named after these results existed; family-wide adjustment over 28 hypotheses does not make any of them confirmatory.",
+  "restricted_five_positions_primary_model_primary_block": {
+    "Cape of Good Hope": 6,
+    "Gibraltar Strait": 26,
+    "Malacca Strait": 27,
+    "Panama Canal": 4,
+    "Yucatan Channel": 2
+  },
+  "restricted_five_share_of_flagged": {
+    "ar_lag1_7::14": [
+      3,
+      4
+    ],
+    "ar_lag1_7::28": [
+      2,
+      3
+    ],
+    "ar_lag1_7::7": [
+      3,
+      5
+    ],
+    "chronos2_univariate::14": [
+      2,
+      4
+    ],
+    "chronos2_univariate::28": [
+      2,
+      4
+    ],
+    "chronos2_univariate::7": [
+      3,
+      5
+    ]
+  },
+  "status": "retrospective_disclosure_not_confirmatory",
+  "treated_anchor_rank_from_bottom": 1,
+  "what_this_cannot_show": "Adjusting over 28 hypotheses instead of five is a harsher correction, not a prospective one. No p-value here is confirmatory, and the ranking must never be presented as a discovery procedure that independently selected the five."
+}

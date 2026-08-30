@@ -23,11 +23,14 @@ class AdaptationProtocol:
     event_end: pd.Timestamp
     primary_model: str
     primary_revision: str
+    primary_context_length: int
     robustness_model: str
     primary_class: str
     primary_corridors: tuple[str, ...]
     context_corridors: tuple[str, ...]
     negative_control_classes: tuple[str, ...]
+    control_minimum_daily_transits: float
+    control_weighting_schemes: tuple[str, ...]
     block_length: int
     sensitivity_block_lengths: tuple[int, ...]
     n_draws: int
@@ -66,6 +69,7 @@ def load_protocol(path: str | Path = CONFIG_PATH) -> AdaptationProtocol:
         event_end=pd.Timestamp(raw["data"]["event_end_inclusive"]),
         primary_model=str(raw["models"]["primary"]["name"]),
         primary_revision=str(raw["models"]["primary"]["revision"]),
+        primary_context_length=int(raw["models"]["primary"]["context_length"]),
         robustness_model=str(raw["models"]["robustness"]["name"]),
         primary_class=str(raw["primary_family"]["vessel_class"]),
         primary_corridors=tuple(
@@ -74,6 +78,14 @@ def load_protocol(path: str | Path = CONFIG_PATH) -> AdaptationProtocol:
         context_corridors=tuple(str(x) for x in raw["context_series"]["corridors"]),
         negative_control_classes=tuple(
             str(x) for x in raw["negative_control_family"]["vessel_classes"]
+        ),
+        control_minimum_daily_transits=float(
+            raw["negative_control_family"]["volume_eligibility"][
+                "minimum_pre_event_daily_transits"
+            ]
+        ),
+        control_weighting_schemes=tuple(
+            str(x) for x in raw["negative_control_family"]["weighting_schemes"]
         ),
         block_length=int(raw["inference"]["primary_block_length_days"]),
         sensitivity_block_lengths=tuple(
@@ -92,6 +104,8 @@ def validate_protocol(protocol: AdaptationProtocol) -> None:
         raise ValueError("the analysis must retain its retrospective exploratory status.")
     if protocol.primary_model != "chronos2_univariate":
         raise ValueError("the admitted univariate Chronos model must remain primary.")
+    if protocol.primary_context_length <= 0:
+        raise ValueError("the declared Chronos context length must be positive.")
     if protocol.robustness_model != "ar_lag1_7":
         raise ValueError("AR(1,7) must remain the transparent robustness model.")
     if protocol.primary_class != "n_tanker":
@@ -102,6 +116,12 @@ def validate_protocol(protocol: AdaptationProtocol) -> None:
         raise ValueError("context series cannot enter the primary family.")
     if set(protocol.negative_control_classes) != {"n_roro", "n_dry_bulk"}:
         raise ValueError("negative controls must remain Ro-Ro and dry bulk.")
+    if protocol.control_minimum_daily_transits <= 0:
+        raise ValueError("the declared control volume threshold must be positive.")
+    if set(protocol.control_weighting_schemes) != {
+        "equal", "inverse_reference_variance", "pre_event_volume"
+    }:
+        raise ValueError("the declared control weighting schemes changed.")
     if protocol.horizon != 130:
         raise ValueError("the matched long-horizon design is fixed at 130 days.")
     expected_end = protocol.cutoff + pd.Timedelta(days=protocol.horizon - 1)

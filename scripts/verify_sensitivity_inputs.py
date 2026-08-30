@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -49,12 +50,81 @@ def _production_python_files(root: Path) -> tuple[Path, ...]:
     )
 
 
+def _declares_sensitivity_variable(node: object) -> bool:
+    """True if a parsed config names the vintage as a registry variable."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key in ("registry_variable", "registry_entry"):
+                if value == SENSITIVITY_VARIABLE:
+                    return True
+            if _declares_sensitivity_variable(value):
+                return True
+    elif isinstance(node, list):
+        return any(_declares_sensitivity_variable(item) for item in node)
+    return False
+
+
+def _configs_declaring_sensitivity(root: Path) -> dict[str, str]:
+    """Frozen configs that resolve the vintage on some consumer's behalf."""
+    found: dict[str, str] = {}
+    for path in sorted((root / "config").rglob("*.yaml")):
+        text = path.read_text(encoding="utf-8")
+        if SENSITIVITY_VARIABLE not in text:
+            continue
+        try:
+            parsed = yaml.safe_load(text)
+        except yaml.YAMLError:
+            continue
+        if _declares_sensitivity_variable(parsed):
+            found[path.relative_to(root).as_posix()] = text
+    return found
+
+
+def _consumer_declaration_sites(
+    relative: str, texts: dict[str, str], config_texts: dict[str, str]
+) -> list[str]:
+    """Where `relative` is bound as the consumer string presented to the registry.
+
+    The binding may sit in another module (a runner whose loader presents the
+    runner's own path) or in the frozen config that carries the opt-in. Matching
+    a bare quoted path would catch step lists and docstrings, so the path must be
+    bound to a `consumer` key or CONSUMER constant. `registry.get_variable`
+    splits a `path:phase` consumer on the colon, so an optional suffix is
+    allowed here too.
+    """
+    pattern = re.compile(
+        r"""(?:CONSUMER\s*=|["']?consumer["']?\s*[:=])\s*"""
+        r"""["']""" + re.escape(relative) + r"""(?::[^"']*)?["']"""
+    )
+    sites = [name for name, text in texts.items() if pattern.search(text)]
+    sites += [name for name, text in config_texts.items() if pattern.search(text)]
+    return sorted(sites)
+
+
 def _discover_consumers(root: Path) -> set[str]:
+    """Every production file that consumes the August vintage.
+
+    Two access patterns count, and the guard must see both or it reports a file
+    that is properly declared as an undeclared one:
+
+    1. **Direct.** The file names `SENSITIVITY_VARIABLE` itself.
+    2. **Config-mediated.** The file reads a frozen config that carries
+       `registry_variable: <the vintage>`, and its own path is bound as the
+       consumer string presented to `registry.get_variable`. Track A's A4 and
+       Track B's B1 opt in this way: the variable is named in the hash-pinned
+       config rather than in code, so the code cannot widen its own access.
+
+    Both conditions are required for (2). Reading such a config alone is not
+    consumption -- `config/settings.yaml` names the vintage and is read almost
+    everywhere -- and being named as a consumer somewhere is not either.
+    """
     consumers: set[str] = set()
     sensitivity_path = SENSITIVITY_RAW_INPUTS[0]
+    texts: dict[str, str] = {}
     for path in _production_python_files(root):
         text = path.read_text(encoding="utf-8")
         relative = path.relative_to(root).as_posix()
+        texts[relative] = text
         if SENSITIVITY_VARIABLE in text:
             consumers.add(relative)
         if (
@@ -65,6 +135,16 @@ def _discover_consumers(root: Path) -> set[str]:
             raise ValueError(
                 f"sensitivity raw path is read directly outside the registry: {relative}"
             )
+
+    config_texts = _configs_declaring_sensitivity(root)
+    config_names = {Path(name).name for name in config_texts}
+    for relative, text in texts.items():
+        if relative in consumers:
+            continue
+        if not any(name in text for name in config_names):
+            continue
+        if _consumer_declaration_sites(relative, texts, config_texts):
+            consumers.add(relative)
     return consumers
 
 
@@ -130,14 +210,40 @@ def build_sensitivity_manifest() -> dict:
     if config.settings()["study_window"]["full_end"] != "2026-07-07":
         raise ValueError("pinned primary window changed while adding a sensitivity input")
 
+    # Every declared consumer must show the guarded, opted-in registry call --
+    # either in its own source, or, for a config-mediated consumer, in whichever
+    # module or frozen config binds its consumer string and carries the opt-in.
+    # Checking only for the literal would reject A4 and B1, which are declared,
+    # runtime-enforced consumers that take the variable name from a hash-pinned
+    # config instead of hardcoding it. See docs/DECISION_LOG.md 2026-08-30.
+    py_texts = {
+        path.relative_to(root).as_posix(): path.read_text(encoding="utf-8")
+        for path in _production_python_files(root)
+    }
+    config_texts = _configs_declaring_sensitivity(root)
+    direct_call_sites: set[str] = set()
+    config_mediated_call_sites: set[str] = set()
     for relative in sorted(declared_consumers):
-        text = (root / relative).read_text(encoding="utf-8")
+        text = py_texts.get(relative) or (root / relative).read_text(encoding="utf-8")
         if (
-            "registry.get_variable" not in text
-            or SENSITIVITY_VARIABLE not in text
-            or "allow_sensitivity" not in text
+            "registry.get_variable" in text
+            and SENSITIVITY_VARIABLE in text
+            and "allow_sensitivity" in text
         ):
+            direct_call_sites.add(relative)
+            continue
+        sites = _consumer_declaration_sites(relative, py_texts, config_texts)
+        mediated = any(
+            "allow_sensitivity" in (py_texts.get(site) or config_texts.get(site, ""))
+            and (
+                site in config_texts
+                or "get_variable" in py_texts.get(site, "")
+            )
+            for site in sites
+        )
+        if not mediated:
             raise ValueError(f"sensitivity consumer bypasses the registry: {relative}")
+        config_mediated_call_sites.add(relative)
     matrix_entry = (root / SENSITIVITY_ENTRYPOINTS[1]).read_text(encoding="utf-8")
     if "load_vintage_series" not in matrix_entry:
         raise ValueError("matrix entrypoint no longer delegates to the guarded loader")
@@ -170,7 +276,12 @@ def build_sensitivity_manifest() -> dict:
         "row_count": int(len(frame)),
         "date_min": frame["date"].min().date().isoformat(),
         "date_max": frame["date"].max().date().isoformat(),
-        "direct_registry_call_sites": sorted(declared_consumers),
+        # Kept separate rather than merged: these two access patterns carry
+        # different evidence, and a reader of this manifest should be able to
+        # tell which consumers name the vintage themselves and which take it
+        # from a hash-pinned config.
+        "direct_registry_call_sites": sorted(direct_call_sites),
+        "config_mediated_call_sites": sorted(config_mediated_call_sites),
         "sensitivity_entrypoints": list(SENSITIVITY_ENTRYPOINTS),
         "derived_artifact_consumers": list(DERIVED_SENSITIVITY_CONSUMERS),
         "registry_opt_in_enforced": True,

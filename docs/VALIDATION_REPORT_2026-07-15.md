@@ -43,8 +43,10 @@ provenance copy written by the validation step, not a live download; the live
 blob was never reached from the sandbox. Whether the live source truncates
 history is UNVERIFIED — `scripts/fetch_wto_hormuz_lng.py` prints the true live
 range and settles it.] What remains true and actionable: only SHA256SUMS is in
-git, not the raw bytes; git history cannot restore `data/raw`. Backed up to
-`../thesis_backup/raw_v1_2026-07-15/` on 2026-07-15; keep a copy off-machine.
+git, not the raw bytes; git history cannot restore `data/raw`. The two changing
+raw-v1 source snapshots and their original manifests are preserved at
+`../Archive/Technical_Recovery/Raw_Vintages/2026-07-15_v1/`; keep a copy
+off-machine.
 
 **P3 — `INFERENCE_NOTES.md` mixes primaries.** Several headline tables still
 lead with route-ARX numbers (loss 5,176; short-fold interval 4,816–5,497; 94d

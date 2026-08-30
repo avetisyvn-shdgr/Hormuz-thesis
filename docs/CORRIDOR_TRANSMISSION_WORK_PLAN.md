@@ -152,9 +152,13 @@ ADMITTED on both targets — they beat AR-only MASE (transits +15–21%, capacit
 (`scripts/run_ar_interval.py`) supplies the comparison leg. Post-treatment
 cross-check: Chronos-2 reproduces the AR Hormuz shortfall within +2.4% (transits)
 and −5.2% (capacity) in the historical 94-day run. The active matched-horizon
-rerun through 2026-07-07 gives −3.7% for transits (130 identical scored dates)
-and −10.6% for capacity (118 identical valid dates)
-(`data/processed/tsfm_counterfactual_summary.csv`). AR-only remains the locked
+rerun through 2026-07-07, trained from 2022-01-01, gives −3.7% for transits (130
+identical scored dates) and −10.6% for capacity (118 identical valid dates)
+(`data/processed/tsfm_counterfactual_summary.csv`). The transit percentage is
+specification-dependent — on the full 2019-01-01 PortWatch history the same
+comparison is +8.4% (see
+`experiments/network_adaptation/outputs/hormuz_shortfall_specification_sensitivity.csv`)
+— so quote it only with its training window. AR-only remains the locked
 primary estimator. The per-corridor AR baseline (median MASE 0.743, 92% below
 1.0) is in `corridor_transmission_ar_baseline_mase.csv`; the corridor-level TSFM
 benchmark still needs the dedicated panel runner.

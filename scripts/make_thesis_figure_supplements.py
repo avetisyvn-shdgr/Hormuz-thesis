@@ -179,13 +179,24 @@ def fig_estimator_interval_agreement() -> Path:
     tsfm = tsfm[(tsfm["target"] == TARGET) & (tsfm["model"] == "chronos2")].iloc[0]
     vintage = _read("portwatch_vintage_sensitivity.csv")
     vintage = vintage[vintage["target"] == TARGET].set_index("scenario")
-    frontier = _read("horizon_frontier_summary.csv")
-    frontier = frontier[
-        (frontier["outcome"] == TARGET)
-        & (frontier["horizon_days"] == 130)
-        & (frontier["origin_rule"] == "forward_anchored_direct")
-        & (frontier["role"] == "primary")
-    ].set_index("level")
+    # Both 130-day block constructions are read. The thesis reports the locked
+    # greedy partition (seven blocks) as primary because it is the partition
+    # fixed before the statistic was observed; the exhaustive daily packing
+    # (eight blocks) is carried beside it as a partition sensitivity. Labelling
+    # only one of them was what let this figure disagree with Table 6.2.
+    frontier_all = _read("horizon_frontier_summary.csv")
+    frontier_all = frontier_all[
+        (frontier_all["outcome"] == TARGET) & (frontier_all["horizon_days"] == 130)
+    ]
+
+    def _frontier_rule(rule: str) -> pd.DataFrame:
+        sub = frontier_all[frontier_all["origin_rule"] == rule].set_index("level")
+        if sub.empty:
+            raise SystemExit(f"horizon_frontier_summary.csv has no 130-day rows for {rule}")
+        return sub
+
+    frontier_locked = _frontier_rule("legacy_greedy_step30")
+    frontier_packed = _frontier_rule("forward_anchored_direct")
 
     primary = float(spec.loc[spec["role"] == "working_primary", "point_shortfall"].iloc[0])
 
@@ -224,9 +235,14 @@ def fig_estimator_interval_agreement() -> Path:
          ar_row["interval_circular_bootstrap_upper"], "no nominal coverage", False),
         ("Overlapping placebo\nquantile band", ar_row["overlapping_placebo_quantile_band_lower"],
          ar_row["overlapping_placebo_quantile_band_upper"], "no nominal coverage", False),
-        ("Block conformal\n8 blocks, nominal 80%", frontier.loc[0.80, "interval_lower"],
-         frontier.loc[0.80, "interval_upper"], "nominal 80%", False),
-        ("Block conformal\n8 blocks, nominal 90/95%", np.nan, np.nan, "nominal 90% and 95%", True),
+        ("Block conformal, locked partition\n7 blocks, nominal 80%",
+         frontier_locked.loc[0.80, "interval_lower"],
+         frontier_locked.loc[0.80, "interval_upper"], "nominal 80%", False),
+        ("Block conformal, exhaustive packing\n8 blocks, nominal 80%",
+         frontier_packed.loc[0.80, "interval_lower"],
+         frontier_packed.loc[0.80, "interval_upper"], "nominal 80%", False),
+        ("Block conformal, nominal 90/95%\nunbounded under both partitions",
+         np.nan, np.nan, "nominal 90% and 95%", True),
         ("BSTS posterior predictive\nnominal 95%",
          float(spec.loc[spec["role"] == "state_space_corroboration", "reported_band_lower"].iloc[0]),
          float(spec.loc[spec["role"] == "state_space_corroboration", "reported_band_upper"].iloc[0]),
@@ -235,8 +251,8 @@ def fig_estimator_interval_agreement() -> Path:
 
     apply_publication_style()
     fig, (axl, axr) = plt.subplots(
-        2, 1, figsize=(THESIS_TEXTWIDTH_IN, 5.85),
-        gridspec_kw={"height_ratios": [1.0, 1.05], "hspace": 0.42},
+        2, 1, figsize=(THESIS_TEXTWIDTH_IN, 6.35),
+        gridspec_kw={"height_ratios": [1.0, 1.22], "hspace": 0.42},
     )
 
     # ---- panel (a)
@@ -305,7 +321,11 @@ def fig_estimator_interval_agreement() -> Path:
     axr.set_xlim(-700, 14600)
     axr.set_ylim(-0.95, len(intervals) - 0.30)
     axr.set_xlabel("Cumulative shortfall over 130 days (transits)")
-    axr.set_title("(b) Six reported bands around the same point", loc="left")
+    _BAND_COUNT_WORDS = {5: "Five", 6: "Six", 7: "Seven", 8: "Eight"}
+    axr.set_title(
+        f"(b) {_BAND_COUNT_WORDS.get(len(intervals), len(intervals))} reported bands around the same point",
+        loc="left",
+    )
     axr.grid(axis="x", alpha=0.25, lw=0.6)
 
     # Bracket panel (a)'s range onto panel (b)'s axis. Without it the two panels

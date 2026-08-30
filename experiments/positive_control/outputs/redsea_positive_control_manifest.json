@@ -1,0 +1,60 @@
+{
+  "claim": "Aggregate correspondence at an ex-ante designated receiver, estimated with a leakage-safe forecast counterfactual; not vessel linkage, not a causal reallocation parameter, and not evidence that the same ships moved.",
+  "created_utc": "2026-08-29T16:08:08.976247+00:00",
+  "families": {
+    "anchor_negative_controls": [
+      "n_dry_bulk::Cape of Good Hope",
+      "n_roro::Cape of Good Hope"
+    ],
+    "context_descriptive_not_tested": [
+      "n_tanker::Bab el-Mandeb Strait",
+      "n_tanker::Suez Canal"
+    ],
+    "eligible_receiver_family": [
+      "n_tanker::Bab el-Mandeb Strait",
+      "n_tanker::Bohai Strait",
+      "n_tanker::Bosporus Strait",
+      "n_tanker::Cape of Good Hope",
+      "n_tanker::Dover Strait",
+      "n_tanker::Gibraltar Strait",
+      "n_tanker::Korea Strait",
+      "n_tanker::Lombok Strait",
+      "n_tanker::Luzon Strait",
+      "n_tanker::Makassar Strait",
+      "n_tanker::Malacca Strait",
+      "n_tanker::Oresund Strait",
+      "n_tanker::Sunda Strait",
+      "n_tanker::Taiwan Strait",
+      "n_tanker::Tsugaru Strait",
+      "n_tanker::Yucatan Channel"
+    ],
+    "ex_ante_designated_anchor": [
+      "n_tanker::Cape of Good Hope"
+    ]
+  },
+  "inference": {
+    "draws": 10000,
+    "horizon_days": 130,
+    "method": "synchronized_circular_moving_block_bootstrap_plus_Romano_Wolf",
+    "primary_block_length_days": 14,
+    "reference_origins": 8,
+    "seed": 20260829,
+    "sensitivity_block_lengths_days": [
+      7,
+      28
+    ]
+  },
+  "models": [
+    "chronos2_univariate",
+    "ar_lag1_7"
+  ],
+  "outputs_sha256": {
+    "experiments/positive_control/outputs/redsea_event_forecasts.csv.gz": "8ef54011d6f56c5ab2d18ac9a8ebb5f51f829b647f671d793f2db04b7f11f5f7",
+    "experiments/positive_control/outputs/redsea_positive_control_global_tests.csv": "f7bdd4e1c1a6c3e3be60daa2be1f7296014505452f9968888bc9596925a06d5a",
+    "experiments/positive_control/outputs/redsea_positive_control_inference.csv": "6442a0324bb39c4284a4cbb34715864ab06edcee3fda8132d5fdb6971ec23f85",
+    "experiments/positive_control/outputs/redsea_positive_control_validation.json": "0884990a41b70e597fd4cd6f12887c4362642af3d39c33f41aafb17f56e32cfa",
+    "reports/figures/redsea_positive_control.png": "f8b160c136f43521c76972991b81b1c53103c2d004495b95077abd9eb7e12358"
+  },
+  "raw_sha256": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d",
+  "status": "ex_ante_designated_positive_control"
+}

@@ -1,0 +1,141 @@
+{
+  "anchor": {
+    "emitter": "Bab el-Mandeb Strait",
+    "receiver": "Cape of Good Hope",
+    "vessel_class": "n_tanker"
+  },
+  "context_length": 2048,
+  "created_utc": "2026-08-29T16:06:51.330822+00:00",
+  "designation": "ex_ante_route_topology",
+  "environment": {
+    "numpy": "1.26.4",
+    "pandas": "2.1.4",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "python": "3.11.15",
+    "torch": "2.4.1"
+  },
+  "forecast_sha256": "8ef54011d6f56c5ab2d18ac9a8ebb5f51f829b647f671d793f2db04b7f11f5f7",
+  "geometry": [
+    {
+      "event_end": "2024-04-21",
+      "onset": "external_onset",
+      "onset_date": "2023-12-14",
+      "reference_end": "2023-12-13",
+      "reference_origins": [
+        "2021-02-07",
+        "2021-06-17",
+        "2021-10-25",
+        "2022-03-04",
+        "2022-07-12",
+        "2022-11-19",
+        "2023-03-29",
+        "2023-08-06"
+      ],
+      "reference_start": "2021-02-07"
+    },
+    {
+      "event_end": "2024-05-21",
+      "onset": "register_onset",
+      "onset_date": "2024-01-13",
+      "reference_end": "2024-01-12",
+      "reference_origins": [
+        "2021-03-09",
+        "2021-07-17",
+        "2021-11-24",
+        "2022-04-03",
+        "2022-08-11",
+        "2022-12-19",
+        "2023-04-28",
+        "2023-09-05"
+      ],
+      "reference_start": "2021-03-09"
+    }
+  ],
+  "horizon_days": 130,
+  "model_revision": "29ec3766d36d6f73f0696f85560a422f50e8498c",
+  "models": [
+    "chronos2_univariate",
+    "ar_lag1_7"
+  ],
+  "raw_sha256": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d",
+  "rows": 88920,
+  "series_persisted": [
+    {
+      "portname": "Cape of Good Hope",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Korea Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Bosporus Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Tsugaru Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Lombok Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Yucatan Channel",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Oresund Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Luzon Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Dover Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Taiwan Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Malacca Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Bohai Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Sunda Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Makassar Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Gibraltar Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Bab el-Mandeb Strait",
+      "vessel_class": "n_tanker"
+    },
+    {
+      "portname": "Cape of Good Hope",
+      "vessel_class": "n_roro"
+    },
+    {
+      "portname": "Cape of Good Hope",
+      "vessel_class": "n_dry_bulk"
+    },
+    {
+      "portname": "Suez Canal",
+      "vessel_class": "n_tanker"
+    }
+  ],
+  "status": "ex_ante_designated_positive_control"
+}

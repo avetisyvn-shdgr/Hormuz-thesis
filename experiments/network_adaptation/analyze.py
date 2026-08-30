@@ -43,11 +43,11 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _hypothesis(portname: str, vessel_class: str) -> str:
+def hypothesis_name(portname: str, vessel_class: str) -> str:
     return f"{vessel_class}::{portname}"
 
 
-def _load_event(protocol: AdaptationProtocol) -> pd.DataFrame:
+def load_event(protocol: AdaptationProtocol) -> pd.DataFrame:
     path = protocol.outputs["event_forecasts"]
     if not path.exists():
         raise FileNotFoundError(
@@ -75,7 +75,7 @@ def _load_event(protocol: AdaptationProtocol) -> pd.DataFrame:
     return frame
 
 
-def _validation_residuals(
+def validation_residuals(
     model: str,
     keys: tuple[tuple[str, str], ...],
     protocol: AdaptationProtocol,
@@ -87,9 +87,9 @@ def _validation_residuals(
         & frame["panel"].eq("composition_28x5")
         & frame["horizon"].eq(protocol.horizon)
     ].copy()
-    wanted = {_hypothesis(port, vessel_class) for port, vessel_class in keys}
+    wanted = {hypothesis_name(port, vessel_class) for port, vessel_class in keys}
     frame["hypothesis"] = frame.apply(
-        lambda row: _hypothesis(str(row["portname"]), str(row["vessel_class"])), axis=1
+        lambda row: hypothesis_name(str(row["portname"]), str(row["vessel_class"])), axis=1
     )
     frame = frame.loc[frame["hypothesis"].isin(wanted)]
     if set(frame["hypothesis"].unique()) != wanted:
@@ -115,18 +115,18 @@ def _validation_residuals(
     return matrix
 
 
-def _pre_event_means(raw: pd.DataFrame, keys, cutoff: pd.Timestamp) -> pd.Series:
+def pre_event_means(raw: pd.DataFrame, keys, cutoff: pd.Timestamp) -> pd.Series:
     pre = raw.loc[raw["date"] < cutoff]
     values = {}
     for port, vessel_class in keys:
         part = pre.loc[pre["portname"].eq(port), vessel_class]
         if part.empty or not np.isfinite(part).all() or part.mean() <= 0:
             raise ValueError(f"invalid pre-event mean for {vessel_class}/{port}")
-        values[_hypothesis(port, vessel_class)] = float(part.mean())
+        values[hypothesis_name(port, vessel_class)] = float(part.mean())
     return pd.Series(values, dtype="float64")
 
 
-def _event_statistics(event: pd.DataFrame, model: str, keys, pre_means: pd.Series) -> pd.DataFrame:
+def event_statistics(event: pd.DataFrame, model: str, keys, pre_means: pd.Series) -> pd.DataFrame:
     rows = []
     for port, vessel_class in keys:
         part = event.loc[
@@ -136,7 +136,7 @@ def _event_statistics(event: pd.DataFrame, model: str, keys, pre_means: pd.Serie
         ].sort_values("date")
         if len(part) != 130:
             raise ValueError(f"event series incomplete for {model}/{vessel_class}/{port}")
-        hypothesis = _hypothesis(port, vessel_class)
+        hypothesis = hypothesis_name(port, vessel_class)
         gap = part["y_true"].to_numpy() - part["y_pred"].to_numpy()
         rows.append({
             "hypothesis": hypothesis,
@@ -276,16 +276,16 @@ def main() -> None:
     if file_sha256(protocol.raw_path) != protocol.expected_raw_sha256:
         raise RuntimeError("the PortWatch snapshot hash changed.")
     raw = load_raw_panel(protocol.raw_path)
-    event = _load_event(protocol)
+    event = load_event(protocol)
     all_keys = tuple(dict.fromkeys(protocol.primary_keys + protocol.control_keys + protocol.context_keys))
-    pre_means = _pre_event_means(raw, all_keys, protocol.cutoff)
+    pre_means = pre_event_means(raw, all_keys, protocol.cutoff)
 
     inference_rows: list[pd.DataFrame] = []
     global_rows: list[dict[str, object]] = []
     residual_audit: dict[str, dict[str, object]] = {}
     block_lengths = (protocol.block_length, *protocol.sensitivity_block_lengths)
     for model_index, model in enumerate((protocol.primary_model, protocol.robustness_model)):
-        historical = _validation_residuals(model, all_keys, protocol)
+        historical = validation_residuals(model, all_keys, protocol)
         residual_audit[model] = {
             "rows": len(historical),
             "columns": historical.shape[1],
@@ -296,7 +296,7 @@ def main() -> None:
                 historical.index.get_level_values("date").max() < protocol.cutoff
             ),
         }
-        event_stats = _event_statistics(event, model, all_keys, pre_means)
+        event_stats = event_statistics(event, model, all_keys, pre_means)
         for block_length in block_lengths:
             raw_draws = synchronized_circular_mbb(
                 historical,
@@ -310,7 +310,7 @@ def main() -> None:
                 ("restricted_tanker_adaptation", protocol.primary_keys),
                 ("non_tanker_negative_controls", protocol.control_keys),
             ):
-                names = [_hypothesis(port, vessel_class) for port, vessel_class in keys]
+                names = [hypothesis_name(port, vessel_class) for port, vessel_class in keys]
                 part, global_result = _family_rows(
                     event_stats.loc[names], draws.loc[:, names], family, block_length
                 )
@@ -322,7 +322,7 @@ def main() -> None:
                     "n_series": len(names),
                     **global_result,
                 })
-            context_names = [_hypothesis(port, vessel_class) for port, vessel_class in protocol.context_keys]
+            context_names = [hypothesis_name(port, vessel_class) for port, vessel_class in protocol.context_keys]
             inference_rows.append(
                 _context_rows(
                     event_stats.loc[context_names], draws.loc[:, context_names], block_length
@@ -416,6 +416,10 @@ def main() -> None:
             "No vessel identity or origin-destination linkage is available; positive anomalies do not identify physical rerouting or displaced Hormuz volume.",
             "The block bootstrap is a historical forecast-error reference, not a causal confidence interval.",
             "Concurrent Red Sea and other shocks can affect the same corridors.",
+            "Cape of Good Hope is context, not corroboration: the December 2023 Red Sea diversion leaves a mean pre-event residual shift more than four times the largest at any other restricted corridor, so its reference distribution pools two regimes. See experiments/network_adaptation/cape_residual_drift.py.",
+            "Both global statistics are equal-weighted means over scaled series. The tanker screen rejects under equal weighting and not under inverse-reference-variance or pre-event-volume weighting, because the two largest corridors in the family moved below counterfactual. The finding rests on the corridor-level tests, not on the global screen. See experiments/network_adaptation/control_robustness.py.",
+            "The apparent Chronos-versus-AR difference in vessel-class specificity does not survive a hardened control family: under the pre-declared volume-eligibility rule and under either weighting scheme both models pass. Do not claim the foundation model was needed to see the secondary pattern.",
+            "Adjusted over all 28 chokepoints rather than the chosen five, only Panama and Yucatan clear the threshold in every model and block length; Gibraltar and Malacca rank 26th and 27th, and Mindoro, Balabac and Kerch clear it outside the restricted set. See experiments/network_adaptation/all_corridor_ranking.py. That widening is a harsher correction, not a prospective one.",
         ],
     }
     protocol.outputs["validation"].write_text(

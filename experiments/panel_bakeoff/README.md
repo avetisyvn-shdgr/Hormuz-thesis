@@ -32,5 +32,11 @@ Reproduction order:
 .venv-bench/bin/python -m experiments.panel_bakeoff.run_chronos
 .venv/bin/python -m experiments.panel_bakeoff.summarize
 .venv/bin/python -m experiments.panel_bakeoff.stationarity
+.venv/bin/python -m experiments.panel_bakeoff.pretraining_contamination
 .venv/bin/python -m pytest -q tests/test_panel_bakeoff.py
 ```
+
+`pretraining_contamination` refits nothing. It re-reads the executed scores and
+reports the Chronos-over-AR advantage origin by origin, because Chronos-2 was
+released 2025-10-20 and seven of the eight scored windows close before that date.
+The event window does not: it lies provably outside any pretraining corpus.

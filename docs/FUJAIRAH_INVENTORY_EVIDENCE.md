@@ -31,11 +31,13 @@ Peak to trough **−75.2%**; against the last pre-onset reading (2026-02-23,
 
 ## Bearing on Open Defect A — the undiscussed pre-event run-up
 
-Defect A in `planning/THESIS_STATE_OF_RECORD_2026-08-28.md` is the pre-collapse
+Defect A in `Archive/Planning_Superseded_2026-08-30/THESIS_STATE_OF_RECORD_2026-08-28.md` is the pre-collapse
 run-up to roughly 85 transits/day in mid-February that no chapter discusses, and
 which — if anticipatory — biases the AR(1,7) counterfactual upward and inflates
-the 6,869 shortfall. It is ranked the highest examiner risk and currently has no
-answer.
+the 6,869 shortfall (AR(1,7), trained on `panel_aligned.csv` from 2022-01-01;
+the figure is specification-dependent, see
+`experiments/network_adaptation/outputs/hormuz_shortfall_specification_sensitivity.csv`).
+It is ranked the highest examiner risk and currently has no answer.
 
 This series bears on it directly:
 
@@ -58,7 +60,7 @@ distillates is unusual requires the pre-2026 history — see Extension below.
 
 ## Bearing on Chapter 11 — why the bypass did not function
 
-`planning/PIVOT_POWER_TEST_2026-08-28.md` concludes from the chokepoint panel
+`Research Record/decision-outcome-variable.md` concludes from the chokepoint panel
 that "Hormuz has no bypass. The ships did not reroute; they did not sail."
 
 This series supplies the mechanism, and the source states it outright. From the

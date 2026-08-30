@@ -49,6 +49,10 @@ def main() -> None:
         "synthetic_control_prefit_sensitivity.csv"
     )
     tsfm_counterfactual = _read_processed("tsfm_counterfactual_summary.csv")
+    training_panel = pd.read_csv(
+        config.path("data_processed") / "panel_aligned.csv", parse_dates=["date"]
+    )
+    training_start = training_panel["date"].min().date()
 
     synth_transit = synthetic[
         (synthetic["value_col"] == "n_tanker")
@@ -259,7 +263,8 @@ def main() -> None:
             "Matched-horizon TSFM sensitivity: Chronos-2 and AR-only use the "
             "same scored dates and observations through 2026-07-07 "
             f"({int(chronos_transit['n_days'])} transit days; "
-            f"{int(chronos_capacity['n_days'])} valid capacity days). Chronos-2 "
+            f"{int(chronos_capacity['n_days'])} valid capacity days), both "
+            f"trained on this panel from {training_start}. Chronos-2 "
             "changes the locked-primary transit shortfall by "
             f"**{chronos_transit['pct_diff_vs_ar']:+.1f}%** and the capacity "
             f"shortfall by **{chronos_capacity['pct_diff_vs_ar']:+.1f}%** "
@@ -267,6 +272,14 @@ def main() -> None:
             f"versus {chronos_capacity['cumulative_throughput_loss']/1e6:.1f}M Chronos-2). "
             "Capacity is therefore a directional secondary, model-sensitive outcome; "
             "its precise magnitude is not load-bearing."
+        ),
+        (
+            f"The transit percentage is conditional on the {training_start} training "
+            "start. Under the longer PortWatch history the event panel uses, the sign "
+            "of the Chronos-versus-AR difference reverses; both specifications and the "
+            "shortfall percentages that are stable across them are generated into "
+            "`experiments/network_adaptation/outputs/"
+            "hormuz_shortfall_specification_sensitivity.csv`."
         ),
         "",
         (

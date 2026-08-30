@@ -50,23 +50,43 @@ def scale_columns(frame: pd.DataFrame, denominators: pd.Series) -> pd.DataFrame:
     return data.divide(scale, axis="columns")
 
 
+def normalized_weights(weights: pd.Series, index: pd.Index) -> pd.Series:
+    """Validate a weighting scheme and normalize it to sum to one."""
+    values = pd.Series(weights, dtype="float64").reindex(index)
+    if values.isna().any() or not np.isfinite(values.to_numpy()).all() or values.le(0).any():
+        raise ValueError("all family weights must be finite and positive.")
+    return values / values.sum()
+
+
 def global_mean_test(
     observed: pd.Series,
     joint_draws: pd.DataFrame,
+    weights: pd.Series | None = None,
 ) -> dict[str, float | int]:
-    """One-sided global mean test over an explicitly fixed hypothesis family."""
+    """One-sided global mean test over an explicitly fixed hypothesis family.
+
+    ``weights`` must be derived from pre-event information only. Passing ``None``
+    keeps the equal-weighted statistic, under which a series with a pre-event
+    mean of one transit a day counts as much as one with fifty.
+    """
     obs = pd.Series(observed, dtype="float64")
     draws = pd.DataFrame(joint_draws, dtype="float64").reindex(columns=obs.index)
     if obs.empty or draws.empty or draws.isna().any().any():
         raise ValueError("global test requires a complete observed vector and joint draws.")
-    observed_global = float(obs.mean())
-    draw_global = draws.mean(axis=1)
+    if weights is None:
+        observed_global = float(obs.mean())
+        draw_global = draws.mean(axis=1)
+    else:
+        scheme = normalized_weights(weights, obs.index)
+        observed_global = float((obs * scheme).sum())
+        draw_global = draws.mul(scheme, axis="columns").sum(axis=1)
     p_value = (1.0 + float((draw_global >= observed_global).sum())) / (len(draw_global) + 1.0)
     return {
         "observed_global_statistic": observed_global,
         "historical_reference_mean": float(draw_global.mean()),
         "historical_reference_sd": float(draw_global.std(ddof=1)),
         "reference_q025": float(draw_global.quantile(0.025)),
+        "reference_q950": float(draw_global.quantile(0.95)),
         "reference_q975": float(draw_global.quantile(0.975)),
         "one_sided_bootstrap_p_value": p_value,
         "n_joint_resamples": int(len(draw_global)),

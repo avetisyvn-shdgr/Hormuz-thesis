@@ -1,0 +1,157 @@
+{
+  "ar_control_failure_is_equal_weighting_only": true,
+  "ar_control_p_value_by_variant_primary_block": {
+    "full_ten_control_family::equal": 0.0006999300069993001,
+    "full_ten_control_family::inverse_reference_variance": 0.49185081491850813,
+    "full_ten_control_family::pre_event_volume": 0.5691430856914309,
+    "leave_one_control_out::equal::n_dry_bulk::Cape of Good Hope": 9.999000099990002e-05,
+    "leave_one_control_out::equal::n_dry_bulk::Gibraltar Strait": 0.0013998600139986002,
+    "leave_one_control_out::equal::n_dry_bulk::Malacca Strait": 0.00039996000399960006,
+    "leave_one_control_out::equal::n_dry_bulk::Panama Canal": 0.0007999200079992001,
+    "leave_one_control_out::equal::n_dry_bulk::Yucatan Channel": 0.0011998800119988001,
+    "leave_one_control_out::equal::n_roro::Cape of Good Hope": 0.0771922807719228,
+    "leave_one_control_out::equal::n_roro::Gibraltar Strait": 0.0012998700129987,
+    "leave_one_control_out::equal::n_roro::Malacca Strait": 9.999000099990002e-05,
+    "leave_one_control_out::equal::n_roro::Panama Canal": 0.0010998900109989002,
+    "leave_one_control_out::equal::n_roro::Yucatan Channel": 0.0014998500149985001,
+    "volume_eligible_controls::equal": 0.43045695430456954
+  },
+  "chronos_control_cells_above_0_05": [
+    41,
+    42
+  ],
+  "chronos_control_p_value_range_all_blocks": [
+    0.049595040495950406,
+    1.0
+  ],
+  "chronos_control_p_value_range_primary_block": [
+    0.1404859514048595,
+    1.0
+  ],
+  "chronos_specificity_survives_every_variant": false,
+  "control_family_can_falsify": true,
+  "control_reference_width_shift_when_a_control_is_dropped": {
+    "n_dry_bulk::Cape of Good Hope": 0.00015534896610920612,
+    "n_dry_bulk::Gibraltar Strait": 0.01253285629166602,
+    "n_dry_bulk::Malacca Strait": 0.003477407601173127,
+    "n_dry_bulk::Panama Canal": 0.008360844403626999,
+    "n_dry_bulk::Yucatan Channel": 0.007713516758246233,
+    "n_roro::Cape of Good Hope": 0.0017021977457136184,
+    "n_roro::Gibraltar Strait": 0.004153040558205673,
+    "n_roro::Malacca Strait": -0.0007961505026148896,
+    "n_roro::Panama Canal": -0.0032835286700224203,
+    "n_roro::Yucatan Channel": -0.006843942398070776
+  },
+  "controls_excluded_by_volume_rule": [
+    "n_roro::Cape of Good Hope",
+    "n_roro::Panama Canal",
+    "n_roro::Yucatan Channel"
+  ],
+  "controls_retained_by_volume_rule": [
+    "n_dry_bulk::Cape of Good Hope",
+    "n_dry_bulk::Gibraltar Strait",
+    "n_dry_bulk::Malacca Strait",
+    "n_dry_bulk::Panama Canal",
+    "n_dry_bulk::Yucatan Channel",
+    "n_roro::Gibraltar Strait",
+    "n_roro::Malacca Strait"
+  ],
+  "created_utc": "2026-08-29T16:31:23.889784+00:00",
+  "declared_before_running": {
+    "computed_on": "pre_event_observations_only",
+    "minimum_pre_event_daily_transits": 5.0,
+    "no_post_event_removal": true,
+    "source": "planning/TECHNICAL_REMEDIATION_PLAN_2026-08-29.md item T1.1"
+  },
+  "family_can_flag_a_tanker_sized_movement": {
+    "full_ten_control_family": true,
+    "leave_one_control_out": true,
+    "volume_eligible_controls": true
+  },
+  "full_family_reference_q950": 0.08148838027734397,
+  "question": "Does the Chronos specificity result survive a hardened negative-control family, and can that family falsify anything at all?",
+  "tanker_family_global_by_weighting_primary_block": {
+    "ar_lag1_7::equal": {
+      "observed_global_statistic": 0.21559239498209762,
+      "one_sided_bootstrap_p_value": 9.999000099990002e-05
+    },
+    "ar_lag1_7::inverse_reference_variance": {
+      "observed_global_statistic": 0.05170690556124835,
+      "one_sided_bootstrap_p_value": 1.0
+    },
+    "ar_lag1_7::pre_event_volume": {
+      "observed_global_statistic": 0.08820724022366785,
+      "one_sided_bootstrap_p_value": 0.9998000199980002
+    },
+    "chronos2_univariate::equal": {
+      "observed_global_statistic": 0.10676419339488812,
+      "one_sided_bootstrap_p_value": 9.999000099990002e-05
+    },
+    "chronos2_univariate::inverse_reference_variance": {
+      "observed_global_statistic": -0.08919832382052989,
+      "one_sided_bootstrap_p_value": 1.0
+    },
+    "chronos2_univariate::pre_event_volume": {
+      "observed_global_statistic": -0.031226962115602146,
+      "one_sided_bootstrap_p_value": 0.7917208279172083
+    }
+  },
+  "tanker_family_global_is_weighting_sensitive": true,
+  "tanker_family_global_leave_one_corridor_out_primary_block": {
+    "ar_lag1_7::drop n_tanker::Cape of Good Hope": {
+      "observed_global_statistic": 0.13163737512941262,
+      "one_sided_bootstrap_p_value": 9.999000099990002e-05
+    },
+    "ar_lag1_7::drop n_tanker::Gibraltar Strait": {
+      "observed_global_statistic": 0.2590310247282136,
+      "one_sided_bootstrap_p_value": 9.999000099990002e-05
+    },
+    "ar_lag1_7::drop n_tanker::Malacca Strait": {
+      "observed_global_statistic": 0.28445592945997045,
+      "one_sided_bootstrap_p_value": 9.999000099990002e-05
+    },
+    "ar_lag1_7::drop n_tanker::Panama Canal": {
+      "observed_global_statistic": 0.2166058840989857,
+      "one_sided_bootstrap_p_value": 0.0027997200279972004
+    },
+    "ar_lag1_7::drop n_tanker::Yucatan Channel": {
+      "observed_global_statistic": 0.18623176149390552,
+      "one_sided_bootstrap_p_value": 9.999000099990002e-05
+    },
+    "chronos2_univariate::drop n_tanker::Cape of Good Hope": {
+      "observed_global_statistic": 0.02480835229147818,
+      "one_sided_bootstrap_p_value": 0.17368263173682633
+    },
+    "chronos2_univariate::drop n_tanker::Gibraltar Strait": {
+      "observed_global_statistic": 0.1630741102822427,
+      "one_sided_bootstrap_p_value": 9.999000099990002e-05
+    },
+    "chronos2_univariate::drop n_tanker::Malacca Strait": {
+      "observed_global_statistic": 0.17599225225994003,
+      "one_sided_bootstrap_p_value": 9.999000099990002e-05
+    },
+    "chronos2_univariate::drop n_tanker::Panama Canal": {
+      "observed_global_statistic": 0.09033817106289847,
+      "one_sided_bootstrap_p_value": 9.999000099990002e-05
+    },
+    "chronos2_univariate::drop n_tanker::Yucatan Channel": {
+      "observed_global_statistic": 0.07960808107788123,
+      "one_sided_bootstrap_p_value": 9.999000099990002e-05
+    }
+  },
+  "tanker_family_p_value_range_by_model": {
+    "ar_lag1_7": [
+      9.999000099990002e-05,
+      1.0
+    ],
+    "chronos2_univariate": [
+      9.999000099990002e-05,
+      1.0
+    ]
+  },
+  "what_this_cannot_show": "Every variant reuses the same executed forecasts and the same historical residual vectors. This measures the robustness of the control test to family composition and weighting, not to the choice of control classes, which remains Ro-Ro and dry bulk by declaration.",
+  "widest_single_control_contribution": {
+    "dropped_control": "n_roro::Yucatan Channel",
+    "shift": -0.006843942398070776
+  }
+}

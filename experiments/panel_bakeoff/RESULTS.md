@@ -7,8 +7,15 @@ Date: 2026-08-29
 The technical benchmark rejects two opposite claims:
 
 1. It rejects the claim that the existing AR(1,7) pipeline was already as
-   predictive as a modern foundation model. Chronos-2 materially improves
-   pre-event forecasts across the global panel.
+   predictive as a modern foundation model. Chronos-2 improves pre-event
+   forecasts across the global panel at both horizons, but by different margins
+   and with different confidence. At 30 days the improvement is substantial and
+   firmly bounded away from zero: macro MASE falls 17.6%, clustered 95% interval
+   [11.4%, 25.0%]. At 130 days it falls 14.5% with a clustered interval of
+   [1.4%, 23.7%] — still positive, but the lower bound is close to zero. **130
+   days is the horizon the event analysis uses**, so that is the weaker of the
+   two claims and the one that must be quoted when the forecasting result is
+   used to license the event work.
 2. It also rejects the claim that adding every available layer is useful.
    Multivariate Chronos is not consistently better than univariate Chronos, and
    neither Interactive Fixed Effects nor nuclear-norm completion clears the
@@ -62,6 +69,13 @@ Forecast-only and donor-assisted methods are reported in separate leagues.
 Synthetic control, IFE, and matrix completion observe contemporaneous spatial
 donors; seasonal naive, AR, and Chronos do not.
 
+The donor-assisted league never leaves this file. No event-window result in this
+project uses synthetic control, IFE or nuclear-norm completion; both event
+experiments are forecast-only, which is claimed as a design property in section
+3.1 of `docs/NETWORK_ADAPTATION_SECONDARY_CHAPTER.md`. The admission decisions
+below are point-estimate gates and contribute no p-values to the project-level
+decision surface, which is counted once in section 4.1 of the same document.
+
 ## Primary composition-panel performance
 
 | Model | Information set | 30d MASE | 130d MASE | 30d abs. bias | 130d abs. bias | Common 95% coverage (30/130) |
@@ -84,17 +98,40 @@ about 8% narrower than AR's on the same scaled-width definition.
 
 ## Paired decisions
 
+### What the admission rule gates
+
+Every gate in `admission_rule.json` is a **point estimate**: macro mean MASE
+reduction of at least 0.05 at each horizon, paired win rate above 0.50, common
+95% coverage error at most 0.05, and interval width ratio at most 1.10 against
+the baseline. The clustered bootstrap intervals and the
+`cluster_bootstrap_probability_meets_threshold` column are an uncertainty
+diagnostic that the rule never referenced. A figure such as 94.7% is therefore
+not a near-miss against a threshold — it was not measured against one — and no
+admission decision in this file turns on it.
+
 ### Chronos versus AR(1,7): admitted
 
 - Univariate Chronos reduces macro MASE by 17.6% at 30 days and 14.5% at
   130 days, winning 72.4% and 74.1% of matched unit-windows.
-- The clustered 95% reduction intervals are [11.4%, 25.0%] and [1.4%, 23.7%].
-  The 130-day improvement is clearly positive, although the lower confidence
-  bound does not establish the frozen 5% materiality threshold at 95%
-  confidence; 94.7% of bootstrap draws exceed 5%.
+- The clustered 95% reduction intervals are [11.4%, 25.0%] at 30 days and
+  [1.4%, 23.7%] at 130 days. The 130-day improvement is clearly positive, but
+  its interval is roughly twice as wide and nearly reaches zero, so
+  "substantially improves forecasting" is a 30-day statement. The 130-day
+  statement is "improves forecasting, with wide uncertainty" — and 130 days is
+  the horizon the event window uses.
+- The 130-day lower confidence bound does not establish the frozen 5%
+  materiality threshold at 95% confidence; 94.7% of bootstrap draws exceed 5%.
+  Both are uncertainty diagnostics, not gates — the rule is point-estimate based
+  and the 130-day point reduction of 14.5% clears 0.05 outright.
 - Improvements are positive for every vessel class at both horizons. At
   30 days Chronos beats AR at all eight origin-level macro averages. At 130
-  days it loses at one of eight origins.
+  days it loses at one of eight origins, and that loss is traceable to a single
+  corridor: at origin 4 (2024-01-26) the macro reduction is −6.5% across all 140
+  series and **+16.6% excluding the Cape of Good Hope's five series**. Chronos
+  read the December 2023 Red Sea diversion ramp as a trend and extrapolated it;
+  the worst cell in the bake-off is Cape Ro-Ro there, MASE 28.9 against AR's 2.0.
+  See `experiments/network_adaptation/cape_residual_drift.py`. This is a
+  regime-break failure mode worth reporting, not a general long-horizon weakness.
 - Multivariate Chronos reduces MASE versus AR by 17.5% and 17.1%; both clustered
   intervals remain above 10%, and it improves at all eight origins at both
   horizons.
@@ -146,12 +183,31 @@ The problem is **partly, not fully, closed**.
   single-Hormuz comparison.
 - Architecturally, further complexity is mostly unnecessary. The simple
   univariate foundation model captures almost all of the defensible gain.
-- Substantively, the old result remains: the 130-day Hormuz tanker-transit
-  shortfall is 6,615 under Chronos and 6,869 under AR, only 3.7% apart. The shock
-  is so large that better normal-regime forecasting does not change the basic
-  conclusion.
+- Substantively, the old result remains: the shock is so large that better
+  normal-regime forecasting does not change the basic conclusion. The
+  model-versus-model *comparison* behind that statement, however, is
+  specification-dependent and has to be reported as such.
 
-That last fact can become an academically interesting *result* only if the
+### Specification sensitivity of the Hormuz shortfall
+
+Both runs score the identical 130 days and the identical 529 observed transits.
+They differ only in how much training history each forecaster sees.
+
+| Specification | Training start | Chronos shortfall | AR shortfall | Model difference |
+|---|---|---:|---:|---|
+| Legacy | 2022-01-01 | 6,615 | 6,869 | Chronos 3.7% below |
+| Expanded history | 2019-01-01 (Chronos: trailing 2,048d) | 7,042 | 6,496 | Chronos 8.4% above |
+
+The sign of the difference reverses, so "the two models agree to within 3.7%" is
+a property of the legacy training window, not of the models. The quantity that is
+stable across both specifications is the one the conclusion rests on: **observed
+Hormuz traffic is 92.5-93.0% below counterfactual** on those 130 days (529
+observed against 7,571 under Chronos and 7,025 under AR in the expanded-history
+run). Both rows are generated by
+`experiments/network_adaptation/specification_sensitivity.py` into
+`hormuz_shortfall_specification_sensitivity.csv`; neither is typed by hand.
+
+Signal dominance can become an academically interesting *result* only if the
 literature supports the question: when does forecast sophistication alter
 disruption inference, and when does signal dominance make model complexity
 irrelevant? It cannot yet be called the thesis gap.
@@ -172,6 +228,54 @@ GIFT-Eval Pretrain, and synthetic data. PortWatch is not named in the disclosed
 sources, but exact absence from all transformed pretraining data has not been
 proven. The result should therefore be described as inference-only/zero-shot,
 with pretraining-overlap risk acknowledged rather than dismissed.
+
+## Pretraining-overlap risk, bounded
+
+Chronos-2 was released 2025-10-20, so nothing dated after that can be in its
+weights. The **event window (2026-02-28 to 2026-07-07) is therefore provably
+outside the pretraining corpus** and the shortfall estimate carries no overlap
+risk at all. The generalisable claim — that Chronos forecasts this panel better
+than AR — does carry it, because it rests on eight rolling origins whose scored
+windows run 2023-01-01 to 2025-11-05, almost entirely before the release.
+
+If overlap were producing the advantage, the advantage should be largest at the
+origins with the most opportunity for it — the early ones, whose observations had
+years to reach a pretraining corpus — and should fade toward the release date. It
+does not:
+
+| Origin | Scored window ends | 30d reduction | 130d reduction | 130d win rate |
+|---|---|---:|---:|---:|
+| 1 (2023-01-01) | 2023-05-10 | 16.3% | 16.2% | 72.9% |
+| 2 (2023-05-11) | 2023-09-17 | 16.4% | 14.8% | 69.3% |
+| 3 (2023-09-18) | 2024-01-25 | 12.9% | 14.3% | 77.1% |
+| 4 (2024-01-26) | 2024-06-03 | 21.4% | **−6.5%** | 67.1% |
+| 5 (2024-06-04) | 2024-10-11 | 23.8% | 20.0% | 73.6% |
+| 6 (2024-10-12) | 2025-02-18 | 17.0% | 20.6% | 77.1% |
+| 7 (2025-02-19) | 2025-06-28 | 16.4% | 20.2% | 74.3% |
+| **8 (2025-06-29)** | **2025-11-05** | **16.4%** | **16.7%** | **81.4%** |
+
+Origin 8 is the latest and the only one whose window reaches past the release
+date at all (16 of its 130 days). Its advantage is positive at both horizons with
+clustered 95% intervals that exclude zero — [11.5%, 21.2%] at 30 days and
+[10.8%, 22.3%] at 130 days — and its 130-day win rate is the highest of the
+eight. Against the other seven pooled, the difference is −1.3 points at 30 days
+and +2.5 points at 130 days, with 95% intervals of [−6.5, +3.1] and [−6.6, +19.3]
+points: no detectable difference in either direction. The fitted trend across
+origins is *positive* at both horizons, the opposite of the decay a
+contamination-driven advantage would produce.
+
+The confound runs the same way. Chronos's context length grows with the origin
+and caps at 2,048 days from origin 6, so later origins get more context — which
+would flatter them, not the early ones the contamination story needs.
+
+**What this does and does not establish.** It bounds the risk: a contamination
+story has to explain why the advantage is no larger where overlap was most
+likely. It does not prove a clean corpus, because Amazon's disclosure is not
+detailed enough for absence to be verified, and because "latest origin" is a
+proxy for "least ingested," not a clean/dirty split — seven of eight windows
+close before the release and the eighth mostly does. Generated by
+`experiments/panel_bakeoff/pretraining_contamination.py` into
+`chronos_by_origin_advantage.csv` and `chronos_pretraining_contamination.json`.
 
 ## Recommended next action
 

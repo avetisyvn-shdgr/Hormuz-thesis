@@ -1,0 +1,39 @@
+{
+  "analysis_scope": "sensitivity_only",
+  "config_mediated_call_sites": [
+    "scripts/run_hormuz_detection.py",
+    "scripts/run_hormuz_measurement_audit.py"
+  ],
+  "date_max": "2026-08-02",
+  "date_min": "2019-01-01",
+  "derived_artifact_consumers": [
+    "scripts/build_model_admission_protocol.py"
+  ],
+  "direct_registry_call_sites": [
+    "scripts/run_portwatch_vintage_sensitivity.py",
+    "scripts/run_rebound_relapse_profile.py",
+    "scripts/run_revision_and_basin_exploration.py",
+    "scripts/verify_sensitivity_inputs.py",
+    "src/lngfreight/vintage_matrix.py"
+  ],
+  "hash_scope_file": "data/raw/SHA256SUMS.sensitivity",
+  "local_fixity_status": "verified",
+  "manifest_schema": 1,
+  "model_admission_protocol_sha256": "bb050aa041e8fc1c8391b908baeab529aaf2e9944d5f35b07af661349176adce",
+  "path": "data/raw/portwatch/vintages/Daily_Chokepoints_Data__vintage_2026-08-09.csv",
+  "pinned_primary_path": "data/raw/portwatch/Daily_Chokepoints_Data.csv",
+  "pinned_primary_variable": "portwatch_chokepoints_snapshot",
+  "pinned_primary_window_end": "2026-07-07",
+  "promotion_policy": "must_not_replace_pinned_primary_without_new_recorded_decision",
+  "registry_analysis_scope": "sensitivity_only",
+  "registry_opt_in_enforced": true,
+  "replication_archive_status": "pending_deposit_gitignored_source_bytes",
+  "row_count": 77588,
+  "sensitivity_entrypoints": [
+    "scripts/run_portwatch_sensitivity.py",
+    "scripts/run_model_vintage_matrix.py"
+  ],
+  "sha256": "0bc806a4c384723debff08053d6fcbb915a03ee9fdf7b23c73d76d9bcb885bcb",
+  "source_payload_status": "portal_csv_export_endpoint_capture_2026-08-09",
+  "variable": "portwatch_chokepoints_vintage_20260809_snapshot"
+}

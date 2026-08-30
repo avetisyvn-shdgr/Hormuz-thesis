@@ -33,6 +33,8 @@ def main() -> None:
     configure_determinism()
     if MODEL_REVISION != protocol.primary_revision or not MODEL_PATH.exists():
         raise RuntimeError("the pinned Chronos revision is unavailable or changed.")
+    if CONTEXT_LENGTH != protocol.primary_context_length:
+        raise RuntimeError("the Chronos context length differs from the frozen protocol.")
     if file_sha256(protocol.raw_path) != protocol.expected_raw_sha256:
         raise RuntimeError("the PortWatch snapshot hash changed.")
 

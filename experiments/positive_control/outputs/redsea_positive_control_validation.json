@@ -1,0 +1,68 @@
+{
+  "anchor": {
+    "emitter": "Bab el-Mandeb Strait",
+    "receiver": "Cape of Good Hope",
+    "vessel_class": "n_tanker"
+  },
+  "anchor_detected_under_every_block_length": true,
+  "anchor_event_statistic": {
+    "external_onset::ar_lag1_7": 0.5922211311699282,
+    "external_onset::chronos2_univariate": 0.7147002040232965,
+    "register_onset::ar_lag1_7": 0.7589390216896315,
+    "register_onset::chronos2_univariate": 0.7461610141207133
+  },
+  "anchor_raw_p_value_singleton_family": {
+    "external_onset::ar_lag1_7": 9.999000099990002e-05,
+    "external_onset::chronos2_univariate": 9.999000099990002e-05,
+    "register_onset::ar_lag1_7": 9.999000099990002e-05,
+    "register_onset::chronos2_univariate": 9.999000099990002e-05
+  },
+  "anchor_standing": {
+    "external_onset::ar_lag1_7": {
+      "anchor_is_family_max": true,
+      "anchor_rank": 1,
+      "anchor_romano_wolf_p": 9.999000099990002e-05,
+      "family_size": 16
+    },
+    "external_onset::chronos2_univariate": {
+      "anchor_is_family_max": true,
+      "anchor_rank": 1,
+      "anchor_romano_wolf_p": 9.999000099990002e-05,
+      "family_size": 16
+    },
+    "register_onset::ar_lag1_7": {
+      "anchor_is_family_max": true,
+      "anchor_rank": 1,
+      "anchor_romano_wolf_p": 9.999000099990002e-05,
+      "family_size": 16
+    },
+    "register_onset::chronos2_univariate": {
+      "anchor_is_family_max": true,
+      "anchor_rank": 1,
+      "anchor_romano_wolf_p": 9.999000099990002e-05,
+      "family_size": 16
+    }
+  },
+  "created_utc": "2026-08-29T16:08:08.975421+00:00",
+  "designation": "ex_ante_route_topology",
+  "negative_controls_below_0_05": {
+    "external_onset::ar_lag1_7": 2,
+    "external_onset::chronos2_univariate": 2,
+    "register_onset::ar_lag1_7": 2,
+    "register_onset::chronos2_univariate": 1
+  },
+  "onsets_reported": [
+    "external_onset",
+    "register_onset"
+  ],
+  "primary_onset": null,
+  "required_caveats": [
+    "Aggregate correspondence at the Cape is not vessel linkage; no voyage is matched to a missing Bab el-Mandeb transit.",
+    "Both onsets are declared sensitivities and both are reported; neither is the headline.",
+    "The register onset's residual reference and scaling window include 30 days already inside the diversion, which deflates its measured gain.",
+    "PortWatch n_tanker aggregates tanker types and cannot isolate any cargo class.",
+    "The ex-ante status of this test does not transfer to the retrospective Hormuz corridor screen."
+  ],
+  "status": "ex_ante_designated_positive_control",
+  "why_this_differs_from_the_hormuz_screen": "The receiver was named on route topology before any post-onset outcome was inspected, and the eligible family it is ranked within was frozen on pre-onset volume. The Hormuz five-corridor set was restricted after an all-corridor post-event AR map existed."
+}

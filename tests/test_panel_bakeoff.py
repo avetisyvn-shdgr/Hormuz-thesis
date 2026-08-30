@@ -15,6 +15,10 @@ from experiments.panel_bakeoff.protocol import (
     folds,
     load_raw_panel,
 )
+from experiments.panel_bakeoff.pretraining_contamination import (
+    MODEL_RELEASE,
+    OUTPUT_DIR,
+)
 from experiments.panel_bakeoff.summarize import add_sequential_common_intervals
 
 
@@ -83,3 +87,34 @@ def test_common_interval_calibration_never_uses_current_or_future_fold_errors():
     assert framed.loc[framed.fold == "fold_01", "common_q"].isna().all()
     assert set(framed.loc[framed.fold == "fold_02", "common_q"]) == {1.0}
     assert set(framed.loc[framed.fold == "fold_03", "common_q"]) == {100.0}
+
+
+def test_event_window_lies_entirely_after_the_chronos_release():
+    """The shortfall estimate must carry no pretraining-overlap risk at all."""
+    import json
+
+    protocol = json.loads(
+        (OUTPUT_DIR / "chronos_pretraining_contamination.json").read_text(encoding="utf-8")
+    )
+    assert protocol["chronos2_release_date"] == "2025-10-20"
+    assert MODEL_RELEASE < pd.Timestamp("2026-02-28")
+
+
+def test_chronos_advantage_is_not_concentrated_in_the_earliest_origins():
+    """The signature a contaminated corpus would leave is a decaying advantage."""
+    table = pd.read_csv(OUTPUT_DIR / "chronos_by_origin_advantage.csv")
+    primary = table.loc[table["panel"].eq("composition_28x5")]
+    assert len(primary) == 16
+    assert set(primary["fold"]) == {f"fold_{n:02d}" for n in range(1, 9)}
+
+    latest = primary.loc[primary["fold"].eq("fold_08")]
+    assert len(latest) == 2
+    # The latest origin keeps a positive advantage at both horizons, and its
+    # clustered interval excludes zero. If this ever fails, the generalisable
+    # accuracy claim has to be re-hedged, not the test relaxed.
+    assert latest["mase_reduction"].gt(0).all()
+    assert latest["cluster_bootstrap_ci_lower"].gt(0).all()
+
+    # Only the latest origin's long window reaches past the release date.
+    reaching = primary.loc[primary["days_after_model_release"].gt(0)]
+    assert set(reaching["fold"]) == {"fold_08"}

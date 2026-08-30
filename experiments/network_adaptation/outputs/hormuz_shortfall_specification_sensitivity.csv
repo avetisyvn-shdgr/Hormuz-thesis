@@ -1,0 +1,5 @@
+spec,train_start,context_length,model,observed_sum,counterfactual_sum,cumulative_gap,pct_below_counterfactual
+legacy_admission_protocol,2022-01-01,1519,chronos2_univariate,529.0,7143.888416290283,6614.888416290283,92.59506911118997
+legacy_admission_protocol,2022-01-01,1519,ar_lag1_7,529.0,7397.996006081118,6868.996006081118,92.8494149014792
+expanded_history_event_panel,2019-01-01,2048,chronos2_univariate,529.0,7571.26872253418,7042.26872253418,93.01306003806799
+expanded_history_event_panel,2019-01-01,2615,ar_lag1_7,529.0,7025.362323200071,6496.362323200071,92.47013925170711

@@ -1,5 +1,5 @@
 {
-  "created_utc": "2026-08-29T09:02:19.616924+00:00",
+  "created_utc": "2026-08-29T16:34:47.893602+00:00",
   "event_forecasts": {
     "days_per_series": 130,
     "models": [
@@ -57,7 +57,11 @@
     "PortWatch n_tanker aggregates tanker types and cannot isolate LNG carriers.",
     "No vessel identity or origin-destination linkage is available; positive anomalies do not identify physical rerouting or displaced Hormuz volume.",
     "The block bootstrap is a historical forecast-error reference, not a causal confidence interval.",
-    "Concurrent Red Sea and other shocks can affect the same corridors."
+    "Concurrent Red Sea and other shocks can affect the same corridors.",
+    "Cape of Good Hope is context, not corroboration: the December 2023 Red Sea diversion leaves a mean pre-event residual shift more than four times the largest at any other restricted corridor, so its reference distribution pools two regimes. See experiments/network_adaptation/cape_residual_drift.py.",
+    "Both global statistics are equal-weighted means over scaled series. The tanker screen rejects under equal weighting and not under inverse-reference-variance or pre-event-volume weighting, because the two largest corridors in the family moved below counterfactual. The finding rests on the corridor-level tests, not on the global screen. See experiments/network_adaptation/control_robustness.py.",
+    "The apparent Chronos-versus-AR difference in vessel-class specificity does not survive a hardened control family: under the pre-declared volume-eligibility rule and under either weighting scheme both models pass. Do not claim the foundation model was needed to see the secondary pattern.",
+    "Adjusted over all 28 chokepoints rather than the chosen five, only Panama and Yucatan clear the threshold in every model and block length; Gibraltar and Malacca rank 26th and 27th, and Mindoro, Balabac and Kerch clear it outside the restricted set. See experiments/network_adaptation/all_corridor_ranking.py. That widening is a harsher correction, not a prospective one."
   ],
   "status": "exploratory_retrospective_restriction"
 }

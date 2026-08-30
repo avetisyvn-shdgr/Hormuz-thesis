@@ -1,0 +1,53 @@
+{
+  "analysis_scope": "optional_portwatch_sensitivity_branch",
+  "artifact_sha256": {
+    "data/processed/model_admission_known_results.csv": "d191a2329b5471c9bd718fd22f7c92c9c608db147485ef6d08c4970bcdfa643e",
+    "data/processed/model_admission_protocol.csv": "7b6657de9f909e41b4ac10091e457c3a476ff340c2a3fdd76a38fe7b39d51c54",
+    "data/processed/portwatch_regime_contrasts.csv": "a6d42b39ff8da860e76560d94d9c67d7e604e385d622601681508b33866ec812",
+    "data/processed/portwatch_regime_phase_profile.csv": "e756231e1bb50fbcbb9a81ed31ddc40cdfb42fe76ffbf41d2072c8a1ece44281",
+    "data/processed/portwatch_sensitivity_input_manifest.json": "f42e3ffb26fa7dfcceb2eab7481be0ac96168ec69e47ef6858a48e0a58482b71",
+    "data/processed/portwatch_vintage_sensitivity.csv": "95f104baf11f7e72abed7a9a074b25728eeb21aa34cf723c6838c17bbc8bfdc6"
+  },
+  "config_sha256": {
+    "config/model_admission_protocol.yaml": "bb050aa041e8fc1c8391b908baeab529aaf2e9944d5f35b07af661349176adce",
+    "config/model_vintage_matrix.yaml": "297908c214a0afab30a377854585cb1788922334c3bba976f8e2a1141c6ed73e",
+    "config/settings.yaml": "d86b61ebe889175c73dbc5a9970c65db7a45043c790632b0f5823615173a28a9",
+    "config/sources.yaml": "f53e9fa7cf2d3b17b10cb8a116a4aa64895c70e226667488e0f236bd472cec96",
+    "data/raw/SHA256SUMS.sensitivity": "414aeac2b9fde7e0f76aa2a1f3c68e960a0465a46fa341ec7110dd9f22134fad"
+  },
+  "core_reproducibility_manifest_dependency": "none",
+  "core_run_all_dependency": "none",
+  "implementation_sha256": {
+    "requirements-benchmark.lock.txt": "b4ac5fc4205fc6117409a4e99b220a05dc4afa00d54a0b31bd5740caa06a0683",
+    "scripts/build_model_admission_protocol.py": "9a956f50f9b4bd0f646a1aa1e71608a30b21628a476ee899452027f4388150d0",
+    "scripts/freeze_portwatch_sensitivity.py": "defe56f00bda75d46f225cdd8a5569b64d604ab84ea75ab4c6978c2fbe7e70bb",
+    "scripts/run_model_vintage_matrix.py": "7d90fa19c3f98c31348415053407e26c1d96d00e43ef46f2697d4900f1a71664",
+    "scripts/run_portwatch_sensitivity.py": "906e9efaa2df728c6b1fd873293a03e2ed783035422c1ac7456fe9689c77c4ae",
+    "scripts/run_portwatch_vintage_sensitivity.py": "72045b316fdeb9f3730c1f39c03c6aa2fb944e9a7472f62e2b1974950b54d20b",
+    "scripts/run_rebound_relapse_profile.py": "8a8f839e397b483a95b2f257ff31fafe6f3f682d907b08be944451fa8ad93d33",
+    "scripts/run_revision_and_basin_exploration.py": "ba609fda78af7ac3630ca4a66cc02cd2f871a6ee6514188582c8f202eeae05c2",
+    "scripts/verify_sensitivity_inputs.py": "09e5931c9707afa449341e8d089892ade8e2890fc019ae45127591c430e8639a",
+    "src/lngfreight/baselines.py": "cb01b90e441a734822f5368f5cd354f8522764dd1c716a4a47a22056881bf956",
+    "src/lngfreight/bsts.py": "a6bd08249e6da9da1f328d9bcfe115e2ae4306bfa95e2f7828e73dd75110f354",
+    "src/lngfreight/registry.py": "86048650389556adee3a11690f7b0da1fe591e0d73280192afbb8b87efa270ca",
+    "src/lngfreight/tsfm.py": "ef932fdd4b6c05759b00fbb1bb8ad6ba741f3d11b2b15e457e795b366ac8da30",
+    "src/lngfreight/vintage_matrix.py": "ecc25ae3379ca22b0092ba0d2a6715d83e7899d7731d4aea4c4418a020bb9eb9"
+  },
+  "interpretation": "Case-local measurement-vintage and selected-model sensitivity; not an ATT, variance decomposition, pooled estimate, or general AIS claim.",
+  "manifest_schema": 1,
+  "matrix_artifact_presence": {
+    "data/processed/model_vintage_matrix_chronos_daily.csv": false,
+    "data/processed/model_vintage_matrix_chronos_summary.csv": false,
+    "data/processed/model_vintage_matrix_core_daily.csv": false,
+    "data/processed/model_vintage_matrix_core_summary.csv": false,
+    "data/processed/model_vintage_matrix_daily.csv": false,
+    "data/processed/model_vintage_matrix_manifest.json": false,
+    "data/processed/model_vintage_matrix_summary.csv": false
+  },
+  "mode": "prepared",
+  "replication_archive_status": "pending_deposit_gitignored_august_source_bytes",
+  "sensitivity_raw_sha256": {
+    "data/raw/portwatch/vintages/Daily_Chokepoints_Data__vintage_2026-08-09.csv": "0bc806a4c384723debff08053d6fcbb915a03ee9fdf7b23c73d76d9bcb885bcb"
+  },
+  "vintage_averaging": "prohibited"
+}

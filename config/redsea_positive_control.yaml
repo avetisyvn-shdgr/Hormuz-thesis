@@ -1,0 +1,147 @@
+version: 1
+status: "ex_ante_designated_positive_control"
+frozen_on: "2026-08-29"
+
+# WHY THIS EXISTS. The restricted Hormuz corridor set in
+# config/network_adaptation.yaml is a retrospective screen: an all-corridor
+# post-event AR map already existed when the five corridors were named. This
+# experiment runs the same estimator, the same synchronized bootstrap and the
+# same Romano-Wolf machinery on an event whose receiver was designated **before
+# any post-onset outcome was inspected**, so the method can be demonstrated
+# where the selection objection does not apply.
+claim: >-
+  Aggregate correspondence at an ex-ante designated receiver, estimated with a
+  leakage-safe forecast counterfactual; not vessel linkage, not a causal
+  reallocation parameter, and not evidence that the same ships moved.
+
+# The designation is inherited, not made here. It was frozen in
+# config/hormuz_receiver_test.yaml on 2026-08-27 and executed on 2026-08-28.
+# This re-run changes the estimator and the inference, never the designation.
+anchor:
+  receiver: "Cape of Good Hope"
+  emitter: "Bab el-Mandeb Strait"
+  vessel_class: "n_tanker"
+  designation: "ex_ante_route_topology"
+  designation_source: "config/hormuz_receiver_test.yaml"
+  designation_frozen_on: "2026-08-27"
+  rationale: >-
+    The Cape of Good Hope is the only long-haul substitute for the Bab
+    el-Mandeb/Suez route. It was named on route topology before any post-onset
+    outcome was inspected.
+
+data:
+  source: "IMF PortWatch Daily Chokepoints Data"
+  file: "data/raw/portwatch/Daily_Chokepoints_Data.csv"
+  sha256: "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d"
+  event_horizon_days: 130
+  reference_origins: 8
+
+# BOTH onsets are declared and BOTH are reported; neither is the headline. This
+# is carried over verbatim from the B2 freeze, where the recovered fraction
+# moved by a factor of about 2.2 between them and declaring one as primary
+# after seeing both was ruled specification shopping.
+onsets:
+  primary: null
+  declared:
+  - name: "external_onset"
+    date: "2023-12-14"
+    provenance: "config/hormuz_event_chronology.yaml, red_sea carrier suspension"
+    known_limitation: >-
+      The pre-onset reference is clean, but the post-onset window opens at the
+      start of a gradual diversion, so early weeks dilute the receiver gain.
+  - name: "register_onset"
+    date: "2024-01-13"
+    provenance: "config/multi_event_propagation.yaml, marked data-derived"
+    known_limitation: >-
+      The onset falls a month into the diversion, so the last 30 days of its
+      1,040-day residual reference and its scaling window already sit inside
+      the disruption. Both inflate the apparent counterfactual and therefore
+      deflate the measured gain.
+
+models:
+  primary:
+    name: "chronos2_univariate"
+    revision: "29ec3766d36d6f73f0696f85560a422f50e8498c"
+    context_length: 2048
+    cross_learning: false
+  robustness:
+    name: "ar_lag1_7"
+    lags: [1, 7]
+
+inference:
+  statistic: "mean_observed_minus_counterfactual_scaled_by_pre_onset_mean"
+  alternative: "greater"
+  bootstrap: "synchronized_circular_moving_block"
+  primary_block_length_days: 14
+  sensitivity_block_lengths_days: [7, 28]
+  draws: 10000
+  seed: 20260829
+  multiplicity: "Romano-Wolf step-down within each explicitly named family"
+  historical_residuals: >-
+    Eight contiguous, disjoint 130-day out-of-sample origins ending the day
+    before the onset under test, so the reference spans exactly 1,040 days and
+    contains no post-onset information.
+
+# The eligible receiver family is the frozen B2 support set, reused verbatim.
+# It was filtered on pre-onset baseline volume (>= 5 transits/day), with the
+# held-out Hormuz unit and documented-disruption units already removed, before
+# any post-onset gain was inspected. Reusing it rather than rebuilding it is
+# what makes the two designs comparable in both directions.
+eligible_receiver_family:
+  vessel_class: "n_tanker"
+  source: "data/processed/redsea_cape_manifest.json, same_emitter_alternative_receivers"
+  corridors:
+    - "Cape of Good Hope"
+    - "Korea Strait"
+    - "Bosporus Strait"
+    - "Tsugaru Strait"
+    - "Lombok Strait"
+    - "Yucatan Channel"
+    - "Oresund Strait"
+    - "Luzon Strait"
+    - "Dover Strait"
+    - "Taiwan Strait"
+    - "Malacca Strait"
+    - "Bohai Strait"
+    - "Sunda Strait"
+    - "Makassar Strait"
+    - "Gibraltar Strait"
+    - "Bab el-Mandeb Strait"
+
+negative_control_family:
+  vessel_classes: ["n_roro", "n_dry_bulk"]
+  corridors:
+    - "Cape of Good Hope"
+  interpretation: >-
+    Non-tanker movement at the anchor corridor weakens a tanker-specific
+    reading of the receiver gain. A null control does not prove the mechanism.
+
+context_series:
+  vessel_class: "n_tanker"
+  corridors:
+    - "Bab el-Mandeb Strait"
+    - "Suez Canal"
+  role: >-
+    Descriptive sign checks. Bab el-Mandeb is the designated emitter and Suez
+    is the route it feeds; both are expected strongly negative and neither is
+    an untreated donor.
+
+outputs:
+  event_forecasts: "experiments/positive_control/outputs/redsea_event_forecasts.csv.gz"
+  event_manifest: "experiments/positive_control/outputs/redsea_event_forecasts_manifest.json"
+  inference: "experiments/positive_control/outputs/redsea_positive_control_inference.csv"
+  global_tests: "experiments/positive_control/outputs/redsea_positive_control_global_tests.csv"
+  validation: "experiments/positive_control/outputs/redsea_positive_control_validation.json"
+  manifest: "experiments/positive_control/outputs/redsea_positive_control_manifest.json"
+  figure_png: "reports/figures/redsea_positive_control.png"
+
+claim_boundaries:
+  permitted:
+    - "An ex-ante designated receiver's standing within a frozen eligible family, with a multiplicity-adjusted p-value."
+    - "A demonstration that the corridor method detects a known reallocation where the receiver was named in advance."
+    - "The onset sensitivity, reported for both declared onsets."
+  prohibited:
+    - "That the same vessels moved from Bab el-Mandeb to the Cape."
+    - "A causal reallocation parameter or ATT."
+    - "Presenting either onset's result as the single headline."
+    - "Transferring this test's ex-ante status to the retrospective Hormuz corridor screen."

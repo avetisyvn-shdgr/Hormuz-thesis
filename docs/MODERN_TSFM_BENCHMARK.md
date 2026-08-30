@@ -211,9 +211,32 @@ by deterministic TSFM-manifest regeneration. The counterfactual files and TSFM
 manifest are included in the main reproducibility manifest. The run fails
 loudly if the isolated environment or cached checkpoint is absent.
 
-**Outcome hierarchy:** transit count remains the locked primary. Its Chronos-2
-shortfall is 6,614.9 versus 6,869.0 for AR-only on the same 130 dates and
-observations (−3.7%). Deadweight capacity is a directional secondary and
-model-sensitive outcome: on the same 118 valid dates, Chronos-2 gives 260.0M
-versus 291.0M for AR-only (−10.6%). Do not lean on the precise capacity
-magnitude.
+**Outcome hierarchy:** transit count remains the locked primary. Trained on
+`panel_aligned.csv` from 2022-01-01, its Chronos-2 shortfall is 6,614.9 versus
+6,869.0 for AR-only on the same 130 dates and observations (−3.7%). That
+percentage is a property of the training window, not of the models: trained on
+the full PortWatch history from 2019-01-01 (Chronos on the trailing 2,048 days)
+over the identical 130 dates, Chronos gives 7,042.3 against AR's 6,496.4, which
+is 8.4% *above* AR rather than 3.7% below it. Both specifications are generated
+into `experiments/network_adaptation/outputs/hormuz_shortfall_specification_sensitivity.csv`;
+what survives both is that observed traffic is 92.5-93.0% below counterfactual
+(529 observed). Deadweight capacity is a directional secondary and
+model-sensitive outcome: on the same 118 valid dates and the same 2022-01-01
+training window, Chronos-2 gives 260.0M versus 291.0M for AR-only (−10.6%). Do
+not lean on the precise capacity magnitude.
+
+**Pretraining-overlap risk is bounded, not eliminated.** Chronos-2 was released
+2025-10-20, so the event window (2026-02-28 to 2026-07-07) lies provably outside
+any pretraining corpus and the shortfall estimate carries no overlap risk. The
+pre-event benchmark folds do carry it: their scored windows run 2023-01-01 to
+2025-11-05. `experiments/panel_bakeoff/pretraining_contamination.py` tests the
+signature contamination would leave — an advantage concentrated in the earliest
+origins, decaying toward the release date — and does not find it. The latest
+origin (2025-06-29, the only window reaching past the release) keeps a 16.4%
+advantage at 30 days and 16.7% at 130 days, both with clustered intervals
+excluding zero, and the fitted trend across the eight origins is positive at both
+horizons. The contrast against the earlier seven is −1.3 and +2.5 points with
+intervals straddling zero. This bounds the risk rather than clearing it: Amazon's
+disclosure does not permit verifying absence, and origin recency is a proxy for
+ingestion opportunity, not a clean/dirty split. See
+`experiments/panel_bakeoff/RESULTS.md`, "Pretraining-overlap risk, bounded".

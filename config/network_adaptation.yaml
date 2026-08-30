@@ -86,6 +86,25 @@ negative_control_family:
     Positive control-class anomalies at the same corridors weaken a
     tanker-specific adaptation interpretation; null controls do not prove the
     tanker mechanism.
+  # Declared before the robustness run, in item T1.1 of
+  # Research Record/plan-technical-remediation.md. The rule is volume-based
+  # and computed on pre-event data only; no control may be removed after seeing
+  # its post-event result, which would reproduce the selection problem the
+  # control family exists to guard against.
+  volume_eligibility:
+    minimum_pre_event_daily_transits: 5.0
+    computed_on: "pre_event_observations_only"
+    declared_in: "Research Record/plan-technical-remediation.md item T1.1"
+    rationale: >-
+      The equal-weighted global control statistic gives a series averaging under
+      two transits a day the same weight as one averaging fifty. A control whose
+      historical reference range is several times its own mean cannot falsify
+      much, so the specificity test may pass because the control distribution is
+      wide rather than because the tanker signal is specific.
+  weighting_schemes:
+    - "equal"
+    - "inverse_reference_variance"
+    - "pre_event_volume"
 
 outputs:
   event_forecasts: "experiments/network_adaptation/outputs/event_forecasts.csv.gz"
@@ -95,5 +114,17 @@ outputs:
   model_comparison: "experiments/network_adaptation/outputs/network_adaptation_model_comparison.csv"
   validation: "experiments/network_adaptation/outputs/network_adaptation_validation.json"
   manifest: "experiments/network_adaptation/outputs/network_adaptation_manifest.json"
+  specification_sensitivity: "experiments/network_adaptation/outputs/hormuz_shortfall_specification_sensitivity.csv"
+  specification_sensitivity_manifest: "experiments/network_adaptation/outputs/hormuz_shortfall_specification_sensitivity_manifest.json"
+  cape_drift: "experiments/network_adaptation/outputs/cape_residual_drift.csv"
+  cape_drift_summary: "experiments/network_adaptation/outputs/cape_residual_drift_summary.csv"
+  cape_drift_manifest: "experiments/network_adaptation/outputs/cape_residual_drift_manifest.json"
+  cape_drift_figure: "reports/figures/cape_residual_drift.png"
+  control_robustness: "experiments/network_adaptation/outputs/control_family_robustness.csv"
+  control_robustness_manifest: "experiments/network_adaptation/outputs/control_family_robustness_manifest.json"
+  all_corridor_ranking: "experiments/network_adaptation/outputs/all_corridor_ranking.csv"
+  all_corridor_global_tests: "experiments/network_adaptation/outputs/all_corridor_global_tests.csv"
+  all_corridor_manifest: "experiments/network_adaptation/outputs/all_corridor_ranking_manifest.json"
+  all_corridor_figure: "reports/figures/all_corridor_ranking.png"
   figure_png: "reports/figures/network_adaptation_counterfactuals.png"
   figure_pdf: "reports/figures/network_adaptation_counterfactuals.pdf"

@@ -48,6 +48,17 @@ def test_sensitivity_manifest_enforces_non_promotion_guards():
         "scripts/run_revision_and_basin_exploration.py",
         "src/lngfreight/vintage_matrix.py",
     }
+    # A4 and B1 opt in through a hash-pinned config rather than by naming the
+    # variable in code, so they are recorded separately -- they are declared and
+    # runtime-enforced consumers, but not direct call sites.
+    assert set(manifest["config_mediated_call_sites"]) == {
+        "scripts/run_hormuz_detection.py",
+        "scripts/run_hormuz_measurement_audit.py",
+    }
+    assert not (
+        set(manifest["direct_registry_call_sites"])
+        & set(manifest["config_mediated_call_sites"])
+    )
     assert tuple(manifest["sensitivity_entrypoints"]) == SENSITIVITY_ENTRYPOINTS
     assert tuple(manifest["derived_artifact_consumers"]) == (
         DERIVED_SENSITIVITY_CONSUMERS

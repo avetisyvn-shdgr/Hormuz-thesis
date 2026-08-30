@@ -1,7 +1,9 @@
 # Study-window extension (v2) runbook — 2026-07-15
 
 > **Execution status (updated 2026-07-15, Claude session):**
-> - Phase 0 DONE except git: raw v1 backed up to `../thesis_backup/raw_v1_2026-07-15/`;
+> - Phase 0 DONE except git: the critical raw-v1 rollback files and original
+>   provenance manifests are archived at
+>   `../Archive/Technical_Recovery/Raw_Vintages/2026-07-15_v1/`;
 >   Option D files moved to `data/raw_staging/` (gitignored); `.DS_Store` neutralized
 >   by patching `vessel_raw_hashes` to ignore OS junk (sandbox cannot delete files);
 >   `freeze_reproducibility.py --check` passes 3/3; reproducibility tests pass.
@@ -25,8 +27,10 @@ is re-tuned after seeing v2 data.
 
 Raw CSVs are **not git-tracked** (only SHA256SUMS is). Git cannot restore them.
 
-1. Backup the entire raw dir outside the repo, ideally also to cloud:
-   `cp -R data/raw ~/thesis_backup/raw_v1_2026-07-15`
+1. Back up the entire raw dir outside the repo, ideally also to cloud. Use a new
+   dated directory under `../Archive/Technical_Recovery/Raw_Vintages/` for each
+   snapshot. The 2026-07-15 local archive was later pruned to the two changing
+   source snapshots plus its original provenance and checksum manifests.
    The WTO snapshot is the urgent one — the live source is a rolling window
    that has already dropped Jan–Feb 2025; your copy is irreplaceable.
 2. Fix the P1 staging problem so freeze checks can pass again:
@@ -181,8 +185,8 @@ corridor traffic; see SUTVA addendum).
 ```bash
 cd lng_freight_thesis
 git checkout -b extension/post-window-v3
-# 1. Backup current raw dir (v2 state) outside the repo first:
-cp -R data/raw ~/thesis_backup/raw_v2_2026-08-09
+# 1. Backup current raw dir outside the repo first, using a new dated directory:
+cp -R data/raw ../Archive/Technical_Recovery/Raw_Vintages/YYYY-MM-DD_pre-refresh
 # 2. WTO refresh (registry-sanctioned; note the start= and max lines):
 .venv/bin/python scripts/fetch_wto_hormuz_lng.py
 # 3. PortWatch: browser download from portwatch.imf.org -> Daily Chokepoint

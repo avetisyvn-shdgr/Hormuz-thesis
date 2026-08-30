@@ -1,0 +1,29 @@
+{
+  "chronos_context_length_cap": 2048,
+  "created_utc": "2026-08-29T15:26:53.246299+00:00",
+  "model_difference_pct_chronos_vs_ar": {
+    "expanded_history_event_panel": 8.403262813475562,
+    "legacy_admission_protocol": -3.699341061865135
+  },
+  "outputs_sha256": {
+    "experiments/network_adaptation/outputs/hormuz_shortfall_specification_sensitivity.csv": "7c7eddd377c0bbfe6f1565ba76af27e6b4bd18e84263df090f6cc3cec243b88f"
+  },
+  "pct_below_counterfactual_range": [
+    92.47013925170711,
+    93.01306003806799
+  ],
+  "purpose": "Hormuz 130-day shortfall under two training-information sets scored on identical dates. Refits nothing; reads frozen forecast artifacts.",
+  "scored_window": {
+    "days": 130,
+    "end": "2026-07-07",
+    "observed_sum": 529.0,
+    "start": "2026-02-28"
+  },
+  "sources_sha256": {
+    "expanded_event_forecasts": "a335f13c5baa4104f700d18c0580f9f653cd9afd1d24d448555dec9f6749fe1b",
+    "expanded_training_panel": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d",
+    "legacy_ar_daily": "f1ca455188893375b3711ee6e2eac3af9c6fd9b1cdc5df498118db2bef242267",
+    "legacy_chronos_daily": "05e6c119fcc09e97ff0e4cb3af7afd14f69540ec6f28b3e81a18b22d3fa4d490",
+    "legacy_training_panel": "4d26dbe004947cb32896fd801e066adbcf664813a0c8b7c80e855558b3ed7728"
+  }
+}

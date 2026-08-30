@@ -16,12 +16,19 @@ volume, not freight pricing, and not a vessel-level laden-state reconstruction.
 ## Disruption-associated counterfactual shortfall
 
 The second rung asks how much observed tanker throughput fell short of a
-pre-treatment counterfactual generated from the same series. The AR-only working
-primary estimates a shortfall of `6,869.0` tanker transits, with a
-descriptive overlapping-placebo 2.5/97.5% quantile band from `5,430.3` to
-`8,088.9` transits; this band has no nominal coverage
-(`reports/run_output.md`). Seven disjoint blocks give a one-sided rank
-`p = 0.125`, while the nominal 95% block-conformal interval is unbounded. At
+pre-treatment counterfactual generated from the same series. Trained on
+`panel_aligned.csv` from `2022-01-01`, the AR-only working primary estimates a
+shortfall of `6,869.0` tanker transits, with a descriptive overlapping-placebo
+2.5/97.5% quantile band from `5,430.3` to `8,088.9` transits; this band has no
+nominal coverage (`reports/run_output.md`). Seven disjoint blocks give a
+one-sided rank `p = 0.125`, while the nominal 95% block-conformal interval is
+unbounded. The point figure is specification-dependent and must always carry its
+training window: on the full PortWatch history from `2019-01-01`, the same AR
+model over the identical 130 scored days gives `6,496.4`, and Chronos-2 gives
+`7,042.3` against `6,614.9` on the legacy window
+(`experiments/network_adaptation/outputs/hormuz_shortfall_specification_sensitivity.csv`).
+What is stable across all four cells is the proportion: observed throughput is
+`92.5`-`93.0%` below counterfactual, against `529` observed transits. At
 this rung, the thesis claims a
 disruption-associated counterfactual shortfall under explicit forecasting and
 placebo assumptions. It does not claim that forecast accuracy identifies a

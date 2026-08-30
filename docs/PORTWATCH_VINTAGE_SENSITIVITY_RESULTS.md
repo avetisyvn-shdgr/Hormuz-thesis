@@ -51,6 +51,13 @@ The two effects are separated deliberately: *vintage, same window* holds the
 dates fixed and varies only the vintage; *vintage, extended* adds the window
 change on top.
 
+Every row above trains on `panel_aligned.csv` from 2022-01-01, so this table
+varies the data vintage and the scoring window but not the training window. The
+training window is a third sensitivity axis and is reported separately in
+`experiments/network_adaptation/outputs/hormuz_shortfall_specification_sensitivity.csv`:
+on the full PortWatch history from 2019-01-01 the same AR model over the same 130
+pinned-primary days gives 6,496 rather than 6,869.
+
 ## Reading
 
 **1. The vintage moves the magnitude by about a sixth.** Holding dates fixed,

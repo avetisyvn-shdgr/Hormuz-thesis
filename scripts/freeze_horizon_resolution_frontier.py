@@ -75,13 +75,24 @@ def validate_written_outputs(design: dict, design_sha256: str) -> None:
         ("summary_csv", summary),
     ):
         written = pd.read_csv(output_path(design, key))
+        # Relative, not absolute. `atol=1e-12` with `rtol=0.0` demanded
+        # bit-exactness from a pipeline that runs through `np.linalg.lstsq`
+        # (src/lngfreight/baselines.py:153), so its results carry whatever
+        # rounding the local LAPACK produces -- Accelerate here. On 2026-08-30 no
+        # interpreter on the machine reproduced the 2026-08-29 artifacts under
+        # that gate: worst disagreement 7.56e-12 absolute but only 4.15e-13
+        # relative, and the py3.11 and py3.14 builds disagreed with each other
+        # about which column was worst. An absolute tolerance on unnormalised
+        # cumulative sums cannot express "same numbers"; a relative one can.
+        # 1e-9 sits ~3 orders above the observed noise and ~3 below any
+        # substantive change. See docs/DECISION_LOG.md 2026-08-30.
         pd.testing.assert_frame_equal(
             written,
             expected,
             check_dtype=False,
             check_exact=False,
-            rtol=0.0,
-            atol=1e-12,
+            rtol=1e-9,
+            atol=1e-9,
         )
     for key, expected_payload in (
         ("diagnostics_json", diagnostics),

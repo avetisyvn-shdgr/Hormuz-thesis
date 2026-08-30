@@ -1,0 +1,75 @@
+{
+  "bake_off_scored_span": {
+    "end": "2025-11-05",
+    "start": "2023-01-01"
+  },
+  "bootstrap": {
+    "clusters": "chokepoints; rolling origins additionally resampled in the pooled leg",
+    "draws": 5000,
+    "seed": 20260829
+  },
+  "chronos2_release_date": "2025-10-20",
+  "cleanest_origin_advantage_positive_at_every_horizon": true,
+  "confound": "Chronos context length grows with the origin and caps at 2,048 days from fold_06, so a raw trend across origins mixes elapsed time with context length. The direction of that confound favours the later origins.",
+  "contrasts": [
+    {
+      "cleanest_fold": "fold_08",
+      "cleanest_origin_advantage_positive": true,
+      "cleanest_origin_reduction": 0.16436237445386903,
+      "difference": -0.01330279451571248,
+      "difference_ci_lower": -0.06507544896836377,
+      "difference_ci_upper": 0.030791757505609918,
+      "earlier_origins_reduction": 0.1776651689695815,
+      "horizon": 30,
+      "n_origins": 8,
+      "panel": "composition_28x5",
+      "reduction_slope_per_origin": 0.0018858234095923206
+    },
+    {
+      "cleanest_fold": "fold_08",
+      "cleanest_origin_advantage_positive": true,
+      "cleanest_origin_reduction": 0.1667139040654807,
+      "difference": 0.02506538140315462,
+      "difference_ci_lower": -0.06591511664818527,
+      "difference_ci_upper": 0.19295227941972706,
+      "earlier_origins_reduction": 0.14164852266232608,
+      "horizon": 130,
+      "n_origins": 8,
+      "panel": "composition_28x5",
+      "reduction_slope_per_origin": 0.009070028595810652
+    },
+    {
+      "cleanest_fold": "fold_08",
+      "cleanest_origin_advantage_positive": true,
+      "cleanest_origin_reduction": 0.19803607934646483,
+      "difference": -0.022535901091434996,
+      "difference_ci_lower": -0.12334425151083286,
+      "difference_ci_upper": 0.0736177613705349,
+      "earlier_origins_reduction": 0.22057198043789983,
+      "horizon": 30,
+      "n_origins": 8,
+      "panel": "total_28x1",
+      "reduction_slope_per_origin": -0.0034264259952902164
+    },
+    {
+      "cleanest_fold": "fold_08",
+      "cleanest_origin_advantage_positive": true,
+      "cleanest_origin_reduction": 0.25739651028343824,
+      "difference": 0.001012260091993622,
+      "difference_ci_lower": -0.10834316791789246,
+      "difference_ci_upper": 0.09152159829543036,
+      "earlier_origins_reduction": 0.2563842501914446,
+      "horizon": 130,
+      "n_origins": 8,
+      "panel": "total_28x1",
+      "reduction_slope_per_origin": 0.00845725744707184
+    }
+  ],
+  "created_utc": "2026-08-29T15:31:03.881041+00:00",
+  "event_window_is_provably_post_release": true,
+  "origins_with_any_post_release_scored_day": [
+    "fold_08"
+  ],
+  "question": "Is the pre-event Chronos-over-AR advantage concentrated in the rolling origins with the most pretraining-overlap opportunity?",
+  "what_this_cannot_show": "A flat advantage across origins is evidence against a contamination-driven advantage, not proof of a clean corpus. Amazon does not disclose the Chronos-2 pretraining corpus at a level that would let absence be verified."
+}

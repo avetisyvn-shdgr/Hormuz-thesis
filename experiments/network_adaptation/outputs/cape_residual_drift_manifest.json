@@ -1,0 +1,42 @@
+{
+  "cape_annual_mean_tanker_transits": {
+    "2019": 11.69,
+    "2020": 12.15,
+    "2021": 11.87,
+    "2022": 9.52,
+    "2023": 9.24,
+    "2024": 18.89,
+    "2025": 16.89,
+    "2026": 18.62
+  },
+  "cape_event_statistic_excess": {
+    "ar_lag1_7": {
+      "over_pooled_reference": 0.30254549894774635,
+      "over_recent_reference": 0.19599660732283475
+    },
+    "chronos2_univariate": {
+      "over_pooled_reference": 0.6682516375119427,
+      "over_recent_reference": 0.40950839268493233
+    }
+  },
+  "cape_is_the_largest_onset_shift": true,
+  "cape_onset_shift": {
+    "ar_lag1_7": 0.5778550123996707,
+    "chronos2_univariate": -0.5546720528968769
+  },
+  "created_utc": "2026-08-29T15:36:47.759092+00:00",
+  "diversion_onset": "2023-12-01",
+  "largest_non_cape_onset_shift": 0.13554711545873416,
+  "losing_origin_decomposition": {
+    "fold": "fold_04",
+    "reduction_all_series": -0.06466338440391795,
+    "reduction_excluding_cape": 0.16603371245132004,
+    "worst_series": "Cape of Good Hope/n_roro",
+    "worst_series_ar_mase": 2.004517036966573,
+    "worst_series_chronos_mase": 28.91752516410828
+  },
+  "question": "Did the December 2023 Red Sea diversion leave the Cape corridor's pre-event residuals non-stationary, and therefore its 2026 counterfactual and bootstrap reference unreliable?",
+  "recent_regime_origins": 3,
+  "verdict": "demoted_to_context",
+  "what_this_cannot_show": "A regime-matched reference mean is a descriptive re-centring, not a re-estimated test. It quantifies how much of the Cape event statistic the pooled reference leaves uncharged; it does not supply a corrected p-value, and the residual process it re-centres on is itself short."
+}

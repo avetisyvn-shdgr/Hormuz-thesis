@@ -135,9 +135,12 @@ The relevance-ranked results were screened up to a 200-record cap per query:
 deduplication left 982 unique titles. A 34-reference diversified proposal was
 retained after title screening and high-priority abstract/full-record checks.
 The complete strings, raw/filtered counts, capture counts, and dispositions are
-recorded in `../../planning/task3-search/task3-query-pack.md`,
-`../../planning/T04_INSTITUTIONAL_SEARCH_RUN_LOG.md`, and
-`../../planning/T04_CURATED_LITERATURE_REVIEW_SET.md`.
+recorded in `../../Research Record/literature-search/scopus-query-pack.md`.
+The run log and the curated 34-reference set that held the raw counts and
+dispositions were deleted on 2026-08-30 when the literature review was rebuilt;
+the six references they carried that did not survive into the new bibliography
+are preserved in `../../THESIS_OPEN_ITEMS_2026-08-30.md` §3. Do not cite the
+counts above without confirming them against the current review's own protocol.
 
 The intended Web of Science replication was not run because the tested
 Clarivate institution selector did not offer TUM. Scopus RIS export also
