@@ -40,7 +40,6 @@ thesis chapters or model code.
 | `data/processed/` | Model-ready tables, scores, forecasts, and audit outputs | Normally generated |
 | `reports/` | Human-readable summaries and figures | Normally generated |
 | `docs/` | Methodological decisions, access notes, limitations, and plans | Yes |
-| `notebooks/` | Reserved for notebooks; currently empty | Not currently used |
 
 ## How data moves through the project
 

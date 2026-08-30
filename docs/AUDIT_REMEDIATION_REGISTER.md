@@ -1,5 +1,12 @@
 # AUDIT REMEDIATION REGISTER — Single Source of Truth
 
+> **Historical status (2026-08-30):** This register is retained as audit and
+> remediation provenance, but it is no longer the active thesis roadmap. The four
+> supervisor decks cited below were archived outside the active technical
+> repository during the post-pivot cleanup; their former `reports/` paths are
+> preserved here as historical locators. Current governance is defined in
+> `AGENTS.md` and `docs/DECISION_LOG.md`.
+
 **Created:** 2026-07-23
 **Owner:** Mher Avetisyan (mher.avetisyan@tum.de)
 **Provenance:** Consolidated and deduplicated from five independent adversarial

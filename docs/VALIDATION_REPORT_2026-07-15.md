@@ -58,7 +58,9 @@ explicitly as sensitivity, or swap tables to AR-only.
 
 **P4 — Supervisor deck (`Hormuz_Thesis_Supervisor_Review.pptx`) pairs the
 AR-only loss 5,121 with "4.0× separation".** AR-only is 3.9×; 4.0× is ARX.
-One-word fix.
+One-word fix. The referenced pre-pivot deck was archived outside the active
+technical repository on 2026-08-30; this finding is retained as historical
+validation provenance rather than an active presentation-edit task.
 
 **P5 — Git hygiene.** `main` is 13 commits behind `exploratory/corridor-transmission`
 (fast-forwardable, nothing on main to lose). Uncommitted: `.env.example`
