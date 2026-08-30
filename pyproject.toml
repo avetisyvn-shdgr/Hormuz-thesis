@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "lngfreight-thesis"
 version = "0.1.0"
-description = "Open-data LNG freight thesis pipeline for the 2026 Strait of Hormuz disruption."
+description = "Open-data tanker-throughput thesis pipeline for the 2026 Strait of Hormuz disruption."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -17,11 +17,15 @@ dependencies = [
     "openpyxl~=3.1",
     "matplotlib~=3.10",
     "searoute==1.6.0",
+    "networkx~=3.4",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest~=8.2",
+]
+interactive = [
+    "plotly~=6.0",
 ]
 
 [tool.setuptools.packages.find]

@@ -24,9 +24,11 @@ provenance-limited Bloomberg, Fearnleys, ClearLynx, Spark, Platts, Kpler, and
 similar inputs are not required and must not be included in a public release.
 The optional Bloomberg branch is disabled by default and remains local-only.
 
-The LaTeX manuscript is maintained separately in `../TUM_Bachelor_Thesis/`.
-Project-management notes, personal defence material, credentials, virtual
-environments, raw licensed inputs, and historical backups are outside the
+The active LaTeX manuscript and literature review are maintained outside this
+repository in `Bachelor Thesis Final/` within the clean thesis workspace. Its
+machine-specific parent path is deliberately not part of this portable repository
+contract. Project-management notes, personal defence material, credentials,
+virtual environments, raw licensed inputs, and historical backups are outside the
 public code-release boundary.
 
 ## Research design at a glance
@@ -71,6 +73,19 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -e .
+```
+
+The transparent baseline and admitted inference code use NumPy/Pandas directly;
+SciPy, statsmodels, and scikit-learn are not core dependencies. `networkx` is a
+direct dependency of the reallocation module and is therefore declared in both
+the package metadata and core requirements.
+
+The self-contained interactive TSFM benchmark figure is optional. Install its
+declared extra before running that script:
+
+```bash
+python -m pip install -e '.[interactive]'
+python scripts/make_tsfm_benchmark_interactive.py
 ```
 
 Optional real-weight foundation-model checks use separate environments and
@@ -134,7 +149,7 @@ PYTHONHASHSEED=0 python scripts/run_all.py
 2. rebuilds and audits the aligned panel;
 3. runs chronological validation and all admitted model/inference layers;
 4. rebuilds the LNG mechanism and network evidence;
-5. renders all manuscript figures and result summaries;
+5. renders the numbered technical figure catalog and result summaries;
 6. runs the full tests;
 7. compares regenerated artifacts with the frozen allowlist without rewriting
    the reference manifest; and
@@ -144,10 +159,13 @@ The optional proprietary-data branch runs only when both
 `ENABLE_BLOOMBERG_LAYER=1` and `BLOOMBERG_EXPORT_DIR` are supplied. It is not
 part of the public or default thesis pipeline.
 
-## Reproduce manuscript figures
+## Reproduce the numbered technical figure catalog
 
-All 13 manuscript figures are generated from code. Rendering from existing
-processed artifacts does not refit models or download data:
+The renderer currently preserves 13 numbered technical figures from the prior
+manuscript mapping. They remain reproducible evidence assets, but inclusion and
+numbering in the clean manuscript must be decided during reconstruction.
+Rendering from existing processed artifacts does not refit models or download
+data:
 
 ```bash
 python scripts/render_thesis_figures.py
@@ -203,6 +221,7 @@ its filename matches an older artifact.
 | `config/sources.yaml` | Data registry, access status, units, licences, and checksums |
 | `src/lngfreight/` | Reusable data, validation, model, inference, and audit code |
 | `scripts/` | Acquisition, build, model, audit, freeze, and rendering entry points |
+| `experiments/` | Robustness benchmarks and descriptive network-adaptation experiments |
 | `tests/` | No-network unit and integration tests |
 | `data/processed/` | Frozen model inputs, outputs, diagnostics, and manifests |
 | `reports/` | Human-readable results, transcripts, and figures |
