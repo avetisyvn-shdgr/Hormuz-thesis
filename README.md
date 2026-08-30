@@ -64,8 +64,11 @@ with a convenient proxy.
 
 ## Installation
 
-The core package supports Python 3.10 or newer. The current canonical macOS
-verification environment uses Python 3.14.4.
+The core package supports Python 3.10 or newer. `pyproject.toml` and
+`requirements.txt` declare the direct compatibility constraints;
+`requirements.txt` also includes pytest for local verification. A normal
+development install lets pip resolve the transitive versions within those
+constraints:
 
 ```bash
 python3 -m venv .venv
@@ -74,6 +77,22 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -e .
 ```
+
+For an exact reconstruction of the canonical core/test environment, use the
+complete transitive lock and install the local package without re-resolving its
+dependencies:
+
+```bash
+python3.14 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-core.lock.txt
+python -m pip install --no-deps -e .
+```
+
+`requirements-core.lock.txt` is locked and verified for Python 3.14.4 on macOS
+arm64 (`macosx-26.0-arm64`). Other supported Python versions and platforms may
+require a fresh resolution from the direct constraints rather than this exact
+platform lock.
 
 The transparent baseline and admitted inference code use NumPy/Pandas directly;
 SciPy, statsmodels, and scikit-learn are not core dependencies. `networkx` is a
@@ -88,8 +107,8 @@ python -m pip install -e '.[interactive]'
 python scripts/make_tsfm_benchmark_interactive.py
 ```
 
-Optional real-weight foundation-model checks use separate environments and
-lockfiles:
+Optional real-weight foundation-model checks use separate Python 3.11
+environments and exact reproducibility lockfiles:
 
 - `requirements-benchmark.lock.txt` for Chronos-2/Moirai;
 - `requirements-timesfm.lock.txt` for TimesFM;
