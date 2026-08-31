@@ -9,8 +9,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.vessel_days import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.vessel_days import (  # noqa: E402
     add_elapsed_time_diagnostics,
     elapsed_time_diagnostics,
     modeled_vessel_day_summary,

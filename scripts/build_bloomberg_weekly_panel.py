@@ -7,9 +7,9 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.bloomberg_admission import load_manifest  # noqa: E402
-from lngfreight.bloomberg_market import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.bloomberg_admission import load_manifest  # noqa: E402
+from hormuz_throughput.bloomberg_market import (  # noqa: E402
     build_weekly_freight_panel,
     load_freight_series,
 )

@@ -20,8 +20,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.basin_coverage import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.basin_coverage import (  # noqa: E402
     BASIN_INTERVAL_METHODS,
     default_scenarios,
     run_coverage_grid,

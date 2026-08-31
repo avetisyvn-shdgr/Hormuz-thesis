@@ -18,7 +18,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 from freeze_portwatch_sensitivity import MATRIX_ARTIFACTS  # noqa: E402
 
 
@@ -52,18 +52,18 @@ CHECKPOINT_INPUTS = (
     "scripts/verify_sensitivity_inputs.py",
     "scripts/freeze_portwatch_sensitivity.py",
     "scripts/build_model_admission_checkpoint.py",
-    "src/lngfreight/registry.py",
-    "src/lngfreight/vintage_matrix.py",
-    "src/lngfreight/baselines.py",
-    "src/lngfreight/bsts.py",
-    "src/lngfreight/tsfm.py",
+    "src/hormuz_throughput/registry.py",
+    "src/hormuz_throughput/vintage_matrix.py",
+    "src/hormuz_throughput/baselines.py",
+    "src/hormuz_throughput/bsts.py",
+    "src/hormuz_throughput/tsfm.py",
     "tests/test_model_admission_protocol.py",
     "tests/test_model_admission_checkpoint.py",
     "tests/test_rebound_relapse_profile.py",
     "tests/test_registry_artifacts.py",
     "tests/test_reproducibility.py",
     "tests/test_sensitivity_input_gate.py",
-    "requirements-benchmark.lock.txt",
+    "requirements/locks/benchmark-py311-macos-arm64.txt",
 )
 RAW_INPUTS = (
     "data/raw/portwatch/Daily_Chokepoints_Data.csv",

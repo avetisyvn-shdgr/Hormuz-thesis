@@ -1,0 +1,121 @@
+{
+  "analysis_scope": "optional_portwatch_sensitivity_branch",
+  "artifact_sha256": {
+    "data/processed/model_admission_known_results.csv": "d191a2329b5471c9bd718fd22f7c92c9c608db147485ef6d08c4970bcdfa643e",
+    "data/processed/model_admission_protocol.csv": "7b6657de9f909e41b4ac10091e457c3a476ff340c2a3fdd76a38fe7b39d51c54",
+    "data/processed/model_vintage_matrix_chronos_daily.csv": "51262dcb9a7a96e04f30ba951c18cc7306f4b75cf5acdd79113ed647fdf602f8",
+    "data/processed/model_vintage_matrix_chronos_summary.csv": "b5e8f6f2d4a3cd56af1e095bf98220615f97fb2bf97817c7614b4aa1ff21b691",
+    "data/processed/model_vintage_matrix_core_daily.csv": "33156c0fcb683f592758fdcf8b9b928945ab6541f713ead65c314aca8a4c8fc2",
+    "data/processed/model_vintage_matrix_core_summary.csv": "c5a2c69d37013383a76bfbbf472b35f7dce882176fc311ffaef6eb34b494d9e2",
+    "data/processed/model_vintage_matrix_daily.csv": "ece32c5592b64090a2f955409835bc0383465207fe636a9977100ca0fbf0efb8",
+    "data/processed/model_vintage_matrix_manifest.json": "5ce058448b8e87fabb054919e2df396b02a15a9a5c0e5a12a1a2a8f04a69c2fc",
+    "data/processed/model_vintage_matrix_summary.csv": "15a6e02eb812446d3482e0a4722c3f770a92e82e9828fc9ff1bebef457945917",
+    "data/processed/portwatch_regime_contrasts.csv": "a6d42b39ff8da860e76560d94d9c67d7e604e385d622601681508b33866ec812",
+    "data/processed/portwatch_regime_phase_profile.csv": "e756231e1bb50fbcbb9a81ed31ddc40cdfb42fe76ffbf41d2072c8a1ece44281",
+    "data/processed/portwatch_sensitivity_input_manifest.json": "f42e3ffb26fa7dfcceb2eab7481be0ac96168ec69e47ef6858a48e0a58482b71",
+    "data/processed/portwatch_vintage_sensitivity.csv": "1a0c3e5514af5a7a4b3d37942dc577076c878dbf45e24b210f9deb918ce26900"
+  },
+  "checkpoint_manifest_verification": {
+    "data/processed/portwatch_sensitivity_input_manifest.json": {
+      "actual_sha256": "f42e3ffb26fa7dfcceb2eab7481be0ac96168ec69e47ef6858a48e0a58482b71",
+      "expected_sha256": "3a65a8e1ac080c08f6cdca7dc2dbfe3a80c8891ebebf7756bbe05068e3a6f5ba",
+      "matches": false
+    },
+    "data/processed/portwatch_sensitivity_manifest.json": {
+      "actual_sha256": "2c366277cc536bf52ebd65a9471f8b7b0d5650e69780d6319a380435c7a9c084",
+      "expected_sha256": "b9f5d44c03a9ee3b3baf57ef6cdcfeb9bd9daa76a3312ed99a750fc0194bb643",
+      "matches": false
+    }
+  },
+  "checkpoint_scientific_anchor_verification": {
+    "admission_protocol": {
+      "actual_sha256": "bb050aa041e8fc1c8391b908baeab529aaf2e9944d5f35b07af661349176adce",
+      "expected_sha256": "bb050aa041e8fc1c8391b908baeab529aaf2e9944d5f35b07af661349176adce",
+      "matches": true,
+      "path": "config/model_admission_protocol.yaml"
+    },
+    "matrix_design": {
+      "actual_sha256": "297908c214a0afab30a377854585cb1788922334c3bba976f8e2a1141c6ed73e",
+      "expected_sha256": "297908c214a0afab30a377854585cb1788922334c3bba976f8e2a1141c6ed73e",
+      "matches": true,
+      "path": "config/model_vintage_matrix.yaml"
+    },
+    "raw_vintages": {
+      "data/raw/portwatch/Daily_Chokepoints_Data.csv": {
+        "actual_sha256": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d",
+        "expected_sha256": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d",
+        "matches": true,
+        "path": "data/raw/portwatch/Daily_Chokepoints_Data.csv"
+      },
+      "data/raw/portwatch/vintages/Daily_Chokepoints_Data__vintage_2026-08-09.csv": {
+        "actual_sha256": "0bc806a4c384723debff08053d6fcbb915a03ee9fdf7b23c73d76d9bcb885bcb",
+        "expected_sha256": "0bc806a4c384723debff08053d6fcbb915a03ee9fdf7b23c73d76d9bcb885bcb",
+        "matches": true,
+        "path": "data/raw/portwatch/vintages/Daily_Chokepoints_Data__vintage_2026-08-09.csv"
+      }
+    }
+  },
+  "completion_freezer_sha256": "da9c3430d97186db689e55596f7ed2f241e167259edb51a791cb965177b221b7",
+  "config_sha256": {
+    "config/model_admission_protocol.yaml": "bb050aa041e8fc1c8391b908baeab529aaf2e9944d5f35b07af661349176adce",
+    "config/model_vintage_matrix.yaml": "297908c214a0afab30a377854585cb1788922334c3bba976f8e2a1141c6ed73e",
+    "config/settings.yaml": "41a264ae6fc9a6e9d59849fc04f8df41987b56575a0c24a336fbe5d8328b5176",
+    "config/sources.yaml": "51d94577e84dbf0c29831142bb8df5fd3e73629a9d12657097ba70553bb99c73",
+    "data/raw/SHA256SUMS.sensitivity": "414aeac2b9fde7e0f76aa2a1f3c68e960a0465a46fa341ec7110dd9f22134fad"
+  },
+  "core_reproducibility_manifest_dependency": "none",
+  "core_run_all_dependency": "required_for_final_integration",
+  "current_prepared_manifest_sha256": "2c366277cc536bf52ebd65a9471f8b7b0d5650e69780d6319a380435c7a9c084",
+  "disclosed_provenance_gap": {
+    "affected_paths": [
+      "data/processed/portwatch_sensitivity_manifest.json",
+      "data/processed/portwatch_sensitivity_input_manifest.json"
+    ],
+    "description": "The metadata-manifest bytes referenced by the immutable pre-run checkpoint are not present in the current repository state. The current files reflect later repository work.",
+    "effect": "Byte-level pre-run provenance for this optional sensitivity branch cannot be claimed. The completed matrix remains independently reproducible from the checkpoint-matched design, protocol, and raw vintages.",
+    "scientific_anchors_verified": true,
+    "scope": "checkpointed_manifest_bytes"
+  },
+  "implementation_sha256": {
+    "requirements/locks/benchmark-py311-macos-arm64.txt": "b4ac5fc4205fc6117409a4e99b220a05dc4afa00d54a0b31bd5740caa06a0683",
+    "scripts/build_model_admission_protocol.py": "7027b4363f25efead70f051b1c5b5ae2a21eac0d073daeec374b10f038c94572",
+    "scripts/freeze_portwatch_sensitivity.py": "ac6355707e58f7656fb62a1c55a2efa3263274bb53f5395d04dffb19b9bf6ade",
+    "scripts/run_model_vintage_matrix.py": "ab13f07a6a00c4dc9888f31c0818038a16f669fb3331a4b0f96d156a01ea0a4d",
+    "scripts/run_portwatch_sensitivity.py": "906e9efaa2df728c6b1fd873293a03e2ed783035422c1ac7456fe9689c77c4ae",
+    "scripts/run_portwatch_vintage_sensitivity.py": "05f90d4169a19cf87b0d173f5fc566e60d1e6ce9e0749913e597f148f0de8955",
+    "scripts/run_rebound_relapse_profile.py": "bb679295d11893f5acfc89b9e8c25456d5265c847f77119382fc60b93cffba50",
+    "scripts/run_revision_and_basin_exploration.py": "dd985dcd253a988901be00a5283b775bba5b89a64d356fe9fc472f876e0e6208",
+    "scripts/verify_sensitivity_inputs.py": "6ef642ec2ce3da98097bc537c7b1fdbc7777833a768629b65a5034ec33b99046",
+    "src/hormuz_throughput/baselines.py": "3088dfc7f75bc1f2ba5b9908cfab7ed4ad1fde054e38a906406161626e52eb01",
+    "src/hormuz_throughput/bsts.py": "a6bd08249e6da9da1f328d9bcfe115e2ae4306bfa95e2f7828e73dd75110f354",
+    "src/hormuz_throughput/registry.py": "b6902b994d9ca9607a31286a6833da009382623a84a4ab287933bff30640f859",
+    "src/hormuz_throughput/tsfm.py": "93e3b6a55e6c147adc5d8183c915d32b4c3490f3b6da8b492517e23db93c9e53",
+    "src/hormuz_throughput/vintage_matrix.py": "704e485ddbe744bdbd24b1e5a7ace132587bfd1be8312303c41d037679d18465"
+  },
+  "interpretation": "Case-local measurement-vintage and selected-model sensitivity; not an ATT, variance decomposition, pooled estimate, or general AIS claim.",
+  "lifecycle_role": "post_matrix_complete_manifest_after_repository_migration",
+  "manifest_schema": 1,
+  "matrix_artifact_presence": {
+    "data/processed/model_vintage_matrix_chronos_daily.csv": true,
+    "data/processed/model_vintage_matrix_chronos_summary.csv": true,
+    "data/processed/model_vintage_matrix_core_daily.csv": true,
+    "data/processed/model_vintage_matrix_core_summary.csv": true,
+    "data/processed/model_vintage_matrix_daily.csv": true,
+    "data/processed/model_vintage_matrix_manifest.json": true,
+    "data/processed/model_vintage_matrix_summary.csv": true
+  },
+  "mode": "complete",
+  "pre_run_checkpoint_path": "data/processed/model_admission_pre_run_checkpoint.json",
+  "pre_run_checkpoint_sha256": "846fb5247148e65975a9fe4c343ccd78c8b7288c1bd12930f2cedb5f3f673320",
+  "pre_run_freeze_claim_permitted": false,
+  "pre_run_provenance_status": "historical_pre_run_manifest_bytes_unavailable",
+  "prepared_manifest_matches_checkpoint": false,
+  "prepared_manifest_path": "data/processed/portwatch_sensitivity_manifest.json",
+  "prepared_manifest_provenance_status": "historical_pre_run_bytes_unavailable",
+  "prepared_manifest_sha256": "b9f5d44c03a9ee3b3baf57ef6cdcfeb9bd9daa76a3312ed99a750fc0194bb643",
+  "replication_archive_status": "pending_deposit_gitignored_august_source_bytes",
+  "sensitivity_raw_sha256": {
+    "data/raw/portwatch/vintages/Daily_Chokepoints_Data__vintage_2026-08-09.csv": "0bc806a4c384723debff08053d6fcbb915a03ee9fdf7b23c73d76d9bcb885bcb"
+  },
+  "vintage_averaging": "prohibited"
+}

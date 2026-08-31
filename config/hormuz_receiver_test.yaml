@@ -1,18 +1,3 @@
-# Frozen specification for the B2 Red Sea positive control.
-#
-# SCOPE. B2 only. This spec does not open B3, does not touch `settings.yaml`,
-# the locked 2026-02-28 cutoff, Track A files, or raw data. The Hormuz receiver
-# test (B3) has its own phase and opens only if Mher accepts this gate.
-#
-# ESTIMAND CLASS. Descriptive aggregate correspondence between one emitter's
-# loss and one receiver's gain. NOT vessel linkage, NOT a causal reallocation
-# parameter, NOT evidence that the same ships moved.
-#
-# ANTI-SHOPPING RULE. The eligible pair families, support rules,
-# standardisation, horizon, and null designs below are fixed BEFORE the
-# post-onset gains of the placebo family are inspected. Only the
-# pre-registered anchor pair's arithmetic (already published in the plan and in
-# docs/PROPAGATION_MODEL_RESULTS.md) was computed before this freeze.
 version: 1
 status: "frozen"
 drafted_on: "2026-08-27"
@@ -20,9 +5,6 @@ plan: "docs/HORMUZ_TECHNICAL_EXECUTION_PLAN.md"
 plan_version: "1.1"
 phase: "B2"
 
-# ---------------------------------------------------------------------------
-# Data
-# ---------------------------------------------------------------------------
 panel:
   registry_variable: "portwatch_chokepoints_snapshot"
   measurement_state: "july"
@@ -31,10 +13,6 @@ panel:
   end: "2026-07-12"
   n_units_expected: 28
 
-# ---------------------------------------------------------------------------
-# The pre-registered pair. Named before the event was examined; recorded in
-# docs/PROPAGATION_MODEL_RESULTS.md before this phase began.
-# ---------------------------------------------------------------------------
 anchor_pair:
   emitter: "bab_el_mandeb_strait"
   receiver: "cape_of_good_hope"
@@ -43,17 +21,6 @@ anchor_pair:
     el-Mandeb/Suez route. It was named on route topology before any post-onset
     outcome was inspected.
 
-# ---------------------------------------------------------------------------
-# Onsets. BOTH are declared and BOTH are reported. Neither is the headline.
-#
-# Mher's decision, 2026-08-27: the anchor arithmetic differs by a factor of
-# about 2.2 between these two dates, and both values were already known when
-# the decision was made (the register value is a plan invariant that had to be
-# reproduced; the external value had to be checked because A1's event mask was
-# re-anchored to it). Declaring one as primary after seeing both would be
-# specification shopping. The onset sensitivity is therefore itself a reported
-# B2 finding.
-# ---------------------------------------------------------------------------
 onsets:
   register_onset:
     date: "2024-01-13"
@@ -74,15 +41,12 @@ onsets:
       The reference window is clean, but the post-onset window begins at the
       start of a gradual diversion, so early weeks dilute the receiver gain.
   report_both: true
-  primary: null      # deliberately unset; see the decision note above
+  primary: null
 
-# ---------------------------------------------------------------------------
-# Statistic
-# ---------------------------------------------------------------------------
 statistic:
-  horizon_weeks: 8                 # nine weekly blocks, h = 0..8
-  baseline_days: 365               # matches propagation.BASELINE_DAYS
-  pre_window_days: 28              # matches propagation.PRE_WINDOW_DAYS
+  horizon_weeks: 8
+  baseline_days: 365
+  pre_window_days: 28
   definition: >
     Each chokepoint is divided by its own 365-day pre-onset mean, a donor
     median over unaffected units is subtracted, and the mean post-onset weekly
@@ -91,10 +55,6 @@ statistic:
     value; recovered fraction is gain divided by loss.
   recovered_fraction_requires_positive_loss: true
 
-# Standardisation. Raw transits-per-day changes are NOT exchangeable between a
-# 83/day chokepoint and a 9/day one, so every pair statistic is divided by the
-# same statistic's own PRE-ONSET variability, computed from pseudo-onsets that
-# fall strictly before the onset under test.
 standardisation:
   method: "pre_onset_pseudo_onset_sd"
   min_pre_onset_draws: 30
@@ -104,11 +64,6 @@ standardisation:
     admissible pseudo-onsets is dropped from the family rather than compared on
     a raw scale.
 
-# ---------------------------------------------------------------------------
-# Support rules for the eligible family. Frozen before the placebo family's
-# post-onset gains were inspected. The 5.0 threshold was set from PRE-ONSET
-# baseline volumes only; no post-onset outcome informed it.
-# ---------------------------------------------------------------------------
 support:
   min_baseline_transits_per_day: 5.0
   min_baseline_note: >
@@ -124,15 +79,6 @@ support:
     Reuses the same external chronology that anchors the A1 detector mask, so
     the two phases cannot disagree about when a unit was disrupted.
 
-# ---------------------------------------------------------------------------
-# Spatial placebo families. Reported SEPARATELY, and DESCRIPTIVELY.
-#
-# No inferential p-value is computed from these. Chokepoints differ in
-# geography, volume, and route role, so cross-sectional exchangeability cannot
-# be defended; plan v1.1 section 7 permits a standardised rank in that case and
-# forbids presenting roughly 700 ordered pairs as independent observations.
-# The dependence-aware summary is a maximum statistic over the eligible family.
-# ---------------------------------------------------------------------------
 spatial_placebo:
   inferential_p_value: false
   reason_no_p_value: >
@@ -155,13 +101,6 @@ spatial_placebo:
   dependence_summary: "max_statistic_over_eligible_family"
   report_rank_and_family_size: true
 
-# ---------------------------------------------------------------------------
-# Temporal placebo null. This is where the inferential p-value comes from.
-#
-# Every unique admissible pseudo-onset is used EXACTLY ONCE. No resampling with
-# replacement. The legacy 250-draw sampler is preserved for reproducibility of
-# the old result but is not used for inference here.
-# ---------------------------------------------------------------------------
 temporal_placebo:
   enumeration: "every_unique_admissible_date_once"
   resampling_with_replacement: false
@@ -185,10 +124,6 @@ temporal_placebo:
     B counts unique admissible pseudo-onsets under the frozen design, not
     repeated draws presented as new temporal information.
 
-# ---------------------------------------------------------------------------
-# Invariants. Verification targets computed from the frozen panel at run time
-# and compared. Never inputs to any reported number.
-# ---------------------------------------------------------------------------
 invariants:
   enforce: true
   anchor_at_register_onset:

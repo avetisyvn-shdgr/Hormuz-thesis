@@ -1,7 +1,7 @@
 """Close the TSFM admission-test calibration leg with a raw AR interval.
 
 Builds the AR-only baseline's raw, horizon-aware predictive interval (see
-``src/lngfreight/ar_intervals.py``) from the pre-treatment rolling-origin
+``src/hormuz_throughput/ar_intervals.py``) from the pre-treatment rolling-origin
 residuals already in ``baseline_forecasts.csv``, then applies the admission test
 against the foundation-model benchmark on a MATCHED fold subset so MASE and
 calibration are compared on exactly the folds where the AR interval is defined.
@@ -26,12 +26,12 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.ar_intervals import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.ar_intervals import (  # noqa: E402
     aggregate_ar_interval,
     evaluate_ar_horizon_interval,
 )
-from lngfreight.tsfm import DEFAULT_LOWER_Q, DEFAULT_UPPER_Q, admission_test  # noqa: E402
+from hormuz_throughput.tsfm import DEFAULT_LOWER_Q, DEFAULT_UPPER_Q, admission_test  # noqa: E402
 
 AR_MODEL = "ar_lag1_7"
 MIN_CALIB_FOLDS = 15
@@ -89,7 +89,6 @@ def main() -> None:
           f"nominal {DEFAULT_UPPER_Q - DEFAULT_LOWER_Q:.2f}):")
     print(ar_summary.to_string(index=False))
 
-    # Matched fold subset: only the folds where the AR interval is defined.
     keep_starts = {
         t: set(g["test_start"].astype(str)) for t, g in ar_scores.groupby("target")
     }
@@ -101,7 +100,6 @@ def main() -> None:
     ar_mase_matched = _matched_aggregate(
         baseline_scores[baseline_scores["model"] == AR_MODEL], keep_starts
     )
-    # Attach the AR interval's coverage error onto the AR MASE row.
     ar_cov = ar_summary[["target", "coverage_error_mean"]]
     ar_agg = ar_mase_matched.merge(ar_cov, on="target", how="left")
 

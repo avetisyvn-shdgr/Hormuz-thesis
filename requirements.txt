@@ -1,14 +1,1 @@
-# Core runtime plus the local test runner. Runtime entries mirror
-# pyproject.toml; foundation-model environments remain isolated in their
-# dedicated requirements and lock files.
-pandas~=2.2
-numpy~=1.26
-requests~=2.32
-PyYAML~=6.0
-python-dotenv~=1.0
-openpyxl~=3.1
-matplotlib~=3.10
-# Phase-3 modeled maritime distances. Exact pin freezes the bundled route graph.
-searoute==1.6.0
-networkx~=3.4
-pytest~=8.2
+-e .[dev]

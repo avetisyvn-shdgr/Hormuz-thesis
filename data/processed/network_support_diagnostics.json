@@ -1,0 +1,77 @@
+{
+  "analysis_role": "modeled_network_support_denominator_audit",
+  "balanced_primary_cell": {
+    "all_resolved_post": 674,
+    "all_resolved_pre": 731,
+    "all_resolved_retention_share": 0.9220246238030095,
+    "hormuz_crossing_post": 2,
+    "hormuz_crossing_pre": 37,
+    "hormuz_crossing_retention_share": 0.05405405405405406
+  },
+  "census": {
+    "eligible_fleet_census_imos": 624,
+    "sampling_design": "eligible_fleet_census"
+  },
+  "construct_label": "modeled resolved terminal-sequence support, not observed voyages",
+  "design_id": "lng_selective_network_support_frontier_v1",
+  "design_sha256": "dcf757f3d944f92a86fb208bc1d4a1699aa5de628f66a81682e3ac19fa4cc184",
+  "freeze_status": "frozen_before_generation_not_preregistered",
+  "primary_cell": {
+    "all_resolved_post": 746,
+    "all_resolved_pre": 971,
+    "all_resolved_retention_share": 0.768280123583934,
+    "hormuz_crossing_post": 2,
+    "hormuz_crossing_pre": 145,
+    "hormuz_crossing_retention_share": 0.013793103448275862,
+    "retention_share_ratio": 0.017953221780530645
+  },
+  "primary_terminal_radius_km": 30,
+  "radius_sensitivity": [
+    {
+      "all_resolved_post": 396,
+      "all_resolved_pre": 567,
+      "all_resolved_retention_share": 0.6984126984126984,
+      "hormuz_crossing_post": 1,
+      "hormuz_crossing_pre": 116,
+      "hormuz_crossing_retention_share": 0.008620689655172414,
+      "retention_share_ratio": 0.012343260188087775,
+      "selective_support_loss_exceeds_general": true,
+      "terminal_radius_km": 10
+    },
+    {
+      "all_resolved_post": 685,
+      "all_resolved_pre": 920,
+      "all_resolved_retention_share": 0.7445652173913043,
+      "hormuz_crossing_post": 1,
+      "hormuz_crossing_pre": 144,
+      "hormuz_crossing_retention_share": 0.006944444444444444,
+      "retention_share_ratio": 0.00932684509326845,
+      "selective_support_loss_exceeds_general": true,
+      "terminal_radius_km": 20
+    },
+    {
+      "all_resolved_post": 746,
+      "all_resolved_pre": 971,
+      "all_resolved_retention_share": 0.768280123583934,
+      "hormuz_crossing_post": 2,
+      "hormuz_crossing_pre": 145,
+      "hormuz_crossing_retention_share": 0.013793103448275862,
+      "retention_share_ratio": 0.017953221780530645,
+      "selective_support_loss_exceeds_general": true,
+      "terminal_radius_km": 30
+    }
+  ],
+  "reporting_guards": {
+    "ais_dark_note": "Sequences vanish from this panel when AIS coverage, terminal attribution, or route resolution fails, and those failure modes are themselves plausibly correlated with the disruption. No daily or aggregate physical throughput may be inferred from a support count.",
+    "ais_dark_throughput_inference_permitted": false,
+    "construct_label": "modeled resolved terminal-sequence support, not observed voyages",
+    "core_reproducibility_manifest_dependency": "none",
+    "core_run_all_dependency": "required_for_final_integration",
+    "denominator_discipline": "Every selective statement must be paired with its overall denominator in the same radius and period. A Hormuz-crossing count may never be reported alone.",
+    "is_ATT": false,
+    "is_causal_identification": false,
+    "missing_edge_interpretation": "A missing modeled edge is a missing observation in the resolved-sequence panel. It is NOT evidence that no ship sailed, that a route was physically impossible, or that throughput fell to the modeled level. Loss of support and loss of sailing are different propositions and this phase can only measure the first.",
+    "overwrite_policy": "upstream_capacity_and_comparison_artifacts_are_read_only_in_this_phase"
+  },
+  "selectivity_direction_consistent_across_radii": true
+}

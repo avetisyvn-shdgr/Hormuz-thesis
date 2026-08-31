@@ -1,0 +1,77 @@
+{
+  "analysis_role": "block_inference_design_frontier_audit_and_extension",
+  "audit_expectation_fully_reproduced": true,
+  "core_reproducibility_manifest_dependency": "none",
+  "core_run_all_dependency": "required_for_final_integration",
+  "design_id": "hormuz_horizon_resolution_inference_frontier_v1",
+  "design_sha256": "8c286420a882e0ddd6be80ddf7d443f997fed0e235fddac8baf55e075a08bd45",
+  "five_percent_significance_claimed": false,
+  "freeze_status": "frozen_before_generation_not_preregistered",
+  "horizon_grid_days": [
+    30,
+    65,
+    91,
+    130
+  ],
+  "input_sha256": {
+    "config/horizon_resolution_frontier.yaml": "8c286420a882e0ddd6be80ddf7d443f997fed0e235fddac8baf55e075a08bd45",
+    "data/processed/block_conformal_summary.csv": "d04e26304904f1ee4f9d57a2471af703d9b0b1b6041723a29d252bad971f3ea2",
+    "data/processed/block_placebo_effects.csv": "bef959fbf05e5f9c06bf2146839049642ea18c4637248fb45f855c3c4367e5d0",
+    "data/processed/panel_aligned.csv": "b57019f065512de100352fd3ee4dde4294c86ddd0f82a7b325cd063d6b553d53",
+    "data/processed/placebo_time_effects.csv": "4459111e3fcc264ea10c0a13fa4ec779e1d81d93afac31d5c1e2e93dee3a75d7",
+    "scripts/freeze_horizon_resolution_frontier.py": "6dfed592965b54a994cb3a13a4cfcc76f32b67f3c748bae1aea466ab03134d54",
+    "scripts/run_horizon_resolution_frontier.py": "cdfcad70bcc2a7f215059118b2716763786af6eca9e6a1f48a2fc2cb140fc44e",
+    "src/hormuz_throughput/horizon_frontier.py": "3b42889012763854ec6de879571a1b4917e90336a4262eb8a40e37c4127ba7fd"
+  },
+  "locked_primary_artifacts_mutated": false,
+  "manifest_schema": 1,
+  "origin_rules": {
+    "backward_anchored_from_cutoff": "sensitivity",
+    "forward_anchored_direct": "primary",
+    "legacy_greedy_step30": "audit_reproduction"
+  },
+  "output_sha256": {
+    "data/processed/horizon_frontier_audit_expectation.json": "34ae3378ef09326966e13a202016831baf89082d5644696e45cf84606677cc11",
+    "data/processed/horizon_frontier_block_geometry.csv": "7491042923979568b1ce9af425862b57142cdec13454f0be4fc3d1bf37cb1c21",
+    "data/processed/horizon_frontier_blocks.csv": "ac9918c088b292d8e885feff92d8a5db670ec1e7876908a6dd13f82596081f12",
+    "data/processed/horizon_frontier_diagnostics.json": "7c5c0c85ec07682e777a535aae1d256ed3cc2dbf597a9cf6a145729946f1f8c6",
+    "data/processed/horizon_frontier_summary.csv": "5ebdb808141e540c9f3dbb767761939eb32f35113739b500d54c7cceadd65d0c",
+    "reports/audit/horizon_resolution_frontier.md": "1a48b7d8cec4703212ff2af3381e2644e144d7172da18136376df1de35241883"
+  },
+  "primary_cell": {
+    "finite_interval_levels": [
+      0.8
+    ],
+    "horizon_days": 130,
+    "maximum_attainable_coverage": 0.8888888888888888,
+    "n_reference_blocks": 8,
+    "origin_rule": "forward_anchored_direct",
+    "packing_upper_bound": 8,
+    "rank_p_value_floor": 0.1111111111111111,
+    "rank_p_value_greater": 0.1111111111111111,
+    "unbounded_interval_levels": [
+      0.9,
+      0.95
+    ]
+  },
+  "primary_horizon_days": 130,
+  "reporting_guards": {
+    "claim_vocabulary": "counterfactual_forecast_shortfall_not_treatment_effect",
+    "core_reproducibility_manifest_dependency": "none",
+    "core_run_all_dependency": "required_for_final_integration",
+    "five_percent_significance_claim_permitted": false,
+    "is_ATT": false,
+    "is_causal_identification": false,
+    "overwrite_policy": "locked_primary_block_artifacts_are_read_only_in_this_phase",
+    "p_value_interpretation": "A finite-sample rank position among pre-treatment reference blocks under the same forecast machinery. With K reference blocks the smallest attainable value is 1/(K+1). The primary reporting resolution cannot reach 0.05, and no cell at any resolution may be described as significant at the 5% level.",
+    "reference_blocks_are_treated_units": false,
+    "resolution_floor_policy": "A shorter block length packs more blocks into the same fixed pre-period and therefore mechanically lowers the 1/(K+1) floor without adding any observation, while shortening the accumulation each block measures and weakening block independence. Finer-resolution floors are reported for completeness only. The reporting resolution is fixed at primary_horizon_days by this file and must never be replaced by whichever horizon produced the smallest floor.",
+    "unbounded_interval_policy": "When the required order statistic exceeds K the conformal radius is infinite and the interval is reported as unbounded. Clipping the rank to K would silently understate the requested coverage and is prohibited."
+  },
+  "resolutions_with_sub_five_percent_floor": [
+    30
+  ],
+  "status": "generated_inference_design_artifact",
+  "verification_record": "reports/reproducibility_run_transcript.txt",
+  "verification_state": "NEEDS-VERIFY"
+}

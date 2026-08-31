@@ -15,11 +15,11 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.inference import empirical_p_value, placebo_time_folds, select_non_overlapping_folds  # noqa: E402
-from lngfreight.spatial import chokepoint_metadata, wide_chokepoint_panel  # noqa: E402
-from lngfreight.synthetic import scale_by_pre_period_mean  # noqa: E402
-from lngfreight.validation import resolve_cutoff  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.inference import empirical_p_value, placebo_time_folds, select_non_overlapping_folds  # noqa: E402
+from hormuz_throughput.spatial import chokepoint_metadata, wide_chokepoint_panel  # noqa: E402
+from hormuz_throughput.synthetic import scale_by_pre_period_mean  # noqa: E402
+from hormuz_throughput.validation import resolve_cutoff  # noqa: E402
 from run_synthetic_control import MIN_PRE_ROWS, TREATED, _fit_unit  # noqa: E402
 
 

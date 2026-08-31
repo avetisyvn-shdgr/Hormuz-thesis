@@ -3,13 +3,13 @@ import pandas as pd
 import pytest
 
 
-from lngfreight.baselines import (
+from hormuz_throughput.baselines import (
     arx_forecast,
     evaluate_arx,
     evaluate_seasonal_naive,
     seasonal_naive_forecast,
 )
-from lngfreight.validation import rolling_origin_splits
+from hormuz_throughput.validation import rolling_origin_splits
 
 
 def _settings():

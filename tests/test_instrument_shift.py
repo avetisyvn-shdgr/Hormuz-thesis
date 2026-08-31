@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight.instrument_shift import (
+from hormuz_throughput.instrument_shift import (
     InvariantMismatch,
     annual_summary,
     assert_not_averaged,
@@ -56,9 +56,6 @@ def _two_states(july_values, august_values, start="2020-01-01"):
     return july, august
 
 
-# ---------------------------------------------------------------------------
-# Mapping forms recover their own generating parameters
-# ---------------------------------------------------------------------------
 
 
 def test_proportional_mapping_recovers_exact_scale():
@@ -93,9 +90,6 @@ def test_empty_estimation_sample_raises():
         fit_mapping(np.array([np.nan]), np.array([np.nan]), form="proportional")
 
 
-# ---------------------------------------------------------------------------
-# The proportional / non-proportional decomposition
-# ---------------------------------------------------------------------------
 
 
 def test_purely_proportional_revision_leaves_no_residual():
@@ -138,16 +132,12 @@ def test_scaling_a_whole_series_is_absorbed_but_a_level_shift_is_not():
     assert shifted["fraction_squared_error_remaining"] > 0.0
 
 
-# ---------------------------------------------------------------------------
-# Frozen sample selection
-# ---------------------------------------------------------------------------
 
 
 def test_declared_mappings_use_only_their_configured_sample():
     dates = pd.date_range("2019-01-01", "2026-07-12", freq="D")
     x = np.linspace(40, 60, len(dates))
     y = 0.80 * x
-    # Contaminate the window that the default sample must exclude.
     y = np.where(dates > pd.Timestamp("2025-12-31"), 999.0, y)
     series = pd.DataFrame({"date": dates, "july": x, "august": y})
     forms = {
@@ -166,7 +156,7 @@ def test_declared_mappings_use_only_their_configured_sample():
     }
     fits = fit_declared_mappings(series, forms)
     assert fits["default"].scale == pytest.approx(0.80, abs=1e-12)
-    assert fits["extended"].scale > 0.80  # contamination only reaches the extended sample
+    assert fits["extended"].scale > 0.80
     assert fits["default"].n_sample < fits["extended"].n_sample
     assert fits["default"].sample_end == "2025-12-31"
 
@@ -180,9 +170,6 @@ def test_mapping_fit_is_deterministic():
     assert first.scale == second.scale
 
 
-# ---------------------------------------------------------------------------
-# Residual reporting
-# ---------------------------------------------------------------------------
 
 
 def test_residuals_are_split_at_the_onset_without_reselecting_the_sample():
@@ -210,9 +197,6 @@ def test_residual_summary_handles_an_empty_vector():
     assert residual_summary(np.array([]), QUANTILES) == {"n": 0}
 
 
-# ---------------------------------------------------------------------------
-# Changed-row accounting and temporal distribution
-# ---------------------------------------------------------------------------
 
 
 def test_changed_row_percentage_counts_only_differing_rows():
@@ -272,9 +256,6 @@ def test_monthly_distribution_shares_sum_to_one_hundred():
     assert set(daily["period"]) == {"pre_onset", "post_onset"}
 
 
-# ---------------------------------------------------------------------------
-# Measurement-state separation guards
-# ---------------------------------------------------------------------------
 
 
 def test_identical_states_are_rejected():
@@ -327,9 +308,6 @@ def test_duplicate_unit_days_within_one_state_are_rejected():
         tidy_state(doubled, "july", "j.csv", "a" * 64)
 
 
-# ---------------------------------------------------------------------------
-# Invariant verification
-# ---------------------------------------------------------------------------
 
 
 _SPEC = {
@@ -379,9 +357,6 @@ def test_expected_unit_label_is_checked():
         verify_invariants({"next": 0.109091, "next__unit": "Suez Canal"}, spec)
 
 
-# ---------------------------------------------------------------------------
-# WTO regime detection
-# ---------------------------------------------------------------------------
 
 
 def _write_wto(tmp_path: Path, name: str, dates, values, cols=("date", "value")):
@@ -464,9 +439,6 @@ def test_empty_wto_directory_raises(tmp_path):
         wto_state_audit(tmp_path, "*.csv", tmp_path / "m.jsonl", "v", ["date"], ["value"], 0.0)
 
 
-# ---------------------------------------------------------------------------
-# End-to-end synthetic pipeline: the composition the audit script performs
-# ---------------------------------------------------------------------------
 
 
 def test_synthetic_end_to_end_pipeline_matches_the_script_composition():
@@ -491,7 +463,7 @@ def test_synthetic_end_to_end_pipeline_matches_the_script_composition():
             august_values[unit] = revised.round(3)
         else:
             revised = base.copy()
-            revised[i] = revised[i] + 1.0  # i revised days for unit i
+            revised[i] = revised[i] + 1.0
             august_values[unit] = revised
 
     july = tidy_state(_state_frame(july_values, dates), "july", "j.csv", "a" * 64)
@@ -510,7 +482,7 @@ def test_synthetic_end_to_end_pipeline_matches_the_script_composition():
         "august",
     )
     ranked = by_unit.sort_values("pct_changed_rows", ascending=False)
-    assert ranked.iloc[0]["portname"] == focus  # the rescaled unit dominates
+    assert ranked.iloc[0]["portname"] == focus
 
     series = (
         panel[(panel["portname"] == focus)].sort_values("date").reset_index(drop=True)
@@ -545,7 +517,6 @@ def test_synthetic_end_to_end_pipeline_matches_the_script_composition():
         name: squared_error_decomposition(x, y, fit) for name, fit in fits.items()
     }
     default_decomp = decompositions[default_name]
-    # Most of the revision is the rescaling; a real remainder survives it.
     assert default_decomp["share_absorbed_by_mapping"] > 0.8
     assert default_decomp["fraction_squared_error_remaining"] > 0.0
 

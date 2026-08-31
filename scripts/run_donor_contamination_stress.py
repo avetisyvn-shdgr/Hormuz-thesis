@@ -20,16 +20,16 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.donor_screen import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.donor_screen import (  # noqa: E402
     build_screens,
     donor_directional_deviation,
     screen_agreement,
 )
-from lngfreight.inference import empirical_p_value  # noqa: E402
-from lngfreight.spatial import chokepoint_metadata, wide_chokepoint_panel  # noqa: E402
-from lngfreight.synthetic import scale_by_pre_period_mean  # noqa: E402
-from lngfreight.validation import resolve_cutoff  # noqa: E402
+from hormuz_throughput.inference import empirical_p_value  # noqa: E402
+from hormuz_throughput.spatial import chokepoint_metadata, wide_chokepoint_panel  # noqa: E402
+from hormuz_throughput.synthetic import scale_by_pre_period_mean  # noqa: E402
+from hormuz_throughput.validation import resolve_cutoff  # noqa: E402
 from run_synthetic_control import TREATED, _fit_unit  # noqa: E402
 
 HISTORY_START = pd.Timestamp("2022-01-01")
@@ -52,7 +52,6 @@ def _fit_under_screen(value_col, contaminated, meta):
         and pd.notna(scale.get(slug))
     ]
     actual, _, _ = _fit_unit(scaled, TREATED, donors, pre, post)
-    # Abadie placebos: each clean donor as pseudo-treated against the others.
     placebo_ratios = []
     for pseudo in donors:
         others = [d for d in donors if d != pseudo]

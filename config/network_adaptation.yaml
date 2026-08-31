@@ -2,10 +2,6 @@ version: 1
 status: "exploratory_retrospective_restriction"
 frozen_on: "2026-08-29"
 
-# This is a reproducibility freeze, not a preregistration. The repository already
-# contained an all-corridor post-event AR map before this restricted design was
-# written. Multiplicity-adjusted p-values are therefore descriptive screening
-# measures and must not be presented as confirmatory discoveries.
 claim: >-
   Positive abnormal tanker activity compatible with network adaptation or
   alternative-source substitution; not physical rerouting, displaced volume,
@@ -46,9 +42,6 @@ inference:
     sampled at common time indices across hypotheses to preserve contemporaneous
     cross-corridor dependence.
 
-# These corridors are an explicitly restricted economic-adaptation screen. The
-# set is theory-facing but retrospective: Cape/Panama/Yucatan were visible in an
-# earlier AR map. This fact is carried into every output and chapter caveat.
 primary_family:
   vessel_class: "n_tanker"
   corridors:
@@ -86,11 +79,6 @@ negative_control_family:
     Positive control-class anomalies at the same corridors weaken a
     tanker-specific adaptation interpretation; null controls do not prove the
     tanker mechanism.
-  # Declared before the robustness run, in item T1.1 of
-  # Research Record/plan-technical-remediation.md. The rule is volume-based
-  # and computed on pre-event data only; no control may be removed after seeing
-  # its post-event result, which would reproduce the selection problem the
-  # control family exists to guard against.
   volume_eligibility:
     minimum_pre_event_daily_transits: 5.0
     computed_on: "pre_event_observations_only"

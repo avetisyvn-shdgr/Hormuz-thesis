@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import sys
 
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/hormuz_throughput-matplotlib")
 
 import matplotlib  # noqa: E402
 matplotlib.use("Agg")
@@ -23,8 +23,8 @@ from figure_style import (  # noqa: E402
     apply_publication_style,
     style_axes,
 )
-from lngfreight import config  # noqa: E402
-from lngfreight.bloomberg_market import descriptive_freight_layer  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.bloomberg_market import descriptive_freight_layer  # noqa: E402
 
 
 COLORS = {
@@ -34,7 +34,7 @@ COLORS = {
     "spread": "#7A5195",
 }
 PDF_METADATA = {
-    "Creator": "lngfreight reproducible pipeline",
+    "Creator": "hormuz_throughput reproducible pipeline",
     "CreationDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
     "ModDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
 }
@@ -55,7 +55,6 @@ def _plot(data: pd.DataFrame, window: dict) -> None:
     data = data.copy()
     data["week_end"] = pd.to_datetime(data["week_end"])
     fig, axes = plt.subplots(2, 2, figsize=(FIGURE_WIDTH_IN, 5.2), sharex=True)
-    # No in-figure headline title: the LaTeX caption carries it in the thesis.
 
     ax = axes[0, 0]
     ax.plot(data["week_end"], data["east_spot_usd_per_day_analysis"] / 1000, color=COLORS["east"], linewidth=1.1, label="East of Suez spot")
@@ -93,7 +92,6 @@ def _plot(data: pd.DataFrame, window: dict) -> None:
     for ax in axes[1]:
         ax.set_xlabel("Assessment week")
 
-    # One shared legend: series colors from panels A-C, event lines once.
     handles: list = []
     labels: list = []
     for ax in (axes[0, 0], axes[0, 1], axes[1, 0]):

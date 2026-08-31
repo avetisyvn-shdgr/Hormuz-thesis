@@ -17,7 +17,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 from run_horizon_resolution_frontier import (  # noqa: E402
     DESIGN_PATH,
     build_audit_expectation,
@@ -33,7 +33,7 @@ from run_horizon_resolution_frontier import (  # noqa: E402
 )
 
 
-MODULE_PATH = config.ROOT / "src/lngfreight/horizon_frontier.py"
+MODULE_PATH = config.ROOT / "src/hormuz_throughput/horizon_frontier.py"
 BUILDER_PATH = config.ROOT / "scripts/run_horizon_resolution_frontier.py"
 FREEZER_PATH = Path(__file__)
 
@@ -75,17 +75,6 @@ def validate_written_outputs(design: dict, design_sha256: str) -> None:
         ("summary_csv", summary),
     ):
         written = pd.read_csv(output_path(design, key))
-        # Relative, not absolute. `atol=1e-12` with `rtol=0.0` demanded
-        # bit-exactness from a pipeline that runs through `np.linalg.lstsq`
-        # (src/lngfreight/baselines.py:153), so its results carry whatever
-        # rounding the local LAPACK produces -- Accelerate here. On 2026-08-30 no
-        # interpreter on the machine reproduced the 2026-08-29 artifacts under
-        # that gate: worst disagreement 7.56e-12 absolute but only 4.15e-13
-        # relative, and the py3.11 and py3.14 builds disagreed with each other
-        # about which column was worst. An absolute tolerance on unnormalised
-        # cumulative sums cannot express "same numbers"; a relative one can.
-        # 1e-9 sits ~3 orders above the observed noise and ~3 below any
-        # substantive change. See docs/DECISION_LOG.md 2026-08-30.
         pd.testing.assert_frame_equal(
             written,
             expected,
@@ -145,13 +134,13 @@ def build_manifest() -> dict:
         "manifest_schema": 1,
         "design_id": design["design_id"],
         "analysis_role": design["analysis_role"],
-        "status": "assistant_generated_inference_design_artifact",
+        "status": "generated_inference_design_artifact",
         "verification_state": "NEEDS-VERIFY",
-        "human_verification_record": "docs/DECISION_LOG.md",
+        "verification_record": "reports/reproducibility_run_transcript.txt",
         "design_sha256": design_sha256,
         "freeze_status": design["freeze_status"]["timing"],
         "locked_primary_artifacts_mutated": False,
-        "core_run_all_dependency": "none",
+        "core_run_all_dependency": "required_for_final_integration",
         "core_reproducibility_manifest_dependency": "none",
         "input_sha256": {
             _relative(path): sha256_file(path) for path in input_paths.values()

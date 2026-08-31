@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from lngfreight.bloomberg_market import (
+from hormuz_throughput.bloomberg_market import (
     FREIGHT_SERIES,
     build_weekly_freight_panel,
     descriptive_freight_layer,

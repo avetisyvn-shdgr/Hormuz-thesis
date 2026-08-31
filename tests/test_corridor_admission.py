@@ -5,13 +5,13 @@ import pandas as pd
 import pytest
 
 
-from lngfreight.corridor_admission import (
+from hormuz_throughput.corridor_admission import (
     CorridorAdmissionProtocol,
     load_corridor_admission_protocol,
     panel_admission_test,
 )
-from lngfreight.spatial import wide_chokepoint_panel
-from lngfreight.validation import rolling_origin_splits
+from hormuz_throughput.spatial import wide_chokepoint_panel
+from hormuz_throughput.validation import rolling_origin_splits
 
 
 def _protocol() -> CorridorAdmissionProtocol:
@@ -160,8 +160,6 @@ def test_gate_rejects_wrong_history_or_horizon_geometry():
 def test_threshold_boundary_is_inclusive_and_output_is_deterministic():
     protocol = _protocol()
     candidate = _scores("candidate", mase=0.95, coverage=0.70)
-    # Candidate sits exactly at the 5% MASE, 70% coverage, 10-point absolute
-    # calibration and 2-point calibration-noninferiority boundaries.
     baseline = _scores("ar_lag1_7", mase=1.00, coverage=0.72)
     first = panel_admission_test(candidate.sample(frac=1, random_state=1), baseline, protocol)
     second = panel_admission_test(candidate.sample(frac=1, random_state=2), baseline, protocol)

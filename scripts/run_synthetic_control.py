@@ -17,16 +17,16 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.inference import empirical_p_value  # noqa: E402
-from lngfreight.spatial import chokepoint_metadata, wide_chokepoint_panel  # noqa: E402
-from lngfreight.synthetic import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.inference import empirical_p_value  # noqa: E402
+from hormuz_throughput.spatial import chokepoint_metadata, wide_chokepoint_panel  # noqa: E402
+from hormuz_throughput.synthetic import (  # noqa: E402
     fit_simplex_weights,
     post_pre_ratio,
     rmspe,
     scale_by_pre_period_mean,
 )
-from lngfreight.validation import resolve_cutoff  # noqa: E402
+from hormuz_throughput.validation import resolve_cutoff  # noqa: E402
 
 
 VALUE_COLS = [

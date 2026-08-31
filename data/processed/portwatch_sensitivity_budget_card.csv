@@ -1,0 +1,5 @@
+model,model_label,point_definition,is_locked_primary_model,pinned_shortfall_per_day,august_shortfall_per_day,pinned_minus_august_per_day,august_lower_pct_of_pinned_shortfall,pinned_shortfall_share_of_counterfactual_pct,august_shortfall_share_of_counterfactual_pct,august_minus_pinned_percentage_points
+seasonal_naive_7d,Seasonal naive,deterministic_daily_point,False,54.8,43.7,11.099999999999994,20.255474452554736,93.08767803475762,93.40677408747122,0.3190960527136042
+ar_lag1_7,"AR(1,7)",deterministic_daily_point,True,52.83843081600861,43.81350622973898,9.024924586269634,17.08022824844247,92.84941490147921,93.42273149022826,0.5733165887490514
+chronos2,Chronos-2,daily_q0.5,False,50.88375704838679,42.17672494741586,8.707032100970928,17.111614012092634,92.59506911118999,93.18487839293523,0.5898092817452465
+bsts_local_level_weekly,BSTS,daily_marginal_posterior_median,False,49.625164788509466,40.16745715691507,9.457707631594396,19.058289623623164,92.42149813409311,92.86828305937583,0.44678492528271363

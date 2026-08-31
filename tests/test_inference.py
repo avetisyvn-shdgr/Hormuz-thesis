@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 
-from lngfreight.inference import (
+from hormuz_throughput.inference import (
     block_residual_sums,
     circular_block_bootstrap_loss_interval,
     conformal_effect_interval,
@@ -198,13 +198,11 @@ def test_circular_block_bootstrap_interval_is_reproducible():
 
 
 def test_overlapping_placebo_band_centers_on_point_loss_and_is_symmetric():
-    # Symmetric, mean-zero errors -> band centered on the point loss.
     errors = [-100.0, -50.0, 0.0, 50.0, 100.0]
     out = overlapping_placebo_quantile_band(
         5000.0, errors, lower_quantile=0.1, upper_quantile=0.9
     )
     assert out["pre_period_mean_error_centered_out"] == pytest.approx(0.0)
-    # 10th/90th percentiles of centered errors are -80/+80.
     assert out["band_lower"] == pytest.approx(4920.0)
     assert out["band_upper"] == pytest.approx(5080.0)
     assert out["nominal_coverage_supported"] is False
@@ -212,7 +210,6 @@ def test_overlapping_placebo_band_centers_on_point_loss_and_is_symmetric():
 
 
 def test_overlapping_placebo_band_removes_pre_period_bias():
-    # All errors shifted by +200; the bias is centered out, not propagated.
     errors = [100.0, 150.0, 200.0, 250.0, 300.0]
     out = overlapping_placebo_quantile_band(
         5000.0, errors, lower_quantile=0.1, upper_quantile=0.9

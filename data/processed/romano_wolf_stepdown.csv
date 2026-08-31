@@ -1,11 +1,11 @@
 family,hypothesis,observed_statistic,studentized_statistic,raw_resampling_p_value,romano_wolf_p_value,stepdown_rank,family_size,n_joint_resamples
 disjoint_placebo_time_generators_by_outcome,seasonal_naive_7d::hormuz_tanker_transits,7124.0,9.819655455056663,0.125,0.125,1,8,7
-disjoint_placebo_time_generators_by_outcome,arx_lag1_7_route_energy::hormuz_tanker_transits,8171.521698088585,8.985166183514128,0.125,0.125,2,8,7
-disjoint_placebo_time_generators_by_outcome,arx_lag1_7_route_energy::hormuz_tanker_capacity,347194943.6727116,7.326845474734414,0.125,0.125,3,8,7
-disjoint_placebo_time_generators_by_outcome,arx_lag1_7_route::hormuz_tanker_transits,7056.41855841607,7.191361391981497,0.125,0.125,4,8,7
+disjoint_placebo_time_generators_by_outcome,arx_lag1_7_route_energy::hormuz_tanker_transits,8171.521698088589,8.985166183514119,0.125,0.125,2,8,7
+disjoint_placebo_time_generators_by_outcome,arx_lag1_7_route_energy::hormuz_tanker_capacity,347194943.6727114,7.326845474734394,0.125,0.125,3,8,7
+disjoint_placebo_time_generators_by_outcome,arx_lag1_7_route::hormuz_tanker_transits,7056.418558416068,7.191361391981476,0.125,0.125,4,8,7
 disjoint_placebo_time_generators_by_outcome,seasonal_naive_7d::hormuz_tanker_capacity,275613446.0,7.178663504844983,0.125,0.125,5,8,7
-disjoint_placebo_time_generators_by_outcome,ar_lag1_7::hormuz_tanker_transits,6868.996006081118,7.080143908850593,0.125,0.125,6,8,7
-disjoint_placebo_time_generators_by_outcome,ar_lag1_7::hormuz_tanker_capacity,291006059.90571,5.798878670080444,0.125,0.125,7,8,7
-disjoint_placebo_time_generators_by_outcome,arx_lag1_7_route::hormuz_tanker_capacity,294171692.7267485,5.681008668164854,0.125,0.125,8,8,7
+disjoint_placebo_time_generators_by_outcome,ar_lag1_7::hormuz_tanker_transits,6868.996006081119,7.0801439088505775,0.125,0.125,6,8,7
+disjoint_placebo_time_generators_by_outcome,ar_lag1_7::hormuz_tanker_capacity,291006059.90571004,5.798878670080432,0.125,0.125,7,8,7
+disjoint_placebo_time_generators_by_outcome,arx_lag1_7_route::hormuz_tanker_capacity,294171692.7267484,5.681008668164846,0.125,0.125,8,8,7
 spatial_placebo_outcomes_low_contamination,n_tanker,0.930876780347576,3.7603334357971785,0.045454545454545456,0.045454545454545456,1,2,21
 spatial_placebo_outcomes_low_contamination,capacity_tanker,0.9092756933541316,2.119690119517731,0.045454545454545456,0.045454545454545456,2,2,21

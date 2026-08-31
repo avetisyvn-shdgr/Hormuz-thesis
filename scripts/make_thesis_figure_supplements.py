@@ -21,7 +21,7 @@ import os
 import sys
 from pathlib import Path
 
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/hormuz_throughput-matplotlib")
 
 import matplotlib  # noqa: E402
 
@@ -48,7 +48,7 @@ from figure_style import (  # noqa: E402
     apply_publication_style,
     style_axes,
 )
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 
 TARGET = "hormuz_tanker_transits"
 PROC = config.ROOT / "data" / "processed"
@@ -57,7 +57,6 @@ FIG_ESTIMATORS = "thesis_estimator_interval_agreement"
 FIG_SC_RATIOS = "thesis_synthetic_control_placebo_ratios"
 FIG_DIVERGENCE = "thesis_importer_divergence"
 
-# Role labels as recorded in the admission artifact, mapped to display strings.
 ROLE_LABELS = {
     "working_primary": "working primary",
     "conditional_sensitivity": "conditional sensitivity",
@@ -159,7 +158,6 @@ def _pretty_unit(slug: object) -> str:
     return " ".join(out)
 
 
-# --------------------------------------------------------------------- fig 1
 def fig_estimator_interval_agreement() -> Path:
     """Point estimates agree; reported bands do not; the vintage gap beats both.
 
@@ -179,11 +177,6 @@ def fig_estimator_interval_agreement() -> Path:
     tsfm = tsfm[(tsfm["target"] == TARGET) & (tsfm["model"] == "chronos2")].iloc[0]
     vintage = _read("portwatch_vintage_sensitivity.csv")
     vintage = vintage[vintage["target"] == TARGET].set_index("scenario")
-    # Both 130-day block constructions are read. The thesis reports the locked
-    # greedy partition (seven blocks) as primary because it is the partition
-    # fixed before the statistic was observed; the exhaustive daily packing
-    # (eight blocks) is carried beside it as a partition sensitivity. Labelling
-    # only one of them was what let this figure disagree with Table 6.2.
     frontier_all = _read("horizon_frontier_summary.csv")
     frontier_all = frontier_all[
         (frontier_all["outcome"] == TARGET) & (frontier_all["horizon_days"] == 130)
@@ -200,8 +193,6 @@ def fig_estimator_interval_agreement() -> Path:
 
     primary = float(spec.loc[spec["role"] == "working_primary", "point_shortfall"].iloc[0])
 
-    # Points: everything in the admission artifact, plus the two specifications
-    # that live in their own artifacts.
     points = [
         (str(r.specification), str(r.role), float(r.point_shortfall))
         for r in spec.itertuples()
@@ -226,7 +217,6 @@ def fig_estimator_interval_agreement() -> Path:
     vintage_alt = float(vintage.loc["vintage_same_window", "cumulative_throughput_loss"])
     vintage_gap = abs(vintage_primary - vintage_alt)
 
-    # Intervals, each carrying its own construction and nominal coverage.
     ar_row = lh.loc["ar_lag1_7"]
     intervals = [
         ("Residual-calibrated\n30-day folds", ar_row["interval_30dfold_lower"],
@@ -255,7 +245,6 @@ def fig_estimator_interval_agreement() -> Path:
         gridspec_kw={"height_ratios": [1.0, 1.22], "hspace": 0.42},
     )
 
-    # ---- panel (a)
     ys = np.arange(len(points))[::-1]
     for y, (name, role, value) in zip(ys, points):
         colour = ROLE_COLOURS.get(role, NEUTRAL_MID)
@@ -267,8 +256,6 @@ def fig_estimator_interval_agreement() -> Path:
     axl.set_yticklabels([name for name, _, _ in points], fontsize=7.4)
     axl.axvline(primary, color=NEUTRAL_MID, lw=0.9, ls="--", zorder=1)
 
-    # The data-vintage comparison sits on the same axis as a separate row, so the
-    # reader can see it is wider than the disagreement between estimators.
     y_vint = -1.35
     axl.plot([vintage_alt, vintage_primary], [y_vint, y_vint], color=OBSERVED_TREATED,
              lw=2.2, solid_capstyle="butt", zorder=3)
@@ -279,12 +266,7 @@ def fig_estimator_interval_agreement() -> Path:
         xy=((vintage_alt + vintage_primary) / 2, y_vint - 0.55),
         ha="center", va="center", fontsize=7.4, color=OBSERVED_TREATED,
     )
-    # Reserve an empty strip above the top row for the spread annotation.
-    # At the previous limit the annotation was drawn straight through the
-    # topmost marker and its value label.
     axl.set_ylim(-2.2, len(points) + 1.45)
-    # The right-most value label ran into the axes frame; widen the view a
-    # little so every annotation stays inside the panel.
     x_lo, x_hi = axl.get_xlim()
     axl.set_xlim(x_lo, x_hi + 0.07 * (x_hi - x_lo))
     axl.set_xlabel("Cumulative shortfall over 130 days (transits)")
@@ -298,7 +280,6 @@ def fig_estimator_interval_agreement() -> Path:
         va="top", ha="left",
     )
 
-    # ---- panel (b)
     ysi = np.arange(len(intervals))[::-1]
     for y, (label, lo, hi, coverage, unbounded) in zip(ysi, intervals):
         nominal = not coverage.startswith("no nominal")
@@ -328,8 +309,6 @@ def fig_estimator_interval_agreement() -> Path:
     )
     axr.grid(axis="x", alpha=0.25, lw=0.6)
 
-    # Bracket panel (a)'s range onto panel (b)'s axis. Without it the two panels
-    # sit side by side on incompatible scales and invite a false comparison.
     lo_pts = min(p[2] for p in points)
     hi_pts = max(p[2] for p in points)
     y_bracket = -0.62
@@ -363,7 +342,6 @@ def fig_estimator_interval_agreement() -> Path:
     return _save(fig, FIG_ESTIMATORS)
 
 
-# --------------------------------------------------------------------- fig 2
 def fig_synthetic_control_placebo_ratios() -> Path:
     """Plot the statistic the manuscript actually reports for the placebo test.
 
@@ -463,7 +441,6 @@ def fig_synthetic_control_placebo_ratios() -> Path:
     return _save(fig, FIG_SC_RATIOS)
 
 
-# --------------------------------------------------------------------- fig 3
 def fig_importer_divergence() -> Path:
     """Similar pre-shock exposure, opposite outcome.
 

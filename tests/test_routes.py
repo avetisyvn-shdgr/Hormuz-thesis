@@ -3,7 +3,7 @@ import math
 import pandas as pd
 import pytest
 
-from lngfreight.routes import (
+from hormuz_throughput.routes import (
     build_route_distance_matrix,
     great_circle_nm,
     route_distance_summary,

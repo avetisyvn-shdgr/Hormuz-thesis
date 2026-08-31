@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 
-from lngfreight.metrics import mae, mase, rmse, score_forecast, smape
+from hormuz_throughput.metrics import mae, mase, rmse, score_forecast, smape
 
 
 def test_metrics_drop_only_paired_missing_values():
@@ -19,7 +19,6 @@ def test_smape_handles_joint_zero_as_zero_error():
 
 
 def test_mase_uses_training_scale():
-    # Training seasonal naive errors with season_length=1 are all 2.
     assert mase([10.0, 14.0], [8.0, 13.0], [2.0, 4.0, 6.0, 8.0], 1) == pytest.approx(0.75)
 
 

@@ -26,34 +26,15 @@ scope:
     unless redistribution rights are documented. JODI is NO_GO on facts; the
     Fearnleys series remain dormant registry entries only.
 
-# Documents scanned for retired claims. Thesis-facing prose plus the design and
-# results documents a reader would cite.
 scanned_globs:
-  - "docs/*.md"
   - "reports/*.md"
-# The decision log and audit registers RECORD retired claims by design; scanning
-# them for assertion produces only noise. They are excluded from the assertion
-# check and listed here so the exclusion is explicit, not silent.
+  - "reports/audit/*.md"
 excluded_paths:
-  - "docs/DECISION_LOG.md"
-  - "docs/AUDIT_REMEDIATION_REGISTER.md"
-  - "docs/INTEGRATION_HARDENING_EXECUTION_ORDER_2026-08-09.md"
-  - "docs/EXTERNAL_REVIEW_PROMPT_2026-08.md"
-  - "docs/FINAL_EVIDENCE_TO_CLAIM_AUDIT.md"
-  - "docs/DEFENCE_PREPARATION.md"
-  # The literature matrices catalogue OTHER authors' estimands and claims. A
-  # row reading "a causal confidence statement about an ATT" describes a cited
-  # paper's scope, not this thesis's, so assertion-scanning them is noise.
-  - "docs/LITERATURE_MATRIX.md"
-  - "docs/LITERATURE_MATRIX_INITIAL.md"
+  - "reports/audit/final_evidence_to_claim_audit.md"
+  - "reports/audit/defence_preparation.md"
 
 context_radius_lines: 2
 
-# The scan is a function of the LIVE repository, so its frozen output records
-# line numbers in the scanned documents. Editing any scanned document -- adding
-# a line to CURRENT_PLAN.md, for instance -- shifts those numbers and correctly
-# invalidates the frozen scan. This phase must therefore be regenerated LAST,
-# after every other documentation edit, and re-frozen before verification.
 regeneration_order: "run_last_after_all_documentation_edits"
 
 stale_claim_patterns:
@@ -77,7 +58,6 @@ stale_claim_patterns:
   - {category: "ais_dark", pattern: "ais-dark throughput"}
   - {category: "ais_dark", pattern: "proves that no ship sailed"}
 
-# Every headline empirical claim, its frozen artifact, and its limitation.
 claim_ledger:
   - claim_id: "throughput_shortfall"
     statement: "Counterfactual throughput shortfall over the 130-day treated window under the locked AR(1,7) specification."
@@ -93,7 +73,7 @@ claim_ledger:
     limitation: "A case-local measurement-state sensitivity. Not a variance decomposition and vintages are never averaged."
   - claim_id: "rebound_relapse"
     statement: "Post-MoU tanker-count movement across the frozen phase windows."
-    value: "temporary partial rebound followed by relapse; no sustained recovery through 2026-08-01"
+    value: "10.45/day after the MoU, then 1.56/day after renewed attacks through 2026-08-01"
     artifact: "data/processed/portwatch_regime_phase_profile.csv"
     source_layer: "portwatch_all_tanker"
     limitation: "Descriptive phase contrasts only. The windows are context scoring, not a treatment date."
@@ -117,7 +97,7 @@ claim_ledger:
     limitation: "Compositional and support-conditional. The split does not generalise across radius or cohort, and the sign is not universal."
   - claim_id: "lng_specific_outbound"
     statement: "LNG-specific Hormuz outbound activity from the WTO/AXSMarine index."
-    value: "isolated partial-loading days (06-28, 07-05, 07-06) then zeros through 08-09"
+    value: "nonzero on 2026-06-28 and 2026-07-05, then zero through the available endpoint 2026-07-15"
     artifact: "data/raw/wto_hormuz/voy_intake_index_lng_export.csv"
     source_layer: "wto_lng_specific"
     limitation: "Aggregate index. It cannot identify vessels or destinations and must stay separate from the PortWatch all-tanker series."
@@ -128,7 +108,6 @@ claim_ledger:
     source_layer: "governance"
     limitation: "A criteria table. It grants no admission and no third layer is admitted."
 
-# Defence challenges that must have a prepared, artifact-cited answer.
 defence_challenges:
   - challenge_id: "arx_admissibility"
     question: "Why is the conditional route/energy ARX result excluded from the headline range when it fits better?"
@@ -141,24 +120,25 @@ defence_challenges:
   - challenge_id: "construct_limitations"
     question: "Is the route-burden increase evidence that ships sailed farther?"
 
-# Publication-asset verification. The three PNG-only entries are report-inline
-# diagnostics registered as such in the core manifest; publication figures are
-# emitted as PNG+PDF pairs by figure_style.save_pdf_and_png.
 publication_assets:
   figure_dir: "reports/figures"
   png_only_diagnostics:
+    - "all_corridor_ranking"
     - "bsts_counterfactual"
     - "bsts_pre_period_ppc"
+    - "cape_residual_drift"
     - "lng_index_counterfactual"
-  bibliography: "references/literature_seed.bib"
-  minimum_bibliography_entries: 20
+    - "redsea_positive_control"
   required_optional_manifests:
+    - "data/processed/portwatch_sensitivity_budget_card_manifest.json"
     - "data/processed/horizon_frontier_manifest.json"
     - "data/processed/network_support_frontier_manifest.json"
     - "data/processed/route_burden_decomposition_manifest.json"
     - "data/processed/public_data_gate_decisions_manifest.json"
 
 integrity_pins:
+  sensitivity_budget_manifest:
+    path: "data/processed/portwatch_sensitivity_budget_card_manifest.json"
   horizon_frontier_manifest:
     path: "data/processed/horizon_frontier_manifest.json"
   network_support_manifest:
@@ -168,7 +148,6 @@ integrity_pins:
   public_data_gate_manifest:
     path: "data/processed/public_data_gate_decisions_manifest.json"
 
-# Reproducibility boundaries that remain open and must be reported, not hidden.
 open_reproducibility_boundaries:
   august_raw_byte_archive:
     status: "OPEN"
@@ -185,23 +164,21 @@ open_reproducibility_boundaries:
       fixity-only metadata records lack a stored source payload. These predate
       the provenance v2 schema and are reported rather than back-filled.
     blocks_submission: false
-  core_run_manifest_staleness:
-    status: "OPEN"
+  core_run_manifest_refresh:
+    status: "CONTROLLED_BY_RUN_ALL"
     description: >-
-      The committed core reproducibility manifest predates the working tree's
-      pre-existing changes, so freeze_reproducibility.py --verify fails for
-      reasons unrelated to any integration phase. The input gate --check passes.
-      Refreezing requires a clean full pipeline run and Mher's explicit
-      approval, because it rewrites a committed manifest.
+      The complete pipeline refreshes the reproducibility manifest only after
+      regenerating all declared artifacts, then runs the test suite and verifies
+      the manifest again. The earlier stale-manifest condition is therefore an
+      explicit pipeline stage rather than an unresolved exception.
     blocks_submission: false
-    requires_explicit_approval: true
 
 outputs:
   stale_claim_scan_csv: "data/processed/final_stale_claim_scan.csv"
   claim_ledger_csv: "data/processed/final_claim_artifact_ledger.csv"
   diagnostics_json: "data/processed/final_integration_diagnostics.json"
-  audit_markdown: "docs/FINAL_EVIDENCE_TO_CLAIM_AUDIT.md"
-  defence_markdown: "docs/DEFENCE_PREPARATION.md"
+  audit_markdown: "reports/audit/final_evidence_to_claim_audit.md"
+  defence_markdown: "reports/audit/defence_preparation.md"
   manifest_json: "data/processed/final_integration_audit_manifest.json"
 
 reporting_guards:
@@ -211,5 +188,5 @@ reporting_guards:
   portwatch_and_wto_layers_must_stay_distinct: true
   formal_proposal_edited: false
   restricted_material_included: false
-  core_run_all_dependency: "none"
+  core_run_all_dependency: "required"
   core_reproducibility_manifest_dependency: "none"

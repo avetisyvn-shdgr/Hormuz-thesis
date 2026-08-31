@@ -10,13 +10,21 @@ upstream_matrix_g4:
 parent_artifacts:
   complete_branch_manifest:
     path: "data/processed/portwatch_sensitivity_complete_manifest.json"
-    sha256: "2d6daf153d4fe73224533cbd39c64631a1156c44f4907959283c2550ca651fa7"
+    sha256: "37f375fd51970fcf3115e62756e48cde276a94daec88fe1af961bce7d91490f6"
+    superseded_sha256: "2d6daf153d4fe73224533cbd39c64631a1156c44f4907959283c2550ca651fa7"
+    intermediate_sha256: "542b97ed4be7b8e907a09f6b5a86d75bf881a1239c4e7fbb68f15ac4b5e2723b"
+    previous_sha256: "94438198dc5a54044b2336a3aa50f3e27024412b1a8feb7e13fd560e4166b3de"
+    repin_reason: "Completion manifest now discloses the unavailable historical metadata-manifest bytes."
   matrix_summary:
     path: "data/processed/model_vintage_matrix_summary.csv"
-    sha256: "79043329359bb6194260ff4461fef9a2da679a0e120136b3bfdec93531c8be89"
+    sha256: "15a6e02eb812446d3482e0a4722c3f770a92e82e9828fc9ff1bebef457945917"
+    superseded_sha256: "79043329359bb6194260ff4461fef9a2da679a0e120136b3bfdec93531c8be89"
+    repin_reason: "Locally reproduced eight-cell matrix; frozen numerical cell expectations pass."
   matrix_manifest:
     path: "data/processed/model_vintage_matrix_manifest.json"
-    sha256: "65cb3352877f2cdd3042360ecdb25a4ee7ca77bd30a54a683dbebb1c14ca711b"
+    sha256: "5ce058448b8e87fabb054919e2df396b02a15a9a5c0e5a12a1a2a8f04a69c2fc"
+    superseded_sha256: "65cb3352877f2cdd3042360ecdb25a4ee7ca77bd30a54a683dbebb1c14ca711b"
+    repin_reason: "Locally reproduced matrix manifest after repository migration."
   admission_known_results:
     path: "data/processed/model_admission_known_results.csv"
     sha256: "d191a2329b5471c9bd718fd22f7c92c9c608db147485ef6d08c4970bcdfa643e"
@@ -69,7 +77,7 @@ axes:
 outputs:
   card_csv: "data/processed/portwatch_sensitivity_budget_card.csv"
   card_json: "data/processed/portwatch_sensitivity_budget_card.json"
-  card_markdown: "docs/PORTWATCH_SENSITIVITY_BUDGET_CARD.md"
+  card_markdown: "reports/audit/portwatch_sensitivity_budget_card.md"
   card_png: "reports/figures/portwatch_sensitivity_budget_card.png"
   card_pdf: "reports/figures/portwatch_sensitivity_budget_card.pdf"
   manifest_json: "data/processed/portwatch_sensitivity_budget_card_manifest.json"

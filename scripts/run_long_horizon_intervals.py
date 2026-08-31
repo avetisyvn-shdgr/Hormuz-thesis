@@ -26,8 +26,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.inference import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.inference import (  # noqa: E402
     circular_block_bootstrap_loss_interval,
     overlapping_placebo_quantile_band,
 )
@@ -89,8 +89,6 @@ def main() -> None:
             continue
         horizon_calendar_days = _horizon_calendar_days(windows, model, target)
 
-        # Each placebo window cumulative_throughput_loss = sum(pred - obs);
-        # the cumulative forecast error is its negative (sum(obs - pred)).
         cum_errors = -windows["cumulative_throughput_loss"]
         daily_errors = -windows["mean_daily_throughput_loss"]
 
@@ -134,11 +132,9 @@ def main() -> None:
             "n_horizon_windows": cum["n_horizon_windows"],
             "effective_non_overlapping_windows": _effective_non_overlapping(windows),
             "point_cumulative_throughput_loss": cum["point_loss"],
-            # Old short-fold block-bootstrap interval (for comparison).
             "interval_30dfold_lower": float(base["loss_interval_lower"]),
             "interval_30dfold_upper": float(base["loss_interval_upper"]),
             "interval_30dfold_width": float(width_30d),
-            # Descriptive overlapping-window quantile band; no nominal coverage.
             "overlapping_placebo_quantile_band_lower": cum["band_lower"],
             "overlapping_placebo_quantile_band_upper": cum["band_upper"],
             "overlapping_placebo_quantile_band_width": cum["band_width"],
@@ -149,14 +145,12 @@ def main() -> None:
                 "band_excludes_zero_descriptively"
             ],
             "pre_period_bias_centered_out": cum["pre_period_mean_error_centered_out"],
-            # Independent cross-check from the ordered OOF residual path.
             "interval_circular_bootstrap_lower": circular["interval_lower"],
             "interval_circular_bootstrap_upper": circular["interval_upper"],
             "interval_circular_bootstrap_width": circular["interval_width"],
             "circular_bootstrap_block_length": circular["block_length"],
             "circular_bootstrap_draws": circular["n_bootstrap_draws"],
             "circular_bootstrap_n_oof_residuals": circular["n_residuals"],
-            # Descriptive mean-daily band (especially useful for missing capacity days).
             "mean_daily_loss": daily["point_loss"],
             "mean_daily_overlapping_placebo_quantile_band_lower": daily["band_lower"],
             "mean_daily_overlapping_placebo_quantile_band_upper": daily["band_upper"],

@@ -1,0 +1,50 @@
+{
+  "all_require_scope_reopening": true,
+  "analysis_role": "governance_decision_table_no_acquisition",
+  "any_go_status": false,
+  "deferred_candidates": [
+    "era5_reanalysis",
+    "gfw_hourly_presence",
+    "marad_advisories",
+    "sentinel1_sar"
+  ],
+  "design_id": "optional_public_data_gate_decisions_v1",
+  "design_sha256": "f6b308ff438e95b12e2389896414355d7273870d2114a599ae36a92dccc8b668",
+  "freeze_status": "frozen_governance_decision",
+  "integrity_pins_verified": {
+    "horizon_frontier_manifest": "bb21b2be930bfe52183d638ad3c0e945206b631b409daebf83883836e7b6eb45",
+    "network_support_manifest": "7c27e474e79e2b89bd4f7ef122617df64a0ec77f7ceddcb4523acc619b1532be",
+    "route_burden_manifest": "1a629a35404f1d656115225046c8aa1d7d8f25b0928bd81f959d22bf36dfe7e2",
+    "sources_registry": "51d94577e84dbf0c29831142bb8df5fd3e73629a9d12657097ba70553bb99c73"
+  },
+  "n_candidates": 5,
+  "no_go_candidates": [
+    "jodi_gas"
+  ],
+  "registered_variable_count_unchanged": true,
+  "reporting_guards": {
+    "adds_registry_variables": false,
+    "changes_formal_proposal": false,
+    "changes_locked_specification": false,
+    "core_reproducibility_manifest_dependency": "none",
+    "core_run_all_dependency": "required_for_final_integration",
+    "decision_authority": "This table records criteria. It does not grant admission. Any GO decision requires the thesis author's explicit written scope reopening before acquisition.",
+    "is_empirical_phase": false,
+    "performs_network_access": false,
+    "third_layer_admitted": false
+  },
+  "scope": {
+    "authorizes_analysis": false,
+    "authorizes_download": false,
+    "authorizes_registry_entry": false,
+    "authorizes_third_empirical_layer": false,
+    "note": "No candidate below may be acquired, registered, or analysed on the strength of this table. The table exists so that a future reopening decision is made against pre-stated criteria rather than improvised under deadline pressure.",
+    "preserves_accepted_no_third_layer_plan": true,
+    "reopening_authority": "thesis author only, by explicit written scope reopening"
+  },
+  "status_counts": {
+    "DEFER_PENDING_SCOPE_REOPENING": 3,
+    "DEFER_POST_SUBMISSION": 1,
+    "NO_GO": 1
+  }
+}

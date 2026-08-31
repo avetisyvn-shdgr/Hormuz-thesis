@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight.global_forecaster import (
+from hormuz_throughput.global_forecaster import (
     PHASE_LADDER,
     LeakageError,
     LocalARModel,
@@ -70,8 +70,6 @@ def _training_tasks(spec: dict) -> pd.DataFrame:
 
 
 def test_spec_freezes_leave_hormuz_out_a1_contract(spec: dict):
-    # The phase ladder may advance, but every A1 clause below must survive it
-    # and `fitting_status` must always match the declared phase exactly.
     assert spec["phase"] in PHASE_LADDER
     assert spec["status"] == PHASE_LADDER[spec["phase"]]["status"]
     assert (
@@ -451,9 +449,6 @@ def test_full_frozen_rolling_geometry_never_fits_past_a_forecast_origin(spec: di
         ).all()
 
 
-# ===========================================================================
-# Phase A2 -- estimator contract, context normalisation, and leakage seals.
-# ===========================================================================
 
 
 def _a2_tasks(spec: dict, *, horizon: int = 7, role: str = "development_fit") -> pd.DataFrame:
@@ -480,7 +475,7 @@ def _a2_tasks(spec: dict, *, horizon: int = 7, role: str = "development_fit") ->
 
 
 def _a2_scales(spec: dict, units=("dover_strait", "suez_canal")) -> dict:
-    from lngfreight.disruption_detector import fit_context_scale
+    from hormuz_throughput.disruption_detector import fit_context_scale
 
     panel = _panel()
     context = spec["model"]["context_normalisation"]
@@ -551,8 +546,6 @@ def test_context_normalisation_moves_levels_and_dispersions_differently(spec: di
     assert normalised["lag_1"].iloc[row] == pytest.approx(
         (tasks["lag_1"].iloc[row] - centre) / spread
     )
-    # A dispersion is scaled but never re-centred: shifting a series must not
-    # move its standard deviation.
     assert normalised["rolling_std_7"].iloc[row] == pytest.approx(
         tasks["rolling_std_7"].iloc[row] / spread
     )
@@ -611,8 +604,6 @@ def test_ridge_stays_finite_on_a_rank_deficient_design(spec: dict):
     scales = _a2_scales(spec)
     normalised = apply_context_normalisation(tasks, scales, spec)
     columns = list(feature_columns(spec))
-    # Duplicate one feature onto another so the design is exactly rank
-    # deficient; the SVD solve must still return a finite estimator.
     normalised.loc[:, "lag_14"] = normalised.loc[:, "lag_7"].to_numpy()
     model = RidgeGlobalModel.fit(normalised, columns, spec, horizon_days=7, alpha=1.0)
     assert np.isfinite(np.asarray(model.coefficients)).all()
@@ -680,7 +671,6 @@ def test_seasonal_naive_never_reads_past_its_forecast_origin(spec: dict):
         back = np.ceil(int(horizon) / 7.0)
         sources = targets - pd.to_timedelta(7 * back, unit="D")
         assert (sources <= origins).all()
-        # The lookup must reproduce the panel value at that source date.
         panel = _panel()
         predicted = seasonal_naive_predictions(panel, tasks)
         expected = np.array(
@@ -770,7 +760,7 @@ def test_residual_quantile_offsets_are_empirical_quantiles():
 
 def test_context_scale_and_scaler_are_blind_to_the_validation_year(spec: dict):
     """The strongest A2 seal: 2024 cannot move anything fitted before it."""
-    from lngfreight.disruption_detector import fit_context_scale
+    from hormuz_throughput.disruption_detector import fit_context_scale
 
     panel = _panel()
     perturbed = panel.copy()
@@ -819,7 +809,6 @@ def _synthetic_development_panel(spec: dict) -> pd.DataFrame:
     day = np.arange(len(index), dtype="float64")
     columns = {}
     for position, unit in enumerate(development_units(spec)):
-        # Levels span three orders of magnitude, as the real chokepoints do.
         level = 0.5 * (1.6 ** position)
         weekly = 0.15 * level * np.sin(2.0 * np.pi * day / 7.0)
         drift = 0.02 * level * np.sin(2.0 * np.pi * day / 365.0)
@@ -844,8 +833,6 @@ def test_a2_validation_runs_end_to_end_on_a_synthetic_panel(tmp_path, monkeypatc
         "predictions": "predictions.csv",
         "manifest": "manifest.json",
     }
-    # Trim the grid so the smoke test stays fast; selection behaves the same
-    # for two candidates as for five.
     patched["model"]["global_model"]["grid"]["alpha"] = [1.0, 100.0]
 
     monkeypatch.setattr(module, "load_detection_spec", lambda *a, **k: (patched, sha))
@@ -895,8 +882,6 @@ def test_a2_validation_runs_end_to_end_on_a_synthetic_panel(tmp_path, monkeypatc
 
     predictions = pd.read_csv(tmp_path / "predictions.csv")
     assert set(predictions["model"]) == set(manifest["outputs"]["reported_models"])
-    # Each horizon carries exactly its own selected penalty plus the two
-    # baselines -- never a penalty that won at some other horizon.
     for horizon in (1, 7, 30):
         at_horizon = set(predictions.loc[predictions["horizon_days"].eq(horizon), "model"])
         assert at_horizon == {

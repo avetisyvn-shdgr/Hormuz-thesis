@@ -35,9 +35,9 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config                                        # noqa: E402
-from lngfreight.instrument_shift import sha256_file                  # noqa: E402
-from lngfreight.receiver_equivalence import (                        # noqa: E402
+from hormuz_throughput import config                                        # noqa: E402
+from hormuz_throughput.instrument_shift import sha256_file                  # noqa: E402
+from hormuz_throughput.receiver_equivalence import (                        # noqa: E402
     admissible_onsets,
     eligible_units,
     finite_sample_p_value,
@@ -45,7 +45,7 @@ from lngfreight.receiver_equivalence import (                        # noqa: E40
     spatial_family,
     temporal_support,
 )
-from lngfreight.spatial import slugify_portname, wide_chokepoint_panel  # noqa: E402
+from hormuz_throughput.spatial import slugify_portname, wide_chokepoint_panel  # noqa: E402
 
 SPEC_PATH = config.CONFIG_DIR / "hormuz_receiver_test.yaml"
 
@@ -151,7 +151,6 @@ def evaluate_onset(
     print(f"  receiver gain  {gain:8.4f} /day   ({receiver})")
     print(f"  recovered      {100 * recovered:8.2f} %")
 
-    # -- support and standardisation ---------------------------------------
     eligible = eligible_units(
         panel,
         onset,
@@ -159,8 +158,6 @@ def evaluate_onset(
         always_excluded=[e["unit"] for e in spec["support"]["always_excluded"]],
         disrupted_units=disrupted_units,
     )
-    # The anchor pair is evaluated even though both its units are disrupted;
-    # the support rules govern the PLACEBO family, not the pre-registered pair.
     family_units = sorted(set(eligible) | {emitter, receiver})
     print(f"\n  eligible placebo units: {len(eligible)}  (anchor pair added back for scoring)")
 
@@ -183,7 +180,6 @@ def evaluate_onset(
     scales = pd.DataFrame(frames).std(ddof=1).replace(0.0, np.nan)
     print(f"  standardisation: {len(frames)} pre-onset draws before {onset.date()}")
 
-    # -- spatial families (descriptive) ------------------------------------
     receivers_family = spatial_family(response, scales, family_units, receiver, sign=+1.0)
     emitters_family = spatial_family(response, scales, family_units, emitter, sign=-1.0)
     for name, fam in (
@@ -199,7 +195,6 @@ def evaluate_onset(
         )
     print("    (descriptive ranks only; no inferential p-value is computed)")
 
-    # -- temporal null ------------------------------------------------------
     print(f"\n  TEMPORAL NULL (every unique admissible date used once)")
     guard_rows = []
     null_records = []
@@ -217,7 +212,7 @@ def evaluate_onset(
                 continue
             placebo_loss = -float(frame[emitter])
             if placebo_loss <= 0:
-                continue  # recovered fraction is undefined without a loss
+                continue
             values.append(float(frame[receiver]) / placebo_loss)
             null_records.append(
                 {
@@ -304,7 +299,6 @@ def main() -> int:
             evaluate_onset(key, spec["onsets"][key], spec, panel, cache, disruptions)
         )
 
-    # -- invariants ---------------------------------------------------------
     register = next(r for r in results if r["label"] == "register_onset")
     checks = spec["invariants"]["anchor_at_register_onset"]
     rows = []

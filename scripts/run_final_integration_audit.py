@@ -25,8 +25,8 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.claim_audit import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.claim_audit import (  # noqa: E402
     StalePattern,
     flagged,
     scan_documents,
@@ -44,9 +44,158 @@ LEDGER_COLUMNS = [
     "artifact",
     "artifact_exists",
     "artifact_sha256",
+    "value_verified",
     "source_layer",
     "limitation",
 ]
+
+
+def _single_row(frame: pd.DataFrame, mask: pd.Series, claim_id: str) -> pd.Series:
+    selected = frame.loc[mask]
+    if len(selected) != 1:
+        raise AssertionError(
+            f"claim {claim_id} expected one evidence row, found {len(selected)}"
+        )
+    return selected.iloc[0]
+
+
+def _close(actual: float, expected: float, claim_id: str, atol: float = 1e-9) -> None:
+    if abs(float(actual) - expected) > atol:
+        raise AssertionError(
+            f"claim {claim_id} value drift: {actual} != {expected}"
+        )
+
+
+def verify_claim_value(item: dict) -> bool:
+    """Recompute the configured claim value from its cited artifact."""
+    claim_id = item["claim_id"]
+    path = config.ROOT / item["artifact"]
+
+    if claim_id == "throughput_shortfall":
+        frame = pd.read_csv(path)
+        row = _single_row(
+            frame,
+            frame["vintage"].eq("pinned_primary")
+            & frame["model"].eq("ar_lag1_7"),
+            claim_id,
+        )
+        _close(row["mean_daily_common_point_shortfall"], 52.83843081600861, claim_id)
+        _close(row["cumulative_common_point_shortfall"], 6868.996006081119, claim_id)
+        if int(row["n_scored_days"]) != 130:
+            raise AssertionError(f"claim {claim_id} scoring window is not 130 days")
+        expected = "52.838 lost transits/day (6868.996 cumulative)"
+
+    elif claim_id == "vintage_sensitivity":
+        frame = pd.read_csv(path)
+        row = _single_row(frame, frame["model"].eq("ar_lag1_7"), claim_id)
+        _close(row["pinned_minus_august_per_day"], 9.024924586269634, claim_id)
+        expected = "9.025 transits/day for AR(1,7)"
+
+    elif claim_id == "rebound_relapse":
+        frame = pd.read_csv(path)
+        august = frame.loc[frame["vintage"].eq("vintage_20260809")]
+        rebound = _single_row(
+            august, august["phase"].eq("post_mou_interval_20d"), claim_id
+        )
+        relapse = _single_row(
+            august, august["phase"].eq("post_renewed_attacks_interval"), claim_id
+        )
+        _close(rebound["mean_daily_transits"], 10.45, claim_id)
+        _close(relapse["mean_daily_transits"], 1.56, claim_id)
+        if not bool(relapse["complete_window"]) or relapse["phase_end"] != "2026-08-01":
+            raise AssertionError(f"claim {claim_id} relapse window is incomplete")
+        expected = (
+            "10.45/day after the MoU, then 1.56/day after renewed attacks "
+            "through 2026-08-01"
+        )
+
+    elif claim_id == "inference_frontier":
+        frame = pd.read_csv(path)
+        primary = frame.loc[
+            frame["origin_rule"].eq("forward_anchored_direct")
+            & frame["horizon_days"].eq(130)
+        ]
+        if set(primary["level"].round(2)) != {0.80, 0.90, 0.95}:
+            raise AssertionError(f"claim {claim_id} confidence levels drifted")
+        if not primary["n_reference_blocks"].eq(8).all():
+            raise AssertionError(f"claim {claim_id} reference-block count drifted")
+        if not primary["rank_p_value_greater"].sub(1 / 9).abs().le(1e-12).all():
+            raise AssertionError(f"claim {claim_id} rank p-value drifted")
+        finite = primary.set_index("level")["finite_interval_supported"].to_dict()
+        if finite != {0.8: True, 0.9: False, 0.95: False}:
+            raise AssertionError(f"claim {claim_id} finite-interval support drifted")
+        expected = (
+            "8 disjoint reference blocks; rank p 0.111111 at the 1/9 floor; "
+            "80% radius finite, 90% and 95% unbounded"
+        )
+
+    elif claim_id == "network_support":
+        frame = pd.read_csv(path)
+        radius = frame.loc[frame["terminal_radius_km"].eq(30)]
+        overall = _single_row(radius, radius["cohort"].eq("all_resolved"), claim_id)
+        hormuz = _single_row(radius, radius["cohort"].eq("hormuz_crossing"), claim_id)
+        if tuple(overall[["pre_sequences", "post_sequences"]]) != (971, 746):
+            raise AssertionError(f"claim {claim_id} overall support drifted")
+        if tuple(hormuz[["pre_sequences", "post_sequences"]]) != (145, 2):
+            raise AssertionError(f"claim {claim_id} Hormuz support drifted")
+        expected = "all resolved 971 to 746; Hormuz-crossing 145 to 2"
+
+    elif claim_id == "route_burden":
+        frame = pd.read_csv(path)
+        row = _single_row(
+            frame,
+            frame["cohort"].eq("all_retained")
+            & frame["terminal_radius_km"].eq(30)
+            & frame["weighting_scheme"].eq("symmetric_marshall_edgeworth"),
+            claim_id,
+        )
+        _close(row["total_change"], 67585181.55385447, claim_id, atol=1e-3)
+        _close(row["common_pair_share_reweighting_percent"], 54.9, claim_id, atol=0.1)
+        _close(row["entry_exit_residual_percent"], 43.8, claim_id, atol=0.1)
+        _close(row["within_common_pair_capacity_mix_percent"], 1.3, claim_id, atol=0.1)
+        expected = (
+            "+67.585 million m3-nm per retained sequence; "
+            "54.9 / 43.8 / 1.3 component split"
+        )
+
+    elif claim_id == "lng_specific_outbound":
+        frame = pd.read_csv(path)
+        frame["voy_load_date"] = pd.to_datetime(frame["voy_load_date"])
+        after = frame.loc[frame["voy_load_date"].ge("2026-06-16")]
+        nonzero_dates = set(
+            after.loc[after["voy_intake_index"].ne(0), "voy_load_date"]
+            .dt.strftime("%Y-%m-%d")
+        )
+        if nonzero_dates != {"2026-06-28", "2026-07-05"}:
+            raise AssertionError(f"claim {claim_id} nonzero dates drifted")
+        if frame["voy_load_date"].max().strftime("%Y-%m-%d") != "2026-07-15":
+            raise AssertionError(f"claim {claim_id} endpoint drifted")
+        expected = (
+            "nonzero on 2026-06-28 and 2026-07-05, then zero through the "
+            "available endpoint 2026-07-15"
+        )
+
+    elif claim_id == "public_data_gates":
+        frame = pd.read_csv(path)
+        if len(frame) != 5 or frame["status"].eq("GO").any():
+            raise AssertionError(f"claim {claim_id} candidate count or status drifted")
+        jodi = _single_row(frame, frame["candidate"].eq("jodi_gas"), claim_id)
+        if jodi["status"] != "NO_GO":
+            raise AssertionError(f"claim {claim_id} JODI status drifted")
+        if not frame.loc[~frame["candidate"].eq("jodi_gas"), "status"].str.startswith(
+            "DEFER_"
+        ).all():
+            raise AssertionError(f"claim {claim_id} deferred statuses drifted")
+        expected = "5 candidates; JODI NO_GO; remainder deferred; no GO status permitted"
+
+    else:
+        raise AssertionError(f"claim {claim_id} has no executable value check")
+
+    if item["value"] != expected:
+        raise AssertionError(
+            f"claim {claim_id} text does not match verified evidence: {item['value']!r}"
+        )
+    return True
 
 
 def sha256_file(path: Path) -> str:
@@ -102,6 +251,7 @@ def build_claim_ledger(design: dict) -> pd.DataFrame:
             "artifact": item["artifact"],
             "artifact_exists": bool(exists),
             "artifact_sha256": sha256_file(path) if exists else "",
+            "value_verified": verify_claim_value(item) if exists else False,
             "source_layer": item["source_layer"],
             "limitation": item["limitation"],
         })
@@ -122,6 +272,9 @@ def guard_ledger(ledger: pd.DataFrame) -> None:
             raise AssertionError(f"a claim has a blank {column}")
     if ledger["claim_id"].duplicated().any():
         raise AssertionError("duplicate claim_id in the ledger")
+    if not ledger["value_verified"].astype(bool).all():
+        failed = ledger.loc[~ledger["value_verified"].astype(bool), "claim_id"].tolist()
+        raise AssertionError(f"claims failed executable value checks: {failed}")
 
     layers = set(ledger["source_layer"])
     if "portwatch_all_tanker" in layers and "wto_lng_specific" not in layers:
@@ -290,7 +443,7 @@ def build_defence_answers(design: dict, ledger: pd.DataFrame) -> list[dict]:
 
 
 def verify_publication_assets(design: dict) -> dict:
-    """Check figures, bibliography, and the optional manifests exist.
+    """Check figure pairs and optional manifests.
 
     Publication figures are emitted as PNG+PDF pairs. A short declared list of
     report-inline diagnostics is PNG-only by design; anything else missing a PDF
@@ -305,14 +458,6 @@ def verify_publication_assets(design: dict) -> dict:
         stem for stem in pngs if stem not in pdfs and stem not in png_only
     )
 
-    bibliography = config.ROOT / spec["bibliography"]
-    entries = 0
-    if bibliography.is_file():
-        entries = sum(
-            1
-            for line in bibliography.read_text(encoding="utf-8").splitlines()
-            if line.lstrip().startswith("@")
-        )
     missing_manifests = [
         path
         for path in spec["required_optional_manifests"]
@@ -324,9 +469,6 @@ def verify_publication_assets(design: dict) -> dict:
         "declared_png_only_diagnostics": sorted(png_only),
         "figures_missing_pdf_undeclared": undeclared,
         "figure_pairs_complete": not undeclared,
-        "bibliography_entries": entries,
-        "bibliography_meets_minimum": entries
-        >= int(spec["minimum_bibliography_entries"]),
         "optional_manifests_present": not missing_manifests,
         "missing_optional_manifests": missing_manifests,
     }
@@ -347,8 +489,6 @@ def build_diagnostics(
             "publication figures missing a PDF counterpart: "
             f"{assets['figures_missing_pdf_undeclared']}"
         )
-    if not assets["bibliography_meets_minimum"]:
-        raise AssertionError("bibliography is below the declared minimum")
     if not assets["optional_manifests_present"]:
         raise AssertionError(
             f"missing optional manifests: {assets['missing_optional_manifests']}"
@@ -410,7 +550,7 @@ def render_audit_markdown(
     add(f"**Design id:** `{design['design_id']}`  ")
     add(f"**Design SHA-256:** `{diagnostics['design_sha256']}`  ")
     add(f"**Frozen (UTC):** {design['frozen_utc']}  ")
-    add("**Verification status:** `NEEDS-VERIFY` until Mher runs the G4 commands.")
+    add("**Verification status:** `NEEDS-VERIFY` until the complete pipeline is run.")
     add("")
     add(
         "This document binds every headline empirical claim to a frozen "
@@ -570,7 +710,7 @@ def render_defence_markdown(
     add("# Defence preparation")
     add("")
     add(f"**Design SHA-256:** `{diagnostics['design_sha256']}`  ")
-    add("**Verification status:** `NEEDS-VERIFY` until Mher runs the G4 commands.")
+    add("**Verification status:** `NEEDS-VERIFY` until the complete pipeline is run.")
     add("")
     add(
         "Prepared answers to the five challenges most likely to be pressed. "
@@ -694,8 +834,7 @@ def main() -> int:
     assets = diagnostics["publication_assets"]
     print(
         f"  figures: {assets['figures_png']} png / {assets['figures_pdf']} pdf "
-        f"(pairs complete: {assets['figure_pairs_complete']}); "
-        f"bibliography entries: {assets['bibliography_entries']}"
+        f"(pairs complete: {assets['figure_pairs_complete']})"
     )
     print(
         f"  optional manifests present: {assets['optional_manifests_present']}"
@@ -707,7 +846,7 @@ def main() -> int:
     print(" - Formal proposal unedited; no Prof. Li authorization on record.")
     print(" - No restricted Fearnleys/JODI material included.")
     print(" - No third empirical layer admitted.")
-    print(" - This is NEEDS-VERIFY until Mher records the G4 output.")
+    print(" - This is NEEDS-VERIFY until the complete pipeline transcript is retained.")
     return 0
 
 

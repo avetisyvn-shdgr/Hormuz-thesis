@@ -12,8 +12,8 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.bloomberg_admission import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.bloomberg_admission import (  # noqa: E402
     audit_export,
     flatten_result,
     load_manifest,

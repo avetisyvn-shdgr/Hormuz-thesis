@@ -9,9 +9,9 @@ import pandas as pd
 import pytest
 
 
-from lngfreight import config  # noqa: E402
-from lngfreight.importer_outcomes import build_outcomes, outcomes_summary  # noqa: E402
-from lngfreight.sources.importer_customs import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.importer_outcomes import build_outcomes, outcomes_summary  # noqa: E402
+from hormuz_throughput.sources.importer_customs import (  # noqa: E402
     GULF_BY_UNIT,
     MEASURE_BY_UNIT,
     OMAN_BY_UNIT,
@@ -34,7 +34,7 @@ def test_provider_returns_tidy_monthly_contract():
         s = _series(f"{unit}:total")
         assert s.index.is_monotonic_increasing
         assert not s.index.duplicated().any()
-        assert (s.index.day == 1).all()  # month-start dates
+        assert (s.index.day == 1).all()
         assert (s >= 0).all()
 
 
@@ -46,10 +46,6 @@ def test_gulf_is_subset_of_total_and_never_negative():
 
 
 def test_gulf_collapse_pins_2026_snapshot_vintage():
-    # Frozen 2026-07-17 captures: Gulf-sourced imports go to literally zero
-    # for Korea and Taiwan in Apr-Jun 2026; Japan has April zero and May
-    # recovery in the e-Stat/Japan Customs source; China and India keep a
-    # trickle in at least one post month.
     for unit in ("kr", "tw"):
         gulf = _series(f"{unit}:gulf")
         for month in ("2026-04-01", "2026-05-01", "2026-06-01"):
@@ -124,15 +120,12 @@ def test_extended_outcomes_cover_six_units_and_stay_consistent():
     ]
     shares = frame[frame["outcome"] == "y1_gulf_share"]["value"].dropna()
     assert ((shares >= 0) & (shares <= 1)).all()
-    # Korea April 2026: Gulf share exactly zero in the frozen vintage.
     kr_apr = frame[
         (frame["unit"] == "Korea")
         & (frame["outcome"] == "y1_gulf_share")
         & (frame["month"] == "2026-04")
     ]
     assert float(kr_apr["value"].iloc[0]) == 0.0
-    # Probe-only build keeps the earlier Comtrade Japan fallback for backwards
-    # compatibility; active builds with customs_dir use Japan e-Stat instead.
     probe_only = build_outcomes(probe_dir)
     assert sorted(probe_only["unit"].unique()) == ["EU27", "Japan"]
 

@@ -27,12 +27,12 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config                                 # noqa: E402
-from lngfreight.spatial import wide_chokepoint_panel          # noqa: E402
+from hormuz_throughput import config                                 # noqa: E402
+from hormuz_throughput.spatial import wide_chokepoint_panel          # noqa: E402
 
 SPEC_PATH = config.CONFIG_DIR / "multi_event_propagation.yaml"
-JUMP_THRESHOLD = 0.60  # flag year-over-year moves beyond +/-60%
-MIN_LEVEL_FOR_JUMP = 2.0  # ignore ratio noise on near-empty chokepoints
+JUMP_THRESHOLD = 0.60
+MIN_LEVEL_FOR_JUMP = 2.0
 
 
 def load_spec(path: Path = SPEC_PATH) -> dict:
@@ -67,7 +67,7 @@ def audit_coverage(panel: pd.DataFrame, spec: dict, value_col: str) -> dict:
         s = annual[cp]
         for a, b in zip(s.index[:-1], s.index[1:]):
             if b == int(panel.index[-1].year):
-                continue  # final year is partial; ratio is not comparable
+                continue
             prev, cur = float(s.loc[a]), float(s.loc[b])
             if prev < MIN_LEVEL_FOR_JUMP or prev == 0:
                 continue

@@ -1,7 +1,7 @@
 
 
-from lngfreight import config  # noqa: E402
-from lngfreight.importer_outcomes import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.importer_outcomes import (  # noqa: E402
     build_outcomes,
     outcomes_summary,
 )
@@ -24,11 +24,8 @@ def _value(frame, unit, outcome, month):
 
 def test_japan_gulf_excludes_oman_and_matches_frozen_values():
     frame = _frame()
-    # 2026-03: only Qatar (144,243,000 kg) is a Hormuz-dependent partner present;
-    # UAE has no recorded trade that month and Oman is deliberately excluded.
     assert _value(frame, "Japan", "y1_gulf_volume", "2026-03") == 144_243_000.0
     assert _value(frame, "Japan", "y2_total_volume", "2026-03") == 5_869_358_000.0
-    # 2026-02: Qatar 308,201,000 + UAE 119,928,000.
     assert _value(frame, "Japan", "y1_gulf_volume", "2026-02") == 428_129_000.0
 
 
@@ -36,11 +33,9 @@ def test_share_is_a_valid_proportion_and_consistent_with_volumes():
     frame = _frame()
     shares = frame[frame["outcome"] == "y1_gulf_share"]["value"]
     assert ((shares >= 0) & (shares <= 1)).all()
-    # share == gulf / total for a known Japan month
     total = _value(frame, "Japan", "y2_total_volume", "2026-03")
     gulf = _value(frame, "Japan", "y1_gulf_volume", "2026-03")
     assert abs(_value(frame, "Japan", "y1_gulf_share", "2026-03") - gulf / total) < 1e-12
-    # non-Gulf is the residual
     non_gulf = _value(frame, "Japan", "y3_non_gulf_volume", "2026-03")
     assert abs(non_gulf - (total - gulf)) < 1e-6
 

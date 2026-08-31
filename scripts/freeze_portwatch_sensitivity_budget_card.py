@@ -11,7 +11,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 from freeze_portwatch_sensitivity_complete import (  # noqa: E402
     build_complete_manifest,
 )
@@ -99,13 +99,13 @@ def build_manifest() -> dict:
         "manifest_schema": 1,
         "card_id": design["card_id"],
         "analysis_role": design["analysis_role"],
-        "status": "assistant_generated_reporting_artifact",
-        "human_verification_record": "docs/DECISION_LOG.md",
+        "status": "generated_reproducibility_artifact",
+        "verification_record": "reports/reproducibility_run_transcript.txt",
         "design_sha256": design_sha256,
         "phase4_complete_manifest_sha256": phase4_expected,
         "phase4_artifact_count": 13,
         "phase4_manifest_mutated": False,
-        "core_run_all_dependency": "none",
+        "core_run_all_dependency": "required_for_final_integration",
         "core_reproducibility_manifest_dependency": "none",
         "input_sha256": {
             _relative(path): sha256_file(path) for path in input_paths.values()

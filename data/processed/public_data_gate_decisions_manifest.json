@@ -1,0 +1,59 @@
+{
+  "all_require_scope_reopening": true,
+  "analysis_role": "governance_decision_table_no_acquisition",
+  "any_go_status": false,
+  "core_reproducibility_manifest_dependency": "none",
+  "core_run_all_dependency": "required_for_final_integration",
+  "datasets_downloaded": 0,
+  "deferred_candidates": [
+    "era5_reanalysis",
+    "gfw_hourly_presence",
+    "marad_advisories",
+    "sentinel1_sar"
+  ],
+  "design_id": "optional_public_data_gate_decisions_v1",
+  "design_sha256": "f6b308ff438e95b12e2389896414355d7273870d2114a599ae36a92dccc8b668",
+  "freeze_status": "frozen_governance_decision",
+  "input_sha256": {
+    "config/public_data_gate_decisions.yaml": "f6b308ff438e95b12e2389896414355d7273870d2114a599ae36a92dccc8b668",
+    "config/sources.yaml": "51d94577e84dbf0c29831142bb8df5fd3e73629a9d12657097ba70553bb99c73",
+    "data/processed/horizon_frontier_manifest.json": "bb21b2be930bfe52183d638ad3c0e945206b631b409daebf83883836e7b6eb45",
+    "data/processed/network_support_frontier_manifest.json": "7c27e474e79e2b89bd4f7ef122617df64a0ec77f7ceddcb4523acc619b1532be",
+    "data/processed/route_burden_decomposition_manifest.json": "1a629a35404f1d656115225046c8aa1d7d8f25b0928bd81f959d22bf36dfe7e2",
+    "scripts/freeze_public_data_gate_decisions.py": "fd98ea324d9e0a1bfe62e994fe1d08f10165500eacc80b9801a2ba690ff428db",
+    "scripts/run_public_data_gate_decisions.py": "b223acc35af234dde7c8bc680889fc8fd52d7d3448fa2363d7c4df63de2d0637"
+  },
+  "manifest_schema": 1,
+  "n_candidates": 5,
+  "no_go_candidates": [
+    "jodi_gas"
+  ],
+  "no_third_layer_plan_preserved": true,
+  "output_sha256": {
+    "data/processed/public_data_gate_decisions.csv": "595e59f59dda8662c11fa513d6565dde1604c8645ed4acd99538b178a793a1e6",
+    "data/processed/public_data_gate_diagnostics.json": "0c0ca8f3f8301e24508ffa8a4cbfa0a19ce6b3b468b3d173a328df14ad1ce539",
+    "reports/audit/public_data_gate_decisions.md": "177f54453d39c780ee7f2dad060c399e876ae83462b25c1274a31c8917b866a3"
+  },
+  "registered_variable_count": 53,
+  "registry_variables_added": 0,
+  "reporting_guards": {
+    "adds_registry_variables": false,
+    "changes_formal_proposal": false,
+    "changes_locked_specification": false,
+    "core_reproducibility_manifest_dependency": "none",
+    "core_run_all_dependency": "required_for_final_integration",
+    "decision_authority": "This table records criteria. It does not grant admission. Any GO decision requires the thesis author's explicit written scope reopening before acquisition.",
+    "is_empirical_phase": false,
+    "performs_network_access": false,
+    "third_layer_admitted": false
+  },
+  "status": "governance_decision_artifact_no_acquisition",
+  "status_counts": {
+    "DEFER_PENDING_SCOPE_REOPENING": 3,
+    "DEFER_POST_SUBMISSION": 1,
+    "NO_GO": 1
+  },
+  "third_layer_admitted": false,
+  "verification_record": "reports/reproducibility_run_transcript.txt",
+  "verification_state": "NEEDS-VERIFY"
+}

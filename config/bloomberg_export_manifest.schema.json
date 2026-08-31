@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://lngfreight.local/schemas/bloomberg-export-manifest-v1.json",
+  "$id": "https://hormuz-throughput.local/schemas/bloomberg-export-manifest-v1.json",
   "title": "Bloomberg licensed-export admission manifest",
   "type": "object",
   "required": ["schema_version", "export_directory_env", "governance", "series"],

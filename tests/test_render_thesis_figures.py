@@ -4,7 +4,11 @@ from scripts.render_thesis_figures import FIGURES, GENERATOR_ORDER, _selected
 def test_manifest_covers_all_manuscript_figures() -> None:
     assert [figure.number for figure in FIGURES] == [
         "3.1",
-        "6.1",
+        "4.1",
+        "5.1",
+        "5.2",
+        "5.3",
+        "5.4",
         "6.2",
         "6.3",
         "7.1",
@@ -22,7 +26,7 @@ def test_manifest_covers_all_manuscript_figures() -> None:
 
 
 def test_selection_preserves_manuscript_order() -> None:
-    assert [figure.number for figure in _selected(["9.3", "6.1"])] == [
-        "6.1",
+    assert [figure.number for figure in _selected(["9.3", "5.1"])] == [
+        "5.1",
         "9.3",
     ]

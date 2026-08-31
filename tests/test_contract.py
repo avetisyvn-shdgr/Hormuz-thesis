@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 
-from lngfreight.sources.base import BaseSource
+from hormuz_throughput.sources.base import BaseSource
 
 
 def test_validate_enforces_columns():
@@ -32,7 +32,7 @@ def test_validate_drops_missing():
 
 
 def test_registry_loads_and_has_target():
-    from lngfreight import config
+    from hormuz_throughput import config
     reg = config.registry()
     assert "spark30s_atlantic_freight" in reg
     assert reg["spark30s_atlantic_freight"]["role"] == "target"

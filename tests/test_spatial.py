@@ -3,9 +3,9 @@ import pandas as pd
 import pytest
 
 
-from lngfreight.baselines import seasonal_naive_forecast
-from lngfreight.inference import counterfactual_effect, post_treatment_fold
-from lngfreight.spatial import (
+from hormuz_throughput.baselines import seasonal_naive_forecast
+from hormuz_throughput.inference import counterfactual_effect, post_treatment_fold
+from hormuz_throughput.spatial import (
     chokepoint_metadata,
     leave_one_donor_out_summary,
     slugify_portname,
@@ -39,11 +39,6 @@ def test_wide_chokepoint_panel_can_exclude_hormuz():
 
 def test_capacity_panel_masks_zero_capacity_with_positive_transits():
     panel = wide_chokepoint_panel("capacity_tanker", start="2026-02-28", end="2026-06-01")
-    # Matches the processed-panel policy: capacity artifacts are masked, so
-    # Hormuz has fewer valid capacity observations than transit observations.
-    # Pinned to the v2 PortWatch vintage (2026-07-15 download); the v1 vintage
-    # value was 79 (window identical — pure upstream revision), quotable from
-    # the v1 branch/commit.
     assert int(panel["strait_of_hormuz"].notna().sum()) == 84
 
 
@@ -53,10 +48,6 @@ def test_hormuz_transit_normalized_spatial_loss_is_near_total():
     pred = seasonal_naive_forecast(panel["strait_of_hormuz"], fold=fold)
     eff = counterfactual_effect(panel.loc[pred.index, "strait_of_hormuz"], pred)
     normalized = eff["cumulative_throughput_loss"] / eff["counterfactual_sum"]
-    # Pinned to the v2 state: study window extended to full_end 2026-07-07 AND
-    # revised v2 PortWatch vintage. The v1 pin was 0.955284 (94-day window,
-    # v1 vintage); the lower v2 share reflects the partial July transit trickle,
-    # not a pipeline change. v1 remains quotable from the v1 branch/commit.
     assert normalized == pytest.approx(0.930877, abs=1e-6)
 
 

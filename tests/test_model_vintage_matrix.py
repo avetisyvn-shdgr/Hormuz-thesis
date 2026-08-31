@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight import config
-from lngfreight.vintage_matrix import (
+from hormuz_throughput import config
+from hormuz_throughput.vintage_matrix import (
     load_design,
     pinned_self_checks,
     sha256_file,
@@ -198,16 +198,37 @@ def test_matrix_and_complete_branch_manifests_match_live_files():
     assert written_complete == live_complete
     assert len(live_complete["artifact_sha256"]) == 13
     assert all(live_complete["matrix_artifact_presence"].values())
-    assert live_complete["core_run_all_dependency"] == "none"
+    assert live_complete["core_run_all_dependency"] == "required_for_final_integration"
     assert live_complete["core_reproducibility_manifest_dependency"] == "none"
 
     checkpoint = json.loads(
         config.path("model_admission_pre_run_checkpoint_json").read_text()
     )
     prepared_path = config.path("portwatch_sensitivity_manifest_json")
-    assert sha256_file(prepared_path) == checkpoint["checkpoint_input_sha256"][
+    checkpoint_sha = checkpoint["checkpoint_input_sha256"][
         "data/processed/portwatch_sensitivity_manifest.json"
     ]
+    assert live_complete["prepared_manifest_sha256"] == checkpoint_sha
+    assert live_complete["current_prepared_manifest_sha256"] == sha256_file(
+        prepared_path
+    )
+    assert live_complete["prepared_manifest_matches_checkpoint"] is False
+    assert live_complete["prepared_manifest_provenance_status"] == (
+        "historical_pre_run_bytes_unavailable"
+    )
+    assert live_complete["pre_run_freeze_claim_permitted"] is False
+    gap = live_complete["disclosed_provenance_gap"]
+    assert gap["scope"] == "checkpointed_manifest_bytes"
+    assert set(gap["affected_paths"]) == {
+        "data/processed/portwatch_sensitivity_manifest.json",
+        "data/processed/portwatch_sensitivity_input_manifest.json",
+    }
+    assert gap["scientific_anchors_verified"] is True
+
+    anchors = live_complete["checkpoint_scientific_anchor_verification"]
+    assert anchors["matrix_design"]["matches"] is True
+    assert anchors["admission_protocol"]["matches"] is True
+    assert all(anchor["matches"] for anchor in anchors["raw_vintages"].values())
 
 
 def test_live_matrix_passes_frozen_validator_and_pinned_self_checks():

@@ -25,7 +25,7 @@ from experiments.network_adaptation.inference import (
 )
 from experiments.network_adaptation.protocol import AdaptationProtocol, load_protocol
 from experiments.panel_bakeoff.protocol import EXPLICIT_CLASSES, file_sha256, load_raw_panel
-from lngfreight.inference import romano_wolf_stepdown
+from hormuz_throughput.inference import romano_wolf_stepdown
 
 
 ROOT = Path(__file__).resolve().parents[2]

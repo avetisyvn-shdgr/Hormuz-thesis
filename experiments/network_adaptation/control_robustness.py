@@ -114,10 +114,6 @@ def _row(
     weights = family_weights(scheme, names, draws, volumes)
     result = global_mean_test(observed.loc[names], draws.loc[:, names], weights)
     threshold = result["reference_q950"]
-    # The power benchmark only reads sensibly for the control family: it asks
-    # whether this control test would reject if the control series had moved as
-    # much as the equal-weighted tanker family did. Comparing the tanker family
-    # against its own reference under a different weighting would be circular.
     is_control = family == "non_tanker_negative_controls"
     return {
         "family": family,
@@ -203,8 +199,6 @@ def main() -> None:
         observed = stats["event_statistic"]
         primary_global = float(observed.loc[primary_names].mean())
         for block_length in block_lengths:
-            # Identical seed geometry to analyze.py, so every variant is read off
-            # the same synchronized bootstrap the reported result used.
             raw_draws = synchronized_circular_mbb(
                 historical,
                 horizon=protocol.horizon,

@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import sys
 
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/hormuz_throughput-matplotlib")
 
 import matplotlib  # noqa: E402
 matplotlib.use("Agg")
@@ -23,9 +23,9 @@ from figure_style import (  # noqa: E402
     apply_publication_style,
     style_axes,
 )
-from lngfreight import config  # noqa: E402
-from lngfreight.bloomberg_market import ANALYSIS_COLUMNS  # noqa: E402
-from lngfreight.freight_counterfactual import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.bloomberg_market import ANALYSIS_COLUMNS  # noqa: E402
+from hormuz_throughput.freight_counterfactual import (  # noqa: E402
     fit_freight_counterfactuals,
 )
 
@@ -37,7 +37,7 @@ LABELS = {
 }
 COLORS = {"observed": "#2F6690", "forecast": "#D17A22", "interval": "#F3C98B"}
 PDF_METADATA = {
-    "Creator": "lngfreight reproducible pipeline",
+    "Creator": "hormuz_throughput reproducible pipeline",
     "CreationDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
     "ModDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
 }
@@ -46,7 +46,6 @@ PDF_METADATA = {
 def _plot(weekly: pd.DataFrame, cutoff: str) -> None:
     apply_publication_style()
     fig, axes = plt.subplots(3, 1, figsize=(FIGURE_WIDTH_IN, 6.2), sharex=True)
-    # No in-figure headline title: the LaTeX caption carries it in the thesis.
     for ax, (series, group) in zip(axes, weekly.groupby("series", sort=False)):
         group = group.sort_values("week_end")
         ax.fill_between(

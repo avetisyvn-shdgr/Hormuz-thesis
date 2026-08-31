@@ -5,8 +5,8 @@ import hashlib
 import numpy as np
 import pandas as pd
 
-from lngfreight import config
-from lngfreight.bloomberg_admission import (
+from hormuz_throughput import config
+from hormuz_throughput.bloomberg_admission import (
     admission_gates,
     audit_export,
     audit_frame,

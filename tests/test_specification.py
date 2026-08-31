@@ -2,7 +2,7 @@
 import pytest
 
 
-from lngfreight.specification import working_specification
+from hormuz_throughput.specification import working_specification
 
 
 def test_working_specification_locks_fallback_roles():

@@ -9,9 +9,9 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.inference import conformal_effect_interval, empirical_p_value  # noqa: E402
-from lngfreight.specification import working_specification  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.inference import conformal_effect_interval, empirical_p_value  # noqa: E402
+from hormuz_throughput.specification import working_specification  # noqa: E402
 
 
 def _select_disjoint_rows(rows: pd.DataFrame) -> pd.DataFrame:

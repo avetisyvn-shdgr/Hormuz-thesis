@@ -8,13 +8,11 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config, provenance  # noqa: E402
-from lngfreight.registry import get_gfw_port_visits  # noqa: E402
-from lngfreight.sources.gfw import GFWClient, PORT_VISIT_DATASET  # noqa: E402
+from hormuz_throughput import config, provenance  # noqa: E402
+from hormuz_throughput.registry import get_gfw_port_visits  # noqa: E402
+from hormuz_throughput.sources.gfw import GFWClient, PORT_VISIT_DATASET  # noqa: E402
 
 
-# End dates are exclusive under the GFW API. Each window contains 94 days and
-# uses the same calendar season to avoid introducing a seasonal comparison bias.
 WINDOWS = {
     "pre": ("2025-02-28", "2025-06-02"),
     "post": ("2026-02-28", "2026-06-02"),

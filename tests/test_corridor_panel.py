@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 
-from lngfreight.corridor_panel import (
+from hormuz_throughput.corridor_panel import (
     build_corridor_panel,
     load_corridor_panel_protocol,
 )

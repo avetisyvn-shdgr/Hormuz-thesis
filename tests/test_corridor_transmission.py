@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 
-from lngfreight.corridor_transmission import (
+from hormuz_throughput.corridor_transmission import (
     ar_window_statistic,
     basin_point_summary,
 )
@@ -27,13 +27,11 @@ def test_window_geometry_is_leakage_safe():
 
 
 def test_deviation_sign_matches_a_known_collapse():
-    # Constant pre-period, then a collapse to zero in the post window.
     pre = np.full(500, 100.0)
     post = np.zeros(40)
     s = _series(np.r_[pre, post])
     origin = s.index[0] + pd.Timedelta(days=500)
     out = ar_window_statistic(s, history_start=s.index[0], origin=origin, horizon_days=30)
-    # AR predicts ~100, observed 0 -> deviation near -1.0.
     assert out["statistic_value"] == pytest.approx(-1.0, abs=0.05)
 
 
@@ -41,7 +39,6 @@ def test_statistic_depends_only_on_its_own_series():
     s = _series(np.r_[np.full(500, 30.0), np.full(40, 12.0)])
     origin = s.index[0] + pd.Timedelta(days=500)
     base = ar_window_statistic(s, history_start=s.index[0], origin=origin, horizon_days=30)
-    # A second corridor with wildly different values cannot enter this call.
     other = _series(np.r_[np.full(500, 30.0), np.full(40, 1.0)])
     again = ar_window_statistic(s, history_start=s.index[0], origin=origin, horizon_days=30)
     other_stat = ar_window_statistic(other, history_start=other.index[0], origin=origin, horizon_days=30)
@@ -51,13 +48,13 @@ def test_statistic_depends_only_on_its_own_series():
 
 def test_masked_values_do_not_collapse_the_forecast():
     values = np.full(540, 80.0)
-    values[499] = np.nan  # the day before the origin is masked
-    values[505:510] = np.nan  # some masked days inside the window
+    values[499] = np.nan
+    values[505:510] = np.nan
     s = _series(values)
     origin = s.index[0] + pd.Timedelta(days=500)
     out = ar_window_statistic(s, history_start=s.index[0], origin=origin, horizon_days=30)
     assert np.isfinite(out["statistic_value"])
-    assert out["n_scored"] == 25  # 30 window days minus 5 masked observed days
+    assert out["n_scored"] == 25
 
 
 def test_basin_summary_is_point_only_and_never_additive():
@@ -75,7 +72,6 @@ def test_basin_summary_is_point_only_and_never_additive():
     assert g1["n_corridors"] == 2
     assert g1["mean_signed_deviation_point"] == pytest.approx(-0.3)
     assert (summary["interval_policy"] == "point_only_not_additive").all()
-    # The summary reports central tendency, never a corridor sum.
     assert "sum" not in [c for c in summary.columns if "signed" in c and "sum" in c]
 
 

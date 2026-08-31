@@ -3,9 +3,9 @@ import json
 
 import pytest
 
-from lngfreight import config
-from lngfreight import registry as registry_module
-from lngfreight.registry import RegisteredArtifact
+from hormuz_throughput import config
+from hormuz_throughput import registry as registry_module
+from hormuz_throughput.registry import RegisteredArtifact
 
 
 def _artifact_registry() -> dict:
@@ -124,10 +124,10 @@ def test_active_external_consumers_call_registry_entrypoint():
         "scripts/verify_sensitivity_inputs.py": (
             "portwatch_chokepoints_vintage_20260809_snapshot"
         ),
-        "src/lngfreight/vintage_matrix.py": (
+        "src/hormuz_throughput/vintage_matrix.py": (
             "portwatch_chokepoints_vintage_20260809_snapshot"
         ),
-        "src/lngfreight/spatial.py": "portwatch_chokepoints_snapshot",
+        "src/hormuz_throughput/spatial.py": "portwatch_chokepoints_snapshot",
         "scripts/build_lng_terminal_crosswalk.py": "gem_lng_terminals_snapshot",
         "scripts/build_global_lng_terminal_crosswalk.py": (
             "global_gfw_port_visits_snapshot"
@@ -145,7 +145,7 @@ def test_active_external_consumers_call_registry_entrypoint():
         ),
         "scripts/build_importer_outcomes.py": "korea_lng_by_origin_snapshot",
         "scripts/build_lng_rewiring_network.py": "registered_rewiring_input_paths",
-        "src/lngfreight/network_rewiring.py": "CUSTOMS_ARTIFACT_VARIABLES",
+        "src/hormuz_throughput/network_rewiring.py": "CUSTOMS_ARTIFACT_VARIABLES",
         "scripts/build_lng_network_anomaly_scores.py": (
             "registered_rewiring_input_paths"
         ),

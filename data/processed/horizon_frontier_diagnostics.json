@@ -247,7 +247,7 @@
     }
   ],
   "design_id": "hormuz_horizon_resolution_inference_frontier_v1",
-  "design_sha256": "8fa1a980971dbcc5fbe3d2d8cb401e64c0cddfe053a4931fc4b06a6804999730",
+  "design_sha256": "8c286420a882e0ddd6be80ddf7d443f997fed0e235fddac8baf55e075a08bd45",
   "freeze_status": "frozen_before_generation_not_preregistered",
   "held_fixed": {
     "exog_cols": [],
@@ -291,7 +291,7 @@
   "reporting_guards": {
     "claim_vocabulary": "counterfactual_forecast_shortfall_not_treatment_effect",
     "core_reproducibility_manifest_dependency": "none",
-    "core_run_all_dependency": "none",
+    "core_run_all_dependency": "required_for_final_integration",
     "five_percent_significance_claim_permitted": false,
     "is_ATT": false,
     "is_causal_identification": false,

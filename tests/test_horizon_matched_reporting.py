@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from lngfreight import config
+from hormuz_throughput import config
 
 
 def test_long_horizon_schema_labels_overlapping_band_without_nominal_coverage():

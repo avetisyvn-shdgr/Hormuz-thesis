@@ -26,16 +26,16 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight.baselines import arx_forecast  # noqa: E402
-from lngfreight.validation import Fold  # noqa: E402
+from hormuz_throughput.baselines import arx_forecast  # noqa: E402
+from hormuz_throughput.validation import Fold  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 PANEL = ROOT / "data" / "processed" / "panel_aligned.csv"
 OUT = ROOT / "data" / "processed" / "terminal_condition_sensitivity.csv"
 
 TARGET = "hormuz_tanker_transits"
-CUTOFF = pd.Timestamp("2026-02-28")      # exclusive training bound, locked
-WINDOW_END = pd.Timestamp("2026-07-07")  # 130 scored days, locked
+CUTOFF = pd.Timestamp("2026-02-28")
+WINDOW_END = pd.Timestamp("2026-07-07")
 Y_LAGS = (1, 7)
 RIDGE_ALPHA = 1e-6
 K_GRID = (0, 7, 14, 21, 30)

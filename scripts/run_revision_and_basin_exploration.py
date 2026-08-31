@@ -29,7 +29,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config, registry  # noqa: E402
+from hormuz_throughput import config, registry  # noqa: E402
 
 PINNED_VARIABLE = "portwatch_chokepoints_snapshot"
 VINTAGE_VARIABLE = "portwatch_chokepoints_vintage_20260809_snapshot"

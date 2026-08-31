@@ -1,0 +1,66 @@
+{
+  "analysis_role": "final_integration_stale_claim_and_citation_audit",
+  "claim_artifact_sha256": {
+    "inference_frontier": "5ebdb808141e540c9f3dbb767761939eb32f35113739b500d54c7cceadd65d0c",
+    "lng_specific_outbound": "a7618fe62c8527a898d77f2897da680b541e4c276eb648f10b5fac3d5cf62cbe",
+    "network_support": "6446dea64a1ef8701d7797c01a49573ccf48f7a2cf82e72f00a05899b3a4e247",
+    "public_data_gates": "595e59f59dda8662c11fa513d6565dde1604c8645ed4acd99538b178a793a1e6",
+    "rebound_relapse": "e756231e1bb50fbcbb9a81ed31ddc40cdfb42fe76ffbf41d2072c8a1ece44281",
+    "route_burden": "85df5169cf683d74c40e41ba23d0602e1aadd1182d094f780e406dcf28b04118",
+    "throughput_shortfall": "15a6e02eb812446d3482e0a4722c3f770a92e82e9828fc9ff1bebef457945917",
+    "vintage_sensitivity": "18664d0ef24a5745d3648461e1871e7500ab0fa45e4142e8f469e66851d48868"
+  },
+  "claims": 8,
+  "core_reproducibility_manifest_dependency": "none",
+  "core_run_all_dependency": "required",
+  "defence_challenges_prepared": 5,
+  "design_id": "final_evidence_to_claim_integration_audit_v1",
+  "design_sha256": "f98b0f1a3fc5e0483431b73890ff618a29b797efb81ec97df9fdca6d19be3330",
+  "documents_scanned": 9,
+  "formal_proposal_edited": false,
+  "freeze_status": "frozen_final_integration_pass",
+  "input_sha256": {
+    "config/final_integration_audit.yaml": "f98b0f1a3fc5e0483431b73890ff618a29b797efb81ec97df9fdca6d19be3330",
+    "scripts/freeze_final_integration_audit.py": "761c99b28a6df7981e93ec2e9317b4ad77212da99ac73bfe8b268c956ae92247",
+    "scripts/run_final_integration_audit.py": "97416884fdb9f0c467ad1a46f1d9c1b24e77b506bf5424738a127660d0ddd3e8",
+    "src/hormuz_throughput/claim_audit.py": "8bca96a4ca6be8977ac9706f0153568235843f1e8c99fc7c1a59a382cf35a62f"
+  },
+  "manifest_schema": 1,
+  "open_reproducibility_boundaries": {
+    "august_raw_byte_archive": "OPEN",
+    "core_run_manifest_refresh": "CONTROLLED_BY_RUN_ALL",
+    "historical_source_payload_gaps": "OPEN_AND_DISCLOSED"
+  },
+  "output_sha256": {
+    "data/processed/final_claim_artifact_ledger.csv": "778b3522d52196196293c1041ab6c621a64fec8aca61e3360dd84cd01050691c",
+    "data/processed/final_integration_diagnostics.json": "c4d2608c2aacd63c87f919de762df68e9a22cdf225d5709a725d14f838b8034c",
+    "data/processed/final_stale_claim_scan.csv": "7719084d28315a79f9f9d0f4d0dfb770230e568ee0d668371e1108adc5fd1c3b",
+    "reports/audit/defence_preparation.md": "bfec058f765ff71f822393868f759ba5738547384170a2836e348e72964dd4e1",
+    "reports/audit/final_evidence_to_claim_audit.md": "e8bb0b2a78c4c73cfe5855b1fbe79039b124329d1d958aea3dc30b85b5d7c2a9"
+  },
+  "reporting_guards": {
+    "core_reproducibility_manifest_dependency": "none",
+    "core_run_all_dependency": "required",
+    "five_percent_significance_claim_permitted": false,
+    "formal_proposal_edited": false,
+    "is_ATT": false,
+    "is_causal_identification": false,
+    "portwatch_and_wto_layers_must_stay_distinct": true,
+    "restricted_material_included": false
+  },
+  "restricted_material_included": false,
+  "source_layer_confusion_flagged": 0,
+  "stale_claim_occurrences": 20,
+  "stale_claims_flagged": 0,
+  "status": "generated_final_integration_audit",
+  "third_layer_admitted": false,
+  "upstream_manifest_sha256": {
+    "horizon_frontier_manifest": "bb21b2be930bfe52183d638ad3c0e945206b631b409daebf83883836e7b6eb45",
+    "network_support_manifest": "7c27e474e79e2b89bd4f7ef122617df64a0ec77f7ceddcb4523acc619b1532be",
+    "public_data_gate_manifest": "4ee9e3733ff9c7c0caf15ccdab317a819a9593e6f652a72cba4a8997edcad7cf",
+    "route_burden_manifest": "1a629a35404f1d656115225046c8aa1d7d8f25b0928bd81f959d22bf36dfe7e2",
+    "sensitivity_budget_manifest": "b03bb3fa63a8f7e98fa7cf2ffc25cf490a543f1ee3a66f265dfa4b61b89a3848"
+  },
+  "verification_record": "reports/reproducibility_run_transcript.txt",
+  "verification_state": "NEEDS-VERIFY"
+}

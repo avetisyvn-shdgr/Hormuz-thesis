@@ -16,13 +16,13 @@ import sys
 from pathlib import Path
 
 import matplotlib
-matplotlib.use("Agg")  # headless: write files, never open a window
+matplotlib.use("Agg")
 
 import pandas as pd  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config, eventstudy as es  # noqa: E402
+from hormuz_throughput import config, eventstudy as es  # noqa: E402
 
 
 def _load(path: Path, **kw) -> pd.DataFrame:

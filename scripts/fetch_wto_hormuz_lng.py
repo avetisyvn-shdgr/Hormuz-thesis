@@ -11,9 +11,9 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config, provenance  # noqa: E402
-from lngfreight.sources.base import SourcePayload  # noqa: E402
-from lngfreight.sources.wto_hormuz import EXPECTED_COLUMNS  # noqa: E402
+from hormuz_throughput import config, provenance  # noqa: E402
+from hormuz_throughput.sources.base import SourcePayload  # noqa: E402
+from hormuz_throughput.sources.wto_hormuz import EXPECTED_COLUMNS  # noqa: E402
 
 
 URL = (

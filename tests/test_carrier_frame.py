@@ -1,6 +1,6 @@
 import pandas as pd
 
-from lngfreight.carrier_frame import build_global_carrier_frame
+from hormuz_throughput.carrier_frame import build_global_carrier_frame
 
 
 def _imo(prefix: str) -> str:

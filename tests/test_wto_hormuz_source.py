@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from lngfreight.sources.wto_hormuz import WTOHormuzLNGSource
+from hormuz_throughput.sources.wto_hormuz import WTOHormuzLNGSource
 
 
 def test_frozen_wto_lng_snapshot_contract():

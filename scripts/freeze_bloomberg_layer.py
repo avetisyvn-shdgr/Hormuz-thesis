@@ -10,7 +10,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 
 
 FILES = [
@@ -18,13 +18,13 @@ FILES = [
     "config/sources.yaml",
     "config/bloomberg_exports.yaml",
     "config/bloomberg_export_manifest.schema.json",
-    "src/lngfreight/registry.py",
-    "src/lngfreight/sources/__init__.py",
-    "src/lngfreight/bloomberg_admission.py",
-    "src/lngfreight/bloomberg_market.py",
-    "src/lngfreight/freight_counterfactual.py",
-    "src/lngfreight/freight_integration.py",
-    "src/lngfreight/sources/bloomberg_transcription.py",
+    "src/hormuz_throughput/registry.py",
+    "src/hormuz_throughput/sources/__init__.py",
+    "src/hormuz_throughput/bloomberg_admission.py",
+    "src/hormuz_throughput/bloomberg_market.py",
+    "src/hormuz_throughput/freight_counterfactual.py",
+    "src/hormuz_throughput/freight_integration.py",
+    "src/hormuz_throughput/sources/bloomberg_transcription.py",
     "scripts/audit_bloomberg_exports.py",
     "scripts/build_bloomberg_weekly_panel.py",
     "scripts/make_bloomberg_freight_descriptives.py",
@@ -59,11 +59,6 @@ FILES = [
     "reports/figures/freight_market_context.pdf",
     "reports/figures/freight_mechanism_integration.png",
     "reports/figures/freight_mechanism_integration.pdf",
-    # Registry-captured Bloomberg payload snapshots under data/raw. These are
-    # deliberately excluded from the global SHA256SUMS.vessel sweep (they exist
-    # only where the opt-in branch has run), so this freeze is their sole
-    # integrity ledger. The originals/ workbooks are additionally pinned by
-    # config/bloomberg_exports.yaml and verified on every registry load.
     "data/raw/bloomberg_transcription/fearnleys_lng_spot_east_suez__fearnleys_lng_spot_east_suez.csv",
     "data/raw/bloomberg_transcription/fearnleys_lng_spot_west_suez__fearnleys_lng_spot_west_suez.csv",
     "data/raw/bloomberg_transcription/fearnleys_lng_one_year_time_charter__fearnleys_lng_one_year_time_charter.csv",

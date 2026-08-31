@@ -16,9 +16,9 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.baselines import arx_forecast, seasonal_naive_forecast  # noqa: E402
-from lngfreight.inference import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.baselines import arx_forecast, seasonal_naive_forecast  # noqa: E402
+from hormuz_throughput.inference import (  # noqa: E402
     counterfactual_effect,
     empirical_p_value,
     non_overlapping_fold_count,
@@ -26,7 +26,7 @@ from lngfreight.inference import (  # noqa: E402
     post_treatment_fold,
     separation_ratio,
 )
-from lngfreight.specification import working_specification  # noqa: E402
+from hormuz_throughput.specification import working_specification  # noqa: E402
 
 
 SPEC = working_specification()

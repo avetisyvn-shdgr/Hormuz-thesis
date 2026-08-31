@@ -14,8 +14,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight import config
-from lngfreight import route_burden as rb
+from hormuz_throughput import config
+from hormuz_throughput import route_burden as rb
 
 from freeze_route_burden_decomposition import (
     assert_upstream_untouched,
@@ -98,9 +98,6 @@ def _balanced_panel() -> pd.DataFrame:
     ])
 
 
-# --------------------------------------------------------------------------
-# Decomposition algebra
-# --------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize("scheme", rb.WEIGHTING_SCHEMES)
@@ -214,9 +211,6 @@ def test_entering_pair_lands_in_the_entry_exit_residual():
 
 def test_percent_stability_ratio_flags_offsetting_components():
     """A near-zero total with large offsetting parts must be detectable."""
-    # Mass moves from a low-burden pair to a high-burden pair (share term up)
-    # while a very-high-burden pair leaves support entirely (residual down), so
-    # the two largely offset.
     records = []
     records += [("pre", "A->X", i, 100.0) for i in range(8)]
     records += [("pre", "B->Y", 10 + i, 900.0) for i in range(2)]
@@ -233,8 +227,6 @@ def test_percent_stability_ratio_flags_offsetting_components():
     assert np.isfinite(result.percent_stability_ratio())
     assert result.percent_stability_ratio() > 2.0
 
-    # The percentages still sum to 100 yet are individually meaningless: one
-    # exceeds 200% and another is negative while the total change is negative.
     percentages = result.component_percentages()
     assert sum(percentages.values()) == pytest.approx(100.0)
     assert max(abs(v) for v in percentages.values()) > 100.0
@@ -300,9 +292,6 @@ def test_both_period_carrier_restriction_keeps_only_shared_imos():
     assert len(restricted) < len(panel)
 
 
-# --------------------------------------------------------------------------
-# Corruption tests
-# --------------------------------------------------------------------------
 
 
 def _valid_decomposition() -> pd.DataFrame:
@@ -413,9 +402,6 @@ def test_missing_radius_is_rejected():
         validate_inputs(design, voyages)
 
 
-# --------------------------------------------------------------------------
-# Frozen design contract
-# --------------------------------------------------------------------------
 
 
 def test_design_fixes_the_construct_label_and_prohibited_labels():
@@ -462,9 +448,6 @@ def test_audit_expectation_detects_a_refutation():
     ]["reproduced"] is False
 
 
-# --------------------------------------------------------------------------
-# Generated artifacts
-# --------------------------------------------------------------------------
 
 
 @needs_upstream
@@ -545,7 +528,6 @@ def test_documentation_states_that_the_split_does_not_generalise():
     assert "does not generalise" in text
     assert design["construct"]["label"] in text
     for banned in design["construct"]["prohibited_labels"]:
-        # The prohibited label may appear only inside an explicit negation.
         for line in text.splitlines():
             if banned in line:
                 assert "not " in line.lower(), line
@@ -584,7 +566,7 @@ def test_manifest_matches_its_live_rebuild():
     assert written["is_observed_cargo_ton_miles"] is False
     assert written["is_physical_rerouting_evidence"] is False
     assert written["verification_state"] == "NEEDS-VERIFY"
-    assert written["core_run_all_dependency"] == "none"
+    assert written["core_run_all_dependency"] == "required_for_final_integration"
 
 
 @needs_outputs

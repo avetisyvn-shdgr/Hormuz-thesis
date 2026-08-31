@@ -34,7 +34,7 @@ from experiments.positive_control.protocol import (
     PositiveControlProtocol,
     load_protocol,
 )
-from lngfreight.inference import romano_wolf_stepdown
+from hormuz_throughput.inference import romano_wolf_stepdown
 
 
 ROOT = Path(__file__).resolve().parents[2]

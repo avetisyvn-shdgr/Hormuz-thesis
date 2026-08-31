@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from lngfreight.exposure import attach_exposure_metadata, exposure_summary
+from hormuz_throughput.exposure import attach_exposure_metadata, exposure_summary
 
 
 def _voyages() -> pd.DataFrame:

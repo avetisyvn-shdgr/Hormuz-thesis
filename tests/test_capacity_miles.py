@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from lngfreight.capacity_miles import (
+from hormuz_throughput.capacity_miles import (
     attach_capacity_nautical_miles,
     capacity_period_summary,
     capacity_pre_post_comparison,
@@ -9,7 +9,7 @@ from lngfreight.capacity_miles import (
     route_shift_share_decomposition,
     validate_carrier_capacity_frame,
 )
-from lngfreight.routes import PAIR_COLUMNS
+from hormuz_throughput.routes import PAIR_COLUMNS
 
 
 def _voyages() -> pd.DataFrame:

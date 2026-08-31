@@ -1,6 +1,6 @@
 import pandas as pd
 
-from lngfreight.wto_validation import (
+from hormuz_throughput.wto_validation import (
     build_gulf_departure_daily,
     complete_weekly_totals,
     validation_correlations,

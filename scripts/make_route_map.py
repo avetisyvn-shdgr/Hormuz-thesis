@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from typing import Iterable
 
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/hormuz_throughput-matplotlib")
 
 import matplotlib
 
@@ -34,9 +34,9 @@ from figure_style import (  # noqa: E402
     apply_publication_style,
     save_pdf_and_png,
 )
-from lngfreight import config  # noqa: E402
-from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
-from lngfreight.routes import installed_searoute_version, searoute_router  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.registry import RegisteredArtifact, get_variable  # noqa: E402
+from hormuz_throughput.routes import installed_searoute_version, searoute_router  # noqa: E402
 
 
 PAIR_COLUMNS = [
@@ -76,12 +76,8 @@ LAND_FACE_COLOR = "#E9E5DE"
 LAND_EDGE_COLOR = "#A8A196"
 OCEAN_COLOR = "#F4F8FA"
 GRATICULE_COLOR = "#C6D4DC"
-# Plot extent. Antarctica and the high Arctic carry no LNG voyages in the
-# sample, so the map is cropped to the latitudes that do.
 MAP_LAT_MIN = -60.0
 MAP_LAT_MAX = 80.0
-# Layout is specified in inches rather than figure fractions so that the axes
-# box can be sized to the exact Robinson data ratio (see _render_map).
 MARGIN_LEFT_IN = 0.42
 MARGIN_RIGHT_IN = 0.06
 MARGIN_TOP_IN = 0.06
@@ -424,8 +420,6 @@ def _render_map(
     if not math.isfinite(cap_bn) or cap_bn <= 0:
         raise ValueError("Route changes do not contain a positive plotting scale.")
 
-    # Size the canvas from the projected data ratio so that locking the axes
-    # aspect below neither distorts the coastlines nor leaves dead whitespace.
     x_limit = float(robinson_project(180.0, 0.0)[0])
     y_min = float(robinson_project(0.0, MAP_LAT_MIN)[1])
     y_max = float(robinson_project(0.0, MAP_LAT_MAX)[1])
@@ -491,8 +485,6 @@ def _render_map(
                     zorder=2.0 + (0.15 * layer_index),
                 )
 
-    # Confine land, graticule and flows to the projection outline, then stroke
-    # the neatline over them.
     for artist in list(ax.lines) + [patch for patch in ax.patches if patch is not ocean]:
         artist.set_clip_path(ocean)
     ax.add_patch(
@@ -517,7 +509,6 @@ def _render_map(
             linewidth=1.15,
             zorder=4,
         )
-        # Typographic minus, not a hyphen, to match the thesis body text.
         label = (
             f"{CORRIDOR_LABELS[row.corridor]} "
             f"{row.signed_deviation:+.0%}".replace("-", "−")
@@ -544,15 +535,12 @@ def _render_map(
 
     ax.set_xlim(-x_limit, x_limit)
     ax.set_ylim(y_min, y_max)
-    # Robinson is a fixed-ratio projection: without an equal aspect the axes box
-    # rescales the two coordinates independently and the continents shear.
     ax.set_aspect("equal", adjustable="box")
     ax.set_xticks([])
     ax.set_yticks([])
     for spine in ax.spines.values():
         spine.set_visible(False)
 
-    # No in-figure headline title: the LaTeX caption carries it in the thesis.
     legend_handles = [
         Line2D(
             [0],

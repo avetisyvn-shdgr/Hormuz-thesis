@@ -115,17 +115,12 @@ def test_specification_sensitivity_artifact_pairs_two_training_windows():
     assert set(frame["model"]) == {protocol.primary_model, protocol.robustness_model}
     assert frame.groupby("spec").size().eq(2).all()
 
-    # The two specifications must score the same event, or the comparison is
-    # not a specification sensitivity but a different question.
     assert frame["observed_sum"].nunique() == 1
     assert frame["observed_sum"].iloc[0] == 529.0
 
-    # Chronos never sees more than its declared context; AR sees everything.
     chronos = frame.loc[frame["model"].eq(protocol.primary_model)]
     assert chronos["context_length"].le(protocol.primary_context_length).all()
 
-    # The claim the write-up rests on: the shortfall is stable even though the
-    # model-versus-model difference is not.
     assert frame["pct_below_counterfactual"].between(92.0, 93.5).all()
     gaps = frame.set_index(["spec", "model"])["cumulative_gap"]
     legacy = gaps["legacy_admission_protocol"]
@@ -141,7 +136,6 @@ def test_cape_drift_artifact_covers_every_corridor_and_origin():
     assert set(frame["portname"]) == set(protocol.primary_corridors)
     assert set(frame["model"]) == {protocol.primary_model, protocol.robustness_model}
     assert frame["n_days"].eq(protocol.horizon).all()
-    # Residual calibration must stay strictly pre-event.
     assert pd.to_datetime(frame["scored_end"]).max() < protocol.cutoff
 
 
@@ -159,9 +153,6 @@ def test_cape_regime_break_is_the_reason_cape_is_demoted():
     assert min(abs(value) for value in shifts.values()) > 4 * summary[
         "largest_non_cape_onset_shift"
     ]
-    # The two models move in opposite directions at the onset; that is the
-    # disagreement the chapter attributes to the regime break, not to model
-    # quality.
     assert shifts[protocol.primary_model] * shifts[protocol.robustness_model] < 0
 
 
@@ -201,7 +192,6 @@ def test_weighted_global_test_reduces_to_the_equal_weighted_one():
     assert equal["one_sided_bootstrap_p_value"] == pytest.approx(
         explicit["one_sided_bootstrap_p_value"]
     )
-    # A weight that concentrates on one series must reproduce that series alone.
     single = global_mean_test(observed, draws, pd.Series({"a": 1.0, "b": 1e-12}))
     assert single["observed_global_statistic"] == pytest.approx(2.0, abs=1e-6)
 
@@ -222,21 +212,16 @@ def test_control_robustness_covers_every_declared_variant():
     assert set(frame["weighting"]) == set(protocol.control_weighting_schemes)
 
     controls = frame.loc[frame["family"].eq("non_tanker_negative_controls")]
-    # Three weightings + one eligibility variant + ten leave-one-outs, per model
-    # and block length.
     assert len(controls) == 2 * len(blocks) * (3 + 1 + 10)
     loo = controls.loc[controls["variant"].eq("leave_one_control_out")]
     assert loo["n_series"].eq(9).all()
     assert loo.groupby(["model", "block_length_days"])["dropped_control"].nunique().eq(10).all()
 
-    # The full family is retained and reported regardless of what the other
-    # variants say; the plan requires that explicitly.
     full = controls.loc[
         controls["variant"].eq("full_ten_control_family") & controls["weighting"].eq("equal")
     ]
     assert full["n_series"].eq(10).all()
 
-    # The eligibility rule is volume-based and pre-event, never post-event.
     eligible = controls.loc[controls["variant"].eq("volume_eligible_controls")]
     assert eligible["n_series"].eq(7).all()
     assert eligible["minimum_pre_event_daily_transits"].ge(
@@ -253,8 +238,6 @@ def test_control_family_has_power_and_chronos_specificity_holds():
     )
     assert summary["declared_before_running"]["minimum_pre_event_daily_transits"] == 5.0
     assert summary["declared_before_running"]["no_post_event_removal"]
-    # If the control family could not flag a tanker-sized movement it would not
-    # be a falsification test, and section 5.3 would have to be rewritten.
     assert summary["control_family_can_falsify"]
     above, total = summary["chronos_control_cells_above_0_05"]
     assert total == 42 and above >= 41
@@ -285,7 +268,6 @@ def test_all_corridor_ranking_covers_every_chokepoint_and_stays_labelled():
     assert frame.groupby(["model", "block_length_days"])["portname"].nunique().eq(28).all()
     assert frame["vessel_class"].eq(protocol.primary_class).all()
     assert frame["family_size"].eq(28).all()
-    # The label is the point: this run must never read as confirmatory.
     assert frame["status"].eq("retrospective_disclosure_not_confirmatory").all()
     assert frame.loc[frame["in_restricted_five"]].groupby(
         ["model", "block_length_days"]
@@ -305,7 +287,6 @@ def test_widening_the_family_keeps_panama_and_yucatan_and_drops_the_rest():
     always = set(survivors[survivors.eq(cells)].index)
     assert {"Panama Canal", "Yucatan Channel"} <= always
 
-    # Gibraltar and Malacca are in the restricted five and clear nothing.
     assert not flagged["portname"].isin({"Gibraltar Strait", "Malacca Strait"}).any()
 
     summary = json.loads(
@@ -313,10 +294,7 @@ def test_widening_the_family_keeps_panama_and_yucatan_and_drops_the_rest():
     )
     assert summary["status"] == "retrospective_disclosure_not_confirmatory"
     assert summary["family_size"] == 28
-    # The treated anchor must sit at the bottom of a one-sided positive ranking.
     assert summary["treated_anchor_rank_from_bottom"] == 1
-    # Corridors outside the restricted five do clear the threshold; concealing
-    # that is exactly what this run exists to prevent.
     assert summary["corridors_flagged_outside_the_restricted_five"]
 
 

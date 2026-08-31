@@ -2,12 +2,12 @@ import json
 
 import pandas as pd
 
-from lngfreight.registry import (
+from hormuz_throughput.registry import (
     get_gfw_port_visits,
     get_gfw_vessel_identities,
     get_gfw_vessel_identities_batched,
 )
-from lngfreight.sources.gfw import (
+from hormuz_throughput.sources.gfw import (
     GFWClient,
     exact_imo_vessel_ids,
     normalize_port_visits,

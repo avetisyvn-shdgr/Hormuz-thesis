@@ -15,7 +15,7 @@ import pandas as pd
 import pytest
 import yaml
 
-from lngfreight import config
+from hormuz_throughput import config
 
 from freeze_public_data_gate_decisions import (
     BUILDER_PATH,
@@ -77,9 +77,6 @@ needs_outputs = pytest.mark.skipif(
 )
 
 
-# --------------------------------------------------------------------------
-# Governance boundary
-# --------------------------------------------------------------------------
 
 
 def test_every_required_candidate_is_covered():
@@ -159,9 +156,6 @@ def test_jodi_is_blocked_on_already_triggered_criteria():
     assert len(triggered) >= 2, "JODI must be NO_GO on facts, not preference"
 
 
-# --------------------------------------------------------------------------
-# No acquisition actually happens
-# --------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize("script", [BUILDER_PATH, FREEZER_PATH])
@@ -209,9 +203,6 @@ def test_upstream_manifest_drift_stops_the_phase():
         verify_integrity_pins({**design, "integrity_pins": corrupted})
 
 
-# --------------------------------------------------------------------------
-# Corruption tests
-# --------------------------------------------------------------------------
 
 
 def _valid_table() -> pd.DataFrame:
@@ -282,9 +273,6 @@ def test_guard_rejects_a_no_go_without_a_blocking_reason():
         guard_table(design, corrupted)
 
 
-# --------------------------------------------------------------------------
-# Generated artifacts
-# --------------------------------------------------------------------------
 
 
 @needs_outputs
@@ -339,7 +327,7 @@ def test_manifest_matches_its_live_rebuild():
     assert written["no_third_layer_plan_preserved"] is True
     assert written["any_go_status"] is False
     assert written["verification_state"] == "NEEDS-VERIFY"
-    assert written["core_run_all_dependency"] == "none"
+    assert written["core_run_all_dependency"] == "required_for_final_integration"
 
 
 @needs_outputs

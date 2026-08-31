@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 
-from lngfreight.transmission_chain import build_evidence_cascade, percent_change
+from hormuz_throughput.transmission_chain import build_evidence_cascade, percent_change
 
 
 def test_percent_change_signs_and_guards():
@@ -47,7 +47,6 @@ def test_cascade_has_five_ordered_links():
 
 def test_cascade_directions_match_the_argument():
     df = _cascade().set_index("step")
-    # Throughput, exports and voyages all fall; per-voyage distance rises.
     assert df.loc[1, "percent_change"] < 0
     assert df.loc[2, "percent_change"] < 0
     assert df.loc[3, "percent_change"] < 0
@@ -57,7 +56,6 @@ def test_cascade_directions_match_the_argument():
 def test_every_link_states_an_interpretation_boundary():
     df = _cascade()
     assert df["interpretation_boundary"].str.len().gt(0).all()
-    # The strongest cross-check (layer 2) must name the distinct WTO series.
     assert "WTO" in df.loc[df["step"].eq(2), "corroboration"].iloc[0]
     joined = " ".join(df.fillna("").astype(str).to_numpy().ravel()).lower()
     assert "independent" not in joined

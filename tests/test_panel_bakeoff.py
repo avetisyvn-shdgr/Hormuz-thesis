@@ -109,12 +109,8 @@ def test_chronos_advantage_is_not_concentrated_in_the_earliest_origins():
 
     latest = primary.loc[primary["fold"].eq("fold_08")]
     assert len(latest) == 2
-    # The latest origin keeps a positive advantage at both horizons, and its
-    # clustered interval excludes zero. If this ever fails, the generalisable
-    # accuracy claim has to be re-hedged, not the test relaxed.
     assert latest["mase_reduction"].gt(0).all()
     assert latest["cluster_bootstrap_ci_lower"].gt(0).all()
 
-    # Only the latest origin's long window reaches past the release date.
     reaching = primary.loc[primary["days_after_model_release"].gt(0)]
     assert set(reaching["fold"]) == {"fold_08"}

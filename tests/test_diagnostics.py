@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 
-from lngfreight.diagnostics import (
+from hormuz_throughput.diagnostics import (
     capacity_missingness,
     coverage_by_period,
     model_information_sets,

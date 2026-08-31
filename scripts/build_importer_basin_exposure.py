@@ -9,8 +9,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.exposure import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.exposure import (  # noqa: E402
     attach_exposure_metadata,
     exposure_diagnostics,
     exposure_summary,

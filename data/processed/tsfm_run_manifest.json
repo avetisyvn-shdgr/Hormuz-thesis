@@ -4,7 +4,7 @@
       "installed_distribution_count": 99,
       "lock_matches_installed": true,
       "locked_distribution_count": 99,
-      "lockfile": "requirements-benchmark.lock.txt",
+      "lockfile": "requirements/locks/benchmark-py311-macos-arm64.txt",
       "lockfile_sha256": "b4ac5fc4205fc6117409a4e99b220a05dc4afa00d54a0b31bd5740caa06a0683",
       "metadata_consistent": true,
       "packages": {
@@ -17,36 +17,19 @@
         "transformers": "5.12.1",
         "uni2ts": "2.0.0"
       },
-      "pandas_import_path": "/Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/.venv-bench/lib/python3.11/site-packages/pandas/__init__.py",
+      "pandas_import_path": "/Users/mheravetisyan/Documents/TUM/TUM BMT/Bachelor Thesis/Src/.venv-bench/lib/python3.11/site-packages/pandas/__init__.py",
       "pandas_import_version": "2.1.4",
       "pandas_metadata_version": "2.1.4",
       "pip_check": "passed",
-      "platform": "macOS-26.5.2-arm64-arm-64bit",
+      "platform": "macOS-26.6.2-arm64-arm-64bit",
       "python": "3.11.15",
       "status": "captured"
     },
     ".venv-timesfm": {
-      "installed_distribution_count": 50,
-      "lock_matches_installed": true,
-      "locked_distribution_count": 50,
-      "lockfile": "requirements-timesfm.lock.txt",
-      "lockfile_sha256": "078797d3cd57f52c6bf7c151712ad0df3601a6adafa0491c2bec94306aca9eca",
-      "metadata_consistent": true,
-      "packages": {
-        "huggingface-hub": "1.20.0",
-        "numpy": "1.26.4",
-        "pandas": "2.3.3",
-        "timesfm": "2.0.1",
-        "torch": "2.12.1",
-        "transformers": "not-installed"
-      },
-      "pandas_import_path": "/Users/mheravetisyan/Claude/Projects/Bachelor Thesis - ML Model/lng_freight_thesis/.venv-timesfm/lib/python3.11/site-packages/pandas/__init__.py",
-      "pandas_import_version": "2.3.3",
-      "pandas_metadata_version": "2.3.3",
-      "pip_check": "passed",
-      "platform": "macOS-26.5.2-arm64-arm-64bit",
-      "python": "3.11.15",
-      "status": "captured"
+      "lockfile": "requirements/locks/timesfm-py311-macos-arm64.txt",
+      "lockfile_sha256": "26aca01b9ff2f9df513905d0615163fb8fa07915266f676efaa15176cb720ee7",
+      "reason": ".venv-timesfm/bin/python not found",
+      "status": "unavailable"
     }
   },
   "benchmark_output_hash_policy": "raw SHA-256 except benchmark CSV runtime_s* columns, which are excluded as nondeterministic wall-clock diagnostics",
@@ -56,9 +39,9 @@
     "data/processed/tsfm_benchmark_scores.csv": "0462fbe993bca096b1508637c19a95a528cffac2f177dcf3bff9d13e72032c09",
     "data/processed/tsfm_benchmark_summary.csv": "ad7ff232073506672e8411d2bafc6dcf88a36d2764676fa0da91a06c5f0f9546",
     "data/processed/tsfm_counterfactual_daily.csv": "05e6c119fcc09e97ff0e4cb3af7afd14f69540ec6f28b3e81a18b22d3fa4d490",
-    "data/processed/tsfm_counterfactual_summary.csv": "990c877762781c470615149408440eec8b5cf557b30b29393cc1988ec04f90f9"
+    "data/processed/tsfm_counterfactual_summary.csv": "2bb767f74c5f82b4876dbeada54e6cb0483ec8c6eb42603d813290f062dded7c"
   },
-  "capture_host_platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "capture_host_platform": "macOS-26.6.2-arm64-arm-64bit",
   "determinism_policy": {
     "numpy_seeded": true,
     "python_random_seeded": true,
@@ -84,5 +67,5 @@
     },
     "status": "captured"
   },
-  "note": "Host-bound provenance for the isolated TSFM admission benchmark and the run_all-regenerated admitted Chronos-2 counterfactual. Re-run on the machine that produced the cited numbers; verify these versions/revisions match docs/MODERN_TSFM_BENCHMARK.md before citing any TSFM result. Foundation models are a robustness cross-check only, never the locked AR-only primary (CLAUDE.md rule 2)."
+  "note": "Host-bound provenance for the isolated TSFM admission benchmark and the run_all-regenerated admitted Chronos-2 counterfactual. Re-run on the machine that produced the cited numbers; verify the captured versions, revisions, and lockfile hashes before citing any TSFM result. Foundation models are robustness checks only and never replace the locked AR-only primary estimator."
 }

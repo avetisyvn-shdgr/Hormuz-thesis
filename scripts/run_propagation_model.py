@@ -23,15 +23,15 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config                                      # noqa: E402
-from lngfreight.propagation import (                               # noqa: E402
+from hormuz_throughput import config                                      # noqa: E402
+from hormuz_throughput.propagation import (                               # noqa: E402
     EventSpec,
     fit_propagation,
     placebo_reallocation,
     sanity_gate,
     screened_receivers,
 )
-from lngfreight.spatial import slugify_portname, wide_chokepoint_panel  # noqa: E402
+from hormuz_throughput.spatial import slugify_portname, wide_chokepoint_panel  # noqa: E402
 
 SPEC_PATH = config.CONFIG_DIR / "multi_event_propagation.yaml"
 

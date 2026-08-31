@@ -15,9 +15,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight import config
-from lngfreight import horizon_frontier as hf
-from lngfreight.inference import conformal_effect_interval
+from hormuz_throughput import config
+from hormuz_throughput import horizon_frontier as hf
+from hormuz_throughput.inference import conformal_effect_interval
 
 from freeze_horizon_resolution_frontier import (
     assert_locked_primary_untouched,
@@ -70,9 +70,6 @@ needs_outputs = pytest.mark.skipif(
 )
 
 
-# --------------------------------------------------------------------------
-# Geometry: pure calendar arithmetic, no outcome involved
-# --------------------------------------------------------------------------
 
 
 def test_packing_bound_is_floor_of_span_over_horizon():
@@ -178,7 +175,6 @@ def test_origin_rules_are_outcome_independent():
         for rule in hf.ORIGIN_RULES
     }
     for _ in range(3):
-        # An arbitrary outcome path exists but is never an argument to any rule.
         _ = pd.Series(rng.normal(size=len(index)), index=index)
         for rule in hf.ORIGIN_RULES:
             pd.testing.assert_frame_equal(
@@ -216,9 +212,6 @@ def test_block_fold_training_never_crosses_its_block():
         assert len(fold.test_idx) == 130
 
 
-# --------------------------------------------------------------------------
-# Finite-sample arithmetic
-# --------------------------------------------------------------------------
 
 
 def test_frontier_capacity_matches_the_closed_form():
@@ -253,11 +246,8 @@ def test_minimum_blocks_for_level_is_the_smallest_k_with_finite_support():
     for level in (0.50, 0.75, 0.80, 0.90, 0.95, 0.975, 0.99):
         required = hf.minimum_blocks_for_level(level)
         assert hf.conformal_rank(required, level) <= required
-        # Minimality: every smaller block count is genuinely unsupported.
         for smaller in range(0, required):
             assert hf.conformal_rank(smaller, level) > smaller
-    # Exact-arithmetic anchors. 10 * 0.90 and 20 * 0.95 land on integers, so the
-    # naive ceil(level / (1 - level)) closed form overstates both by one.
     assert hf.minimum_blocks_for_level(0.80) == 4
     assert hf.minimum_blocks_for_level(0.90) == 9
     assert hf.minimum_blocks_for_level(0.95) == 19
@@ -274,9 +264,6 @@ def test_capacity_rejects_degenerate_inputs():
         hf.packing_upper_bound(_synthetic_index(), CUTOFF, 0, MIN_TRAIN)
 
 
-# --------------------------------------------------------------------------
-# Frozen design contract
-# --------------------------------------------------------------------------
 
 
 def test_design_holds_the_locked_basis_fixed():
@@ -340,9 +327,6 @@ def test_treated_block_never_moves_the_treatment_date():
         assert block.length_days == int(horizon)
 
 
-# --------------------------------------------------------------------------
-# Corruption tests: the guards must actually fire
-# --------------------------------------------------------------------------
 
 
 def _minimal_summary() -> pd.DataFrame:
@@ -451,9 +435,6 @@ def test_upstream_hash_drift_stops_the_phase(tmp_path):
         })
 
 
-# --------------------------------------------------------------------------
-# Generated artifacts
-# --------------------------------------------------------------------------
 
 
 @needs_outputs
@@ -587,7 +568,7 @@ def test_manifest_matches_its_live_rebuild():
     assert written["five_percent_significance_claimed"] is False
     assert written["audit_expectation_fully_reproduced"] is True
     assert written["verification_state"] == "NEEDS-VERIFY"
-    assert written["core_run_all_dependency"] == "none"
+    assert written["core_run_all_dependency"] == "required_for_final_integration"
 
 
 @needs_outputs

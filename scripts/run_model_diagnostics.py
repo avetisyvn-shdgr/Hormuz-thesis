@@ -8,13 +8,13 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.diagnostics import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.diagnostics import (  # noqa: E402
     capacity_missingness,
     coverage_by_period,
     model_information_sets,
 )
-from lngfreight.validation import resolve_cutoff  # noqa: E402
+from hormuz_throughput.validation import resolve_cutoff  # noqa: E402
 
 
 def main() -> None:

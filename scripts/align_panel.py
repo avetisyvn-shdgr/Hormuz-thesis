@@ -22,9 +22,9 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config                              # noqa: E402
-from lngfreight.panel import build_panel                   # noqa: E402
-from lngfreight.clean import align_panel, alignment_report  # noqa: E402
+from hormuz_throughput import config                              # noqa: E402
+from hormuz_throughput.panel import build_panel                   # noqa: E402
+from hormuz_throughput.clean import align_panel, alignment_report  # noqa: E402
 
 
 def main(from_interim: bool = False) -> None:
@@ -49,8 +49,6 @@ def main(from_interim: bool = False) -> None:
     else:
         print(audit["reason"].value_counts().to_string())
 
-    # Sanity guards the human should eyeball: the REAL closure-zeros must
-    # survive untouched; only the artifact days become NaN.
     if "hormuz_tanker_transits" in clean.columns:
         z = int((clean["hormuz_tanker_transits"] == 0).sum())
         print(f"\nHormuz transit-zero days preserved: {z} "

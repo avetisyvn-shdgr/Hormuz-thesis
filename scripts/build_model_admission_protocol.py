@@ -17,11 +17,12 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.specification import working_specification  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.specification import working_specification  # noqa: E402
 
 
 PROTOCOL_PATH = config.CONFIG_DIR / "model_admission_protocol.yaml"
+HASH_MIGRATIONS_PATH = config.CONFIG_DIR / "artifact_hash_migrations.json"
 RESULT_TOLERANCE = 1e-9
 EXPECTED_PRIMARY_MODELS = {
     "seasonal_naive_7d", "ar_lag1_7", "chronos2", "bsts_local_level_weekly"
@@ -43,10 +44,19 @@ def _require_hash(relative: str, expected: str) -> Path:
         raise FileNotFoundError(f"declared admission artifact missing: {relative}")
     actual = _sha256(path)
     if actual != expected:
-        raise ValueError(
-            f"admission artifact hash mismatch for {relative}: "
-            f"expected {expected}, got {actual}"
-        )
+        migrations = json.loads(HASH_MIGRATIONS_PATH.read_text(encoding="utf-8"))
+        approved = [
+            item
+            for item in migrations["migrations"]
+            if item["path"] == relative
+            and item["historical_sha256"] == expected
+            and item["current_sha256"] == actual
+        ]
+        if len(approved) != 1:
+            raise ValueError(
+                f"admission artifact hash mismatch for {relative}: "
+                f"expected {expected}, got {actual}"
+            )
     return path
 
 

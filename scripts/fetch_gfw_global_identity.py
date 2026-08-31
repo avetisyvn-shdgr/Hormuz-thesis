@@ -8,9 +8,9 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config, provenance  # noqa: E402
-from lngfreight.registry import get_gfw_vessel_identities_batched  # noqa: E402
-from lngfreight.sources.gfw import GFWClient, IDENTITY_DATASET  # noqa: E402
+from hormuz_throughput import config, provenance  # noqa: E402
+from hormuz_throughput.registry import get_gfw_vessel_identities_batched  # noqa: E402
+from hormuz_throughput.sources.gfw import GFWClient, IDENTITY_DATASET  # noqa: E402
 
 
 def main() -> None:

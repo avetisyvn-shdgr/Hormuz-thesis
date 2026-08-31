@@ -17,14 +17,11 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from lngfreight import config  # noqa: E402  (import triggers load_dotenv)
+from hormuz_throughput import config  # noqa: E402  (import triggers load_dotenv)
 
-_ = config.settings  # ensure module import side effect (dotenv) is used
+_ = config.settings
 
 TIMEOUT = 30
-# Some providers (notably GIE) front their API with a WAF that 403s the default
-# Python-urllib User-Agent. Send a browser-like UA so a 403 means a real auth
-# failure, not a blocked client. The eventual GIE adapter must do the same.
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/537.36"
 
 

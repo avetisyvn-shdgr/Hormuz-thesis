@@ -202,9 +202,6 @@ def evaluate_specification(
                 (chunk["y_true"] >= chunk["native_lower"])
                 & (chunk["y_true"] <= chunk["native_upper"])
             )
-            # pandas 2.1.4 in the benchmark environment cannot concatenate its
-            # datetime extension blocks when chunks have 30 vs 130 rows. ISO
-            # strings are lossless here and parsed back by the summarizer.
             chunk["origin"] = chunk["origin"].astype(str)
             chunk["date"] = chunk["date"].astype(str)
             daily_chunks.append(chunk)
@@ -231,7 +228,6 @@ def main() -> None:
     for panel_name, panel, specification in (
         ("composition_28x5", composition, "univariate"),
         ("composition_28x5", composition, "multivariate_5class"),
-        # A one-target panel has no distinct multivariate formulation.
         ("total_28x1", total, "univariate"),
     ):
         result = evaluate_specification(pipeline, panel_name, panel, specification)

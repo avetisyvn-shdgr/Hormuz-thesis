@@ -28,8 +28,6 @@ ROOT = Path(__file__).resolve().parents[1]
 PROCESSED = ROOT / "data" / "processed"
 FIGDIR = ROOT / "reports" / "figures"
 
-# Foundation models are evaluated by run_tsfm_benchmark.py; the transparent
-# baselines by run_baseline.py. Both write the same fold schema.
 TSFM_SCORES = PROCESSED / "tsfm_benchmark_scores.csv"
 BASELINE_SCORES = PROCESSED / "baseline_scores.csv"
 AR_INTERVAL_SCORES = PROCESSED / "ar_interval_scores.csv"
@@ -39,8 +37,6 @@ TARGET_LABEL = {
     "hormuz_tanker_capacity": "Hormuz tanker capacity (DWT/day)",
 }
 
-# Grey = transparent baselines, colour = foundation models. stub_seasonal is a
-# deliberate null model inside the TSFM harness, so it is greyed with them.
 FAMILY = {
     "chronos2": "foundation",
     "timesfm": "foundation",
@@ -52,7 +48,7 @@ FAMILY = {
     "seasonal_naive_7d": "null",
 }
 COLOR = {"foundation": "#1f78b4", "baseline": "#33a02c", "null": "#9e9e9e"}
-REFERENCE_MODEL = "ar_lag1_7"  # admission-test reference in lngfreight.tsfm
+REFERENCE_MODEL = "ar_lag1_7"
 
 
 def load_scores() -> tuple[pd.DataFrame, list[str]]:
@@ -73,7 +69,6 @@ def load_scores() -> tuple[pd.DataFrame, list[str]]:
     dropped = sorted(set(scores.fold) - common)
     scores = scores[scores.fold.isin(common)].copy()
 
-    # Horizon must be identical or MASE is not comparable across folds.
     if scores.n_scored.nunique() != 1:
         raise ValueError(
             f"non-constant scoring horizon: {sorted(scores.n_scored.unique())}"
@@ -108,8 +103,6 @@ def order_models(scores: pd.DataFrame, target: str) -> list[str]:
 
 def build_figure(scores: pd.DataFrame, coverage: pd.DataFrame, dropped: list[str]):
     targets = sorted(scores.target.unique())
-    # Derive the calibration y-range from the data. A hard-coded floor silently
-    # clips badly-covered folds, which are exactly the ones worth seeing.
     cov_lo = float(coverage.empirical_coverage.min())
     cov_range = [min(0.70, cov_lo - 0.05), 1.02]
     n_folds = scores.fold.nunique()
@@ -135,7 +128,6 @@ def build_figure(scores: pd.DataFrame, coverage: pd.DataFrame, dropped: list[str
         means = sub.groupby("model").mase.mean()
         ar_mean = means.get(REFERENCE_MODEL)
 
-        # --- Panel A: mean MASE, ranked ---------------------------------
         fig.add_trace(
             go.Bar(
                 x=[means[m] for m in order],
@@ -154,7 +146,6 @@ def build_figure(scores: pd.DataFrame, coverage: pd.DataFrame, dropped: list[str
             row=1,
             col=col,
         )
-        # MASE = 1 is the seasonal-naive-equivalent line; below it beats naive.
         fig.add_vline(
             x=1.0, line=dict(color="#b2182b", width=1, dash="dot"), row=1, col=col
         )
@@ -166,7 +157,6 @@ def build_figure(scores: pd.DataFrame, coverage: pd.DataFrame, dropped: list[str
                 col=col,
             )
 
-        # --- Panel B: per-fold dispersion --------------------------------
         for model in order:
             d = sub[sub.model == model]
             fig.add_trace(
@@ -195,7 +185,6 @@ def build_figure(scores: pd.DataFrame, coverage: pd.DataFrame, dropped: list[str
             x=1.0, line=dict(color="#b2182b", width=1, dash="dot"), row=2, col=col
         )
 
-        # --- Panel C: calibration ----------------------------------------
         cov = coverage[coverage.target == target]
         for model in sorted(cov.model.unique()):
             d = cov[cov.model == model]
@@ -225,7 +214,6 @@ def build_figure(scores: pd.DataFrame, coverage: pd.DataFrame, dropped: list[str
                 row=3,
                 col=col,
             )
-        # Perfect calibration: empirical == nominal.
         fig.add_trace(
             go.Scatter(
                 x=[0.75, 1.0],

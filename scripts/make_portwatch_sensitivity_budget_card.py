@@ -14,8 +14,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-# Keep Matplotlib/font discovery out of non-writable user cache locations.
-_MPL_CACHE = Path(tempfile.gettempdir()) / "lngfreight-matplotlib-cache"
+_MPL_CACHE = Path(tempfile.gettempdir()) / "hormuz_throughput-matplotlib-cache"
 _MPL_CACHE.mkdir(parents=True, exist_ok=True)
 _XDG_CACHE = _MPL_CACHE / "xdg"
 _XDG_CACHE.mkdir(parents=True, exist_ok=True)
@@ -31,7 +30,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 from figure_style import (  # noqa: E402
     DECREASE_COLOR,
     FIGURE_WIDTH_IN,
@@ -291,8 +290,8 @@ def build_card_payload(
     return {
         "schema_version": 1,
         "card_id": design["card_id"],
-        "status": "assistant_generated_reporting_artifact",
-        "human_verification_record": "docs/DECISION_LOG.md",
+        "status": "generated_reproducibility_artifact",
+        "verification_record": "reports/reproducibility_run_transcript.txt",
         "analysis_role": design["analysis_role"],
         "design_sha256": design_sha256,
         "source": {

@@ -8,14 +8,6 @@ import matplotlib.pyplot as plt
 
 FIGURE_WIDTH_IN = 7.2
 
-# True text width of the manuscript, measured from the KOMA typearea report in
-# build/main.log: \textwidth = 418.25555pt at 72.27 TeX points per inch. The
-# template sets its type area through typearea's DIV calculation, not through a
-# geometry margin, so the 7.2in default above is roughly 24 per cent too wide.
-# A figure authored wider than this is scaled DOWN by \includegraphics, which
-# shrinks its text below the size it was designed at: at 7.2in a 7pt annotation
-# prints at about 5.6pt. Figures authored at THESIS_TEXTWIDTH_IN are included
-# at 1:1 and print at their true type size.
 THESIS_TEXTWIDTH_IN = 418.25555 / 72.27
 DECREASE_COLOR = "#B2182B"
 INCREASE_COLOR = "#2166AC"
@@ -26,7 +18,7 @@ GRID_COLOR = "#D7D7D7"
 BACKGROUND_COLOR = "#FFFFFF"
 PDF_METADATA = {
     "Title": "Thesis figure",
-    "Author": "LNG freight thesis pipeline",
+    "Author": "Hormuz tanker-throughput thesis pipeline",
     "Subject": "Deterministic pipeline artifact",
     "Keywords": "LNG, maritime trade, thesis",
     "Creator": "Matplotlib",
@@ -38,24 +30,17 @@ PNG_METADATA = {
     "Software": "Matplotlib; deterministic thesis figure pipeline",
 }
 
-# TUM corporate accents (settings.tex), kept here so the manuscript figures and
-# the progress-report figures draw from one palette instead of two copies.
 ACCENT_ORANGE = "#E37222"
 SECONDARY_BLUE = "#003359"
 ACCENT_LIGHT_BLUE = "#98C6EA"
 ACCENT_BLUE = "#64A0C8"
 ACCENT_GRAY = "#DAD7CB"
 
-# Semantic roles. Figure scripts select a colour by what the series MEANS, not by
-# hue, so a reader who learns an encoding in one figure carries it to every other
-# figure. Before this layer existed, red denoted the observed treated series in
-# the event study and the counterfactual path in the throughput figure, which
-# reversed the encoding of the same series between two chapters.
-OBSERVED_TREATED = DECREASE_COLOR       # observed Hormuz throughput, everywhere
-COUNTERFACTUAL = INCREASE_COLOR         # any fitted / synthetic reference path
-COMPARISON_SERIES = NEUTRAL_DARK        # untreated comparison corridor
-PLACEBO = NEUTRAL_LIGHT                 # placebo units, drawn as a background cloud
-EVENT_MARKER = "#000000"                # treatment cutoff only, never a data series
+OBSERVED_TREATED = DECREASE_COLOR
+COUNTERFACTUAL = INCREASE_COLOR
+COMPARISON_SERIES = NEUTRAL_DARK
+PLACEBO = NEUTRAL_LIGHT
+EVENT_MARKER = "#000000"
 
 
 def apply_publication_style() -> None:

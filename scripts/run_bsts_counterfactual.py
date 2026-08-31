@@ -14,15 +14,15 @@ import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.bsts import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.bsts import (  # noqa: E402
     fit_bsts_forecast,
     posterior_predictive_check,
     posterior_shortfall,
 )
-from lngfreight.metrics import score_forecast  # noqa: E402
-from lngfreight.specification import working_specification  # noqa: E402
-from lngfreight.validation import resolve_cutoff, rolling_origin_splits  # noqa: E402
+from hormuz_throughput.metrics import score_forecast  # noqa: E402
+from hormuz_throughput.specification import working_specification  # noqa: E402
+from hormuz_throughput.validation import resolve_cutoff, rolling_origin_splits  # noqa: E402
 
 
 SEED = int(config.settings()["reproducibility"]["random_seed"])

@@ -1,0 +1,74 @@
+{
+  "ais_dark_throughput_inferred": false,
+  "analysis_role": "modeled_network_support_denominator_audit",
+  "audit_expectation_fully_reproduced": true,
+  "balanced_primary_cell": {
+    "all_resolved_post": 674,
+    "all_resolved_pre": 731,
+    "all_resolved_retention_share": 0.9220246238030095,
+    "hormuz_crossing_post": 2,
+    "hormuz_crossing_pre": 37,
+    "hormuz_crossing_retention_share": 0.05405405405405406
+  },
+  "census": {
+    "eligible_fleet_census_imos": 624,
+    "sampling_design": "eligible_fleet_census"
+  },
+  "core_reproducibility_manifest_dependency": "none",
+  "core_run_all_dependency": "required_for_final_integration",
+  "design_id": "lng_selective_network_support_frontier_v1",
+  "design_sha256": "dcf757f3d944f92a86fb208bc1d4a1699aa5de628f66a81682e3ac19fa4cc184",
+  "freeze_status": "frozen_before_generation_not_preregistered",
+  "input_sha256": {
+    "config/network_support_frontier.yaml": "dcf757f3d944f92a86fb208bc1d4a1699aa5de628f66a81682e3ac19fa4cc184",
+    "data/interim/global_lng_carrier_frame.csv": "bfa5c896f98e59aeb55d3f438701478920d0469ba0bdf76cc151a8c9ca1e0fe7",
+    "data/processed/global_lng_terminal_matching_audit.csv": "18fa5ef28179bbf64d17d534a36c95a417d7651665bd6e6f8caf9d645511b545",
+    "data/processed/inferred_capacity_nautical_miles_comparison.csv": "ff2025acf7d64171f01dd22d30f375a697a078f424afaa733e90daf0001d232e",
+    "data/processed/inferred_capacity_nautical_miles_voyages.csv": "f88f0bafec05f35c9322abeea40d8749cf43ccb4d6f820151e959fee291c26c0",
+    "scripts/freeze_network_support_frontier.py": "ee3a2613742892219c1f381e56b33d8214d9464352ce6cbc0a812289475d2939",
+    "scripts/run_network_support_frontier.py": "21ee63565e2237bb80af6902cd59841c705d5ae8b5431f9455b1915bdf0765f2",
+    "src/hormuz_throughput/exposure.py": "b6fe00f84458ed5777a940da9a52212191e58ea815f2d660ed26ce97c6786b36",
+    "src/hormuz_throughput/network_support.py": "c9275379627d8598b5d13476fb54e6b50d24a26784b2a840bb9b532897797c94"
+  },
+  "manifest_schema": 1,
+  "output_sha256": {
+    "data/processed/network_support_audit_expectation.json": "d0c85150567cf39ed2f3253b11440080a179d89bd132a931fc242fa03cc340f1",
+    "data/processed/network_support_balanced_cohort.csv": "0784e9bc180fbaebae6badf7658c819c76ac211e9de797c07bc3ceb5422f5947",
+    "data/processed/network_support_denominators.csv": "14a4efc94059e4b25643be3e170e0f2c31b0452d0508c8f4fcd8141f68f1270c",
+    "data/processed/network_support_diagnostics.json": "b75c4a0d6f9555e53642ac5f022daa0084e38865397a38809b143f39dbe11cec",
+    "data/processed/network_support_radius_sensitivity.csv": "6446dea64a1ef8701d7797c01a49573ccf48f7a2cf82e72f00a05899b3a4e247",
+    "reports/audit/network_support_frontier.md": "546c5702fd4e18a566bb144bdca594e7c341b9ca57b51f5a262709bf50b7ac3f"
+  },
+  "primary_cell": {
+    "all_resolved_post": 746,
+    "all_resolved_pre": 971,
+    "all_resolved_retention_share": 0.768280123583934,
+    "hormuz_crossing_post": 2,
+    "hormuz_crossing_pre": 145,
+    "hormuz_crossing_retention_share": 0.013793103448275862,
+    "retention_share_ratio": 0.017953221780530645
+  },
+  "primary_terminal_radius_km": 30,
+  "reporting_guards": {
+    "ais_dark_note": "Sequences vanish from this panel when AIS coverage, terminal attribution, or route resolution fails, and those failure modes are themselves plausibly correlated with the disruption. No daily or aggregate physical throughput may be inferred from a support count.",
+    "ais_dark_throughput_inference_permitted": false,
+    "construct_label": "modeled resolved terminal-sequence support, not observed voyages",
+    "core_reproducibility_manifest_dependency": "none",
+    "core_run_all_dependency": "required_for_final_integration",
+    "denominator_discipline": "Every selective statement must be paired with its overall denominator in the same radius and period. A Hormuz-crossing count may never be reported alone.",
+    "is_ATT": false,
+    "is_causal_identification": false,
+    "missing_edge_interpretation": "A missing modeled edge is a missing observation in the resolved-sequence panel. It is NOT evidence that no ship sailed, that a route was physically impossible, or that throughput fell to the modeled level. Loss of support and loss of sailing are different propositions and this phase can only measure the first.",
+    "overwrite_policy": "upstream_capacity_and_comparison_artifacts_are_read_only_in_this_phase"
+  },
+  "selectivity_direction_consistent_across_radii": true,
+  "status": "generated_support_denominator_artifact",
+  "terminal_radius_km_grid": [
+    10,
+    20,
+    30
+  ],
+  "upstream_artifacts_mutated": false,
+  "verification_record": "reports/reproducibility_run_transcript.txt",
+  "verification_state": "NEEDS-VERIFY"
+}

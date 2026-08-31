@@ -7,9 +7,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.importer_outcomes import build_outcomes, outcomes_summary  # noqa: E402
-from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.importer_outcomes import build_outcomes, outcomes_summary  # noqa: E402
+from hormuz_throughput.registry import RegisteredArtifact, get_variable  # noqa: E402
 
 
 def main() -> None:

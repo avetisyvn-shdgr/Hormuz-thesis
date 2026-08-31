@@ -32,25 +32,14 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config            # noqa: E402
-from lngfreight.registry import get_variable  # noqa: E402
+from hormuz_throughput import config            # noqa: E402
+from hormuz_throughput.registry import get_variable  # noqa: E402
 
-# Gaps longer than this (calendar days) are flagged. Business-day series
-# legitimately gap 2-3 days over weekends and ~4 over long holidays.
 GAP_FLAG_DAYS = 4
 
-# Rough plausibility bands for units sanity. A value outside its band does
-# not prove an error - it prompts a manual look. Bands are deliberately wide
-# (2022 energy crisis included).
 UNIT_BANDS = {
-    # Upper bound raised 2026-06-14 after manual review. The frozen EIA series
-    # records $30.72 on 2026-01-23, followed by $25.01 on 2026-01-26, $17.19 on
-    # 2026-01-27, and $9.34 on 2026-01-28. Do not winsorise the 23 January peak:
-    # it is a real pre-treatment observation, and contemporaneous EIA reporting
-    # identifies severe winter weather as the late-January market context. See
-    # docs/EVENT_CHRONOLOGY.md.
-    "henry_hub_spot": (1.0, 60.0),     # USD/MMBtu
-    "brent_spot": (40.0, 150.0),       # USD/bbl
+    "henry_hub_spot": (1.0, 60.0),
+    "brent_spot": (40.0, 150.0),
 }
 
 
@@ -114,9 +103,7 @@ def main() -> None:
         print(f"--- {name}  (role={role}, status={status})")
         try:
             df = get_variable(name, start, end)
-            # Make proxy resolution VISIBLE: a status unavailable/proxy variable
-            # that fetches via its proxy entry is NOT the real series.
-            from lngfreight.registry import _resolve_entry
+            from hormuz_throughput.registry import _resolve_entry
             backend, channel = _resolve_entry(spec)
             if channel == "proxy":
                 print(f"    !! PROXY DATA: resolved via proxy -> {backend['provider']}:{backend['code']}")

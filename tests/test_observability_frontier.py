@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight import observability_frontier as of
+from hormuz_throughput import observability_frontier as of
 
 
 MODEL = "ar_lag1_7"
@@ -96,7 +96,7 @@ def test_dark_rate_lowers_and_false_positives_raise_the_true_reduction():
     grid = of.build_two_sided_grid(
         observed=OBSERVED, scenarios=_scenarios(), model=MODEL, target=TARGET
     )
-    of.assert_false_positive_direction(grid)  # must not raise
+    of.assert_false_positive_direction(grid)
 
 
 def test_direction_guard_catches_a_corrupted_sign():
@@ -280,7 +280,7 @@ def test_script_runs_both_registered_outcomes_and_refuses_others():
     """The default run must cover the robustness twin, and must not accept a
     target outside the working specification."""
     import run_observability_breakdown_frontier as script
-    from lngfreight.specification import working_specification
+    from hormuz_throughput.specification import working_specification
 
     spec = working_specification()
     frontier = pd.read_csv(

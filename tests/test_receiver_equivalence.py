@@ -12,9 +12,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight.propagation import EventSpec
-from lngfreight.propagation import pair_reallocation as legacy_path
-from lngfreight.receiver_equivalence import pair_reallocation as new_path
+from hormuz_throughput.propagation import EventSpec
+from hormuz_throughput.propagation import pair_reallocation as legacy_path
+from hormuz_throughput.receiver_equivalence import pair_reallocation as new_path
 
 
 def _panel(n_days: int = 1500, seed: int = 5) -> pd.DataFrame:
@@ -56,11 +56,10 @@ def test_only_one_implementation_exists():
     """The shim must delegate, not duplicate."""
     import inspect
 
-    from lngfreight import propagation, receiver_equivalence
+    from hormuz_throughput import propagation, receiver_equivalence
 
     shim = inspect.getsource(propagation.pair_reallocation)
     assert "receiver_equivalence" in shim
-    # The shim must not carry the statistic's arithmetic.
     for fragment in ("null_p95", "np.quantile", "rng.integers"):
         assert fragment not in shim, f"shim still contains implementation detail {fragment!r}"
     assert "rng.integers" in inspect.getsource(receiver_equivalence.pair_reallocation)
@@ -101,7 +100,7 @@ def test_statistic_does_not_depend_on_the_als_fit():
     """The migration's premise: the pair statistic never used fitted loadings."""
     import inspect
 
-    from lngfreight import receiver_equivalence
+    from hormuz_throughput import receiver_equivalence
 
     source = inspect.getsource(receiver_equivalence)
     for fragment in ("_rank1_als", "fit_propagation", "PropagationFit", "receiver_loadings"):
@@ -115,11 +114,8 @@ def test_receiver_must_exist_in_the_panel():
         new_path(panel, spec, "not_a_chokepoint", ["emitter_unit"], n_draws=5)
 
 
-# ---------------------------------------------------------------------------
-# B2 plan-compliant null design
-# ---------------------------------------------------------------------------
 
-from lngfreight.receiver_equivalence import (  # noqa: E402
+from hormuz_throughput.receiver_equivalence import (  # noqa: E402
     admissible_onsets,
     eligible_units,
     finite_sample_p_value,
@@ -147,7 +143,6 @@ def test_temporal_null_enumerates_each_date_once_and_never_resamples():
     )
     assert len(dates) == len(set(dates)), "a pseudo-onset appeared twice"
     assert list(dates) == sorted(dates)
-    # Every admissible date must clear the guard and miss the disruption window.
     for date in dates:
         assert abs((date - onset).days) >= 90
         stop = date + pd.Timedelta(days=(HORIZON + 1) * 7 - 1)
@@ -176,7 +171,6 @@ def test_temporal_support_reports_the_p_value_floor_and_window_count():
     support = temporal_support(dates, horizon_weeks=HORIZON)
     assert support["n_unique_admissible_dates"] == len(dates)
     assert support["attainable_p_value_floor"] == pytest.approx(1.0 / (len(dates) + 1))
-    # Overlapping daily windows must not be counted as independent.
     assert support["approx_non_overlapping_windows"] < support["n_unique_admissible_dates"]
 
 
@@ -189,7 +183,6 @@ def test_empty_support_does_not_fabricate_a_floor():
 def test_finite_sample_p_value_matches_the_declared_formula():
     null = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
     out = finite_sample_p_value(null, observed=3.0)
-    # two null values (3.0, 4.0) are >= observed
     assert out["n_null_ge_observed"] == 2
     assert out["B"] == 5
     assert out["p_value"] == pytest.approx((1 + 2) / (5 + 1))
@@ -226,7 +219,6 @@ def test_standardisation_makes_high_and_low_volume_units_comparable():
     response = pd.Series({"big": 8.0, "small": 2.0})
     scales = pd.Series({"big": 8.0, "small": 1.0})
     fam = spatial_family(response, scales, ["big", "small"], "small", sign=+1.0)
-    # small: 2/1 = 2.0 beats big: 8/8 = 1.0 despite the smaller raw gain
     assert fam["anchor_standardised"] == pytest.approx(2.0)
     assert fam["rank_of_anchor"] == 1
     assert fam["anchor_is_family_max"]
@@ -269,7 +261,6 @@ def test_response_frame_returns_every_unit_in_transits_per_day():
     panel = _panel(n_days=1500)
     frame = response_frame(panel, panel.index[1200], ["emitter_unit"], HORIZON)
     assert set(frame.index) == set(panel.columns)
-    # The constructed emitter drops and the receiver gains.
     assert frame["emitter_unit"] < 0
     assert frame["receiver_unit"] > 0
 

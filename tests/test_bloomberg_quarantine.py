@@ -11,12 +11,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 QUARANTINED_PATTERNS = [
-    # Full verbatim weekly Fearnleys histories (raw + analysis columns).
     "data/processed/lng_freight_weekly_panel.csv",
     "data/processed/lng_freight_descriptive_weekly.csv",
-    # Full verbatim daily TTF and VLSFO histories.
     "data/processed/freight_market_context.csv",
-    # Raw Data sheet screenshots from workbook inspection.
     ".work/",
 ]
 

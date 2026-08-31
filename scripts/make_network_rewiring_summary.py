@@ -6,7 +6,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/hormuz_throughput-matplotlib")
 
 import matplotlib  # noqa: E402
 
@@ -28,7 +28,7 @@ from figure_style import (  # noqa: E402
     apply_publication_style,
     style_axes,
 )
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 
 
 REPORT = "network_rewiring_summary.md"
@@ -36,7 +36,7 @@ FIG_ORIGIN = "network_rewiring_origin_composition"
 FIG_TOTAL = "network_rewiring_gulf_vs_total"
 FIG_STRUCTURE = "network_rewiring_source_structure"
 PDF_METADATA = {
-    "Creator": "lngfreight reproducible pipeline",
+    "Creator": "hormuz_throughput reproducible pipeline",
     "CreationDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
     "ModDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
 }
@@ -191,7 +191,7 @@ def _label_grouped_bars(fig, ax, series, label_fontsize=7.0, base_pad_pts=2.0):
         for a, b in zip(range(len(series) - 1), range(1, len(series))):
             va, vb = series[a][1][gi], series[b][1][gi]
             if (va >= 0) != (vb >= 0):
-                continue  # labels on opposite sides of zero cannot collide
+                continue
             gap_pts = abs(va - vb) * pts_per_unit
             if gap_pts >= line_height_pts:
                 continue
@@ -210,8 +210,6 @@ def _label_grouped_bars(fig, ax, series, label_fontsize=7.0, base_pad_pts=2.0):
                 fontsize=label_fontsize,
             )
 
-    # bar_label and annotate do not autoscale, so the outermost labels used to
-    # sit on or outside the axes frame. Expand the view to contain them.
     fig.canvas.draw()
     inv = ax.transData.inverted()
     lo, hi = ax.get_ylim()
@@ -353,11 +351,6 @@ def _plot_source_structure(summary: pd.DataFrame, graph: pd.DataFrame, anomaly: 
 
     apply_publication_style()
     fig, axes = plt.subplots(3, 1, figsize=(THESIS_TEXTWIDTH_IN, 6.2))
-    # Only panel (a) is signed, so only panel (a) draws a zero line. Panels (b)
-    # and (c) are non-negative magnitudes and are anchored with zero on the axis
-    # floor. Drawing a mid-panel baseline in each would put three y = 0 lines at
-    # three different heights and invite a cross-panel comparison that none of
-    # these quantities supports.
     for ax, (title, xlabel, values, colour, formatter, signed) in zip(axes, panels):
         bars = ax.barh(y, values, height=0.58, color=colour, zorder=3)
         ax.bar_label(
@@ -384,11 +377,6 @@ def _plot_source_structure(summary: pd.DataFrame, graph: pd.DataFrame, anomaly: 
                 ax.set_xlim(0.0, float(finite.max()) * 1.22)
         style_axes(ax, grid_axis="x")
 
-    # Panel (c) is grey rather than an accent colour because the z-score is a
-    # short-calibration diagnostic, not an estimated effect. The reference band
-    # marks the region a conventional two-sided 5% cut would occupy, which makes
-    # visible that every unit clears it and the ranking therefore carries the
-    # information, not the flag.
     axes[2].axvspan(0, 1.96, color=NEUTRAL_LIGHT, alpha=0.55, zorder=1)
 
     fig.tight_layout(rect=[0, 0.17, 1, 1], h_pad=1.4)

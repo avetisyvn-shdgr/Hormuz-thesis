@@ -15,8 +15,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config           # noqa: E402
-from lngfreight.panel import (  # noqa: E402
+from hormuz_throughput import config           # noqa: E402
+from hormuz_throughput.panel import (  # noqa: E402
     build_panel,
     build_panel_from_frozen_raw,
     coverage_summary,

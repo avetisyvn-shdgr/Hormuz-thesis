@@ -21,19 +21,19 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.corridor_admission import load_corridor_admission_protocol  # noqa: E402
-from lngfreight.corridor_inference import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.corridor_admission import load_corridor_admission_protocol  # noqa: E402
+from hormuz_throughput.corridor_inference import (  # noqa: E402
     corridor_romano_wolf,
     load_corridor_inference_protocol,
 )
-from lngfreight.corridor_transmission import (  # noqa: E402
+from hormuz_throughput.corridor_transmission import (  # noqa: E402
     ar_baseline_fold_mase,
     ar_window_statistic,
     basin_point_summary,
     build_corridor_statistics,
 )
-from lngfreight.spatial import wide_chokepoint_panel  # noqa: E402
+from hormuz_throughput.spatial import wide_chokepoint_panel  # noqa: E402
 
 
 def _sha256(path: Path) -> str:

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from lngfreight.voyages import candidate_voyage_endpoints, endpoint_summary
+from hormuz_throughput.voyages import candidate_voyage_endpoints, endpoint_summary
 
 
 def test_candidate_voyages_collapse_same_terminal_and_mark_censoring():

@@ -12,8 +12,8 @@ import pandas as pd
 import pytest
 
 
-from lngfreight import config
-from lngfreight.tsfm import (
+from hormuz_throughput import config
+from hormuz_throughput.tsfm import (
     FOUNDATION_MODELS,
     MODEL_REGISTRY,
     QuantileForecast,
@@ -25,7 +25,7 @@ from lngfreight.tsfm import (
     counterfactual_shortfall,
     run_benchmark,
 )
-from lngfreight.validation import rolling_origin_splits
+from hormuz_throughput.validation import rolling_origin_splits
 
 
 def _settings():
@@ -125,7 +125,6 @@ def test_run_benchmark_emits_expected_columns_and_rows():
     assert "runtime_s" not in scores.columns
     assert np.allclose(scores["nominal_coverage"], 0.95)
     assert scores["empirical_coverage"].between(0, 1).all()
-    # coverage_error is empirical minus nominal, by construction.
     assert np.allclose(
         scores["coverage_error"],
         scores["empirical_coverage"] - scores["nominal_coverage"],
@@ -164,7 +163,6 @@ def test_aggregate_benchmark_one_row_per_model_target():
 
 
 def test_admission_test_requires_both_mase_and_calibration():
-    # Candidate beats AR on MASE and has better calibration -> admitted.
     tsfm = pd.DataFrame([{
         "model": "chronos2", "target": "y",
         "mase_mean": 0.8, "coverage_error_mean": 0.01,
@@ -176,7 +174,6 @@ def test_admission_test_requires_both_mase_and_calibration():
     v = admission_test(tsfm, ar)
     assert bool(v.loc[0, "admitted"]) is True
 
-    # Beats MASE but worse calibration -> rejected.
     tsfm2 = tsfm.copy()
     tsfm2.loc[0, "coverage_error_mean"] = 0.20
     v2 = admission_test(tsfm2, ar)
@@ -208,7 +205,6 @@ def test_counterfactual_shortfall_is_leakage_safe_and_signed():
         panel, "target", StubAdapter(7), cutoff=cutoff
     )
     assert summary["n_days"] == int((panel.index >= cutoff).sum())
-    # Signed consistency: loss equals counterfactual minus observed.
     np.testing.assert_allclose(
         daily["throughput_loss_vs_counterfactual"],
         daily["y_pred"] - daily["y_true"],
@@ -217,7 +213,6 @@ def test_counterfactual_shortfall_is_leakage_safe_and_signed():
     altered = panel.copy()
     altered.loc[altered.index >= cutoff, "target"] = 0.0
     daily2, _ = counterfactual_shortfall(altered, "target", StubAdapter(7), cutoff=cutoff)
-    # Forecast (counterfactual) is unchanged by post-cutoff observed values.
     np.testing.assert_allclose(daily["y_pred"], daily2["y_pred"])
 
 

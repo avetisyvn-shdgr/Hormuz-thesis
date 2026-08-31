@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from lngfreight import config
+from hormuz_throughput import config
 from run_synthetic_stress import _aggregate_donor_time_blocks
 
 

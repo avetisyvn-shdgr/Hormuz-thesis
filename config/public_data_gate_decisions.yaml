@@ -3,17 +3,13 @@ design_id: "optional_public_data_gate_decisions_v1"
 frozen_utc: "2026-08-09T23:59:44Z"
 analysis_role: "governance_decision_table_no_acquisition"
 
-# Task 9 is a GOVERNANCE decision, not an empirical phase. It downloads nothing,
-# registers nothing, and analyses nothing. Its entire output is a decision table
-# recording, for each candidate public dataset, what it could ever be admitted
-# for and what would have to be true first.
 scope:
   authorizes_download: false
   authorizes_analysis: false
   authorizes_registry_entry: false
   authorizes_third_empirical_layer: false
   preserves_accepted_no_third_layer_plan: true
-  reopening_authority: "Mher only, by explicit written scope reopening"
+  reopening_authority: "thesis author only, by explicit written scope reopening"
   note: >-
     No candidate below may be acquired, registered, or analysed on the strength
     of this table. The table exists so that a future reopening decision is made
@@ -32,46 +28,31 @@ freeze_status:
       status: "verified"
       local_date: "2026-08-10"
 
-# Pinned to prove this phase added no registered variable and mutated no
-# verified upstream manifest.
-#
-# `sources_registry` re-pinned 2026-08-30 (see docs/DECISION_LOG.md). The
-# original pin `f1d1c27e8cb3...` captured the 2026-08-09 registry, the state this
-# design was frozen against at 23:59:44Z that day. It was superseded by three
-# later edits made by other phases, none of them by this one:
-#   f1d1c27e -> ffd509cc  2026-08-19  Bloomberg declined thesis use; five
-#                                     `license:` fields and a comment block
-#                                     rewritten (committed 2026-08-26, 9a07f4f)
-#   ffd509cc -> 77cf12d6  2026-08-27  `run_hormuz_measurement_audit.py` added to
-#                                     `allowed_consumers` for the August vintage
-#                                     (Track B phase B1, 20111b5)
-#   77cf12d6 -> f53e9fa7  2026-08-28  `run_hormuz_detection.py` added to the same
-#                                     `allowed_consumers`, for A4 only (97856b1)
-# The invariant this pin exists to protect is intact across all three: the
-# registered-variable set is byte-for-byte the same 53 entries it was when the
-# pin was taken, so this phase still provably registered nothing. Only the
-# byte-level proxy moved, and it moved for reasons recorded elsewhere. Reverting
-# the registry would undo a licence refusal and two authorised consumer
-# declarations, so re-pinning is the correct resolution.
 integrity_pins:
   sources_registry:
     path: "config/sources.yaml"
-    sha256: "f53e9fa7cf2d3b17b10cb8a116a4aa64895c70e226667488e0f236bd472cec96"
+    sha256: "51d94577e84dbf0c29831142bb8df5fd3e73629a9d12657097ba70553bb99c73"
     superseded_sha256: "f1d1c27e8cb3ba44cb92bc0fce575e123461be2fdf53b013854f85ac9de6c2bf"
-    repinned_local_date: "2026-08-30"
+    intermediate_sha256: "f53e9fa7cf2d3b17b10cb8a116a4aa64895c70e226667488e0f236bd472cec96"
+    repinned_local_date: "2026-08-31"
+    repin_reason: "Repository path migration and provenance metadata cleanup; the registered-variable count remains 53."
     registered_variable_count: 53
   horizon_frontier_manifest:
     path: "data/processed/horizon_frontier_manifest.json"
-    sha256: "aa981b0696a738ff42786a43af017a79808d9047c23adf012230d3f5be6e3288"
+    sha256: "bb21b2be930bfe52183d638ad3c0e945206b631b409daebf83883836e7b6eb45"
+    superseded_sha256: "aa981b0696a738ff42786a43af017a79808d9047c23adf012230d3f5be6e3288"
+    previous_sha256: "3f7038c4fd8c514d6adee52bc253e3861c847a960e7955ded630b9710e1a8a54"
   network_support_manifest:
     path: "data/processed/network_support_frontier_manifest.json"
-    sha256: "08221460e28aba51b5f2a031a38bbc9c36da00eb2ce2009969d51460b108fb80"
+    sha256: "7c27e474e79e2b89bd4f7ef122617df64a0ec77f7ceddcb4523acc619b1532be"
+    superseded_sha256: "08221460e28aba51b5f2a031a38bbc9c36da00eb2ce2009969d51460b108fb80"
+    previous_sha256: "b9475e6f7bd315e3561d87c793e0f4a78683fc685f394c24fffc8ece174c851a"
   route_burden_manifest:
     path: "data/processed/route_burden_decomposition_manifest.json"
-    sha256: "b3065f9652a166d6c24a2bbdc234291f8c7feb09ac40511968fa25a2d3ab6a82"
+    sha256: "1a629a35404f1d656115225046c8aa1d7d8f25b0928bd81f959d22bf36dfe7e2"
+    superseded_sha256: "b3065f9652a166d6c24a2bbdc234291f8c7feb09ac40511968fa25a2d3ab6a82"
+    previous_sha256: "3f056df099f0d6b507e82a631908798170df0c69fe198dbdf8e0e1f9bd6cb9a3"
 
-# Permitted statuses. There is deliberately no "GO": admitting any candidate
-# requires an explicit scope reopening that this table cannot itself grant.
 permitted_statuses:
   - "NO_GO"
   - "DEFER_PENDING_SCOPE_REOPENING"
@@ -99,7 +80,7 @@ candidates:
     kill_criteria:
       - "Any use that adds ERA5 as a regressor to the locked primary specification."
       - "Any framing in which a weather association is reported as a mechanism."
-      - "Acquisition before an explicit written scope reopening by Mher."
+      - "Acquisition before an explicit written scope reopening by the thesis author."
     reopening_required: true
 
   sentinel1_sar:
@@ -199,7 +180,7 @@ candidates:
 outputs:
   decision_table_csv: "data/processed/public_data_gate_decisions.csv"
   diagnostics_json: "data/processed/public_data_gate_diagnostics.json"
-  documentation_markdown: "docs/PUBLIC_DATA_GATE_DECISIONS.md"
+  documentation_markdown: "reports/audit/public_data_gate_decisions.md"
   manifest_json: "data/processed/public_data_gate_decisions_manifest.json"
 
 reporting_guards:
@@ -211,7 +192,6 @@ reporting_guards:
   third_layer_admitted: false
   decision_authority: >-
     This table records criteria. It does not grant admission. Any GO decision
-    requires Mher's explicit written scope reopening, recorded in
-    DECISION_LOG.md before acquisition.
-  core_run_all_dependency: "none"
+    requires the thesis author's explicit written scope reopening before acquisition.
+  core_run_all_dependency: "required_for_final_integration"
   core_reproducibility_manifest_dependency: "none"

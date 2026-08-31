@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-from lngfreight.importer_coverage import admission_status, coverage_summary  # noqa: E402
+from hormuz_throughput.importer_coverage import admission_status, coverage_summary  # noqa: E402
 
 
 def test_admission_requires_source_and_time_coverage():

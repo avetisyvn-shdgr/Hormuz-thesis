@@ -28,9 +28,9 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight import network_support as ns  # noqa: E402
-from lngfreight.exposure import attach_exposure_metadata  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput import network_support as ns  # noqa: E402
+from hormuz_throughput.exposure import attach_exposure_metadata  # noqa: E402
 
 
 DESIGN_PATH = config.CONFIG_DIR / "network_support_frontier.yaml"
@@ -407,7 +407,7 @@ def render_markdown(
     add(f"**Design SHA-256:** `{diagnostics['design_sha256']}`  ")
     add(f"**Frozen (UTC):** {design['frozen_utc']}  ")
     add(f"**Freeze status:** {design['freeze_status']['timing']}  ")
-    add("**Verification status:** `NEEDS-VERIFY` until Mher runs the G4 commands.")
+    add("**Verification status:** `NEEDS-VERIFY` until the complete pipeline is run.")
     add("")
     add(
         "This document measures **modeled resolved terminal-sequence support**: "
@@ -708,7 +708,7 @@ def main() -> int:
     print("   that no ship sailed.")
     print(" - No AIS-dark physical throughput may be inferred from these counts.")
     print(" - Selective counts are always paired with their overall denominator.")
-    print(" - This is NEEDS-VERIFY until Mher records the G4 output.")
+    print(" - This is NEEDS-VERIFY until the complete pipeline transcript is retained.")
     return 0
 
 

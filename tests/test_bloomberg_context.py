@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from lngfreight.bloomberg_market import build_market_context_panel
+from hormuz_throughput.bloomberg_market import build_market_context_panel
 
 
 def test_context_panel_standardizes_on_pre_period_without_filling_gap():

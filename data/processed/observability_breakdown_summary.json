@@ -8,27 +8,27 @@
       "treatment_cutoff": "2026-02-28",
       "n_post_days": 130,
       "observed_sum": 529.0,
-      "counterfactual_point_estimate": 7397.996006081118,
-      "reduction_at_point_estimate": 0.928494149014792,
+      "counterfactual_point_estimate": 7397.996006081119,
+      "reduction_at_point_estimate": 0.9284941490147921,
       "pretreatment_reference_days": 365,
       "pretreatment_trailing_daily_mean": 50.778082191780825,
       "pretreatment_full_daily_mean": 57.09348255431205,
       "counterfactual_scenarios": [
         {
           "name": "point_estimate",
-          "counterfactual_sum": 7397.996006081118,
+          "counterfactual_sum": 7397.996006081119,
           "interval_family": "point",
           "nominal_coverage": null
         },
         {
           "name": "bootstrap_block_lower",
-          "counterfactual_sum": 6834.208920908447,
+          "counterfactual_sum": 6834.208920908448,
           "interval_family": "block_bootstrap_residual",
           "nominal_coverage": 0.95
         },
         {
           "name": "bootstrap_block_upper",
-          "counterfactual_sum": 7939.246167671148,
+          "counterfactual_sum": 7939.246167671149,
           "interval_family": "block_bootstrap_residual",
           "nominal_coverage": 0.95
         },
@@ -112,8 +112,8 @@
           "implied_unobserved_per_post_day": 0.3367881999076679,
           "implied_unobserved_share_of_pretreatment_daily_mean": 0.0066325506078719525,
           "n_post_days": 130,
-          "point_estimate_breakdown_dark_rate": 0.28494149014792036,
-          "interval_robustness_discount": 0.20850328090128056
+          "point_estimate_breakdown_dark_rate": 0.2849414901479205,
+          "interval_robustness_discount": 0.20850328090128067
         },
         {
           "model": "ar_lag1_7",
@@ -133,8 +133,8 @@
           "implied_unobserved_per_post_day": -1.866221284661548,
           "implied_unobserved_share_of_pretreatment_daily_mean": -0.03675249643366057,
           "n_post_days": 130,
-          "point_estimate_breakdown_dark_rate": -0.4301170197041577,
-          "interval_robustness_discount": 0.41700656180256046
+          "point_estimate_breakdown_dark_rate": -0.4301170197041575,
+          "interval_robustness_discount": 0.4170065618025607
         }
       ]
     },
@@ -145,7 +145,7 @@
       "treatment_cutoff": "2026-02-28",
       "n_post_days": 118,
       "observed_sum": 27499733.0,
-      "counterfactual_point_estimate": 318505792.90571,
+      "counterfactual_point_estimate": 318505792.90571004,
       "reduction_at_point_estimate": 0.9136601794613481,
       "pretreatment_reference_days": 365,
       "pretreatment_trailing_daily_mean": 2365198.58630137,
@@ -153,19 +153,19 @@
       "counterfactual_scenarios": [
         {
           "name": "point_estimate",
-          "counterfactual_sum": 318505792.90571,
+          "counterfactual_sum": 318505792.90571004,
           "interval_family": "point",
           "nominal_coverage": null
         },
         {
           "name": "bootstrap_block_lower",
-          "counterfactual_sum": 290459167.82473826,
+          "counterfactual_sum": 290459167.8247383,
           "interval_family": "block_bootstrap_residual",
           "nominal_coverage": 0.95
         },
         {
           "name": "bootstrap_block_upper",
-          "counterfactual_sum": 345014771.79492754,
+          "counterfactual_sum": 345014771.7949276,
           "interval_family": "block_bootstrap_residual",
           "nominal_coverage": 0.95
         }
@@ -186,14 +186,14 @@
           "interval_family": "block_bootstrap_residual",
           "nominal_coverage": 0.95,
           "observed_sum": 27499733.0,
-          "counterfactual_sum": 290459167.82473826,
+          "counterfactual_sum": 290459167.8247383,
           "reduction_at_zero_error": 0.9053232397312616,
           "breakdown_dark_rate": 0.8106464794625232,
           "breakdown_status": "breaks_within_feasible_dark_rate",
-          "implied_true_total_at_breakdown": 145229583.91236913,
-          "implied_unobserved_total_at_breakdown": 117729850.91236913,
-          "implied_unobserved_per_post_day": 997710.6009522808,
-          "implied_unobserved_share_of_pretreatment_daily_mean": 0.42182952701340487,
+          "implied_true_total_at_breakdown": 145229583.91236916,
+          "implied_unobserved_total_at_breakdown": 117729850.91236916,
+          "implied_unobserved_per_post_day": 997710.600952281,
+          "implied_unobserved_share_of_pretreatment_daily_mean": 0.421829527013405,
           "n_post_days": 118,
           "point_estimate_breakdown_dark_rate": 0.8273203589226964,
           "interval_robustness_discount": 0.01667387946017318
@@ -207,14 +207,14 @@
           "interval_family": "block_bootstrap_residual",
           "nominal_coverage": 0.95,
           "observed_sum": 27499733.0,
-          "counterfactual_sum": 290459167.82473826,
+          "counterfactual_sum": 290459167.8247383,
           "reduction_at_zero_error": 0.9053232397312616,
           "breakdown_dark_rate": 0.6212929589250464,
           "breakdown_status": "breaks_within_feasible_dark_rate",
-          "implied_true_total_at_breakdown": 72614791.95618457,
-          "implied_unobserved_total_at_breakdown": 45115058.956184566,
-          "implied_unobserved_per_post_day": 382331.008103259,
-          "implied_unobserved_share_of_pretreatment_daily_mean": 0.16164858643059538,
+          "implied_true_total_at_breakdown": 72614791.95618458,
+          "implied_unobserved_total_at_breakdown": 45115058.95618458,
+          "implied_unobserved_per_post_day": 382331.00810325914,
+          "implied_unobserved_share_of_pretreatment_daily_mean": 0.16164858643059543,
           "n_post_days": 118,
           "point_estimate_breakdown_dark_rate": 0.6546407178453928,
           "interval_robustness_discount": 0.03334775892034636
@@ -228,17 +228,17 @@
           "interval_family": "block_bootstrap_residual",
           "nominal_coverage": 0.95,
           "observed_sum": 27499733.0,
-          "counterfactual_sum": 290459167.82473826,
+          "counterfactual_sum": 290459167.8247383,
           "reduction_at_zero_error": 0.9053232397312616,
-          "breakdown_dark_rate": 0.053232397312615753,
+          "breakdown_dark_rate": 0.053232397312615864,
           "breakdown_status": "breaks_within_feasible_dark_rate",
-          "implied_true_total_at_breakdown": 29045916.78247382,
-          "implied_unobserved_total_at_breakdown": 1546183.7824738212,
-          "implied_unobserved_per_post_day": 13103.252393845942,
-          "implied_unobserved_share_of_pretreatment_daily_mean": 0.005540022080909677,
+          "implied_true_total_at_breakdown": 29045916.782473825,
+          "implied_unobserved_total_at_breakdown": 1546183.782473825,
+          "implied_unobserved_per_post_day": 13103.252393845974,
+          "implied_unobserved_share_of_pretreatment_daily_mean": 0.005540022080909691,
           "n_post_days": 118,
           "point_estimate_breakdown_dark_rate": 0.13660179461348176,
-          "interval_robustness_discount": 0.08336939730086601
+          "interval_robustness_discount": 0.0833693973008659
         },
         {
           "model": "ar_lag1_7",
@@ -249,27 +249,27 @@
           "interval_family": "block_bootstrap_residual",
           "nominal_coverage": 0.95,
           "observed_sum": 27499733.0,
-          "counterfactual_sum": 290459167.82473826,
+          "counterfactual_sum": 290459167.8247383,
           "reduction_at_zero_error": 0.9053232397312616,
-          "breakdown_dark_rate": -0.8935352053747665,
+          "breakdown_dark_rate": -0.893535205374766,
           "breakdown_status": "claim_fails_at_zero_incremental_error",
-          "implied_true_total_at_breakdown": 14522958.391236925,
-          "implied_unobserved_total_at_breakdown": -12976774.608763075,
-          "implied_unobserved_per_post_day": -109972.66617595826,
-          "implied_unobserved_share_of_pretreatment_daily_mean": -0.04649616603565216,
+          "implied_true_total_at_breakdown": 14522958.39123693,
+          "implied_unobserved_total_at_breakdown": -12976774.60876307,
+          "implied_unobserved_per_post_day": -109972.66617595822,
+          "implied_unobserved_share_of_pretreatment_daily_mean": -0.04649616603565214,
           "n_post_days": 118,
-          "point_estimate_breakdown_dark_rate": -0.7267964107730347,
+          "point_estimate_breakdown_dark_rate": -0.7267964107730343,
           "interval_robustness_discount": 0.1667387946017318
         }
       ]
     }
   ],
   "inputs": {
-    "data/processed/counterfactual_post_treatment_summary.csv": "f84da6cf9391a24e031a53b489f06ada43a39a18bc6b065588d3552ed0ca7bb6",
-    "data/processed/counterfactual_intervals_summary.csv": "f3e490e22b965e5f2fdf19236bbc101a812c472fd288d2df6da409ef540abe6c",
-    "data/processed/block_conformal_summary.csv": "431c6c61c2680e862bf102343f123e46f7e82dad0a65a2378ab8f8f0634f18bb",
-    "data/processed/ais_dark_bound_critical_rates.csv": "5c2ea172e24d5e97ff65a7a21990b7d8c64a16a3340c5497e43336d75588b2fe",
-    "data/processed/panel_aligned.csv": "4d26dbe004947cb32896fd801e066adbcf664813a0c8b7c80e855558b3ed7728"
+    "data/processed/counterfactual_post_treatment_summary.csv": "99796d2f29da87ff4414718de19053a1cc4102055d95cf07fcf63ce5c99334bf",
+    "data/processed/counterfactual_intervals_summary.csv": "416912b600a9be1dbd4a11d2347814a9cdcbe9c59b5da4a099ef936d5975b8c6",
+    "data/processed/block_conformal_summary.csv": "d04e26304904f1ee4f9d57a2471af703d9b0b1b6041723a29d252bad971f3ea2",
+    "data/processed/ais_dark_bound_critical_rates.csv": "33478664df367ec8edb163bac74a47d37ee34153e2c2146cdf070e1b6dbd2f78",
+    "data/processed/panel_aligned.csv": "b57019f065512de100352fd3ee4dde4294c86ddd0f82a7b325cd063d6b553d53"
   },
   "guard": "Partial-identification sensitivity map over stated assumptions. Not a causal correction, not a measurement of dark activity, and not an estimate of the realised dark rate. The false-positive rate s is claim-reinforcing, so the one-sided AIS-dark bound is the conservative case; the claim-breaking directions are a large incremental dark rate and a counterfactual at the low end of its interval."
 }

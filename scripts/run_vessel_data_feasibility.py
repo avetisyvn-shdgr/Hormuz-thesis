@@ -14,9 +14,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.feasibility import build_vessel_feasibility_report  # noqa: E402
-from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.feasibility import build_vessel_feasibility_report  # noqa: E402
+from hormuz_throughput.registry import RegisteredArtifact, get_variable  # noqa: E402
 
 
 def main() -> None:

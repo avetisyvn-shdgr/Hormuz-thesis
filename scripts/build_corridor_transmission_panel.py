@@ -9,8 +9,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.corridor_panel import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.corridor_panel import (  # noqa: E402
     build_corridor_panel,
     load_corridor_panel_protocol,
 )
@@ -44,8 +44,8 @@ def main() -> None:
         "config/corridor_transmission.yaml": config.CONFIG_DIR
         / "corridor_transmission.yaml",
         "config/corridor_basins.yaml": config.CONFIG_DIR / "corridor_basins.yaml",
-        "src/lngfreight/corridor_panel.py": config.ROOT
-        / "src/lngfreight/corridor_panel.py",
+        "src/hormuz_throughput/corridor_panel.py": config.ROOT
+        / "src/hormuz_throughput/corridor_panel.py",
     }
     output_hashes = {
         path.relative_to(config.ROOT).as_posix(): _sha256(path)

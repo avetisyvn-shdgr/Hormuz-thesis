@@ -33,7 +33,6 @@ from .summarize import BOOTSTRAP_DRAWS, BOOTSTRAP_SEED
 CHALLENGER = "chronos2_univariate"
 BASELINE = "ar_lag1_7"
 PRIMARY_PANEL = "composition_28x5"
-# docs/MODERN_TSFM_BENCHMARK.md: Chronos-2 (Amazon, released 2025-10-20).
 MODEL_RELEASE = pd.Timestamp("2025-10-20")
 CLEANEST_FOLD = "fold_08"
 

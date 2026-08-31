@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 
-from lngfreight.ar_intervals import (
+from hormuz_throughput.ar_intervals import (
     _normal_ppf,
     aggregate_ar_interval,
     evaluate_ar_horizon_interval,
@@ -20,7 +20,6 @@ def _ar_forecasts(n_folds=20, horizon=10, seed=0):
     for k in range(n_folds):
         origin = start + pd.Timedelta(days=30 * k)
         for s in range(1, horizon + 1):
-            # Residual spread grows with the step (horizon-aware by construction).
             resid = rng.normal(0, s)
             y_pred = 100.0
             rows.append({
@@ -44,7 +43,6 @@ def test_normal_ppf_matches_known_quantiles():
 def test_min_calib_folds_excludes_early_folds():
     fc = _ar_forecasts(n_folds=20, horizon=10)
     scores, _ = evaluate_ar_horizon_interval(fc, min_calib_folds=15)
-    # Only folds with >=15 strictly-earlier folds are scored: folds 16..20.
     assert len(scores) == 5
     assert scores["n_calib_folds"].min() >= 15
 
@@ -53,7 +51,6 @@ def test_interval_is_horizon_aware_band_widens_with_step():
     fc = _ar_forecasts(n_folds=20, horizon=10)
     _, bands = evaluate_ar_horizon_interval(fc, min_calib_folds=15)
     width = (bands["upper"] - bands["lower"]).groupby(bands["step"]).mean()
-    # Spread was built to grow with step, so the band must widen with the horizon.
     assert width.loc[10] > width.loc[1]
 
 

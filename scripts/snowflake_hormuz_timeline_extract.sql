@@ -1,14 +1,3 @@
--- Timeline-aligned SeaOrbis Hormuz extract.
---
--- The Snowflake Marketplace share does not contain a continuous history. It
--- contains two one-hour snapshots only:
---   * 2026-02-10 05:00-06:00 UTC (pre-onset)
---   * 2026-03-15 05:00-06:00 UTC (post-onset)
---
--- This query scans every available message, excludes records without a vessel
--- identifier, and returns one representative position per vessel per snapshot.
--- It deliberately has no arbitrary LIMIT. The count columns make truncation
--- visible in every exported row.
 
 WITH positions AS (
     SELECT

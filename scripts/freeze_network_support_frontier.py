@@ -18,7 +18,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 from run_network_support_frontier import (  # noqa: E402
     DESIGN_PATH,
     build_audit_expectation,
@@ -34,10 +34,10 @@ from run_network_support_frontier import (  # noqa: E402
 )
 
 
-MODULE_PATH = config.ROOT / "src/lngfreight/network_support.py"
+MODULE_PATH = config.ROOT / "src/hormuz_throughput/network_support.py"
 BUILDER_PATH = config.ROOT / "scripts/run_network_support_frontier.py"
 FREEZER_PATH = Path(__file__)
-EXPOSURE_PATH = config.ROOT / "src/lngfreight/exposure.py"
+EXPOSURE_PATH = config.ROOT / "src/hormuz_throughput/exposure.py"
 
 OUTPUT_KEYS = (
     "denominators_csv",
@@ -132,13 +132,13 @@ def build_manifest() -> dict:
         "manifest_schema": 1,
         "design_id": design["design_id"],
         "analysis_role": design["analysis_role"],
-        "status": "assistant_generated_support_denominator_artifact",
+        "status": "generated_support_denominator_artifact",
         "verification_state": "NEEDS-VERIFY",
-        "human_verification_record": "docs/DECISION_LOG.md",
+        "verification_record": "reports/reproducibility_run_transcript.txt",
         "design_sha256": design_sha256,
         "freeze_status": design["freeze_status"]["timing"],
         "upstream_artifacts_mutated": False,
-        "core_run_all_dependency": "none",
+        "core_run_all_dependency": "required_for_final_integration",
         "core_reproducibility_manifest_dependency": "none",
         "input_sha256": {
             _relative(path): sha256_file(path) for path in input_paths.values()

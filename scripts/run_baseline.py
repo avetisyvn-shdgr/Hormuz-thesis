@@ -16,14 +16,14 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.baselines import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.baselines import (  # noqa: E402
     aggregate_scores,
     evaluate_arx,
     evaluate_seasonal_naive,
 )
-from lngfreight.validation import rolling_origin_splits, summary  # noqa: E402
-from lngfreight.specification import working_specification  # noqa: E402
+from hormuz_throughput.validation import rolling_origin_splits, summary  # noqa: E402
+from hormuz_throughput.specification import working_specification  # noqa: E402
 
 
 SPEC = working_specification()

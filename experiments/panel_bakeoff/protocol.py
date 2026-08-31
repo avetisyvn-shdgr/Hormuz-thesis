@@ -90,9 +90,6 @@ def load_raw_panel(path: Path = RAW_PATH) -> pd.DataFrame:
 
 def composition_wide(frame: pd.DataFrame) -> pd.DataFrame:
     """Return dates x (chokepoint, mutually-exclusive vessel class)."""
-    # pandas 2.3.3's pivot/unstack path is not trusted here: this environment
-    # produced a malformed DatetimeIndex despite unique source keys.  Validate
-    # the Cartesian order explicitly and reshape the raw values instead.
     ordered = frame.sort_values(["date", "portname"], kind="stable")
     dates = pd.DatetimeIndex(sorted(ordered["date"].unique()), name="date")
     ports = sorted(ordered["portname"].unique())

@@ -27,9 +27,9 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config, provenance  # noqa: E402
-from lngfreight.sources.base import SourcePayload  # noqa: E402
-from lngfreight.sources.importer_customs import (  # noqa: E402
+from hormuz_throughput import config, provenance  # noqa: E402
+from hormuz_throughput.sources.base import SourcePayload  # noqa: E402
+from hormuz_throughput.sources.importer_customs import (  # noqa: E402
     GULF_BY_UNIT,
     MEASURE_BY_UNIT,
     SNAPSHOT_FILES,
@@ -110,8 +110,8 @@ Method notes (what a re-capture requires):
   value is preserved in jp_original_lng271111_with_jpy.csv and is not relabeled
   as USD.
 
-Gulf classification is NOT in these files; it lives in
-src/lngfreight/sources/importer_customs.py (design doc 6.3, Oman excluded).
+Gulf classification is not encoded in these files; it is defined in
+src/hormuz_throughput/sources/importer_customs.py (design doc 6.3, Oman excluded).
 """
 
 
@@ -164,9 +164,6 @@ def normalize_in() -> pd.DataFrame:
     src = STAGING / "india_tradestat" / "india_tradestat_lng271111_by_origin.csv"
     df = pd.read_csv(src, dtype={"period": str, "hs": str})
     usd = df[df["measure"] == "usd_million"].copy()
-    # Months where the source has published nothing yet appear as all-zero
-    # columns (e.g. 2026-06 at capture time); an all-zero month is "not yet
-    # published", not "zero trade" -- drop it rather than freeze a fake zero.
     monthly_sum = usd.groupby("period")["value"].sum()
     published = monthly_sum[monthly_sum > 0].index
     usd = usd[usd["period"].isin(published)]
@@ -176,7 +173,7 @@ def normalize_in() -> pd.DataFrame:
         "country": usd["country"].str.strip(),
         "hs": "271111",
         "weight_ton": float("nan"),
-        "value_kusd": usd["value"] * 1000.0,   # US $ million -> thousand USD
+        "value_kusd": usd["value"] * 1000.0,
     }))
 
 
@@ -308,7 +305,6 @@ def main() -> int:
         )
         print(f"{unit}: wrote {path} ({len(frame)} rows, "
               f"{frame['period'].min()}..{frame['period'].max()})")
-    # Final validation through the provider's own loader.
     for unit in builders:
         load_by_origin(unit)
     print("all five snapshots load and validate through the provider")

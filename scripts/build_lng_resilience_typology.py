@@ -13,8 +13,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.network_rewiring import resilience_typology  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.network_rewiring import resilience_typology  # noqa: E402
 
 
 def main() -> None:

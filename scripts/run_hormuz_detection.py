@@ -42,13 +42,13 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.disruption_detector import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.disruption_detector import (  # noqa: E402
     apply_event_mask,
     load_event_mask,
     validate_detector_calibration_tasks,
 )
-from lngfreight.detector_calibration import (  # noqa: E402
+from hormuz_throughput.detector_calibration import (  # noqa: E402
     DETECTOR_FORMS,
     calibrate_threshold,
     candidate_thresholds,
@@ -61,7 +61,7 @@ from lngfreight.detector_calibration import (  # noqa: E402
     select_loco_alphas,
     validate_detector_spec,
 )
-from lngfreight.hormuz_stress import (  # noqa: E402
+from hormuz_throughput.hormuz_stress import (  # noqa: E402
     AUGUST,
     JULY,
     FrozenSystem,
@@ -75,7 +75,7 @@ from lngfreight.hormuz_stress import (  # noqa: E402
     score_hormuz,
     verify_accepted_a3,
 )
-from lngfreight.global_forecaster import (  # noqa: E402
+from hormuz_throughput.global_forecaster import (  # noqa: E402
     LeakageError,
     LocalARModel,
     MeasurementStateError,
@@ -107,8 +107,6 @@ from lngfreight.global_forecaster import (  # noqa: E402
     validate_task_table,
 )
 
-# Sealing assertions that must remain False for the audit to pass. A1 is
-# check-only: it must never read or print a post-event outcome.
 MUST_BE_FALSE_ASSERTIONS = frozenset(
     {"post_event_outcomes_read", "post_event_outcomes_printed"}
 )
@@ -436,12 +434,7 @@ def _derive_status(audit: Mapping[str, object]) -> str:
     return "PASS" if not failures else "FAIL"
 
 
-# ===========================================================================
-# Phase A2 -- fit the global model and the declared baselines, then select
-# hyperparameters on the frozen 2024 tasks alone.
-# ===========================================================================
 
-# Positive assertions that must hold, and the negative ones that must not.
 A2_MUST_BE_FALSE = frozenset(
     {
         "hormuz_row_entered_any_estimator",
@@ -558,7 +551,6 @@ def _predict_all(
         combined["z_prediction"].to_numpy(), combined["unit"], scales
     )
 
-    # The seasonal-naive comparator is a lookup in raw units, not a fit.
     seasonal = out_h.loc[:, ["unit", "horizon_days", "target_timestamp", "y_target"]].assign(
         model="seasonal_naive",
         prediction=seasonal_naive_predictions(panel, out_h),
@@ -618,9 +610,6 @@ def run_validation() -> dict:
     selection = {
         int(horizon): _selected_alpha(scores, spec, int(horizon)) for horizon in horizons
     }
-    # Each horizon reports the penalty selected for that horizon, not every
-    # penalty selected anywhere: a model chosen at h=1 is not the reported
-    # model at h=30 if a different alpha won there.
     baselines = {"seasonal_naive", "local_ar_1_7"}
     reported_by_horizon = {
         int(horizon): {f"global_ridge_alpha_{selection[int(horizon)]:g}"} | baselines
@@ -628,7 +617,6 @@ def run_validation() -> dict:
     }
     reported = set().union(*reported_by_horizon.values())
 
-    # Provisional intervals from in-sample development residuals, per A2 config.
     interval_cfg = spec["model"]["scoring"]["intervals"]
     levels = [float(value) for value in interval_cfg["nominal_levels"]]
     pinball_quantiles = [float(value) for value in interval_cfg["pinball_quantiles"]]
@@ -765,9 +753,6 @@ def run_validation() -> dict:
         "plan": {"version": spec["plan"]["version"], "sha256": spec["plan"]["sha256"]},
         "inputs": {
             "measurement_states_verified": [
-                # `state_checks` records the A1 hash-only view, where nothing is
-                # read.  A2 does read outcome rows for the state it fits on, so
-                # that flag is corrected here rather than inherited untrue.
                 {**check, "outcome_rows_read": check["measurement_state"] == state}
                 for check in state_checks
             ],
@@ -896,9 +881,6 @@ def _derive_validation_status(manifest: Mapping[str, object]) -> str:
     return "PASS" if not failures else "FAIL"
 
 
-# ===========================================================================
-# Phase A3 -- detector calibration.
-# ===========================================================================
 
 A3_MUST_BE_FALSE = frozenset(
     {
@@ -1048,8 +1030,6 @@ def run_calibration() -> dict:
     residual_geometry = build_rolling_residual_geometry(spec, state)
     folds = rolling_origin_folds(spec)
 
-    # Penalty reselection for end-to-end LOCO: the held-out unit is withheld
-    # from hyperparameter selection too, so it cannot inherit A2's penalty.
     loco_alphas = select_loco_alphas(spec, panel, measurement_state=state)
 
     frames: list[pd.DataFrame] = []
@@ -1057,9 +1037,6 @@ def run_calibration() -> dict:
     drift: dict[str, dict[str, list[float]]] = {
         unit: {str(horizon): [] for horizon in horizons} for unit in units
     }
-    # Every fold's scale must have been fitted through that fold's own
-    # horizon-specific fit_end.  This is the check that the algorithm was
-    # refitted; whether the resulting number moves is a property of the data.
     context_end_matches = True
     for horizon in horizons:
         for fold in folds:
@@ -1085,7 +1062,6 @@ def run_calibration() -> dict:
     loco_matrix = np.vstack(loco_blocks)
     residuals["row_id"] = np.arange(len(residuals), dtype="int64")
 
-    # Seasonal naive is a lookup on the same rows, so it needs no fold refit.
     residuals["seasonal_naive_prediction"] = seasonal_naive_predictions(
         panel,
         residuals.assign(
@@ -1098,7 +1074,6 @@ def run_calibration() -> dict:
     kept = admitted["row_id"].to_numpy()
     loco_matrix = loco_matrix[kept]
 
-    # The frozen design requires the invariance test to be executed, not claimed.
     factor = 3.7
     invariance_holds = bool(
         np.allclose(
@@ -1133,8 +1108,6 @@ def run_calibration() -> dict:
                         {"model": model, "horizon_days": horizon, "form": form, **record}
                     )
 
-                # threshold_loco: same residuals, the unit withheld only from
-                # the threshold. This isolates whether a threshold transfers.
                 grid = candidate_thresholds(list(curves.values()))
                 for held_out in units:
                     retained = [curves[unit] for unit in units if unit != held_out]
@@ -1160,10 +1133,6 @@ def run_calibration() -> dict:
                         )
                     )
 
-    # end_to_end_loco: the held-out unit was never in the model, the pooled
-    # standardiser, the penalty selection or the threshold. Seasonal naive is a
-    # lookup, so withholding a unit from "fitting" withholds nothing and its
-    # end-to-end test would be its threshold test under another name.
     horizon_index = {
         horizon: admitted["horizon_days"].to_numpy() == horizon for horizon in horizons
     }
@@ -1239,13 +1208,6 @@ def run_calibration() -> dict:
             "threshold_loco",
             "end_to_end_loco",
         }.issubset(set(calibration["scope"])),
-        # The frozen object is the scaling algorithm, so the seal is that every
-        # fold refitted through its own fit_end -- not that the resulting number
-        # moved. It does not move for the low-count units: `n_tanker` is an
-        # integer count, so a small unit's MAD is an integer and its scale is a
-        # small integer multiple of 1.4826 that a longer history does not
-        # change. The second assertion keeps the first from passing on a
-        # constant-by-construction no-op.
         "context_scales_fitted_through_each_folds_fit_end": context_end_matches,
         "context_scale_varies_across_folds_for_some_unit": any(
             len(set(drift[unit][str(horizon)])) > 1 for unit in units for horizon in horizons
@@ -1393,8 +1355,6 @@ def run_calibration() -> dict:
             },
         },
         "sealing_assertions": assertions,
-        # Nothing is outstanding: the one item this phase raised was ratified by
-        # Mher on 2026-08-28 and is recorded below rather than left open.
         "ratification_required": [],
         "ratifications": [
             {
@@ -1497,9 +1457,6 @@ def _derive_calibration_status(manifest: Mapping[str, object]) -> str:
     return "PASS" if not failures else "FAIL"
 
 
-# ===========================================================================
-# Phase A4 -- final Hormuz stress test.
-# ===========================================================================
 
 A4_MUST_BE_FALSE = frozenset(
     {
@@ -1675,8 +1632,6 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
     spec, spec_sha = load_detection_spec()
     validate_detector_spec(spec)
 
-    # Provenance first: the checkpoint has to describe the checkout the run is
-    # made from, so it is taken before this phase writes anything at all.
     git_checkpoint = _git_checkpoint()
 
     final_cfg = spec["final"]
@@ -1709,7 +1664,6 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
         raise SystemExit(f"--vintages {vintages!r} selects no scored measurement state")
 
     if check_only:
-        # Gates only. No outcome row is read, so the latch must stay closed.
         manifest = {
             "schema": "hormuz_detection_final_manifest/1",
             "phase": "A4",
@@ -1742,7 +1696,6 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
         }
         return manifest
 
-    # ---- build every estimated object, before any surveillance outcome -----
     pre_surveillance_end = pd.Timestamp(spec["dates"]["detector_calibration_end"])
     systems: dict[str, object] = {}
     for state in scored_states:
@@ -1761,7 +1714,6 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
     if lock.hormuz_surveillance_read:
         raise AssertionError("a surveillance outcome was read while building the system")
 
-    # ---- from here the event is in scope and nothing may be estimated ------
     panels = {
         state: load_measurement_state_panel(
             spec,
@@ -1804,7 +1756,6 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
     for (mode, detector_state, outcome_state, model, horizon), block in daily.groupby(
         ["mode", "detector_state", "outcome_state", "model", "horizon_days"], sort=True
     ):
-        # The forms this mode declares, not every form the scorer computed.
         for form in _declared_forms(final_cfg, str(mode)):
             key = (str(model), int(horizon), form)
             if key not in threshold_by_key:
@@ -1837,13 +1788,8 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
             )
     summary = _severity_rank(pd.DataFrame.from_records(summary_rows))
 
-    # ---- exact coverage: what ran must be what the block declares ----------
     coverage = _coverage_report(_declared_cells(spec, final_cfg, pairings), summary)
 
-    # ---- pre-onset alarms, counted and kept ---------------------------------
-    # A detector firing inside the surveillance window before the operational
-    # onset is a finding about this unit, not a defect to be tuned out. It is
-    # counted here so the manifest reports it rather than leaving it implicit.
     fired = summary.loc[summary["fired"].astype(bool)]
     pre_onset = fired.loc[pd.to_numeric(fired["detection_delay_days"]) < 0]
     pre_onset_alarms = {
@@ -1886,7 +1832,6 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
         ),
     }
 
-    # ---- cross-state agreement, reported without merging the states --------
     agreement_rows: list[dict[str, object]] = []
     if JULY in scored_states and AUGUST in scored_states:
         own_state = summary.loc[summary["detector_state"].eq(summary["outcome_state"])]
@@ -1918,11 +1863,8 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
                 }
             )
 
-    # ---- proportional/residual decomposition of the revision ---------------
     hormuz = spec["population"]["hormuz_unit"]
     constant = float("nan")
-    # A declared output always exists, so the single-vintage case writes the
-    # schema with no rows rather than a headerless empty file.
     revision = pd.DataFrame(
         columns=[
             "unit",
@@ -1942,7 +1884,6 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
         )
         revision.insert(0, "unit", hormuz)
 
-    # ---- the no-tuning seal ------------------------------------------------
     final_digest = frozen.digest()
     input_hashes = _final_input_hashes(spec, scored_states)
 
@@ -1950,8 +1891,6 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
     daily_path = config.ROOT / outputs["daily"]
     summary_path = config.ROOT / outputs["summary"]
     cross_path = config.ROOT / outputs["cross_vintage"]
-    # Declared, not derived from another output's stem: a path no declaration
-    # names is a path no hash covers.
     revision_path = config.ROOT / outputs["cross_vintage_revision"]
     manifest_path = config.ROOT / outputs["manifest"]
     daily_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1969,14 +1908,9 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
     declared_transport_modes = {final_cfg["modes"][2]["name"]}
 
     assertions = {
-        # Every cross-state application must be one the frozen block names.
-        # The standardiser seal refuses any that is not routed through the
-        # declared transport, so an undeclared one cannot reach scoring.
         "every_cross_state_transport_is_a_declared_mode": all(
             item["mode"] in declared_transport_modes for item in transports
         ),
-        # Exact, both directions: no declared cell missing, no undeclared cell
-        # evaluated. The second half is what the mode 3 raw-level rows failed.
         "evaluated_cells_are_exactly_the_declared_cells": bool(coverage["exact"]),
         "no_undeclared_cell_evaluated": not coverage["unexpected"],
         "no_declared_cell_missing": not coverage["missing"],
@@ -1984,9 +1918,6 @@ def run_final(confirmed_spec_sha: str, vintages: str, check_only: bool) -> dict:
             set(block["form"].unique()).issubset(set(_declared_forms(final_cfg, mode)))
             for mode, block in summary.groupby("mode", sort=False)
         ),
-        # Checked against the declaration, not asserted. The manifest itself is
-        # excluded because it is this object: it is written last, and a file
-        # found here would be a previous run's.
         "every_declared_output_was_written": all(
             (config.ROOT / path).is_file()
             for name, path in outputs.items()

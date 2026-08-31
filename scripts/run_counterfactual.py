@@ -18,10 +18,10 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.baselines import arx_forecast, seasonal_naive_forecast  # noqa: E402
-from lngfreight.validation import Fold, resolve_cutoff  # noqa: E402
-from lngfreight.specification import working_specification  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.baselines import arx_forecast, seasonal_naive_forecast  # noqa: E402
+from hormuz_throughput.validation import Fold, resolve_cutoff  # noqa: E402
+from hormuz_throughput.specification import working_specification  # noqa: E402
 
 
 SPEC = working_specification()

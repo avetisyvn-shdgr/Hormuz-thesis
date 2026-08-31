@@ -1,7 +1,7 @@
-# LNG freight disruption thesis pipeline
+# Strait of Hormuz disruption thesis analysis pipeline
 
 This repository contains the reproducible analysis code and frozen evidence
-used to study the 2026 Strait of Hormuz disruption. The working primary outcome
+used to study the 2026 Strait of Hormuz disruption. The primary outcome
 is daily IMF PortWatch tanker transit count. The main estimand is the
 **disruption-associated counterfactual shortfall** over a locked 130-day window,
 estimated with a transparent pre-treatment AR model and checked with temporal,
@@ -24,12 +24,10 @@ provenance-limited Bloomberg, Fearnleys, ClearLynx, Spark, Platts, Kpler, and
 similar inputs are not required and must not be included in a public release.
 The optional Bloomberg branch is disabled by default and remains local-only.
 
-The active LaTeX manuscript and literature review are maintained outside this
-repository in `Bachelor Thesis Final/` within the clean thesis workspace. Its
-machine-specific parent path is deliberately not part of this portable repository
-contract. Project-management notes, personal defence material, credentials,
-virtual environments, raw licensed inputs, and historical backups are outside the
-public code-release boundary.
+The LaTeX manuscript and literature review are maintained separately from this
+code repository. Project-management notes, personal defence material,
+credentials, virtual environments, raw licensed inputs, and historical backups
+are outside the public code-release boundary.
 
 ## Research design at a glance
 
@@ -58,24 +56,23 @@ different by design and must not be pooled or described as one sample.
 | Customs/Eurostat/e-Stat/KOSIS/Comtrade | Monthly importer-origin composition | Source-specific; some refetches need free keys | Mixed mass, volume, and value bases; reporting lags and thin post samples |
 
 Exact variables, licences, frozen-vintage roles, and unavailable proprietary
-targets are documented in `config/sources.yaml`, `docs/DATA_SOURCES.md`, and
-`docs/DATA_SOURCE_DEEP_DIVE.md`. Do not replace an unavailable target silently
-with a convenient proxy.
+targets are recorded in `config/sources.yaml`. Source-access events and artifact
+checksums are recorded in `data/raw/provenance.jsonl`. An unavailable target must
+not be replaced silently with a convenient proxy.
 
 ## Installation
 
-The core package supports Python 3.10 or newer. `pyproject.toml` and
-`requirements.txt` declare the direct compatibility constraints;
-`requirements.txt` also includes pytest for local verification. A normal
-development install lets pip resolve the transitive versions within those
-constraints:
+The core package supports Python 3.10 or newer. `pyproject.toml` is the
+authoritative direct-dependency specification. `requirements.txt` is a
+compatibility entry point that installs the package with its development extra.
+A normal development install lets pip resolve transitive versions within the
+declared constraints:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
-python -m pip install -e .
 ```
 
 For an exact reconstruction of the canonical core/test environment, use the
@@ -85,19 +82,19 @@ dependencies:
 ```bash
 python3.14 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements-core.lock.txt
+python -m pip install -r requirements/locks/core-py314-macos-arm64.txt
 python -m pip install --no-deps -e .
 ```
 
-`requirements-core.lock.txt` is locked and verified for Python 3.14.4 on macOS
+`requirements/locks/core-py314-macos-arm64.txt` is locked and verified for Python 3.14.4 on macOS
 arm64 (`macosx-26.0-arm64`). Other supported Python versions and platforms may
 require a fresh resolution from the direct constraints rather than this exact
 platform lock.
 
 The transparent baseline and admitted inference code use NumPy/Pandas directly;
 SciPy, statsmodels, and scikit-learn are not core dependencies. `networkx` is a
-direct dependency of the reallocation module and is therefore declared in both
-the package metadata and core requirements.
+direct dependency of the reallocation module and is declared in the package
+metadata and captured in the exact core lockfile.
 
 The self-contained interactive TSFM benchmark figure is optional. Install its
 declared extra before running that script:
@@ -110,8 +107,8 @@ python scripts/make_tsfm_benchmark_interactive.py
 Optional real-weight foundation-model checks use separate Python 3.11
 environments and exact reproducibility lockfiles:
 
-- `requirements-benchmark.lock.txt` for Chronos-2/Moirai;
-- `requirements-timesfm.lock.txt` for TimesFM;
+- `requirements/locks/benchmark-py311-macos-arm64.txt` for Chronos-2/Moirai;
+- `requirements/locks/timesfm-py311-macos-arm64.txt` for TimesFM;
 - `data/processed/tsfm_run_manifest.json` for model revisions and run identity.
 
 The main workflow expects `.venv-bench/bin/python` when regenerating the
@@ -180,9 +177,9 @@ part of the public or default thesis pipeline.
 
 ## Reproduce the numbered technical figure catalog
 
-The renderer currently preserves 13 numbered technical figures from the prior
-manuscript mapping. They remain reproducible evidence assets, but inclusion and
-numbering in the clean manuscript must be decided during reconstruction.
+The renderer produces 14 registered technical figures, including the
+configuration-driven Chapter 4 research-design figure. These are reproducible
+evidence assets; the manuscript determines their final selection and numbering.
 Rendering from existing processed artifacts does not refit models or download
 data:
 
@@ -202,7 +199,7 @@ Canonical renderer settings are:
 | Matplotlib | 3.11.0 |
 | Backend | `Agg` through the public renderer |
 | Hash seed | `PYTHONHASHSEED=0` |
-| Matplotlib cache | `/tmp/lngfreight-matplotlib` |
+| Matplotlib cache | `/tmp/hormuz_throughput-matplotlib` |
 | Primary font preference | P052/URW Palladio/Palatino/TeX Gyre Pagella; DejaVu Serif fallback |
 | Vector font mode | TrueType (`pdf.fonttype=42`) |
 | PNG previews | 300 dpi |
@@ -218,7 +215,7 @@ canonical.
 | Path | Purpose |
 |---|---|
 | `reports/run_output.md` | Inspectable primary and uncertainty results |
-| `reports/current_results_summary.md` | Working thesis result table |
+| `reports/current_results_summary.md` | Current thesis result summary |
 | `reports/mechanism_results_summary.md` | LNG mechanism evidence summary |
 | `reports/network_rewiring_summary.md` | Importer/network results and scenario diagnostics |
 | `reports/reproducibility_run_transcript.txt` | Complete end-to-end console record |
@@ -238,14 +235,12 @@ its filename matches an older artifact.
 |---|---|
 | `config/settings.yaml` | Locked windows, outcomes, methods, seeds, and thresholds |
 | `config/sources.yaml` | Data registry, access status, units, licences, and checksums |
-| `src/lngfreight/` | Reusable data, validation, model, inference, and audit code |
+| `src/hormuz_throughput/` | Reusable data, validation, model, inference, and audit code |
 | `scripts/` | Acquisition, build, model, audit, freeze, and rendering entry points |
 | `experiments/` | Robustness benchmarks and descriptive network-adaptation experiments |
 | `tests/` | No-network unit and integration tests |
 | `data/processed/` | Frozen model inputs, outputs, diagnostics, and manifests |
 | `reports/` | Human-readable results, transcripts, and figures |
-| `docs/` | Method, source, provenance, and limitation documentation |
-| `references/` | Bibliographic seed data |
 
 ## Reproducibility contract
 
@@ -259,9 +254,9 @@ its filename matches an older artifact.
 - News- or AIS-derived observations are measurement systems, not ground truth.
 - No causal interpretation is permitted without a causal identification design.
 
-See `docs/PROVENANCE_CONTRACT.md`, `docs/INFERENCE_NOTES.md`,
-`docs/SUTVA_CONTAMINATION_AUDIT.md`, and
-`docs/REPRODUCIBILITY_AND_LEAKAGE_AUDIT.md` for the detailed audit trail.
+The governing computational specifications are `config/settings.yaml` and
+`config/sources.yaml`; validation requirements are enforced by the source code
+and test suite.
 
 ## Known limitations
 

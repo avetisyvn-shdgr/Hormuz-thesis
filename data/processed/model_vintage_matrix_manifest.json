@@ -1,0 +1,69 @@
+{
+  "admission_protocol_sha256": "bb050aa041e8fc1c8391b908baeab529aaf2e9944d5f35b07af661349176adce",
+  "analysis_role": "sensitivity_only_noncausal",
+  "chronos_environment": {
+    "device": "cpu",
+    "environment": ".venv-bench",
+    "lockfile_sha256": "b4ac5fc4205fc6117409a4e99b220a05dc4afa00d54a0b31bd5740caa06a0683",
+    "model_revision": "29ec3766d36d6f73f0696f85560a422f50e8498c",
+    "package": "chronos-forecasting",
+    "package_version": "2.3.0",
+    "python": "3.11.15",
+    "seed": 20260612
+  },
+  "completed_cells": 8,
+  "core_environment": {
+    "python": "3.11.15",
+    "seed": 20260612
+  },
+  "design_id": "portwatch_two_vintage_four_specification_matrix_v1",
+  "design_sha256": "297908c214a0afab30a377854585cb1788922334c3bba976f8e2a1141c6ed73e",
+  "expected_cells": 8,
+  "interpretation": "Case-local model and measurement-vintage sensitivity; not an ATT, variance decomposition, pooled estimate, or general AIS claim.",
+  "manifest_schema": 1,
+  "outcome": "hormuz_tanker_transits",
+  "output_sha256": {
+    "data/processed/model_vintage_matrix_chronos_daily.csv": "51262dcb9a7a96e04f30ba951c18cc7306f4b75cf5acdd79113ed647fdf602f8",
+    "data/processed/model_vintage_matrix_chronos_summary.csv": "b5e8f6f2d4a3cd56af1e095bf98220615f97fb2bf97817c7614b4aa1ff21b691",
+    "data/processed/model_vintage_matrix_core_daily.csv": "33156c0fcb683f592758fdcf8b9b928945ab6541f713ead65c314aca8a4c8fc2",
+    "data/processed/model_vintage_matrix_core_summary.csv": "c5a2c69d37013383a76bfbbf472b35f7dce882176fc311ffaef6eb34b494d9e2",
+    "data/processed/model_vintage_matrix_daily.csv": "ece32c5592b64090a2f955409835bc0383465207fe636a9977100ca0fbf0efb8",
+    "data/processed/model_vintage_matrix_summary.csv": "15a6e02eb812446d3482e0a4722c3f770a92e82e9828fc9ff1bebef457945917"
+  },
+  "pinned_self_checks": {
+    "ar_lag1_7": {
+      "max_observed_delta": 0.0,
+      "max_prediction_delta": 0.0,
+      "mean_shortfall_delta": 0.0,
+      "passed": true
+    },
+    "bsts_local_level_weekly": {
+      "joint_statistic_delta": 0.0,
+      "max_observed_delta": 0.0,
+      "max_prediction_delta": 0.0,
+      "mean_shortfall_delta": 0.0,
+      "passed": true
+    },
+    "chronos2": {
+      "max_observed_delta": 0.0,
+      "max_prediction_delta": 0.0,
+      "mean_shortfall_delta": 0.0,
+      "passed": true
+    },
+    "seasonal_naive_7d": {
+      "max_observed_delta": 0.0,
+      "max_prediction_delta": 0.0,
+      "mean_shortfall_delta": 0.0,
+      "passed": true
+    }
+  },
+  "replication_archive_status": "pending_deposit_gitignored_august_source_bytes",
+  "scoring_end": "2026-07-07",
+  "scoring_start": "2026-02-28",
+  "source_sha256": {
+    "pinned_primary": "66f3a54afb042103f3e0afc9670568cb7be245394ec04eba55ebd158593f579d",
+    "vintage_20260809": "0bc806a4c384723debff08053d6fcbb915a03ee9fdf7b23c73d76d9bcb885bcb"
+  },
+  "unit": "transits_per_day",
+  "vintage_averaging": "prohibited_and_not_performed"
+}

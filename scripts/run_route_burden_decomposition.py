@@ -28,9 +28,9 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight import route_burden as rb  # noqa: E402
-from lngfreight.routes import RESOLVED_STATUS  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput import route_burden as rb  # noqa: E402
+from hormuz_throughput.routes import RESOLVED_STATUS  # noqa: E402
 
 
 DESIGN_PATH = config.CONFIG_DIR / "route_burden_decomposition.yaml"
@@ -282,7 +282,6 @@ def guard_decomposition(design: dict, decomposition: pd.DataFrame) -> None:
     if decomposition["n_common_pairs"].le(0).any():
         raise AssertionError("a cell has no common terminal pair")
 
-    # The entry/exit residual must not depend on index-number weighting.
     grouped = decomposition.groupby(["cohort", "terminal_radius_km"])
     for key, group in grouped:
         spread = float(
@@ -464,7 +463,7 @@ def render_markdown(
     add(f"**Design SHA-256:** `{diagnostics['design_sha256']}`  ")
     add(f"**Frozen (UTC):** {design['frozen_utc']}  ")
     add(f"**Freeze status:** {design['freeze_status']['timing']}  ")
-    add("**Verification status:** `NEEDS-VERIFY` until Mher runs the G4 commands.")
+    add("**Verification status:** `NEEDS-VERIFY` until the complete pipeline is run.")
     add("")
     add(f"**Construct:** {design['construct']['label']}.  ")
     add(f"**Unit:** {design['construct']['unit']}.")
@@ -858,7 +857,7 @@ def main() -> int:
     print("   evidence that individual ships sailed farther.")
     print(" - The change is compositional and conditional on modeled support.")
     print(" - Components reconcile to the total exactly.")
-    print(" - This is NEEDS-VERIFY until Mher records the G4 output.")
+    print(" - This is NEEDS-VERIFY until the complete pipeline transcript is retained.")
     return 0
 
 

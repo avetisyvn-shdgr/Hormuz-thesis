@@ -17,7 +17,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 from run_route_burden_decomposition import (  # noqa: E402
     DESIGN_PATH,
     build_audit_expectation,
@@ -31,7 +31,7 @@ from run_route_burden_decomposition import (  # noqa: E402
 )
 
 
-MODULE_PATH = config.ROOT / "src/lngfreight/route_burden.py"
+MODULE_PATH = config.ROOT / "src/hormuz_throughput/route_burden.py"
 BUILDER_PATH = config.ROOT / "scripts/run_route_burden_decomposition.py"
 FREEZER_PATH = Path(__file__)
 
@@ -71,9 +71,6 @@ def validate_written_outputs(design: dict, design_sha256: str) -> None:
         ("pair_support_csv", pair_support),
     ):
         written = pd.read_csv(output_path(design, key))
-        # Burden values run to ~1e11 m3-nm, so CSV round-tripping loses the last
-        # binary digit. A relative tolerance is the correct semantic check here;
-        # byte-level reproducibility is separately enforced by output_sha256.
         pd.testing.assert_frame_equal(
             written,
             expected.reset_index(drop=True),
@@ -127,13 +124,13 @@ def build_manifest() -> dict:
         "manifest_schema": 1,
         "design_id": design["design_id"],
         "analysis_role": design["analysis_role"],
-        "status": "assistant_generated_decomposition_artifact",
+        "status": "generated_decomposition_artifact",
         "verification_state": "NEEDS-VERIFY",
-        "human_verification_record": "docs/DECISION_LOG.md",
+        "verification_record": "reports/reproducibility_run_transcript.txt",
         "design_sha256": design_sha256,
         "freeze_status": design["freeze_status"]["timing"],
         "upstream_artifacts_mutated": False,
-        "core_run_all_dependency": "none",
+        "core_run_all_dependency": "required_for_final_integration",
         "core_reproducibility_manifest_dependency": "none",
         "input_sha256": {
             _relative(path): sha256_file(path) for path in input_paths.values()

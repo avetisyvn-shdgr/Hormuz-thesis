@@ -5,7 +5,7 @@ import os
 import sys
 from pathlib import Path
 
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/hormuz_throughput-matplotlib")
 
 import matplotlib  # noqa: E402
 matplotlib.use("Agg")
@@ -32,9 +32,9 @@ from figure_style import (  # noqa: E402
     save_pdf_and_png,
     style_axes,
 )
-from lngfreight import config  # noqa: E402
-from lngfreight.specification import working_specification  # noqa: E402
-from lngfreight.validation import resolve_cutoff  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.specification import working_specification  # noqa: E402
+from hormuz_throughput.validation import resolve_cutoff  # noqa: E402
 
 
 FIG_ACTUAL = "run_actual_vs_counterfactual.png"
@@ -267,7 +267,6 @@ def main() -> None:
 
     primary = comparison[comparison["role"] == "working_primary"].iloc[0]
 
-    # Figure 1: actual full path + pre-period OOS validation + post counterfactual.
     actual = panel[target]
     validation_primary = baseline_forecasts[
         (baseline_forecasts["model"] == spec.primary_estimator)
@@ -382,7 +381,6 @@ def main() -> None:
     ax_post.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
     ax_post.xaxis.set_major_formatter(mdates.DateFormatter("%b\n%Y"))
     ax_post.tick_params(labelleft=False)
-    # No in-figure headline title: the LaTeX caption carries it in the thesis.
     handles, labels = ax.get_legend_handles_labels()
     legend_order = [
         labels.index("Observed, daily"),
@@ -405,7 +403,6 @@ def main() -> None:
     )
     fig_actual = _save_figure(fig, FIG_ACTUAL)
 
-    # Figure 2: temporal placebo distribution.
     placebo = placebo_effects[
         (placebo_effects["model"] == spec.primary_estimator)
         & (placebo_effects["target"] == target)
@@ -476,7 +473,6 @@ def main() -> None:
     )
     fig_placebo = _save_figure(fig, FIG_PLACEBO)
 
-    # Figure 3: synthetic-control path in transit-equivalent units.
     fig, ax = plt.subplots(figsize=(FIGURE_WIDTH_IN, 3.8))
     fig.subplots_adjust(left=0.10, right=0.98, bottom=0.22, top=0.94)
     ax.plot(
@@ -514,7 +510,6 @@ def main() -> None:
     )
     fig_synth = _save_figure(fig, FIG_SYNTH)
 
-    # Figure 4: treated gap against pre-fit-eligible placebo gap paths.
     eligible_units = set(
         synth_summary.loc[
             synth_summary["value_col"].eq("n_tanker")

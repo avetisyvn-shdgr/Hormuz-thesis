@@ -1,7 +1,7 @@
 """Build pre-declared LNG resilience-typology threshold sensitivity.
 
 The artifact reruns the descriptive rule-based typology across the threshold
-grid declared in src/lngfreight/network_rewiring.py. It reports per-unit label
+grid declared in src/hormuz_throughput/network_rewiring.py. It reports per-unit label
 agreement with the headline typology; it does not tune or select thresholds.
 """
 from __future__ import annotations
@@ -13,8 +13,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.network_rewiring import typology_threshold_sensitivity  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.network_rewiring import typology_threshold_sensitivity  # noqa: E402
 
 
 def main() -> None:

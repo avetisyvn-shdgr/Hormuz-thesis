@@ -11,9 +11,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.network_rewiring import build_rewiring_network  # noqa: E402
-from lngfreight.network_rewiring import registered_rewiring_input_paths  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.network_rewiring import build_rewiring_network  # noqa: E402
+from hormuz_throughput.network_rewiring import registered_rewiring_input_paths  # noqa: E402
 
 
 def main() -> None:

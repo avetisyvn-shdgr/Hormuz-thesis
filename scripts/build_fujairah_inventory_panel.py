@@ -22,12 +22,12 @@ RAW = ROOT / "data" / "raw" / "fujairah_fedcom"
 PROC = ROOT / "data" / "processed"
 FIGS = ROOT / "outputs" / "figures"
 
-WAR_START = pd.Timestamp("2026-02-28")   # locked cutoff, same as thesis pipeline
+WAR_START = pd.Timestamp("2026-02-28")
 FOIZ_FIRE = pd.Timestamp("2026-03-03")
 CEASEFIRE = pd.Timestamp("2026-06-17")
 
 COMPONENTS = ["light_mnbbl", "middle_mnbbl", "heavy_mnbbl"]
-TOL = 0.0015  # mn bbl; reports are quoted to 3 dp
+TOL = 0.0015
 
 
 def load_stocks() -> pd.DataFrame:

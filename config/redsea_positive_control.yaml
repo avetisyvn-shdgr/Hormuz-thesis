@@ -2,21 +2,11 @@ version: 1
 status: "ex_ante_designated_positive_control"
 frozen_on: "2026-08-29"
 
-# WHY THIS EXISTS. The restricted Hormuz corridor set in
-# config/network_adaptation.yaml is a retrospective screen: an all-corridor
-# post-event AR map already existed when the five corridors were named. This
-# experiment runs the same estimator, the same synchronized bootstrap and the
-# same Romano-Wolf machinery on an event whose receiver was designated **before
-# any post-onset outcome was inspected**, so the method can be demonstrated
-# where the selection objection does not apply.
 claim: >-
   Aggregate correspondence at an ex-ante designated receiver, estimated with a
   leakage-safe forecast counterfactual; not vessel linkage, not a causal
   reallocation parameter, and not evidence that the same ships moved.
 
-# The designation is inherited, not made here. It was frozen in
-# config/hormuz_receiver_test.yaml on 2026-08-27 and executed on 2026-08-28.
-# This re-run changes the estimator and the inference, never the designation.
 anchor:
   receiver: "Cape of Good Hope"
   emitter: "Bab el-Mandeb Strait"
@@ -36,10 +26,6 @@ data:
   event_horizon_days: 130
   reference_origins: 8
 
-# BOTH onsets are declared and BOTH are reported; neither is the headline. This
-# is carried over verbatim from the B2 freeze, where the recovered fraction
-# moved by a factor of about 2.2 between them and declaring one as primary
-# after seeing both was ruled specification shopping.
 onsets:
   primary: null
   declared:
@@ -82,11 +68,6 @@ inference:
     before the onset under test, so the reference spans exactly 1,040 days and
     contains no post-onset information.
 
-# The eligible receiver family is the frozen B2 support set, reused verbatim.
-# It was filtered on pre-onset baseline volume (>= 5 transits/day), with the
-# held-out Hormuz unit and documented-disruption units already removed, before
-# any post-onset gain was inspected. Reusing it rather than rebuilding it is
-# what makes the two designs comparable in both directions.
 eligible_receiver_family:
   vessel_class: "n_tanker"
   source: "data/processed/redsea_cape_manifest.json, same_emitter_alternative_receivers"

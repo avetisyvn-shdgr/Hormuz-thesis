@@ -25,12 +25,11 @@ import pandas as pd
 import pytest
 
 
-from lngfreight import panel as panel_mod
-from lngfreight import config as config_mod
-from lngfreight.clean import align_panel, alignment_report
+from hormuz_throughput import panel as panel_mod
+from hormuz_throughput import config as config_mod
+from hormuz_throughput.clean import align_panel, alignment_report
 
 
-# Explicit imputation policy so these tests never depend on settings.yaml drift.
 SETTINGS = {"imputation": {"price_ffill_max_gap_days": 2,
                            "capacity_zero_with_transits": "mask"}}
 
@@ -39,28 +38,19 @@ def _dates(n: int) -> pd.DatetimeIndex:
     return pd.date_range("2026-01-01", periods=n, freq="D", name="date")
 
 
-# --------------------------------------------------------------------------
-# panel.py : free/proxy contract
-# --------------------------------------------------------------------------
 def test_free_variables_excludes_proxy_and_unavailable():
     free = set(panel_mod.free_variables())
-    # genuinely-free series are in:
     assert "henry_hub_spot" in free
     assert "hormuz_tanker_transits" in free
-    # descriptive monthly importer outcomes are registry-accessible but not
-    # part of the daily PortWatch modeling panel:
     assert "korea_lng_import_total" not in free
     assert "india_lng_import_gulf" not in free
-    # unavailable series are NOT:
-    assert "ttf_gas" not in free            # status: restricted opt-in
-    assert "jkm_lng" not in free            # status: unavailable
-    assert "spark30s_atlantic_freight" not in free  # status: unavailable
-    assert "ais_laden_tonmiles_usgc" not in free    # status: unavailable
+    assert "ttf_gas" not in free
+    assert "jkm_lng" not in free
+    assert "spark30s_atlantic_freight" not in free
+    assert "ais_laden_tonmiles_usgc" not in free
 
 
 def test_build_panel_refuses_proxy_without_optin():
-    # The acquisition candidate is retained as proxy metadata, but the registry
-    # status remains unavailable and the guard fires before any provider call.
     with pytest.raises(ValueError, match="proxy"):
         panel_mod.build_panel(variables=["jkm_lng"], allow_proxies=False)
 
@@ -152,7 +142,6 @@ def test_build_panel_from_frozen_raw_honors_explicit_pin(tmp_path, monkeypatch):
                 "query": query,
                 "sha256": pinned_digest,
             }),
-            # Deliberately last: without a pin this legacy record would win.
             json.dumps({
                 "variable": "x",
                 "file": "data/raw/provider/x.csv",
@@ -186,9 +175,6 @@ def test_build_panel_from_frozen_raw_honors_explicit_pin(tmp_path, monkeypatch):
         panel_mod.build_panel_from_frozen_raw(variables=["x"])
 
 
-# --------------------------------------------------------------------------
-# clean.py : forward-fill only, bounded, no leakage
-# --------------------------------------------------------------------------
 def test_ffill_is_bounded_by_the_cap():
     idx = _dates(7)
     raw = pd.DataFrame(
@@ -197,31 +183,25 @@ def test_ffill_is_bounded_by_the_cap():
     )
     clean, audit = align_panel(raw, settings=SETTINGS)
     got = clean["henry_hub_spot"].tolist()
-    # cap=2: two NaNs after 10 get filled, the third stays NaN (real outage);
-    # two NaNs after 20 get filled.
     assert got[0] == 10.0
-    assert got[1] == 10.0 and got[2] == 10.0      # filled within cap
-    assert np.isnan(got[3])                        # beyond cap -> stays NaN
+    assert got[1] == 10.0 and got[2] == 10.0
+    assert np.isnan(got[3])
     assert got[4] == 20.0
     assert got[5] == 20.0 and got[6] == 20.0
     assert (audit["reason"] == "ffill").sum() == 4
 
 
 def test_ffill_never_pulls_a_future_value_backwards():
-    # The gap between 10 and 20 must be filled with the PAST value (10),
-    # never the future value (20). This is the core no-leakage guarantee.
     idx = _dates(7)
     raw = pd.DataFrame(
         {"henry_hub_spot": [10.0, np.nan, np.nan, np.nan, 20.0, np.nan, np.nan]},
         index=idx,
     )
     clean, _ = align_panel(raw, settings=SETTINGS)
-    assert clean["henry_hub_spot"].iloc[1] == 10.0   # not 20.0
+    assert clean["henry_hub_spot"].iloc[1] == 10.0
 
 
 def test_leading_nans_are_never_backfilled():
-    # No observation precedes the leading NaNs, so they must remain NaN
-    # (backfill / interpolation are intentionally not offered).
     idx = _dates(4)
     raw = pd.DataFrame({"henry_hub_spot": [np.nan, np.nan, 5.0, np.nan]}, index=idx)
     clean, _ = align_panel(raw, settings=SETTINGS)
@@ -231,7 +211,6 @@ def test_leading_nans_are_never_backfilled():
 
 
 def test_non_price_columns_are_not_forward_filled():
-    # A route COUNT (role=route) is not a price series and must not be ffilled.
     idx = _dates(3)
     raw = pd.DataFrame({"hormuz_tanker_transits": [5.0, np.nan, 3.0]}, index=idx)
     clean, audit = align_panel(raw, settings=SETTINGS)
@@ -239,9 +218,6 @@ def test_non_price_columns_are_not_forward_filled():
     assert audit.empty
 
 
-# --------------------------------------------------------------------------
-# clean.py : capacity-artifact mask
-# --------------------------------------------------------------------------
 def test_capacity_artifact_masked_but_real_closure_kept():
     idx = _dates(4)
     raw = pd.DataFrame(
@@ -253,10 +229,10 @@ def test_capacity_artifact_masked_but_real_closure_kept():
     )
     clean, audit = align_panel(raw, settings=SETTINGS)
     cap = clean["hormuz_tanker_capacity"].tolist()
-    assert np.isnan(cap[0])          # 0 capacity with 5 transits -> artifact
-    assert cap[1] == 100.0           # untouched
-    assert cap[2] == 0.0             # genuine closure (0 transits) -> KEPT
-    assert np.isnan(cap[3])          # 0 capacity with 2 transits -> artifact
+    assert np.isnan(cap[0])
+    assert cap[1] == 100.0
+    assert cap[2] == 0.0
+    assert np.isnan(cap[3])
     masked = audit[audit["reason"] == "artifact_masked"]
     assert len(masked) == 2
 
@@ -271,7 +247,7 @@ def test_capacity_keep_policy_leaves_artifacts():
     settings = {"imputation": {"price_ffill_max_gap_days": 2,
                                "capacity_zero_with_transits": "keep"}}
     clean, audit = align_panel(raw, settings=settings)
-    assert clean["hormuz_tanker_capacity"].iloc[0] == 0.0   # trusted
+    assert clean["hormuz_tanker_capacity"].iloc[0] == 0.0
     assert audit.empty
 
 
@@ -288,9 +264,6 @@ def test_invalid_capacity_policy_raises():
         align_panel(raw, settings=settings)
 
 
-# --------------------------------------------------------------------------
-# clean.py : purity + audit/report integrity
-# --------------------------------------------------------------------------
 def test_align_panel_does_not_mutate_input():
     idx = _dates(4)
     raw = pd.DataFrame(
@@ -324,4 +297,4 @@ def test_alignment_report_counts_match_audit():
     row = report.loc["henry_hub_spot"]
     assert row["null_before"] == 5
     assert row["cells_altered"] == 4
-    assert row["null_after"] == 1          # the one cell beyond the cap
+    assert row["null_after"] == 1

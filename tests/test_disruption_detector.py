@@ -6,13 +6,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight.disruption_detector import (
+from hormuz_throughput.disruption_detector import (
     apply_event_mask,
     fit_context_scale,
     load_event_mask,
     validate_detector_calibration_tasks,
 )
-from lngfreight.global_forecaster import (
+from hormuz_throughput.global_forecaster import (
     LeakageError,
     build_task_geometry,
     load_detection_spec,
@@ -72,7 +72,7 @@ def test_event_mask_is_frozen_non_residual_and_unique_by_unit_day(event_mask):
     assert len(event_mask.sha256) == 64
     assert dict(event_mask.source_sha256) == {
         "external_chronology_v1": (
-            "dc14bae0309cac4653106729cad64f12dbc694508a06dfdab4184bc2ab3c4d81"
+            "a0b3cd68ef33e1a4d123d1d827e3a93dfd1de14999c52cbffa0907e58ff98b10"
         )
     }
     assert not frame.duplicated(["unit", "date"]).any()
@@ -101,10 +101,8 @@ def test_mask_boundaries_come_from_the_external_record_not_the_panel(spec: dict)
     }
     assert onsets["panama_drought_2023_2024"] == "2023-07-30"
     assert onsets["red_sea_disruption_2024"] == "2023-12-14"
-    # The superseded data-derived onsets must not reappear.
     assert onsets["panama_drought_2023_2024"] != "2023-12-19"
     assert onsets["red_sea_disruption_2024"] != "2024-01-13"
-    # Suez and Kerch already agreed with the external record.
     assert onsets["suez_ever_given_2021"] == "2021-03-23"
     assert onsets["black_sea_kerch_2022"] == "2022-02-24"
 
@@ -115,14 +113,11 @@ def test_externally_documented_disrupted_days_are_not_left_in_calibration(event_
     masked = {
         (row.unit, str(row.date.date())) for row in frame.itertuples()
     }
-    # Panama: first announced transit cut through the old data-derived onset.
     assert ("panama_canal", "2023-07-30") in masked
     assert ("panama_canal", "2023-12-18") in masked
-    # Red Sea: first major carrier suspension through the old onset, both units.
     for unit in ("bab_el_mandeb_strait", "suez_canal"):
         assert (unit, "2023-12-14") in masked
         assert (unit, "2024-01-12") in masked
-    # The day before each corrected onset stays unmasked for that event.
     assert ("panama_canal", "2023-07-29") not in masked
     assert ("bab_el_mandeb_strait", "2023-12-13") not in masked
 

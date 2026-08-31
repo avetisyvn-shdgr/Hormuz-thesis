@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 
-from lngfreight.basin_coverage import (
+from hormuz_throughput.basin_coverage import (
     BASIN_INTERVAL_METHODS,
     BasinCoverageScenario,
     default_scenarios,
@@ -45,7 +45,6 @@ def test_scenario_rejects_invalid_configuration():
 
 
 def test_placebo_reference_distribution_is_not_an_interval():
-    # The null-centred reference never covers a clearly non-zero basin effect.
     df = simulate_scenario(_scenario(), n_replications=2000, seed=1)
     row = df.loc[df["method"].eq("placebo_reference_as_interval")].iloc[0]
     assert row["empirical_coverage"] < 0.05
@@ -60,7 +59,6 @@ def test_joint_method_is_calibrated_only_under_ideal_conditions():
     joint_ideal = ideal.loc[ideal["method"].eq("joint_centered_resample")].iloc[0]
     assert joint_ideal["empirical_coverage"] == pytest.approx(0.80, abs=0.03)
 
-    # Independent-normal summation ignores positive dependence and undercovers.
     correlated = simulate_scenario(
         _scenario(corridor_correlation=0.5, n_placebo_draws=2000),
         n_replications=4000,
@@ -75,7 +73,6 @@ def test_realistic_design_has_no_method_reaching_nominal_coverage():
     realistic = grid.loc[grid["scenario"].eq("realistic_design_nine_draws")]
     assert len(realistic) == len(BASIN_INTERVAL_METHODS)
     assert not realistic["meets_nominal_coverage"].any()
-    # The closest method still falls short of the 0.80 nominal target.
     assert realistic["empirical_coverage"].max() < 0.77
 
 

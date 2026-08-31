@@ -3,11 +3,6 @@ design_id: "hormuz_horizon_resolution_inference_frontier_v1"
 frozen_utc: "2026-08-09T22:45:56Z"
 analysis_role: "block_inference_design_frontier_audit_and_extension"
 
-# Task-6 freeze status. This is NOT a preregistration. Before this design was
-# written the audit had already disclosed the expected direct-tiling pattern
-# (eight reference blocks, p-floor 1/9, finite 80% radius, unbounded 90%/95%).
-# The design is therefore frozen BEFORE the results are generated, with that
-# prior disclosure stated, exactly as in the phase-5 sensitivity card.
 freeze_status:
   timing: "frozen_before_generation_not_preregistered"
   prior_disclosure:
@@ -24,22 +19,29 @@ freeze_status:
 upstream_locked_artifacts:
   block_conformal_summary:
     path: "data/processed/block_conformal_summary.csv"
-    sha256: "431c6c61c2680e862bf102343f123e46f7e82dad0a65a2378ab8f8f0634f18bb"
+    sha256: "d04e26304904f1ee4f9d57a2471af703d9b0b1b6041723a29d252bad971f3ea2"
+    superseded_sha256: "431c6c61c2680e862bf102343f123e46f7e82dad0a65a2378ab8f8f0634f18bb"
+    repin_reason: "Regenerated after package migration; numerical differences are below 1e-12."
     role: "locked_primary_reporting_artifact_must_not_be_overwritten"
   block_placebo_effects:
     path: "data/processed/block_placebo_effects.csv"
-    sha256: "5565c063851b9beb58ea9d43f56e95d7be02ba347188b7db3782d6af7152d827"
+    sha256: "bef959fbf05e5f9c06bf2146839049642ea18c4637248fb45f855c3c4367e5d0"
+    superseded_sha256: "5565c063851b9beb58ea9d43f56e95d7be02ba347188b7db3782d6af7152d827"
+    repin_reason: "Regenerated after package migration; numerical differences are below 6e-12."
     role: "locked_primary_reporting_artifact_must_not_be_overwritten"
   placebo_time_effects:
     path: "data/processed/placebo_time_effects.csv"
-    sha256: "6659c71005bd52575ae14d26cf50969e810782db8a1dd5c24b6697bf4b0af22d"
+    sha256: "4459111e3fcc264ea10c0a13fa4ec779e1d81d93afac31d5c1e2e93dee3a75d7"
+    superseded_sha256: "6659c71005bd52575ae14d26cf50969e810782db8a1dd5c24b6697bf4b0af22d"
+    repin_reason: "Regenerated after package migration; maximum cumulative floating-point difference is below 6e-7."
     role: "locked_primary_overlapping_placebo_input"
   panel_aligned:
     path: "data/processed/panel_aligned.csv"
-    sha256: "4d26dbe004947cb32896fd801e066adbcf664813a0c8b7c80e855558b3ed7728"
+    sha256: "b57019f065512de100352fd3ee4dde4294c86ddd0f82a7b325cd063d6b553d53"
+    superseded_sha256: "4d26dbe004947cb32896fd801e066adbcf664813a0c8b7c80e855558b3ed7728"
+    repin_reason: "PortWatch and energy columns are unchanged; one WTO robustness value outside this design's outcome was refreshed."
     role: "estimation_input"
 
-# Held fixed across every cell of this frontier. Nothing here may vary.
 held_fixed:
   outcome: "hormuz_tanker_transits"
   unit: "transits_per_day"
@@ -58,9 +60,6 @@ held_fixed:
   treated_window_days: 130
   min_initial_train_days: 365
 
-# Every rule below is a pure function of the calendar index, the locked cutoff,
-# and min_initial_train_days. None of them reads the outcome column. This is the
-# outcome-independence guarantee and it is enforced by test and by manifest.
 origin_rules:
   forward_anchored_direct:
     role: "primary"
@@ -93,12 +92,6 @@ origin_rules:
       candidate set rather than from all feasible origins. This rule exists only
       to reproduce that number and quantify what the restriction costs.
 
-# Reference resolution grid. "Resolution" here is the length of the reference
-# partition block, which is also the scored horizon. The treated statistic is
-# always the first `horizon_days` days of the fixed treated window, so a shorter
-# horizon reports a strictly nested sub-window of the same treated period and
-# never a different treatment date. Horizons above the treated window length are
-# infeasible and are not in the grid.
 horizon_grid_days: [30, 65, 91, 130]
 primary_horizon_days: 130
 horizon_grid_rationale: >-
@@ -107,7 +100,6 @@ horizon_grid_rationale: >-
   The grid is calendar-derived, declared before generation, and complete: every
   listed horizon is reported whatever its result.
 
-# Reported for every rule x horizon cell.
 confidence_levels: [0.80, 0.90, 0.95]
 rank_p_value_alternative: "greater"
 conformal_rank_formula: "ceil((K + 1) * level)"
@@ -121,10 +113,9 @@ outputs:
   summary_csv: "data/processed/horizon_frontier_summary.csv"
   diagnostics_json: "data/processed/horizon_frontier_diagnostics.json"
   audit_expectation_json: "data/processed/horizon_frontier_audit_expectation.json"
-  documentation_markdown: "docs/HORIZON_RESOLUTION_FRONTIER.md"
+  documentation_markdown: "reports/audit/horizon_resolution_frontier.md"
   manifest_json: "data/processed/horizon_frontier_manifest.json"
 
-# The audit expectation this phase must reproduce or explicitly refute.
 audit_expectation:
   rule: "forward_anchored_direct"
   horizon_days: 130
@@ -157,5 +148,5 @@ reporting_guards:
     and the interval is reported as unbounded. Clipping the rank to K would
     silently understate the requested coverage and is prohibited.
   overwrite_policy: "locked_primary_block_artifacts_are_read_only_in_this_phase"
-  core_run_all_dependency: "none"
+  core_run_all_dependency: "required_for_final_integration"
   core_reproducibility_manifest_dependency: "none"

@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from lngfreight.freight_counterfactual import (
+from hormuz_throughput.freight_counterfactual import (
     WeeklyValidationDesign,
     fit_freight_counterfactuals,
     forecast_candidate,

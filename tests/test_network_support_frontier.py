@@ -15,8 +15,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight import config
-from lngfreight import network_support as ns
+from hormuz_throughput import config
+from hormuz_throughput import network_support as ns
 
 from freeze_network_support_frontier import (
     assert_upstream_untouched,
@@ -106,9 +106,6 @@ def _synthetic_legs() -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
-# --------------------------------------------------------------------------
-# Cohort algebra
-# --------------------------------------------------------------------------
 
 
 def test_cohorts_partition_the_resolved_panel():
@@ -139,9 +136,6 @@ def test_missing_leg_columns_are_rejected():
         ns.cohort_mask(legs, "hormuz_crossing")
 
 
-# --------------------------------------------------------------------------
-# Denominator discipline
-# --------------------------------------------------------------------------
 
 
 def test_overall_denominator_is_always_emitted():
@@ -218,12 +212,10 @@ def test_thin_pre_period_denominators_are_flagged():
     change = ns.support_change(frame, thin_denominator_threshold=10).set_index(
         "cohort"
     )
-    # 20 pre sequences overall -> not thin; 3 inside-Hormuz non-crossing -> thin.
     assert bool(change.loc["all_resolved", "pre_denominator_is_thin"]) is False
     assert bool(
         change.loc["inside_hormuz_non_crossing", "pre_denominator_is_thin"]
     ) is True
-    # 10 Hormuz-crossing pre sequences sit exactly on the inclusive boundary.
     assert bool(change.loc["hormuz_crossing", "pre_denominator_is_thin"]) is True
 
     strict = ns.support_change(frame, thin_denominator_threshold=0).set_index("cohort")
@@ -275,9 +267,6 @@ def test_retention_and_contrast_arithmetic():
     assert bool(contrast["selective_support_loss_exceeds_general"]) is True
 
 
-# --------------------------------------------------------------------------
-# Corruption tests: the guards must fire
-# --------------------------------------------------------------------------
 
 
 def _valid_denominators() -> pd.DataFrame:
@@ -383,9 +372,6 @@ def test_audit_expectation_detects_a_refutation():
     assert audit["checks"]["all_resolved_pre_sequences"]["reproduced"] is True
 
 
-# --------------------------------------------------------------------------
-# Frozen design contract
-# --------------------------------------------------------------------------
 
 
 def test_design_freezes_the_three_radii_and_a_primary():
@@ -408,9 +394,6 @@ def test_design_forbids_causal_and_ais_dark_throughput_claims():
     assert "NOT evidence that no ship sailed" in guards["missing_edge_interpretation"]
 
 
-# --------------------------------------------------------------------------
-# Generated artifacts
-# --------------------------------------------------------------------------
 
 
 @needs_upstream
@@ -519,7 +502,7 @@ def test_manifest_matches_its_live_rebuild():
     assert written["ais_dark_throughput_inferred"] is False
     assert written["audit_expectation_fully_reproduced"] is True
     assert written["verification_state"] == "NEEDS-VERIFY"
-    assert written["core_run_all_dependency"] == "none"
+    assert written["core_run_all_dependency"] == "required_for_final_integration"
 
 
 @needs_outputs
@@ -536,5 +519,4 @@ def test_resolved_legs_reuse_the_exposure_definition_at_every_radius():
     for radius in design["terminal_radius_km_grid"]:
         legs = resolved_legs(design, voyages, terminals, int(radius))
         assert legs["terminal_match_radius_km"].eq(int(radius)).all()
-        # hormuz_exposed_leg is a strict subset of Gulf-origin sequences.
         assert legs.loc[legs["hormuz_exposed_leg"], "inside_hormuz_origin"].all()

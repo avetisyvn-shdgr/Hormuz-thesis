@@ -4,8 +4,8 @@ import pandas as pd
 import pytest
 
 
-from lngfreight import config
-from lngfreight.synthetic import (  # noqa: E402
+from hormuz_throughput import config
+from hormuz_throughput.synthetic import (  # noqa: E402
     fit_simplex_weights,
     post_pre_ratio,
     project_to_simplex,

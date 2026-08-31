@@ -19,14 +19,13 @@ import pandas as pd
 import pytest
 
 
-from lngfreight.validation import (
+from hormuz_throughput.validation import (
     rolling_origin_splits,
     resolve_cutoff,
     summary,
 )
 
 
-# Explicit policy so these tests never depend on settings.yaml drift.
 def _settings(scheme="expanding", initial=100, horizon=20, step=20,
               sliding=100, max_folds=None, cutoff="2024-01-01"):
     return {
@@ -46,9 +45,6 @@ def _index(start="2022-01-01", periods=800):
     return pd.date_range(start, periods=periods, freq="D", name="date")
 
 
-# --------------------------------------------------------------------------
-# Guard 1: chronological order, no train/test overlap
-# --------------------------------------------------------------------------
 def test_test_fold_strictly_after_train():
     folds = rolling_origin_splits(_index(), _settings())
     assert folds, "expected at least one fold"
@@ -57,9 +53,6 @@ def test_test_fold_strictly_after_train():
         assert np.intersect1d(f.train_idx, f.test_idx).size == 0
 
 
-# --------------------------------------------------------------------------
-# Guard 2: nothing reaches the treatment cutoff
-# --------------------------------------------------------------------------
 def test_no_fold_crosses_treatment_cutoff():
     s = _settings(cutoff="2024-01-01")
     idx = _index()
@@ -68,7 +61,6 @@ def test_no_fold_crosses_treatment_cutoff():
     for f in folds:
         assert f.test_end < cut
         assert f.train_end < cut
-    # And no positional index points at an on/after-cutoff row.
     post = np.flatnonzero(idx >= cut)
     for f in folds:
         assert np.intersect1d(f.test_idx, post).size == 0
@@ -94,15 +86,11 @@ def test_cutoff_auto_requires_locked_primary_cutoff():
         resolve_cutoff(s)
 
 
-# --------------------------------------------------------------------------
-# Scheme mechanics
-# --------------------------------------------------------------------------
 def test_expanding_train_grows():
     folds = rolling_origin_splits(_index(), _settings(scheme="expanding"))
     sizes = [len(f.train_idx) for f in folds]
     assert sizes == sorted(sizes)
     assert sizes[-1] > sizes[0]
-    # Expanding => every fold shares the same train_start.
     assert len({f.train_start for f in folds}) == 1
 
 
@@ -110,7 +98,7 @@ def test_sliding_train_fixed_length():
     folds = rolling_origin_splits(
         _index(), _settings(scheme="sliding", sliding=100))
     sizes = {len(f.train_idx) for f in folds}
-    assert sizes == {100}  # daily contiguous, fixed window
+    assert sizes == {100}
 
 
 def test_max_folds_caps_count():
@@ -125,11 +113,7 @@ def test_step_controls_origin_advance():
     assert gaps == {20}
 
 
-# --------------------------------------------------------------------------
-# Fail loudly, never silently
-# --------------------------------------------------------------------------
 def test_too_short_history_raises():
-    # 50 days of history but need initial(100)+horizon(20) before the cutoff.
     short = pd.date_range("2023-11-12", periods=50, freq="D", name="date")
     with pytest.raises(ValueError, match="too short"):
         rolling_origin_splits(short, _settings(initial=100, horizon=20))
@@ -157,9 +141,6 @@ def test_unsorted_index_is_rejected_before_positional_folds_are_built():
         rolling_origin_splits(unsorted, _settings())
 
 
-# --------------------------------------------------------------------------
-# Summary helper
-# --------------------------------------------------------------------------
 def test_summary_shape_matches_folds():
     folds = rolling_origin_splits(_index(), _settings())
     tbl = summary(folds)

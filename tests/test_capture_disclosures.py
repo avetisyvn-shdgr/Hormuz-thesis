@@ -5,7 +5,7 @@ from ingest_importer_customs_snapshots import (
     source_payloads,
 )
 
-from lngfreight import config
+from hormuz_throughput import config
 
 
 def test_importer_capture_disclosures_are_machine_readable_and_in_sync():
@@ -26,17 +26,38 @@ def test_importer_capture_disclosures_are_machine_readable_and_in_sync():
 
 def test_future_india_capture_identifies_the_research_script():
     user_agent = UA["User-Agent"]
-    assert "TUM-LNG-Freight-Thesis" in user_agent
+    assert "TUM-Hormuz-Throughput-Thesis" in user_agent
     assert "Mozilla" not in user_agent
 
 
-def test_central_limitations_cover_all_four_unverifiable_capture_classes():
-    text = (config.ROOT / "docs/DATA_SOURCES.md").read_text(encoding="utf-8")
-    for label in (
-        "Korea KCS importer table",
-        "China GACC importer table",
-        "India DGCI&S Tradestat table",
-        "Q-Flex 31-vessel benchmark",
-    ):
-        assert label in text
-    assert "does not affect the independently frozen PortWatch primary outcome" in text
+def test_registry_covers_all_four_unverifiable_capture_classes():
+    expected = {
+        "korea_lng_by_origin_snapshot": {
+            "original_rendered_response",
+            "query_receipt",
+            "contemporaneous_terms_capture",
+        },
+        "china_lng_by_origin_snapshot": {
+            "surrounding_html",
+            "query_receipts",
+            "contemporaneous_terms_capture",
+        },
+        "india_lng_by_origin_snapshot": {
+            "original_response_html",
+            "response_headers",
+            "contemporaneous_terms_capture",
+        },
+        "qflex_vessel_benchmark_snapshot": {
+            "source_documents",
+            "page_extracts",
+            "transcription_log",
+        },
+    }
+    registry = config.registry()
+    for variable, missing_evidence in expected.items():
+        audit = registry[variable]["auditability"]
+        assert audit["frozen_artifact_hash_verifiable"] is True
+        assert audit["original_source_response_reconstructible"] is False
+        assert set(audit["missing_evidence"]) == missing_evidence
+        assert audit["evidence_role"] == "extension_only"
+        assert audit["affects_portwatch_primary"] is False

@@ -8,7 +8,7 @@ Run from the repository root:
     python scripts/render_thesis_figures.py
     python scripts/render_thesis_figures.py --list
     python scripts/render_thesis_figures.py --check
-    python scripts/render_thesis_figures.py --figure 6.1 --figure 6.2
+    python scripts/render_thesis_figures.py --figure 4.1 --figure 5.1
 """
 from __future__ import annotations
 
@@ -40,10 +40,34 @@ FIGURES = (
         "make_event_study.py",
     ),
     FigureSpec(
-        "6.1",
+        "4.1",
+        "Research design and evidence hierarchy",
+        "research_design_evidence_hierarchy",
+        "make_research_design_figure.py",
+    ),
+    FigureSpec(
+        "5.1",
         "Observed versus AR counterfactual throughput",
         "run_actual_vs_counterfactual",
         "make_run_output.py",
+    ),
+    FigureSpec(
+        "5.2",
+        "Cumulative shortfall and endpoint uncertainty",
+        "chapter5_cumulative_shortfall_uncertainty",
+        "make_chapter5_figures.py",
+    ),
+    FigureSpec(
+        "5.3",
+        "LNG and shipping-network adaptation synthesis",
+        "chapter5_adaptation_synthesis",
+        "make_chapter5_figures.py",
+    ),
+    FigureSpec(
+        "5.4",
+        "Falsification and robustness synthesis",
+        "chapter5_robustness_synthesis",
+        "make_chapter5_figures.py",
     ),
     FigureSpec(
         "6.2",
@@ -115,7 +139,9 @@ FIGURES = (
 
 GENERATOR_ORDER = (
     "make_event_study.py",
+    "make_research_design_figure.py",
     "make_run_output.py",
+    "make_chapter5_figures.py",
     "make_mechanism_summary.py",
     "make_route_map.py",
     "make_network_rewiring_summary.py",
@@ -126,7 +152,7 @@ GENERATOR_ORDER = (
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Render all 13 final manuscript figures, or a selected subset, "
+            "Render all 17 manuscript evidence figures, or a selected subset, "
             "from the repository's processed artifacts."
         )
     )
@@ -170,7 +196,7 @@ def _run_generators(figures: tuple[FigureSpec, ...]) -> None:
     needed = {figure.generator for figure in figures}
     env = os.environ.copy()
     env.setdefault("MPLBACKEND", "Agg")
-    env.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
+    env.setdefault("MPLCONFIGDIR", "/tmp/hormuz_throughput-matplotlib")
     env.setdefault("PYTHONHASHSEED", "0")
 
     for generator in GENERATOR_ORDER:

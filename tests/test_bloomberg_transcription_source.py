@@ -6,8 +6,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from lngfreight.registry import _resolve_entry
-from lngfreight.sources.bloomberg_transcription import BloombergTranscriptionSource
+from hormuz_throughput.registry import _resolve_entry
+from hormuz_throughput.sources.bloomberg_transcription import BloombergTranscriptionSource
 
 
 def _manifest(tmp_path: Path, digest: str = "0" * 64) -> dict:
@@ -82,7 +82,7 @@ def test_restricted_registry_status_resolves_primary_without_becoming_free():
     assert backend["code"] == "x"
     assert channel == "primary"
     assert "fearnleys_lng_spot_east_suez" not in __import__(
-        "lngfreight.panel", fromlist=["free_variables"]
+        "hormuz_throughput.panel", fromlist=["free_variables"]
     ).free_variables()
 
 

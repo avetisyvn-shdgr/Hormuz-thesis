@@ -1,0 +1,28 @@
+{
+  "checks": {
+    "all_resolved_post_sequences": {
+      "expected": 746,
+      "observed": 746,
+      "reproduced": true
+    },
+    "all_resolved_pre_sequences": {
+      "expected": 971,
+      "observed": 971,
+      "reproduced": true
+    },
+    "hormuz_crossing_post_sequences": {
+      "expected": 2,
+      "observed": 2,
+      "reproduced": true
+    },
+    "hormuz_crossing_pre_sequences": {
+      "expected": 145,
+      "observed": 145,
+      "reproduced": true
+    }
+  },
+  "definition_note": "A Hormuz-crossing sequence is a resolved liquefaction-to-regasification sequence whose origin is a registered Gulf export project AND whose modeled route transits the strait. This is the hormuz_exposed_leg flag already used by the importer/basin exposure layer. Counting every resolved sequence whose modeled route merely transits Hormuz gives 152 pre-period sequences instead of 145; the seven extra sequences originate outside the registered Gulf export projects (Oman Qalhat, Nigeria, Sabine Pass) and are reported in the non_gulf cohort.",
+  "fully_reproduced": true,
+  "support_note": "These are counts of modeled sequences that remain resolvable in the panel. They are not voyage counts, not cargo, and not evidence that unobserved sequences did not occur.",
+  "terminal_radius_km": 30
+}

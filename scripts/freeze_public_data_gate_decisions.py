@@ -18,7 +18,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 from run_public_data_gate_decisions import (  # noqa: E402
     DESIGN_PATH,
     build_diagnostics,
@@ -55,8 +55,6 @@ def rebuild(design: dict, design_sha256: str) -> tuple:
 
 def validate_written_outputs(design: dict, design_sha256: str) -> None:
     table, diagnostics, markdown = rebuild(design, design_sha256)
-    # keep_default_na=False so the not_applicable sentinel survives the round
-    # trip as a string rather than becoming NaN.
     written_table = pd.read_csv(
         output_path(design, "decision_table_csv"), keep_default_na=False
     )
@@ -97,10 +95,10 @@ def build_manifest() -> dict:
         "analysis_role": design["analysis_role"],
         "status": "governance_decision_artifact_no_acquisition",
         "verification_state": "NEEDS-VERIFY",
-        "human_verification_record": "docs/DECISION_LOG.md",
+        "verification_record": "reports/reproducibility_run_transcript.txt",
         "design_sha256": design_sha256,
         "freeze_status": design["freeze_status"]["timing"],
-        "core_run_all_dependency": "none",
+        "core_run_all_dependency": "required_for_final_integration",
         "core_reproducibility_manifest_dependency": "none",
         "input_sha256": {
             _relative(path): sha256_file(path) for path in input_paths.values()

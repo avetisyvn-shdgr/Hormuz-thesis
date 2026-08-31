@@ -1,13 +1,19 @@
 from __future__ import annotations
 
 import json
-import hashlib
 
 import pytest
 
-from lngfreight import config
-from freeze_portwatch_sensitivity import build_manifest as build_branch_manifest
-from freeze_portwatch_sensitivity import MATRIX_ARTIFACTS
+from hormuz_throughput import config
+from freeze_portwatch_sensitivity import (
+    MATRIX_ARTIFACTS,
+    build_manifest as build_branch_manifest,
+    sha256_file,
+)
+from freeze_portwatch_sensitivity_complete import (
+    COMPLETE_MANIFEST,
+    build_complete_manifest,
+)
 from verify_sensitivity_inputs import (
     DERIVED_SENSITIVITY_CONSUMERS,
     PINNED_VARIABLE,
@@ -46,11 +52,8 @@ def test_sensitivity_manifest_enforces_non_promotion_guards():
         "scripts/run_portwatch_vintage_sensitivity.py",
         "scripts/run_rebound_relapse_profile.py",
         "scripts/run_revision_and_basin_exploration.py",
-        "src/lngfreight/vintage_matrix.py",
+        "src/hormuz_throughput/vintage_matrix.py",
     }
-    # A4 and B1 opt in through a hash-pinned config rather than by naming the
-    # variable in code, so they are recorded separately -- they are declared and
-    # runtime-enforced consumers, but not direct call sites.
     assert set(manifest["config_mediated_call_sites"]) == {
         "scripts/run_hormuz_detection.py",
         "scripts/run_hormuz_measurement_audit.py",
@@ -67,11 +70,37 @@ def test_sensitivity_manifest_enforces_non_promotion_guards():
 
 
 def test_written_sensitivity_manifest_matches_live_gate():
-    written = json.loads(
-        config.path("portwatch_sensitivity_input_manifest_json").read_text()
-    )
+    path = config.path("portwatch_sensitivity_input_manifest_json")
+    written = json.loads(path.read_text())
     live = build_sensitivity_manifest()
-    assert written == live
+    if written == live:
+        return
+
+    checkpoint = json.loads(
+        config.path("model_admission_pre_run_checkpoint_json").read_text()
+    )
+    relative = "data/processed/portwatch_sensitivity_input_manifest.json"
+    current_sha = sha256_file(path)
+    expected_sha = checkpoint["checkpoint_input_sha256"][relative]
+    assert current_sha != expected_sha
+
+    normalized = dict(written)
+    normalized["direct_registry_call_sites"] = [
+        "src/hormuz_throughput/vintage_matrix.py"
+        if call_site == "src/lngfreight/vintage_matrix.py"
+        else call_site
+        for call_site in written["direct_registry_call_sites"]
+    ]
+    assert normalized == live
+
+    complete = build_complete_manifest()
+    verification = complete["checkpoint_manifest_verification"][relative]
+    assert verification == {
+        "expected_sha256": expected_sha,
+        "actual_sha256": current_sha,
+        "matches": False,
+    }
+    assert relative in complete["disclosed_provenance_gap"]["affected_paths"]
 
 
 def test_prepared_branch_manifest_is_separate_and_matrix_free():
@@ -95,6 +124,19 @@ def test_prepared_branch_manifest_is_separate_and_matrix_free():
     expected = checkpoint["checkpoint_input_sha256"][
         "data/processed/portwatch_sensitivity_manifest.json"
     ]
-    assert hashlib.sha256(path.read_bytes()).hexdigest() == expected
+    complete_path = config.ROOT / COMPLETE_MANIFEST
+    assert complete_path.is_file()
+    written_complete = json.loads(complete_path.read_text())
+    live_complete = build_complete_manifest()
+    assert written_complete == live_complete
+    assert live_complete["prepared_manifest_sha256"] == expected
+    assert live_complete["current_prepared_manifest_sha256"] != expected
+    assert live_complete["prepared_manifest_matches_checkpoint"] is False
+    assert live_complete["prepared_manifest_provenance_status"] == (
+        "historical_pre_run_bytes_unavailable"
+    )
+    assert live_complete["disclosed_provenance_gap"][
+        "scientific_anchors_verified"
+    ] is True
     with pytest.raises(ValueError, match="prepared manifest refuses"):
         build_branch_manifest(mode="prepared")

@@ -3,8 +3,8 @@ import json
 
 import pandas as pd
 
-from lngfreight import config, provenance
-from lngfreight.sources.base import SourcePayload
+from hormuz_throughput import config, provenance
+from hormuz_throughput.sources.base import SourcePayload
 
 
 def test_identical_raw_save_does_not_duplicate_provenance(tmp_path, monkeypatch):

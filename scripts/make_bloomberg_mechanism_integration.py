@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import sys
 
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/hormuz_throughput-matplotlib")
 
 import matplotlib  # noqa: E402
 matplotlib.use("Agg")
@@ -17,8 +17,8 @@ import pandas as pd  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.freight_integration import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.freight_integration import (  # noqa: E402
     build_freight_mechanism_integration,
 )
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -30,7 +30,7 @@ from figure_style import (  # noqa: E402
 )
 
 PDF_METADATA = {
-    "Creator": "lngfreight reproducible pipeline",
+    "Creator": "hormuz_throughput reproducible pipeline",
     "CreationDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
     "ModDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
 }
@@ -41,7 +41,6 @@ def _plot(panel: pd.DataFrame, cutoff: str) -> None:
     panel = panel.copy()
     panel["week_end"] = pd.to_datetime(panel["week_end"])
     fig, axes = plt.subplots(2, 2, figsize=(FIGURE_WIDTH_IN, 5.2), sharex=True)
-    # No in-figure headline title: the LaTeX caption carries it in the thesis.
     ax = axes[0, 0]
     ax.plot(panel["week_end"], panel["portwatch_tanker_transits_observed_daily_mean"], color="#2F6690", label="Observed")
     ax.plot(panel["week_end"], panel["portwatch_tanker_transits_counterfactual_daily_mean"], color="#D17A22", linestyle="--", label="Counterfactual")

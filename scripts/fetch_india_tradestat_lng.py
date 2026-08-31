@@ -87,7 +87,7 @@ MEASURES = {"quantity": "2", "usd_million": "1"}
 CALENDAR_YEAR = "2"
 UA = {
     "User-Agent": (
-        "TUM-LNG-Freight-Thesis/1.0 "
+        "TUM-Hormuz-Throughput-Thesis/1.0 "
         "(non-commercial academic research; mher.avetisyan@tum.de)"
     )
 }
@@ -112,7 +112,6 @@ def _month_columns(frame: pd.DataFrame, month: int) -> dict[int, str]:
     Tradestat headers look like 'May-2025' / 'May-2026' (single month) next to
     cumulative 'Jan-May2025' columns; only the single-month ones are wanted."""
     out: dict[int, str] = {}
-    # Headers look like 'May-2026 (F)' — (F)/(P) marks final/provisional status.
     pattern = re.compile(rf"^{MONTH_NAMES[month]}\s*-\s*(\d{{4}})\s*(?:\([A-Z]\))?$")
     for col in map(str, frame.columns):
         m = pattern.match(col.strip())
@@ -156,7 +155,6 @@ def main() -> int:
 
     session = requests.Session()
     rows: list[dict] = []
-    # (query_year, months): 2025 pass covers 2024+2025; 2026 pass covers 2026.
     passes = [(2025, range(1, 13)), (2026, range(1, 7))]
     for measure_name, measure_code in MEASURES.items():
         for query_year, months in passes:
@@ -165,7 +163,7 @@ def main() -> int:
                 by_year = _month_columns(frame, month)
                 for cal_year, col in by_year.items():
                     if query_year == 2026 and cal_year == 2025:
-                        continue  # 2025 already captured by the 2025 pass
+                        continue
                     for _, rec in frame.iterrows():
                         country = str(rec["Country"]).strip()
                         if not country or country.lower().startswith(("total", "nan")):

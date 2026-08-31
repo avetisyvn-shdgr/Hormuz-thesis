@@ -1,0 +1,206 @@
+{
+  "analysis_role": "case_local_descriptive_sensitivity_budget",
+  "axes_are_additive": false,
+  "card_id": "portwatch_hormuz_sensitivity_budget_v1",
+  "cells": [
+    {
+      "august_lower_pct_of_pinned_shortfall": 20.255474452554736,
+      "august_minus_pinned_percentage_points": 0.319096052713604,
+      "august_shortfall_per_day": 43.7,
+      "august_shortfall_share_of_counterfactual_pct": 93.40677408747122,
+      "is_locked_primary_model": false,
+      "model": "seasonal_naive_7d",
+      "model_label": "Seasonal naive",
+      "pinned_minus_august_per_day": 11.099999999999994,
+      "pinned_shortfall_per_day": 54.8,
+      "pinned_shortfall_share_of_counterfactual_pct": 93.08767803475762,
+      "point_definition": "deterministic_daily_point"
+    },
+    {
+      "august_lower_pct_of_pinned_shortfall": 17.08022824844247,
+      "august_minus_pinned_percentage_points": 0.573316588749052,
+      "august_shortfall_per_day": 43.81350622973898,
+      "august_shortfall_share_of_counterfactual_pct": 93.42273149022826,
+      "is_locked_primary_model": true,
+      "model": "ar_lag1_7",
+      "model_label": "AR(1,7)",
+      "pinned_minus_august_per_day": 9.024924586269634,
+      "pinned_shortfall_per_day": 52.83843081600861,
+      "pinned_shortfall_share_of_counterfactual_pct": 92.84941490147921,
+      "point_definition": "deterministic_daily_point"
+    },
+    {
+      "august_lower_pct_of_pinned_shortfall": 17.111614012092634,
+      "august_minus_pinned_percentage_points": 0.589809281745246,
+      "august_shortfall_per_day": 42.17672494741586,
+      "august_shortfall_share_of_counterfactual_pct": 93.18487839293523,
+      "is_locked_primary_model": false,
+      "model": "chronos2",
+      "model_label": "Chronos-2",
+      "pinned_minus_august_per_day": 8.707032100970928,
+      "pinned_shortfall_per_day": 50.88375704838679,
+      "pinned_shortfall_share_of_counterfactual_pct": 92.59506911118999,
+      "point_definition": "daily_q0.5"
+    },
+    {
+      "august_lower_pct_of_pinned_shortfall": 19.058289623623164,
+      "august_minus_pinned_percentage_points": 0.446784925282714,
+      "august_shortfall_per_day": 40.16745715691507,
+      "august_shortfall_share_of_counterfactual_pct": 92.86828305937583,
+      "is_locked_primary_model": false,
+      "model": "bsts_local_level_weekly",
+      "model_label": "BSTS",
+      "pinned_minus_august_per_day": 9.457707631594396,
+      "pinned_shortfall_per_day": 49.625164788509466,
+      "pinned_shortfall_share_of_counterfactual_pct": 92.42149813409311,
+      "point_definition": "daily_marginal_posterior_median"
+    }
+  ],
+  "combined_budget_total": null,
+  "comparison_basis": {
+    "outcome": "hormuz_tanker_transits",
+    "primary_metric": {
+      "display_unit": "lost transits/day",
+      "formula": "cumulative_common_point_shortfall / n_scored_days",
+      "id": "mean_daily_common_point_shortfall"
+    },
+    "scored_days": 130,
+    "scoring_end": "2026-07-07",
+    "scoring_start": "2026-02-28",
+    "secondary_denominator_check": {
+      "between_cell_difference_unit": "percentage_points",
+      "denominator_scope": "cell_specific_model_counterfactual_point_sum",
+      "display_unit": "% of model counterfactual",
+      "formula": "100 * cumulative_common_point_shortfall / counterfactual_point_sum",
+      "id": "shortfall_share_of_counterfactual_pct",
+      "not_equivalent_to": "raw_observed_pre_post_decline",
+      "role": "descriptive_scale_context_only_not_budget_axis"
+    },
+    "training_end": "2026-02-27",
+    "training_start": "2022-01-01",
+    "unit": "transits_per_day"
+  },
+  "design_sha256": "2ac361334d37e9ece9991e230799f7a1c3995ac1e7d5d5d32431e7b8bb055ac6",
+  "mixed_information_challenge": {
+    "conditional_arx_comparable_same_information": false,
+    "conditional_arx_route_energy_value_per_day": 62.85785921606604,
+    "interpretation": "The absolute-scale headline is conditional on the selected same-observed-local-information rule. ARX uses observed post-cutoff covariates and answers a different conditional question.",
+    "mixed_information_pinned_range_per_day": 13.232694427556574,
+    "mixed_information_range_exceeds_maximum_selected_vintage_difference": true
+  },
+  "primary_absolute_axes": {
+    "cross_axis_reading": {
+      "ar_primary_difference_minus_pinned_model_range": 3.8500893747791025,
+      "ar_primary_difference_to_pinned_model_range_ratio": 1.7440023145529582,
+      "ar_primary_vintage_difference": 9.024924586269634,
+      "largest_within_vintage_model_range": 5.174835211490532,
+      "minimum_margin": 3.532196889480396,
+      "smallest_same_model_vintage_difference": 8.707032100970928,
+      "smallest_vintage_difference_exceeds_largest_model_range": true
+    },
+    "same_model_difference_across_vintages": {
+      "average_reported": false,
+      "direction": "pinned_primary_minus_vintage_20260809",
+      "maximum": 11.099999999999994,
+      "maximum_model": "seasonal_naive_7d",
+      "minimum": 8.707032100970928,
+      "minimum_model": "chronos2"
+    },
+    "selected_model_range_within_vintage": [
+      {
+        "maximum": 54.8,
+        "maximum_model": "seasonal_naive_7d",
+        "maximum_model_label": "Seasonal naive",
+        "minimum": 49.625164788509466,
+        "minimum_model": "bsts_local_level_weekly",
+        "minimum_model_label": "BSTS",
+        "range": 5.174835211490532,
+        "unit": "transits_per_day",
+        "vintage": "pinned_primary",
+        "vintage_label": "Pinned July"
+      },
+      {
+        "maximum": 43.81350622973898,
+        "maximum_model": "ar_lag1_7",
+        "maximum_model_label": "AR(1,7)",
+        "minimum": 40.16745715691507,
+        "minimum_model": "bsts_local_level_weekly",
+        "minimum_model_label": "BSTS",
+        "range": 3.6460490728239066,
+        "unit": "transits_per_day",
+        "vintage": "vintage_20260809",
+        "vintage_label": "August"
+      }
+    ]
+  },
+  "reporting_guards": {
+    "admission_timing": "ex_post_unblinded_governance_lock",
+    "all_preperiod_admitted_model_range": "not_estimated",
+    "causal_label": "counterfactual_forecast_shortfall_not_treatment_effect",
+    "is_ATT": false,
+    "is_all_admissible_model_range": false,
+    "is_general_AIS_claim": false,
+    "is_uncertainty_interval": false,
+    "is_variance_decomposition": false,
+    "replication_archive_status": "pending_deposit_gitignored_august_source_bytes",
+    "vintage_scope": "full_saved_series_measurement_state_affecting_training_and_scoring"
+  },
+  "schema_version": 1,
+  "secondary_normalized_context": {
+    "all_cells_maximum_pct": 93.42273149022826,
+    "all_cells_minimum_pct": 92.42149813409311,
+    "denominator_scope": "cell_specific_model_counterfactual_point_sum",
+    "formula": "100 * cumulative_common_point_shortfall / counterfactual_point_sum",
+    "maximum_same_model_change_percentage_points": 0.5898092817452465,
+    "minimum_same_model_change_percentage_points": 0.3190960527136042,
+    "not_equivalent_to": "raw_observed_pre_post_decline",
+    "role": "descriptive_scale_context_only_not_budget_axis",
+    "same_model_change_direction": "august_minus_pinned_percentage_points",
+    "within_vintage_model_ranges": [
+      {
+        "maximum": 93.08767803475762,
+        "maximum_model": "seasonal_naive_7d",
+        "maximum_model_label": "Seasonal naive",
+        "minimum": 92.42149813409311,
+        "minimum_model": "bsts_local_level_weekly",
+        "minimum_model_label": "BSTS",
+        "range": 0.6661799006645026,
+        "unit": "percentage_points",
+        "vintage": "pinned_primary",
+        "vintage_label": "Pinned July"
+      },
+      {
+        "maximum": 93.42273149022826,
+        "maximum_model": "ar_lag1_7",
+        "maximum_model_label": "AR(1,7)",
+        "minimum": 92.86828305937583,
+        "minimum_model": "bsts_local_level_weekly",
+        "minimum_model_label": "BSTS",
+        "range": 0.5544484308524318,
+        "unit": "percentage_points",
+        "vintage": "vintage_20260809",
+        "vintage_label": "August"
+      }
+    ]
+  },
+  "selected_representative_models": [
+    "seasonal_naive_7d",
+    "ar_lag1_7",
+    "chronos2",
+    "bsts_local_level_weekly"
+  ],
+  "source": {
+    "complete_branch_manifest_sha256": "37f375fd51970fcf3115e62756e48cde276a94daec88fe1af961bce7d91490f6",
+    "matrix_manifest_sha256": "5ce058448b8e87fabb054919e2df396b02a15a9a5c0e5a12a1a2a8f04a69c2fc",
+    "matrix_summary_path": "data/processed/model_vintage_matrix_summary.csv",
+    "matrix_summary_sha256": "15a6e02eb812446d3482e0a4722c3f770a92e82e9828fc9ff1bebef457945917",
+    "upstream_matrix_g4": {
+      "local_date": "2026-08-10",
+      "status": "verified",
+      "transcript_sha256": "f35137526a1e106d6adc5f6eff42a8f63d317ccce2665e7851fb5c703fedf40b"
+    }
+  },
+  "status": "generated_reproducibility_artifact",
+  "verification_record": "reports/reproducibility_run_transcript.txt",
+  "vintage_averaging": "prohibited_and_not_performed"
+}

@@ -1,7 +1,7 @@
 """Backward-compatible alias for the unified TSFM benchmark, Chronos-2 only.
 
 The benchmark logic now lives in the shared, leakage-safe harness
-(``src/lngfreight/tsfm.py``) and the unified runner
+(``src/hormuz_throughput/tsfm.py``) and the unified runner
 (``scripts/run_tsfm_benchmark.py``), so all three foundation models share one
 fold geometry and one scorer. This thin wrapper preserves the originally
 documented command:

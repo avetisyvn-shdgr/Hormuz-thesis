@@ -7,7 +7,7 @@ ever be admitted for, the rights and coverage it would need, and the criteria
 that would kill it.
 
 The table cannot itself admit anything. Every candidate carries a non-GO status,
-and a GO requires Mher's explicit written scope reopening recorded in the
+and a GO requires the thesis author's explicit written scope reopening in the
 decision log before any acquisition.
 
 Deliberately imports no HTTP client. The integrity pins verify that the source
@@ -29,7 +29,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 
 
 DESIGN_PATH = config.CONFIG_DIR / "public_data_gate_decisions.yaml"
@@ -112,8 +112,6 @@ def build_table(design: dict) -> pd.DataFrame:
             "estimand_relevance": " ".join(spec["estimand_relevance"].split()),
             "kill_criteria_count": len(kill),
             "kill_criteria": " | ".join(kill),
-            # Explicit sentinel rather than an empty string: "" round-trips
-            # through CSV as NaN and would silently weaken the NO_GO check.
             "blocking_reason": " ".join(
                 spec.get("blocking_reason", "").split()
             ) or NOT_APPLICABLE,
@@ -202,7 +200,7 @@ def render_markdown(design: dict, diagnostics: dict, table: pd.DataFrame) -> str
     add(f"**Design id:** `{design['design_id']}`  ")
     add(f"**Design SHA-256:** `{diagnostics['design_sha256']}`  ")
     add(f"**Frozen (UTC):** {design['frozen_utc']}  ")
-    add("**Verification status:** `NEEDS-VERIFY` until Mher runs the G4 commands.")
+    add("**Verification status:** `NEEDS-VERIFY` until the complete pipeline is run.")
     add("")
     add(
         "This is a **governance decision table**, not an empirical phase. "
@@ -213,7 +211,7 @@ def render_markdown(design: dict, diagnostics: dict, table: pd.DataFrame) -> str
     add("")
     add(
         f"All {diagnostics['n_candidates']} candidates carry a non-GO status and "
-        "all require an explicit written scope reopening by Mher, recorded in "
+        "all require an explicit written scope reopening by the thesis author, recorded in "
         "`DECISION_LOG.md` **before** any acquisition."
     )
     add("")
@@ -323,8 +321,8 @@ def main() -> int:
     print(" - No dataset was downloaded, registered, or analysed.")
     print(" - The source registry is hash-verified unchanged at 53 variables.")
     print(" - The accepted no-third-layer plan is preserved.")
-    print(" - Admission requires Mher's explicit written scope reopening.")
-    print(" - This is NEEDS-VERIFY until Mher records the G4 output.")
+    print(" - Admission requires the thesis author's explicit written scope reopening.")
+    print(" - This is NEEDS-VERIFY until the complete pipeline transcript is retained.")
     return 0
 
 

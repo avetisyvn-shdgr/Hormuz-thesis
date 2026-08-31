@@ -1,0 +1,88 @@
+{
+  "analysis_role": "final_integration_stale_claim_and_citation_audit",
+  "by_category": {
+    "ais_dark": {
+      "cleared": 2,
+      "flagged": 0
+    },
+    "causal_language": {
+      "cleared": 10,
+      "flagged": 0
+    },
+    "physical_rerouting": {
+      "cleared": 6,
+      "flagged": 0
+    },
+    "sensitivity_framing": {
+      "cleared": 2,
+      "flagged": 0
+    }
+  },
+  "claims": 8,
+  "claims_with_existing_artifact": 8,
+  "defence_challenges_prepared": 5,
+  "design_id": "final_evidence_to_claim_integration_audit_v1",
+  "design_sha256": "f98b0f1a3fc5e0483431b73890ff618a29b797efb81ec97df9fdca6d19be3330",
+  "documents_scanned": 9,
+  "excluded_paths": [
+    "reports/audit/final_evidence_to_claim_audit.md",
+    "reports/audit/defence_preparation.md"
+  ],
+  "flagged_paths": [],
+  "formal_proposal_edited": false,
+  "freeze_status": "frozen_final_integration_pass",
+  "open_reproducibility_boundaries": {
+    "august_raw_byte_archive": "OPEN",
+    "core_run_manifest_refresh": "CONTROLLED_BY_RUN_ALL",
+    "historical_source_payload_gaps": "OPEN_AND_DISCLOSED"
+  },
+  "publication_assets": {
+    "declared_png_only_diagnostics": [
+      "all_corridor_ranking",
+      "bsts_counterfactual",
+      "bsts_pre_period_ppc",
+      "cape_residual_drift",
+      "lng_index_counterfactual",
+      "redsea_positive_control"
+    ],
+    "figure_pairs_complete": true,
+    "figures_missing_pdf_undeclared": [],
+    "figures_pdf": 26,
+    "figures_png": 32,
+    "missing_optional_manifests": [],
+    "optional_manifests_present": true
+  },
+  "reporting_guards": {
+    "core_reproducibility_manifest_dependency": "none",
+    "core_run_all_dependency": "required",
+    "five_percent_significance_claim_permitted": false,
+    "formal_proposal_edited": false,
+    "is_ATT": false,
+    "is_causal_identification": false,
+    "portwatch_and_wto_layers_must_stay_distinct": true,
+    "restricted_material_included": false
+  },
+  "restricted_material_included": false,
+  "source_layer_confusion_flagged": 0,
+  "source_layers": [
+    "governance",
+    "modeled_vessel_branch",
+    "portwatch_all_tanker",
+    "wto_lng_specific"
+  ],
+  "stale_claim_occurrences": 20,
+  "stale_claims_cleared": 20,
+  "stale_claims_flagged": 0,
+  "uncited_numeric_lines": {
+    "reports/audit/horizon_resolution_frontier.md": 31,
+    "reports/audit/network_support_frontier.md": 32,
+    "reports/audit/portwatch_sensitivity_budget_card.md": 13,
+    "reports/audit/public_data_gate_decisions.md": 8,
+    "reports/audit/route_burden_decomposition.md": 26,
+    "reports/current_results_summary.md": 28,
+    "reports/mechanism_results_summary.md": 13,
+    "reports/network_rewiring_summary.md": 14,
+    "reports/run_output.md": 30,
+    "reports/transmission_chain_summary.md": 7
+  }
+}

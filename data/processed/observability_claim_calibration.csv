@@ -3,7 +3,7 @@ tolerated_dark_rate,model,target,strongest_surviving_claim,binding_scenario,bind
 0.1,ar_lag1_7,hormuz_tanker_transits,0.75,conformal_0.80_lower,0.630575283698656,True
 0.2,ar_lag1_7,hormuz_tanker_transits,0.75,conformal_0.80_lower,0.630575283698656,True
 0.3,ar_lag1_7,hormuz_tanker_transits,0.75,conformal_0.80_lower,0.630575283698656,True
-0.05,ar_lag1_7,hormuz_tanker_capacity,0.9,bootstrap_block_lower,0.053232397312615753,True
+0.05,ar_lag1_7,hormuz_tanker_capacity,0.9,bootstrap_block_lower,0.053232397312615864,True
 0.1,ar_lag1_7,hormuz_tanker_capacity,0.75,bootstrap_block_lower,0.6212929589250464,True
 0.2,ar_lag1_7,hormuz_tanker_capacity,0.75,bootstrap_block_lower,0.6212929589250464,True
 0.3,ar_lag1_7,hormuz_tanker_capacity,0.75,bootstrap_block_lower,0.6212929589250464,True

@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from lngfreight.vessel_days import (
+from hormuz_throughput.vessel_days import (
     add_elapsed_time_diagnostics,
     modeled_vessel_day_summary,
     vessel_day_pre_post_comparison,

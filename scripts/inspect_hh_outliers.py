@@ -15,10 +15,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight.registry import get_variable  # noqa: E402
+from hormuz_throughput.registry import get_variable  # noqa: E402
 
 HIGH, LOW = 25.0, 1.5
-CONTEXT = 3  # trading days either side
+CONTEXT = 3
 
 
 def main() -> None:

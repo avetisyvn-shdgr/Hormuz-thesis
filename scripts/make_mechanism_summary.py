@@ -7,7 +7,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/hormuz_throughput-matplotlib")
 
 import matplotlib  # noqa: E402
 matplotlib.use("Agg")
@@ -25,13 +25,13 @@ from figure_style import (  # noqa: E402
     apply_publication_style,
     style_axes,
 )
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 
 
 REPORT = "mechanism_results_summary.md"
 FIGURE = "mechanism_evidence_summary.png"
 PDF_METADATA = {
-    "Creator": "lngfreight reproducible pipeline",
+    "Creator": "hormuz_throughput reproducible pipeline",
     "CreationDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
     "ModDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
 }
@@ -70,10 +70,6 @@ def _save_figure(
         "gain": "#4F7C5B",
         "neutral": "#7A7A7A",
     }
-    # Colour is the evidence-layer encoding and carries one meaning throughout:
-    # observed aggregate index, inferred terminal sequence, modeled route work.
-    # The legend in panel A declares it so the caption's "kept separate" promise
-    # is delivered visually rather than only in prose.
     estimable = importer.loc[
         importer["pre_hormuz_exposed_voyages"].gt(0)
         & importer["country_hormuz_exposed_estimate_estimable"].eq(True)
@@ -87,16 +83,10 @@ def _save_figure(
         )
 
     apply_publication_style()
-    # Absolute placement rather than tight_layout: the shared-y row, the
-    # figure-level legend and the four-line footnote are not all compatible with
-    # automatic layout, and deterministic coordinates keep the output stable.
     fig = plt.figure(figsize=(THESIS_TEXTWIDTH_IN, 5.6))
     grid_top = fig.add_gridspec(
         1, 2, left=0.135, right=0.985, top=0.880, bottom=0.610, wspace=0.10
     )
-    # Leave a deliberate blank band below the two-line category labels in
-    # panels A and B.  Panel C keeps the same height but sits lower so that its
-    # heading and metric key cannot compete with the upper-row labels.
     grid_bottom = fig.add_gridspec(
         1, 1, left=0.135, right=0.985, top=0.425, bottom=0.225
     )
@@ -104,9 +94,6 @@ def _save_figure(
     ax_b = fig.add_subplot(grid_top[0, 1], sharey=ax_a)
     ax_c = fig.add_subplot(grid_bottom[0, 0])
 
-    # Panels A and B report the same unit, so they share one y-scale and one
-    # zero line. Independent scales here previously placed the two baselines at
-    # different heights while inviting a bar-height comparison across them.
     ax = ax_a
     labels = ["WTO outbound\nindex", "GFW Gulf\ncalls", "GFW nominal\ncapacity"]
     values_a = [
@@ -192,10 +179,6 @@ def _save_figure(
     )
     ax.set_yticks(y, ordered.index)
     ax.axvline(0, color="#333333", linewidth=0.8)
-    # Keep the metric key outside the data region.  Panel C needs both the
-    # figure-level evidence-layer key and a local mapping from those layers to
-    # its two measures, but an in-axes legend obscures the composition bars and
-    # competes with the destination labels.
     ax.set_title(
         "C. Destination-basin composition",
         loc="left",

@@ -34,10 +34,10 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight import horizon_frontier as hf  # noqa: E402
-from lngfreight.baselines import arx_forecast  # noqa: E402
-from lngfreight.inference import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput import horizon_frontier as hf  # noqa: E402
+from hormuz_throughput.baselines import arx_forecast  # noqa: E402
+from hormuz_throughput.inference import (  # noqa: E402
     conformal_effect_interval,
     counterfactual_effect,
     empirical_p_value,
@@ -425,10 +425,6 @@ def guard_summary(summary: pd.DataFrame) -> None:
     if summary["five_percent_significance_claimed"].any():
         raise AssertionError("no cell of this frontier may claim 5% significance")
 
-    # A finer resolution mechanically lowers the 1/(K+1) floor. That is a
-    # property of the reference partition, not evidence, so the primary
-    # reporting resolution is fixed by the frozen design and may not be
-    # swapped for whichever horizon produced the smallest floor.
     consistent = summary["five_percent_floor_attainable"].eq(
         summary["rank_p_value_floor"].le(0.05)
     )
@@ -650,7 +646,7 @@ def render_markdown(
     add(f"**Design SHA-256:** `{diagnostics['design_sha256']}`  ")
     add(f"**Frozen (UTC):** {design['frozen_utc']}  ")
     add(f"**Freeze status:** {design['freeze_status']['timing']}  ")
-    add("**Verification status:** `NEEDS-VERIFY` until Mher runs the G4 commands.")
+    add("**Verification status:** `NEEDS-VERIFY` until the complete pipeline is run.")
     add("")
     add(
         "This document audits and extends the block/placebo inference design. "
@@ -1010,7 +1006,7 @@ def main() -> int:
         )
     print(" - Unbounded levels are reported as unbounded, never clipped.")
     print(" - Reference blocks are pre-treatment windows, not untreated units.")
-    print(" - This is NEEDS-VERIFY until Mher records the G4 output.")
+    print(" - This is NEEDS-VERIFY until the complete pipeline transcript is retained.")
     return 0
 
 

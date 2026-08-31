@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight.detector_calibration import (
+from hormuz_throughput.detector_calibration import (
     DETECTOR_DESIGN_VERSION,
     DETECTOR_FORMS,
     RAW_LEVEL,
@@ -44,8 +44,8 @@ from lngfreight.detector_calibration import (
     unit_moments,
     validate_detector_spec,
 )
-from lngfreight.disruption_detector import fit_context_scale, load_event_mask
-from lngfreight.global_forecaster import (
+from hormuz_throughput.disruption_detector import fit_context_scale, load_event_mask
+from hormuz_throughput.global_forecaster import (
     LeakageError,
     RidgeGlobalModel,
     TrainingOnlyStandardizer,
@@ -111,9 +111,6 @@ def _pattern(pattern: str, dates: pd.DatetimeIndex | None = None):
     return int(episodes[0]), int(censored[0]), int(duration[0])
 
 
-# ---------------------------------------------------------------------------
-# Synthetic: the episode state machine
-# ---------------------------------------------------------------------------
 
 
 def test_one_exceedance_is_not_an_alarm_and_two_consecutive_are():
@@ -123,9 +120,7 @@ def test_one_exceedance_is_not_an_alarm_and_two_consecutive_are():
 
 
 def test_quiet_days_separate_episodes_exactly_at_the_frozen_boundary():
-    # Six quiet days leave the episode open, so the later pair extends it.
     assert _pattern("XX" + "." * (QUIET - 1) + "XX")[0] == 1
-    # Seven close it, so the later pair opens a second.
     assert _pattern("XX" + "." * QUIET + "XX")[0] == 2
 
 
@@ -152,14 +147,12 @@ def test_a_gap_is_a_segment_boundary_and_no_episode_bridges_it():
     )
     assert segment_boundaries(dates).tolist() == [0, 2]
 
-    # One exceedance either side of the gap is not a pair: the counter resets.
     scores = np.array([1.0, 0.0, 0.0, 1.0])
     episodes, _, _ = count_episodes(
         scores, np.array([0.5]), segment_boundaries(dates), onset=ONSET, quiet_days=QUIET
     )
     assert int(episodes[0]) == 0
 
-    # A pair either side is two separate episodes, both censored by the boundary.
     scores = np.ones(4)
     episodes, censored, _ = count_episodes(
         scores, np.array([0.5]), segment_boundaries(dates), onset=ONSET, quiet_days=QUIET
@@ -197,9 +190,6 @@ def test_masked_unit_days_leave_the_eligible_sequence_and_so_break_the_run():
     assert int(censored[0]) == 2
 
 
-# ---------------------------------------------------------------------------
-# Synthetic: the episode curve and threshold calibration
-# ---------------------------------------------------------------------------
 
 
 def test_curve_reproduces_a_direct_evaluation_at_every_breakpoint():
@@ -231,7 +221,6 @@ def test_exceedance_is_strict_so_a_tied_score_does_not_fire():
     dates = pd.date_range("2021-01-01", periods=4, freq="D")
     scores = np.array([5.0, 5.0, 5.0, 5.0])
     curve = build_episode_curve("synthetic", dates, scores, _episode_spec())
-    # At threshold exactly 5.0 nothing exceeds; only below it does the pair fire.
     assert curve.episodes_at(np.array([5.0]))[0] == 0
     assert curve.episodes_at(np.array([4.999]))[0] == 1
 
@@ -244,8 +233,6 @@ def test_calibration_meets_the_target_and_reports_the_achieved_rate():
     assert solution.achieved_rate <= solution.requested_rate
     assert solution.n_units == 10
 
-    # This is the ratified rule stated directly: at the chosen threshold and at
-    # every higher one the rate holds, and no lower candidate manages that.
     grid = candidate_thresholds(curves)
     rates = macro_average_rate(curves, grid)
     index = int(np.searchsorted(grid, solution.threshold))
@@ -268,10 +255,8 @@ def test_the_episode_rate_is_not_monotone_and_the_superseded_rule_was_degenerate
     assert solution.monotonicity_violations > 0
     assert solution.literal_rule_degenerate
     assert solution.literal_rule_threshold < solution.threshold
-    # The superseded reading fires on essentially every unit-day yet still "passes".
     assert solution.literal_rule_exceedance_share > 0.9
     assert solution.literal_rule_achieved_rate <= solution.requested_rate
-    # The ratified rule does not.
     assert solution.exceedance_share < 0.5
 
 
@@ -281,7 +266,6 @@ def test_exceedance_share_counts_unit_days_not_distinct_scores():
     scores = np.array([1.0] * 8 + [5.0, 9.0])
     curve = build_episode_curve("ties", dates, scores, _episode_spec())
 
-    # Eight of ten unit-days exceed 0.0, but only one of three distinct values.
     assert curve.exceeding_days(0.0) == 10
     assert curve.exceeding_days(1.0) == 2
     assert exceedance_share([curve], 1.0) == pytest.approx(0.2)
@@ -323,15 +307,11 @@ def test_a_restricted_grid_that_cannot_meet_target_is_reported_unattainable():
     curves = [build_episode_curve("unit_a", dates, scores, _episode_spec())]
     spec = _episode_spec()
     spec["detector"]["calibration_target"]["max_episodes_per_chokepoint_year"] = 0.001
-    # Search only below the top score, where every candidate still fires.
     solution = calibrate_threshold(curves, spec, candidates=np.array([0.0, 0.5]))
     assert solution.attainable is False
     assert solution.achieved_rate > solution.requested_rate
 
 
-# ---------------------------------------------------------------------------
-# Synthetic: the two score forms
-# ---------------------------------------------------------------------------
 
 
 def test_raw_level_score_is_positive_when_the_outcome_falls_below_forecast():
@@ -364,9 +344,6 @@ def test_scale_invariant_scoring_refuses_a_non_positive_context_scale():
         scale_invariant_score(np.array([1.0]), np.array([0.0]), np.array([0.0]))
 
 
-# ---------------------------------------------------------------------------
-# Synthetic: the moment path used for leave-one-chokepoint-out
-# ---------------------------------------------------------------------------
 
 
 def _synthetic_fit_frame(spec: dict) -> tuple[pd.DataFrame, tuple[str, ...]]:
@@ -461,9 +438,6 @@ def test_moment_subsetting_equals_refitting_without_the_held_out_unit(spec: dict
     assert np.allclose(design @ coefficients + intercept, sealed_prediction, rtol=1e-8, atol=1e-8)
 
 
-# ---------------------------------------------------------------------------
-# Leakage: the frozen calibration seals
-# ---------------------------------------------------------------------------
 
 
 def test_detector_spec_validates_against_the_frozen_configuration(spec: dict):
@@ -506,7 +480,6 @@ def test_the_scaling_algorithm_change_stays_unauthorised(spec: dict):
     ] = True
     with pytest.raises(DetectorSpecError):
         validate_detector_spec(drifted)
-    # The frozen scaling rule itself is untouched by the amendment.
     assert (
         spec["detector"]["evaluation"]["context_scale_timing"]["rule"]
         == "refit_per_fold_and_horizon_on_history_through_that_fold_fit_end"
@@ -614,7 +587,6 @@ def test_residuals_after_the_calibration_end_are_refused(spec: dict):
 
 def test_event_masked_unit_days_are_removed_and_only_for_their_own_unit(spec: dict):
     mask = load_event_mask(spec)
-    # The Ever Given closure masks Suez, and nothing else, on those days.
     dates = pd.date_range("2021-03-23", "2021-03-29", freq="D")
     frame = _residual_frame(["suez_canal", "dover_strait"], dates)
     admitted, excluded = eligible_residuals(frame, spec, mask)
@@ -644,7 +616,6 @@ def test_calibration_task_access_refuses_masked_or_ineligible_rows(spec: dict):
         },
     )
     with pytest.raises(LeakageError):
-        # No event-mask column at all: calibration must not accept it.
         assert_task_access(geometry, "detector_calibration", spec)
 
     masked = geometry.assign(event_masked=True)
@@ -680,7 +651,6 @@ def test_fold_context_scales_never_read_past_their_fold(spec: dict):
     for unit in development_units(spec):
         assert early[unit].context_end <= pd.Timestamp("2021-06-30")
         assert late[unit].context_end <= pd.Timestamp("2025-06-30")
-    # The frozen object is the algorithm, so the constants must actually differ.
     assert any(early[unit].scale != late[unit].scale for unit in development_units(spec))
 
 

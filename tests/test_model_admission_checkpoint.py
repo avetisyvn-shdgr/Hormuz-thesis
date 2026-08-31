@@ -4,7 +4,7 @@ import hashlib
 import json
 import subprocess
 
-from lngfreight import config
+from hormuz_throughput import config
 
 
 def _sha256(path):

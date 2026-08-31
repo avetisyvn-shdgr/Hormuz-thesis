@@ -12,8 +12,6 @@ from experiments.positive_control.protocol import load_protocol
 def test_protocol_keeps_the_designation_and_refuses_a_primary_onset():
     protocol = load_protocol()
     assert protocol.designation == "ex_ante_route_topology"
-    # Naming one onset primary after both results are known is specification
-    # shopping; the B2 freeze forbids it and so does this protocol.
     assert protocol.primary_onset is None
     assert len(protocol.onsets) == 2
     assert protocol.anchor_receiver == "Cape of Good Hope"
@@ -28,7 +26,6 @@ def test_residual_reference_ends_the_day_before_each_onset():
     for onset in protocol.onsets:
         origins = protocol.reference_origins_for(onset)
         assert len(origins) == protocol.reference_origins
-        # Contiguous, disjoint, and closing exactly on the onset.
         gaps = {(b - a).days for a, b in zip(origins, origins[1:])}
         assert gaps == {protocol.horizon}
         assert origins[-1] + pd.Timedelta(days=protocol.horizon) == onset.date
@@ -61,7 +58,6 @@ def test_the_designated_receiver_ranks_first_in_its_frozen_family():
     protocol = load_protocol()
     validation = json.loads(protocol.outputs["validation"].read_text(encoding="utf-8"))
     standing = validation["anchor_standing"]
-    # Two onsets x two models, all four reported, none of them the headline.
     assert len(standing) == 4
     for key, value in standing.items():
         assert value["family_size"] == 16, key
@@ -80,9 +76,6 @@ def test_the_controls_fire_on_a_corridor_wide_reallocation():
         & inference["block_length_days"].eq(protocol.block_length)
     ]
     assert len(controls) == 2 * 2 * len(protocol.control_keys)
-    # The Red Sea diversion rerouted every vessel class around the Cape, so a
-    # control family that stayed null here would be broken. Under AR, which does
-    # not blow up on the low-volume Ro-Ro series, every control fires.
     ar_controls = controls.loc[controls["model"].eq(protocol.robustness_model)]
     assert ar_controls["romano_wolf_p_value"].lt(0.05).all()
     assert ar_controls["event_statistic"].gt(0).all()

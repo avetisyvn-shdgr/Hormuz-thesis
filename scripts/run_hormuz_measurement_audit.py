@@ -34,8 +34,8 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config                                        # noqa: E402
-from lngfreight.instrument_shift import (                            # noqa: E402
+from hormuz_throughput import config                                        # noqa: E402
+from hormuz_throughput.instrument_shift import (                            # noqa: E402
     annual_summary,
     assert_not_averaged,
     assert_states_separate,
@@ -52,7 +52,7 @@ from lngfreight.instrument_shift import (                            # noqa: E40
     verify_invariants,
     wto_state_audit,
 )
-from lngfreight.registry import RegisteredArtifact, get_variable     # noqa: E402
+from hormuz_throughput.registry import RegisteredArtifact, get_variable     # noqa: E402
 
 SPEC_PATH = config.CONFIG_DIR / "hormuz_measurement_audit.yaml"
 
@@ -175,7 +175,6 @@ def main() -> int:
     print(f"default mapping : {spec['mapping']['default']}")
     print()
 
-    # -- states -------------------------------------------------------------
     july = load_state(spec["states"]["july"], panel_spec, consumer)
     august = load_state(spec["states"]["august"], panel_spec, consumer)
     separation = assert_states_separate(july, august)
@@ -195,7 +194,6 @@ def main() -> int:
             f"july={n_units_july} august={n_units_august}."
         )
 
-    # -- overlap panel ------------------------------------------------------
     measures = list(panel_spec["count_measures"]) + list(panel_spec["capacity_measures"])
     panel = overlap_panel(july, august, measures, unit_col, date_col)
     overlap_dates = panel[date_col]
@@ -218,7 +216,6 @@ def main() -> int:
                 f"expects {expected_overlap[key]}."
             )
 
-    # -- changed rows by chokepoint and vessel class ------------------------
     by_unit = changed_rows_by_unit(panel, unit_col)
     assert_not_averaged(
         by_unit.rename(columns={"mean_july": "july", "mean_august": "august"}),
@@ -241,7 +238,6 @@ def main() -> int:
     print(f"  next highest: {next_unit:<9} {next_pct:>10.4f}%")
     print(f"  median across 28 units  {median_pct:>10.4f}%")
 
-    # -- Hormuz primary series ---------------------------------------------
     series = (
         panel[(panel[unit_col] == focus) & (panel["measure"] == primary)]
         .sort_values(date_col)
@@ -253,7 +249,6 @@ def main() -> int:
         int(row.year): float(row.ratio_august_over_july) for row in annual.itertuples()
     }
 
-    # -- mappings -----------------------------------------------------------
     fits = fit_declared_mappings(series, spec["mapping"]["forms"], date_col)
     default_name = spec["mapping"]["default"]
     if default_name not in fits:
@@ -311,7 +306,6 @@ def main() -> int:
             + ("  [partial year]" if row.partial_year else "")
         )
 
-    # -- capacity and total-count revisions ---------------------------------
     print("\nHORMUZ REVISIONS BY MEASURE")
     hormuz_measures = by_unit[by_unit[unit_col] == focus].sort_values(
         "pct_changed_rows", ascending=False
@@ -323,7 +317,6 @@ def main() -> int:
             f"ratio={row.mean_ratio_august_over_july:.6f}"
         )
 
-    # -- WTO audit ----------------------------------------------------------
     wto_spec = spec["wto"]
     wto_audit, wto_pairwise = wto_state_audit(
         config.ROOT / wto_spec["directory"],
@@ -342,7 +335,6 @@ def main() -> int:
             f"{row.data_start} -> {row.data_end}  retrieved={row.retrieved_utc_last[:10] or 'n/a'}"
         )
 
-    # -- invariants ---------------------------------------------------------
     computed = {
         "hormuz_pct_changed_n_tanker": hormuz_pct,
         "next_highest_pct_changed_n_tanker": next_pct,
@@ -356,7 +348,6 @@ def main() -> int:
         print(invariant_table.drop(columns=["description"]).to_string(index=False))
     print(f"\nINVARIANTS: {int(invariant_table['passed'].sum())}/{len(invariant_table)} passed")
 
-    # -- outputs ------------------------------------------------------------
     outputs = spec["outputs"]
     if args.dry_run:
         print("\n--dry-run: no files written.")

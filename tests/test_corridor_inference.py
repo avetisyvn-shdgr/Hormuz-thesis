@@ -6,16 +6,16 @@ import pandas as pd
 import pytest
 
 
-from lngfreight.corridor_inference import (
+from hormuz_throughput.corridor_inference import (
     CorridorInferenceProtocol,
     build_shared_placebo_matrix,
     corridor_romano_wolf,
     load_corridor_inference_protocol,
     mean_scaled_signed_deviation,
 )
-from lngfreight.inference import romano_wolf_stepdown
-from lngfreight.spatial import wide_chokepoint_panel
-from lngfreight.inference import placebo_time_folds, select_non_overlapping_folds
+from hormuz_throughput.inference import romano_wolf_stepdown
+from hormuz_throughput.spatial import wide_chokepoint_panel
+from hormuz_throughput.inference import placebo_time_folds, select_non_overlapping_folds
 
 
 def _protocol() -> CorridorInferenceProtocol:

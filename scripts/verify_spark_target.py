@@ -30,18 +30,15 @@ from pathlib import Path
 
 import pandas as pd
 
-# Make `src/` importable without installing the package.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config, provenance
-from lngfreight.sources.spark import (
+from hormuz_throughput import config, provenance
+from hormuz_throughput.sources.spark import (
     MAX_BOUNDARY_GAP_BUSINESS_DAYS,
     SparkSource,
     business_day_coverage,
 )
 
-# A run that returns only a short recent slice spanning at most this many days
-# is almost certainly the trial-limited history, not real coverage.
 TRIAL_SPAN_DAYS = 21
 
 
@@ -95,7 +92,6 @@ def _report_contract(name: str, code: str, df: pd.DataFrame,
         more = " ..." if len(missing) > 10 else ""
         print(f"    e.g. {sample}{more}   (includes public holidays)")
 
-    # Trial-limited detection.
     leading = coverage["leading_missing_business_days"]
     trailing = coverage["trailing_missing_business_days"]
     longest = coverage["longest_missing_business_day_run"]
@@ -137,7 +133,6 @@ def main(save_raw: bool = False, report_json: str | None = None) -> int:
     start, end = pd.Timestamp(win["full_start"]), pd.Timestamp(win["full_end"])
     start_s, end_s = win["full_start"], win["full_end"]
 
-    # Resolve the freight targets straight from the registry (config-driven).
     reg = config.registry()
     targets = {n: s for n, s in reg.items() if s.get("role") == "target"}
     if not targets:
@@ -149,8 +144,6 @@ def main(save_raw: bool = False, report_json: str | None = None) -> int:
         print(">>>> --save-raw set: raw pulls WILL be written to data/raw/.")
 
     src = SparkSource()
-    # Authenticate once. Missing creds / bad creds fail loudly but cleanly here
-    # rather than as a raw traceback.
     try:
         client_id = config.api_key("SPARK_CLIENT_ID")
         client_secret = config.api_key("SPARK_CLIENT_SECRET")

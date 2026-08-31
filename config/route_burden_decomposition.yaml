@@ -38,11 +38,12 @@ upstream_registered_artifacts:
     role: "locked_radius_comparison_artifact_read_only"
   network_support_manifest:
     path: "data/processed/network_support_frontier_manifest.json"
-    sha256: "08221460e28aba51b5f2a031a38bbc9c36da00eb2ce2009969d51460b108fb80"
+    sha256: "7c27e474e79e2b89bd4f7ef122617df64a0ec77f7ceddcb4523acc619b1532be"
+    superseded_sha256: "08221460e28aba51b5f2a031a38bbc9c36da00eb2ce2009969d51460b108fb80"
+    previous_sha256: "b9475e6f7bd315e3561d87c793e0f4a78683fc685f394c24fffc8ece174c851a"
+    repin_reason: "Network-support manifest regenerated after the package and report-path migration; its frozen audit expectations reproduce."
     role: "g4_verified_task7_parent"
 
-# The measured quantity. The construct label is fixed verbatim and every
-# artifact and document must carry it.
 construct:
   label: "modeled distance per nominal vessel-capacity m3 among retained inferred voyages"
   outcome_column: "inferred_nominal_m3_nm_expanded"
@@ -62,9 +63,6 @@ construct:
     burden profile of the sequences that remain observable, not what any
     individual ship physically did.
 
-# Complete-case rule. A sequence enters the decomposition only when it is
-# resolved, routed under the expanded specification, and joined to a nominal
-# capacity. Everything excluded is counted and reported, never dropped silently.
 complete_case_rule:
   endpoint_status: "resolved_liquefaction_to_regasification"
   requires_non_null_outcome: true
@@ -73,7 +71,6 @@ complete_case_rule:
 terminal_radius_km_grid: [10, 20, 30]
 primary_terminal_radius_km: 30
 
-# Decomposition unit and components.
 decomposition:
   pair_key: ["project_id", "destination_project_id"]
   pair_key_label: "origin_terminal_project -> destination_terminal_project"
@@ -96,19 +93,11 @@ decomposition:
     required: true
     tolerance_absolute: 1.0e-06
     note: "The three components must sum to the total change exactly, up to floating point."
-  # Percentage shares divide by the total change. When the total is small
-  # relative to the individual components -- offsetting terms, or a total near
-  # zero -- those percentages explode and can exceed 100% or flip sign while
-  # describing nothing. Such cells are flagged and their percentages must not be
-  # reported as a component split.
   percent_stability:
     ratio_definition: "max(|component|) / |total_change|"
     unstable_above_ratio: 2.0
     policy: "absolute components in m3-nm are always primary; percentages are suppressed in the narrative for unstable cells"
 
-# Index-number weighting. The entry/exit term is invariant to this choice; the
-# split between the share and within terms is not, so all three weightings are
-# reported and the symmetric one is primary.
 weighting_schemes:
   symmetric_marshall_edgeworth:
     role: "primary"
@@ -126,7 +115,6 @@ weighting_schemes:
     share_weight: "post-period within-pair means"
     within_weight: "pre-period common-pair shares"
 
-# Support and censoring bounds reported alongside every decomposition.
 support_bounds:
   report_pair_counts: true
   report_entering_and_exiting_pairs: true
@@ -157,7 +145,7 @@ outputs:
   pair_support_csv: "data/processed/route_burden_pair_support.csv"
   diagnostics_json: "data/processed/route_burden_diagnostics.json"
   audit_expectation_json: "data/processed/route_burden_audit_expectation.json"
-  documentation_markdown: "docs/ROUTE_BURDEN_DECOMPOSITION.md"
+  documentation_markdown: "reports/audit/route_burden_decomposition.md"
   manifest_json: "data/processed/route_burden_decomposition_manifest.json"
 
 reporting_guards:
@@ -179,5 +167,5 @@ reporting_guards:
     distributed. It is not a measurement of any vessel travelling a longer
     distance than before.
   overwrite_policy: "upstream_capacity_comparison_and_task7_artifacts_are_read_only_in_this_phase"
-  core_run_all_dependency: "none"
+  core_run_all_dependency: "required_for_final_integration"
   core_reproducibility_manifest_dependency: "none"

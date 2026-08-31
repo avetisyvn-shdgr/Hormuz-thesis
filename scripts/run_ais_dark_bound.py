@@ -48,14 +48,11 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.specification import working_specification  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.specification import working_specification  # noqa: E402
 
 
-# Reductions of interest: the thresholds a sceptic might propose the "true"
-# collapse is no larger than. d*(R) is reported for each.
 REFERENCE_REDUCTIONS = (0.50, 0.75, 0.90, 0.95)
-# Sensitivity grid for the incremental treatment-period dark rate.
 DARK_RATE_GRID = (0.0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.70, 0.90)
 
 
@@ -128,8 +125,8 @@ def build_bound(observed: float, counterfactual: float, target: str, model: str)
 
 def main(plausible_dark_rate: float | None) -> int:
     spec = working_specification()
-    model = spec.primary_estimator  # ar_lag1_7 — no post-treatment covariate exposure
-    target = spec.primary_outcome   # hormuz_tanker_transits
+    model = spec.primary_estimator
+    target = spec.primary_outcome
 
     summary = _load_primary_summary()
     row = _row(summary, model, target)

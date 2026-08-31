@@ -3,8 +3,6 @@ design_id: "lng_selective_network_support_frontier_v1"
 frozen_utc: "2026-08-09T23:32:47Z"
 analysis_role: "modeled_network_support_denominator_audit"
 
-# Task-7 freeze status. Like task 6 this is frozen before generation, not
-# preregistered: the audit had already disclosed the 30 km benchmark numbers.
 freeze_status:
   timing: "frozen_before_generation_not_preregistered"
   prior_disclosure:
@@ -36,9 +34,6 @@ upstream_registered_artifacts:
     sha256: "ff2025acf7d64171f01dd22d30f375a697a078f424afaa733e90daf0001d232e"
     role: "locked_radius_comparison_artifact_read_only"
 
-# Frozen radius grid. All three already exist in the upstream artifact; this
-# file fixes which are reported and which is primary before any denominator is
-# read.
 terminal_radius_km_grid: [10, 20, 30]
 primary_terminal_radius_km: 30
 radius_rationale: >-
@@ -47,9 +42,6 @@ radius_rationale: >-
   precision in terminal attribution. The grid is complete and every radius is
   reported whatever it shows.
 
-# Cohort definitions. These reuse the annotations already established in
-# src/lngfreight/exposure.py so that this phase cannot silently invent a second,
-# divergent notion of a Hormuz-crossing sequence.
 cohorts:
   all_resolved:
     definition: "endpoint_status == resolved_liquefaction_to_regasification"
@@ -67,7 +59,6 @@ cohorts:
 
 periods: ["pre", "post"]
 
-# Reported for every radius x period x cohort cell.
 denominator_metrics:
   - "n_sequences"
   - "n_unique_imos"
@@ -89,10 +80,6 @@ balanced_cohort:
     Holds the observed carrier set fixed so that a support change cannot be
     produced purely by carriers entering or leaving the resolved panel.
 
-# Retention shares computed on a handful of sequences are numerically unstable:
-# a diagnostic cohort moving from 1 to 3 sequences reports "300% retention",
-# which is arithmetically true and substantively meaningless. Cells at or below
-# this pre-period count are flagged so no reader treats them as a trend.
 thin_denominator_threshold_sequences: 10
 
 audit_expectation:
@@ -108,7 +95,7 @@ outputs:
   balanced_cohort_csv: "data/processed/network_support_balanced_cohort.csv"
   diagnostics_json: "data/processed/network_support_diagnostics.json"
   audit_expectation_json: "data/processed/network_support_audit_expectation.json"
-  documentation_markdown: "docs/NETWORK_SUPPORT_FRONTIER.md"
+  documentation_markdown: "reports/audit/network_support_frontier.md"
   manifest_json: "data/processed/network_support_frontier_manifest.json"
 
 reporting_guards:
@@ -131,5 +118,5 @@ reporting_guards:
     Every selective statement must be paired with its overall denominator in the
     same radius and period. A Hormuz-crossing count may never be reported alone.
   overwrite_policy: "upstream_capacity_and_comparison_artifacts_are_read_only_in_this_phase"
-  core_run_all_dependency: "none"
+  core_run_all_dependency: "required_for_final_integration"
   core_reproducibility_manifest_dependency: "none"

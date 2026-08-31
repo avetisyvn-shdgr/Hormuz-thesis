@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-from lngfreight.validation import resolve_cutoff
+from hormuz_throughput.validation import resolve_cutoff
 from run_treatment_robustness import _post_windows
 
 

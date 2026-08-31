@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from lngfreight.freight_integration import build_freight_mechanism_integration
+from hormuz_throughput.freight_integration import build_freight_mechanism_integration
 
 
 def test_integration_preserves_evidence_roles_and_direction_conventions():

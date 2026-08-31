@@ -1,13 +1,3 @@
-# Frozen specification for the multi-event chokepoint-propagation model.
-#
-# SCOPE. This spec governs a SECONDARY estimator only. It does not touch
-# `study_window` in settings.yaml, the locked `primary_treatment_cutoff`
-# (2026-02-28), or the frozen `corridor_transmission.yaml`. Those continue to
-# govern the primary Hormuz throughput path unchanged.
-#
-# ESTIMAND CLASS. Out-of-sample PREDICTIVE network response. This is not a
-# causal spillover parameter (CLAUDE.md rule 2). A causal reading requires the
-# optional exposure design in Phase 6 of docs/ML_TRAINING_ACTION_PLAN.md.
 version: 1
 status: "frozen"
 drafted_on: "2026-08-26"
@@ -16,9 +6,6 @@ frozen_on: "2026-08-26"
 p2_fit: "prototype fitted 2026-08-26 - see docs/PROPAGATION_MODEL_RESULTS.md"
 
 training_window:
-  # PortWatch snapshot true coverage is 2019-01-01 -> 2026-07-12 (verified:
-  # 28 chokepoints x 2750 days, zero missing days). The primary Hormuz path
-  # keeps its own 2022-01-01 start; this window is used ONLY by this estimator.
   start: "2019-01-01"
   end: "2026-07-12"
   source_snapshot: "data/raw/portwatch/Daily_Chokepoints_Data.csv"
@@ -28,17 +15,15 @@ panel:
   n_units: 28
   value_columns: ["n_tanker", "n_container", "n_total"]
   primary_value_column: "n_tanker"
-  aggregation_allowed: false     # voyages cross multiple chokepoints; never sum
+  aggregation_allowed: false
   outputs:
     panel: "data/processed/multi_event_panel.csv"
     audit: "data/processed/multi_event_panel_audit.json"
 
-# Training events. Windows are DRAFT and must be reconciled against
-# docs/EVENT_CHRONOLOGY.md and frozen before any kernel is fitted.
 events:
   suez_ever_given:
     unit: "Suez Canal"
-    onset: "2021-03-23"        # data-derived, sharp rule
+    onset: "2021-03-23"
     end: "2021-03-29"
     mechanism: "total_physical_blockage"
     duration_class: "short"
@@ -52,7 +37,7 @@ events:
 
   black_sea_kerch:
     unit: "Kerch Strait"
-    onset: "2022-02-24"        # external anchor; pre-2022 drift noted in results doc
+    onset: "2022-02-24"
     end: null
     mechanism: "conflict_and_sanctions"
     duration_class: "long_progressive"
@@ -61,13 +46,13 @@ events:
 
   panama_drought:
     unit: "Panama Canal"
-    onset: "2023-12-19"        # data-derived, sustained rule (was 2023-07-01)
+    onset: "2023-12-19"
     end: "2024-07-31"
     mechanism: "capacity_rationing"
     duration_class: "long"
     role: "train_secondary"
     observed_n_tanker: "12.7 -> 12.1 -> 9.9 (2024H1 trough) -> 12.2 -> 12.6"
-    fit_on: ["n_total", "n_tanker"]     # NOT n_container - see note
+    fit_on: ["n_total", "n_tanker"]
     note: >
       WEAK, and not a container story. Trough vs pre-period: tanker -22%,
       container -2%, total -29%. Container traffic was essentially unaffected
@@ -78,7 +63,7 @@ events:
 
   red_sea:
     units: ["Bab el-Mandeb Strait", "Suez Canal"]
-    onset: "2024-01-13"        # data-derived, sustained rule (draft said 2023-12-15)
+    onset: "2024-01-13"
     end: null
     mechanism: "attacks_and_voluntary_avoidance"
     duration_class: "long"
@@ -115,7 +100,7 @@ model:
   horizon_weeks: 8
   lag_horizon_days: 60
   absorb: ["chokepoint_fixed_effects", "calendar_time_effects"]
-  selection: "leave_one_event_out"      # never pooled-sample fit
+  selection: "leave_one_event_out"
   sanity_gate:
     description: >
       The fitted kernel must recover a strong positive Bab el-Mandeb ->
@@ -142,5 +127,5 @@ onset_derivation:
 
 validation:
   scheme: "expanding"
-  chronological_only: true               # CLAUDE.md rule 5
+  chronological_only: true
   random_split_prohibited: true

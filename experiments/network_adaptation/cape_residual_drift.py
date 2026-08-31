@@ -41,10 +41,7 @@ FORECAST_FILES = {
 }
 PANEL = "composition_28x5"
 SUSPECT = "Cape of Good Hope"
-# Red Sea transits collapsed and Cape routings began from December 2023.
 DIVERSION_ONSET = pd.Timestamp("2023-12-01")
-# The last three origins are the closest analogue to the event window's
-# information state: they are the regime the 2026 counterfactual extrapolates.
 RECENT_ORIGINS = 3
 
 

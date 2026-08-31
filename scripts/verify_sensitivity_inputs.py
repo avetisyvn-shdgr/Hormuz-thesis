@@ -21,7 +21,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lngfreight import config, registry  # noqa: E402
+from hormuz_throughput import config, registry  # noqa: E402
 from freeze_reproducibility import (  # noqa: E402
     SENSITIVITY_HASH_FILE,
     SENSITIVITY_RAW_INPUTS,
@@ -210,12 +210,6 @@ def build_sensitivity_manifest() -> dict:
     if config.settings()["study_window"]["full_end"] != "2026-07-07":
         raise ValueError("pinned primary window changed while adding a sensitivity input")
 
-    # Every declared consumer must show the guarded, opted-in registry call --
-    # either in its own source, or, for a config-mediated consumer, in whichever
-    # module or frozen config binds its consumer string and carries the opt-in.
-    # Checking only for the literal would reject A4 and B1, which are declared,
-    # runtime-enforced consumers that take the variable name from a hash-pinned
-    # config instead of hardcoding it. See docs/DECISION_LOG.md 2026-08-30.
     py_texts = {
         path.relative_to(root).as_posix(): path.read_text(encoding="utf-8")
         for path in _production_python_files(root)
@@ -276,10 +270,6 @@ def build_sensitivity_manifest() -> dict:
         "row_count": int(len(frame)),
         "date_min": frame["date"].min().date().isoformat(),
         "date_max": frame["date"].max().date().isoformat(),
-        # Kept separate rather than merged: these two access patterns carry
-        # different evidence, and a reader of this manifest should be able to
-        # tell which consumers name the vintage themselves and which take it
-        # from a hash-pinned config.
         "direct_registry_call_sites": sorted(direct_call_sites),
         "config_mediated_call_sites": sorted(config_mediated_call_sites),
         "sensitivity_entrypoints": list(SENSITIVITY_ENTRYPOINTS),

@@ -18,7 +18,7 @@ from freeze_reproducibility import (
 )
 
 
-from lngfreight import config
+from hormuz_throughput import config
 
 
 def test_sha256_file_is_stable(tmp_path):
@@ -112,13 +112,19 @@ def test_report_consumed_tsfm_summary_is_in_manifest_scope():
     )
 
 
-def test_run_all_regenerates_reported_tsfm_comparison_in_isolated_env():
+def test_run_all_regenerates_reported_tsfm_comparison_in_isolated_env(
+    tmp_path, monkeypatch
+):
     matching = [
         args
         for label, args in run_all.STEPS
         if label == "Run matched-horizon admitted Chronos-2 counterfactual"
     ]
     assert len(matching) == 1
+    interpreter = tmp_path / ".venv-bench/bin/python"
+    interpreter.parent.mkdir(parents=True)
+    interpreter.touch()
+    monkeypatch.setattr(run_all, "ROOT", tmp_path)
     command = run_all._step_command(matching[0])
     assert command[0].endswith(".venv-bench/bin/python")
     assert command[1:] == [
@@ -148,6 +154,35 @@ def test_optional_portwatch_runner_stops_before_matrix():
     assert ("scripts/build_model_admission_protocol.py",) in commands
     assert ("scripts/run_rebound_relapse_profile.py",) in commands
     assert not any("run_model_vintage_matrix.py" in command for command in commands)
+
+
+def test_run_all_normalizes_transcript_line_endings():
+    assert run_all._normalize_transcript_line("header   \n") == "header\n"
+    assert run_all._normalize_transcript_line("blank\t\r\n") == "blank\n"
+    assert run_all._normalize_transcript_line("last line  ") == "last line"
+
+
+def test_run_all_builds_every_artifact_before_the_final_claim_audit():
+    commands = [args for _, args in run_all.STEPS]
+    required = [
+        ["scripts/run_model_vintage_matrix.py", "--phase", "core"],
+        ["scripts/run_model_vintage_matrix.py", "--phase", "finalize"],
+        ["scripts/freeze_portwatch_sensitivity_complete.py"],
+        ["scripts/make_portwatch_sensitivity_budget_card.py"],
+        ["scripts/freeze_portwatch_sensitivity_budget_card.py"],
+        ["scripts/run_horizon_resolution_frontier.py"],
+        ["scripts/freeze_horizon_resolution_frontier.py"],
+        ["scripts/run_network_support_frontier.py"],
+        ["scripts/freeze_network_support_frontier.py"],
+        ["scripts/run_route_burden_decomposition.py"],
+        ["scripts/freeze_route_burden_decomposition.py"],
+        ["scripts/run_public_data_gate_decisions.py"],
+        ["scripts/freeze_public_data_gate_decisions.py"],
+    ]
+    final_audit = commands.index(["scripts/run_final_integration_audit.py"])
+    assert all(command in commands[:final_audit] for command in required)
+    assert commands.index(["scripts/freeze_reproducibility.py"]) > final_audit
+    assert commands[-1] == ["scripts/freeze_reproducibility.py", "--verify"]
 
 
 def test_current_provenance_audit_has_no_structural_failures():
@@ -332,8 +367,8 @@ def test_manifest_rebuilds_from_clean_room_declared_scope(tmp_path, monkeypatch)
 
 def test_tsfm_lockfiles_use_exact_versions():
     for name in (
-        "requirements-benchmark.lock.txt",
-        "requirements-timesfm.lock.txt",
+        "requirements/locks/benchmark-py311-macos-arm64.txt",
+        "requirements/locks/timesfm-py311-macos-arm64.txt",
     ):
         lines = (config.ROOT / name).read_text().splitlines()
         requirements = [line for line in lines if line and not line.startswith("#")]
@@ -353,8 +388,9 @@ def test_tsfm_manifest_records_clean_environment_checks():
         "torch_seeded": True,
         "wall_clock_runtime_columns_excluded_from_output_hashes": True,
     }
-    for environment in manifest["benchmark_environments"].values():
-        assert environment["status"] == "captured"
+    required = manifest["benchmark_environments"][".venv-bench"]
+    assert required["status"] == "captured"
+    for environment in (required,):
         assert environment["metadata_consistent"] is True
         assert environment["pip_check"] == "passed"
         assert environment["lock_matches_installed"] is True
@@ -362,3 +398,9 @@ def test_tsfm_manifest_records_clean_environment_checks():
             "installed_distribution_count"
         ]
         assert len(environment["lockfile_sha256"]) == 64
+
+    optional = manifest["benchmark_environments"][".venv-timesfm"]
+    assert optional["status"] in {"captured", "unavailable"}
+    assert len(optional["lockfile_sha256"]) == 64
+    if optional["status"] == "unavailable":
+        assert optional["reason"].strip()

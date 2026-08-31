@@ -2,8 +2,8 @@
 import pandas as pd
 
 
-from lngfreight import config  # noqa: E402
-from lngfreight.reallocation import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.reallocation import (  # noqa: E402
     RESIDUAL_SUPPLY_SCENARIO,
     SUMMARY_COLUMNS,
     SOLUTION_COLUMNS,

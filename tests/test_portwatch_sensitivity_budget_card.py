@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight import config
+from hormuz_throughput import config
 from freeze_portwatch_sensitivity_budget_card import (
     build_manifest,
     manifest_path,
@@ -28,9 +28,9 @@ from make_portwatch_sensitivity_budget_card import (
 PHASE4_MANIFEST = (
     config.path("data_processed") / "portwatch_sensitivity_complete_manifest.json"
 )
-PHASE4_SHA256 = "2d6daf153d4fe73224533cbd39c64631a1156c44f4907959283c2550ca651fa7"
-MATRIX_SUMMARY_SHA256 = "79043329359bb6194260ff4461fef9a2da679a0e120136b3bfdec93531c8be89"
-MATRIX_MANIFEST_SHA256 = "65cb3352877f2cdd3042360ecdb25a4ee7ca77bd30a54a683dbebb1c14ca711b"
+PHASE4_SHA256 = "37f375fd51970fcf3115e62756e48cde276a94daec88fe1af961bce7d91490f6"
+MATRIX_SUMMARY_SHA256 = "15a6e02eb812446d3482e0a4722c3f770a92e82e9828fc9ff1bebef457945917"
+MATRIX_MANIFEST_SHA256 = "5ce058448b8e87fabb054919e2df396b02a15a9a5c0e5a12a1a2a8f04a69c2fc"
 ADMISSION_RESULTS_SHA256 = "d191a2329b5471c9bd718fd22f7c92c9c608db147485ef6d08c4970bcdfa643e"
 
 EXPECTED_COMMON = {
@@ -230,7 +230,7 @@ def test_admission_challenge_is_disclosed_but_never_mixed_into_selected_cells():
     )
 
 
-def test_card_has_no_combined_budget_or_vintage_average_and_stays_out_of_core():
+def test_card_has_no_combined_budget_or_vintage_average_and_is_rebuilt_for_integration():
     design, _, _, _, _, payload = _live()
     assert design["axes"]["axes_are_additive"] is False
     assert design["axes"]["combined_budget_total_permitted"] is False
@@ -244,10 +244,8 @@ def test_card_has_no_combined_budget_or_vintage_average_and_stays_out_of_core():
     for token in (
         "make_portwatch_sensitivity_budget_card.py",
         "freeze_portwatch_sensitivity_budget_card.py",
-        "portwatch_sensitivity_budget_card.csv",
-        "portwatch_sensitivity_budget_card_manifest.json",
     ):
-        assert token not in run_all
+        assert token in run_all
         assert token not in settings
 
 
@@ -267,8 +265,10 @@ def test_written_outputs_and_separate_manifest_match_live_build():
     )
     assert written_payload == payload
     assert written_payload["design_sha256"] == design_sha
-    assert written_payload["status"] == "assistant_generated_reporting_artifact"
-    assert written_payload["human_verification_record"] == "docs/DECISION_LOG.md"
+    assert written_payload["status"] == "generated_reproducibility_artifact"
+    assert written_payload["verification_record"] == (
+        "reports/reproducibility_run_transcript.txt"
+    )
 
     written_manifest = json.loads(manifest_path().read_text(encoding="utf-8"))
     live_manifest = build_manifest()
@@ -276,10 +276,14 @@ def test_written_outputs_and_separate_manifest_match_live_build():
     assert live_manifest["phase4_complete_manifest_sha256"] == PHASE4_SHA256
     assert live_manifest["phase4_artifact_count"] == 13
     assert live_manifest["phase4_manifest_mutated"] is False
-    assert live_manifest["core_run_all_dependency"] == "none"
+    assert live_manifest["core_run_all_dependency"] == (
+        "required_for_final_integration"
+    )
     assert live_manifest["core_reproducibility_manifest_dependency"] == "none"
-    assert live_manifest["status"] == "assistant_generated_reporting_artifact"
-    assert live_manifest["human_verification_record"] == "docs/DECISION_LOG.md"
+    assert live_manifest["status"] == "generated_reproducibility_artifact"
+    assert live_manifest["verification_record"] == (
+        "reports/reproducibility_run_transcript.txt"
+    )
     assert len(live_manifest["output_sha256"]) == 5
     for relative, expected in live_manifest["output_sha256"].items():
         assert sha256_file(config.ROOT / relative) == expected

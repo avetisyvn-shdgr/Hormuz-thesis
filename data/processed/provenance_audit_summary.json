@@ -16,7 +16,7 @@
     }
   ],
   "frozen_hash_failures": [],
-  "frozen_raw_files": 154,
+  "frozen_raw_files": 157,
   "historical_stale_record_count": 4,
   "historical_stale_record_lines": [
     1,
@@ -27,7 +27,7 @@
   "interpretation": "Historical stale lines are retained as evidence of pre-content-addressing path reuse. A later matching record establishes current fixity. historical_original_not_preserved is a disclosed gap, not a reconstructed source payload.",
   "inventory_channels": {
     "dated_capture_manifest": 95,
-    "fixity_only_metadata_gap": 6,
+    "fixity_only_metadata_gap": 9,
     "provenance_v2_snapshot": 41,
     "provenance_v2_source_payload": 12
   },

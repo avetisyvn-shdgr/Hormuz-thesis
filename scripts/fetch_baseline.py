@@ -13,13 +13,11 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Make `src/` importable without installing the package.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config
-from lngfreight.registry import get_variable
+from hormuz_throughput import config
+from hormuz_throughput.registry import get_variable
 
-# Only variables whose status is "free" right now.
 FREE_VARS = [
     name for name, spec in config.registry().items() if spec.get("status") == "free"
 ]

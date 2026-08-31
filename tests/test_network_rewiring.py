@@ -3,9 +3,9 @@ import pandas as pd
 import pytest
 
 
-from lngfreight import config  # noqa: E402
-from lngfreight.importer_outcomes import build_outcomes  # noqa: E402
-from lngfreight.network_rewiring import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.importer_outcomes import build_outcomes  # noqa: E402
+from hormuz_throughput.network_rewiring import (  # noqa: E402
     ANOMALY_MONTHLY_COLUMNS,
     ANOMALY_SUMMARY_COLUMNS,
     GRAPH_METRIC_COLUMNS,

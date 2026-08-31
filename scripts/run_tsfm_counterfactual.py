@@ -30,16 +30,16 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.specification import working_specification  # noqa: E402
-from lngfreight.tsfm import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.specification import working_specification  # noqa: E402
+from hormuz_throughput.tsfm import (  # noqa: E402
     DEFAULT_LOWER_Q,
     DEFAULT_UPPER_Q,
     MODEL_REGISTRY,
     configure_deterministic_execution,
     counterfactual_shortfall,
 )
-from lngfreight.validation import resolve_cutoff  # noqa: E402
+from hormuz_throughput.validation import resolve_cutoff  # noqa: E402
 
 AR_MODEL = "ar_lag1_7"
 

@@ -13,12 +13,12 @@ import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.baselines import arx_forecast  # noqa: E402
-from lngfreight.bsts import fit_bsts_forecast, posterior_shortfall  # noqa: E402
-from lngfreight.inference import counterfactual_effect  # noqa: E402
-from lngfreight.registry import get_variable  # noqa: E402
-from lngfreight.validation import Fold, resolve_cutoff  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.baselines import arx_forecast  # noqa: E402
+from hormuz_throughput.bsts import fit_bsts_forecast, posterior_shortfall  # noqa: E402
+from hormuz_throughput.inference import counterfactual_effect  # noqa: E402
+from hormuz_throughput.registry import get_variable  # noqa: E402
+from hormuz_throughput.validation import Fold, resolve_cutoff  # noqa: E402
 
 
 def main() -> None:

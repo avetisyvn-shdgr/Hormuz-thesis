@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lngfreight import config  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
 from freeze_reproducibility import (  # noqa: E402
     SENSITIVITY_HASH_FILE,
     SENSITIVITY_RAW_INPUTS,
@@ -34,12 +34,12 @@ IMPLEMENTATION_INPUTS = (
     "scripts/run_model_vintage_matrix.py",
     "scripts/freeze_portwatch_sensitivity.py",
     "scripts/run_portwatch_sensitivity.py",
-    "src/lngfreight/registry.py",
-    "src/lngfreight/vintage_matrix.py",
-    "src/lngfreight/baselines.py",
-    "src/lngfreight/bsts.py",
-    "src/lngfreight/tsfm.py",
-    "requirements-benchmark.lock.txt",
+    "src/hormuz_throughput/registry.py",
+    "src/hormuz_throughput/vintage_matrix.py",
+    "src/hormuz_throughput/baselines.py",
+    "src/hormuz_throughput/bsts.py",
+    "src/hormuz_throughput/tsfm.py",
+    "requirements/locks/benchmark-py311-macos-arm64.txt",
 )
 PREPARED_ARTIFACTS = (
     "data/processed/portwatch_sensitivity_input_manifest.json",

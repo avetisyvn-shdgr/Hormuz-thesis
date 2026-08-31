@@ -9,9 +9,9 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
-from lngfreight.capacity_miles import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.registry import RegisteredArtifact, get_variable  # noqa: E402
+from hormuz_throughput.capacity_miles import (  # noqa: E402
     attach_capacity_nautical_miles,
     capacity_period_summary,
     capacity_pre_post_comparison,
@@ -19,12 +19,12 @@ from lngfreight.capacity_miles import (  # noqa: E402
     route_shift_share_decomposition,
     validate_carrier_capacity_frame,
 )
-from lngfreight.routes import (  # noqa: E402
+from hormuz_throughput.routes import (  # noqa: E402
     build_route_distance_matrix,
     installed_searoute_version,
     route_distance_summary,
 )
-from lngfreight.voyages import candidate_voyage_endpoints  # noqa: E402
+from hormuz_throughput.voyages import candidate_voyage_endpoints  # noqa: E402
 
 
 TERMINAL_COLUMNS = [

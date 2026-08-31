@@ -19,13 +19,13 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.baselines import seasonal_naive_forecast  # noqa: E402
-from lngfreight.inference import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.baselines import seasonal_naive_forecast  # noqa: E402
+from hormuz_throughput.inference import (  # noqa: E402
     counterfactual_effect,
     post_treatment_fold,
 )
-from lngfreight.spatial import (  # noqa: E402
+from hormuz_throughput.spatial import (  # noqa: E402
     chokepoint_metadata,
     leave_one_donor_out_summary,
     spatial_placebo_summary,

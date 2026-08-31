@@ -9,9 +9,9 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
-from lngfreight.voyages import candidate_voyage_endpoints, endpoint_summary  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.registry import RegisteredArtifact, get_variable  # noqa: E402
+from hormuz_throughput.voyages import candidate_voyage_endpoints, endpoint_summary  # noqa: E402
 
 
 def main() -> None:

@@ -2,12 +2,12 @@
 
 Scores Chronos-2, TimesFM 2.5 and/or Moirai 2.0 on the SAME leakage-safe,
 strictly pre-treatment rolling-origin folds as the transparent baselines, then
-applies the admission test against the AR-only baseline (see
-``docs/MODERN_TSFM_BENCHMARK.md``). This script is deliberately excluded from
-``scripts/run_all.py`` and from the frozen core requirements: the PyTorch stack
-and model weights are optional external artifacts installed in a separate env.
+applies the configured admission test against the AR-only baseline. This script
+is deliberately excluded from ``scripts/run_all.py`` and from the frozen core
+requirements: the PyTorch stack and model weights are optional external
+artifacts installed in separate environments.
 
-Run in the isolated benchmark env (requirements-benchmark.txt, Python <= 3.12):
+Run in the isolated benchmark env (requirements/benchmark.txt, Python <= 3.12):
 
     python scripts/run_tsfm_benchmark.py --model all --acknowledge-benchmark-only
     python scripts/run_tsfm_benchmark.py --model chronos2 --acknowledge-benchmark-only
@@ -28,9 +28,9 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.specification import working_specification  # noqa: E402
-from lngfreight.tsfm import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.specification import working_specification  # noqa: E402
+from hormuz_throughput.tsfm import (  # noqa: E402
     DEFAULT_LOWER_Q,
     DEFAULT_UPPER_Q,
     FOUNDATION_MODELS,
@@ -40,7 +40,7 @@ from lngfreight.tsfm import (  # noqa: E402
     configure_deterministic_execution,
     run_benchmark,
 )
-from lngfreight.validation import resolve_cutoff, rolling_origin_splits, summary  # noqa: E402
+from hormuz_throughput.validation import resolve_cutoff, rolling_origin_splits, summary  # noqa: E402
 
 
 def _load_panel() -> pd.DataFrame:
@@ -155,9 +155,6 @@ def main() -> None:
                 **({"device_map": args.device_map} if model_name == "chronos2" else {})
             )
         except ImportError as exc:
-            # Not installed in THIS env (expected for timesfm outside .venv-timesfm,
-            # or chronos/moirai outside .venv-bench). Skip, keep going, keep any
-            # prior results already on disk via merge-on-write.
             print(f"  SKIP {model_name}: {exc}")
             skipped.append(model_name)
             continue
@@ -183,7 +180,7 @@ def main() -> None:
         raise SystemExit(
             "No models ran in this environment. Installed model(s) skipped: "
             f"{skipped or requested}. Run chronos2/moirai in .venv-bench and "
-            "timesfm in .venv-timesfm (see docs/MODERN_TSFM_BENCHMARK.md)."
+            "timesfm in .venv-timesfm."
         )
 
     out_dir = config.path("data_processed")
@@ -191,9 +188,6 @@ def main() -> None:
     forecasts_out = out_dir / "tsfm_benchmark_forecasts.csv"
     aggregate_out = out_dir / "tsfm_benchmark_summary.csv"
 
-    # Merge-on-write: accumulate across the two benchmark envs. Drop any prior
-    # rows for the models that just ran (a re-run replaces its own rows), then
-    # append. Other models' previously written rows are preserved.
     scores = _drop_wall_clock_columns(
         _merge_on_write(pd.concat(all_scores, ignore_index=True), scores_out, ran)
     )
@@ -238,7 +232,7 @@ def main() -> None:
     print(f"wrote {forecasts_out}")
     print(f"wrote {aggregate_out}")
 
-    print("\nInterpretation guard (CLAUDE.md rules 1, 2, 4):")
+    print("\nInterpretation constraints:")
     print(" - These are pre-treatment validation scores, NOT causal effects.")
     print(" - A model is promoted into the post-treatment comparison only if the")
     print("   admission test marks it ADMITTED; otherwise AR-only remains primary.")

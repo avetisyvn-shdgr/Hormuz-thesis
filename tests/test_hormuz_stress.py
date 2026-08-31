@@ -18,13 +18,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight.detector_calibration import RAW_LEVEL, SCALE_INVARIANT
-from lngfreight.global_forecaster import (
+from hormuz_throughput.detector_calibration import RAW_LEVEL, SCALE_INVARIANT
+from hormuz_throughput.global_forecaster import (
     MeasurementStateError,
     development_units,
     load_detection_spec,
 )
-from lngfreight.hormuz_stress import (
+from hormuz_throughput.hormuz_stress import (
     AUGUST,
     JULY,
     RIDGE_MODEL,
@@ -66,9 +66,6 @@ def _synthetic_panel(spec: dict, *, factor: float = 1.0, seed: int = 5) -> pd.Da
     return pd.DataFrame(data, index=index)
 
 
-# ---------------------------------------------------------------------------
-# Contract: A4 runs only against the accepted A3
-# ---------------------------------------------------------------------------
 
 
 def test_the_accepted_a3_artifacts_verify(spec: dict):
@@ -147,8 +144,8 @@ def test_the_a4_july_panel_is_the_panel_a2_and_a3_actually_used(spec: dict):
     A2 and A3 used removes the whole class of divergence, and this reads only
     pre-surveillance days.
     """
-    from lngfreight.global_forecaster import load_development_panel
-    from lngfreight.hormuz_stress import load_measurement_state_panel
+    from hormuz_throughput.global_forecaster import load_development_panel
+    from hormuz_throughput.hormuz_stress import load_measurement_state_panel
 
     start = spec["dates"]["full_start"]
     end = spec["dates"]["detector_calibration_end"]
@@ -165,18 +162,15 @@ def test_the_a4_july_panel_is_the_panel_a2_and_a3_actually_used(spec: dict):
     )
 
 
-# ---------------------------------------------------------------------------
-# The declared cross-state transport (plan A4 mode 3)
-# ---------------------------------------------------------------------------
 
 
 def _scoring_rows(spec: dict, state: str, panel: pd.DataFrame) -> pd.DataFrame:
-    from lngfreight.global_forecaster import (
+    from hormuz_throughput.global_forecaster import (
         apply_context_normalisation,
         build_hormuz_scoring_geometry,
         materialize_task_features,
     )
-    from lngfreight.disruption_detector import fit_context_scale
+    from hormuz_throughput.disruption_detector import fit_context_scale
 
     hormuz = spec["population"]["hormuz_unit"]
     rows = materialize_task_features(panel, build_hormuz_scoring_geometry(spec, state), spec)
@@ -192,7 +186,7 @@ def _scoring_rows(spec: dict, state: str, panel: pd.DataFrame) -> pd.DataFrame:
 
 def test_same_state_standardising_goes_through_the_sealed_transform(spec: dict):
     """Modes 1, 2 and 4 must bypass nothing at all."""
-    from lngfreight.hormuz_stress import apply_frozen_standardiser
+    from hormuz_throughput.hormuz_stress import apply_frozen_standardiser
 
     panel = _synthetic_panel(spec)
     lock = TuningLock()
@@ -212,7 +206,7 @@ def test_same_state_standardising_goes_through_the_sealed_transform(spec: dict):
 
 def test_the_transport_applies_july_constants_without_relabelling_august(spec: dict):
     """Mode 3: the exception is declared, narrow, and leaves provenance intact."""
-    from lngfreight.hormuz_stress import apply_frozen_standardiser
+    from hormuz_throughput.hormuz_stress import apply_frozen_standardiser
 
     panel = _synthetic_panel(spec)
     lock = TuningLock()
@@ -223,16 +217,13 @@ def test_the_transport_applies_july_constants_without_relabelling_august(spec: d
     subset = august_rows.loc[august_rows["horizon_days"].eq(7)]
     standardiser = july_system.standardisers[7]
 
-    # The sealed path still refuses: the seal is not weakened.
     with pytest.raises(MeasurementStateError, match="cannot silently transform"):
         standardiser.transform(subset, spec)
 
     transported = apply_frozen_standardiser(
         standardiser, subset, spec, detector_state=JULY, outcome_state=AUGUST
     )
-    # No row is relabelled; the artefacts never claim August rows were July.
     assert set(transported["measurement_state"]) == {AUGUST}
-    # And the July constants were the ones applied.
     for column, mean, scale in zip(
         standardiser.feature_columns, standardiser.means, standardiser.scales
     ):
@@ -244,7 +235,7 @@ def test_the_transport_applies_july_constants_without_relabelling_august(spec: d
 
 def test_a_transport_that_misdeclares_its_states_is_refused(spec: dict):
     """The declaration must match reality or the exception does not apply."""
-    from lngfreight.hormuz_stress import apply_frozen_standardiser
+    from hormuz_throughput.hormuz_stress import apply_frozen_standardiser
 
     panel = _synthetic_panel(spec)
     lock = TuningLock()
@@ -254,14 +245,11 @@ def test_a_transport_that_misdeclares_its_states_is_refused(spec: dict):
     august_rows = _scoring_rows(spec, AUGUST, panel)
     subset = august_rows.loc[august_rows["horizon_days"].eq(7)]
 
-    # Rows are August but the caller claims the outcomes are July.
     with pytest.raises(MeasurementStateError, match="rows carry"):
         apply_frozen_standardiser(
             july_system.standardisers[7], subset, spec,
             detector_state=AUGUST, outcome_state=JULY,
         )
-    # Outcomes declared correctly, but the detector state claimed is not the
-    # state the standardiser that was handed over was actually fitted on.
     with pytest.raises(MeasurementStateError, match="fitted on"):
         apply_frozen_standardiser(
             july_system.standardisers[7], subset, spec,
@@ -269,9 +257,6 @@ def test_a_transport_that_misdeclares_its_states_is_refused(spec: dict):
         )
 
 
-# ---------------------------------------------------------------------------
-# The no-tuning seal
-# ---------------------------------------------------------------------------
 
 
 def test_the_latch_starts_open_and_closes_one_way():
@@ -284,7 +269,6 @@ def test_the_latch_starts_open_and_closes_one_way():
     with pytest.raises(PostHormuzTuningError):
         lock.assert_estimation_allowed("fitting")
 
-    # There is deliberately no way to reopen it.
     assert not hasattr(lock, "reset")
     lock.note_hormuz_surveillance_read()
     assert lock.hormuz_surveillance_read is True
@@ -378,15 +362,11 @@ def test_scoring_leaves_the_system_digest_unchanged(spec: dict):
     assert set(scored["unit"]) == {spec["population"]["hormuz_unit"]}
     assert set(scored["model"]) == {RIDGE_MODEL, SEASONAL_NAIVE}
     assert "local_ar_1_7" not in set(scored["model"])
-    # Scoring covers the frozen surveillance window and nothing outside it.
     targets = pd.to_datetime(scored["target_timestamp"])
     assert targets.min() >= pd.Timestamp(spec["dates"]["hormuz_surveillance_start"])
     assert targets.max() <= pd.Timestamp(spec["dates"]["scoring_end"])
 
 
-# ---------------------------------------------------------------------------
-# Synthetic: alarms and severity
-# ---------------------------------------------------------------------------
 
 
 def _alarm(pattern: str, spec: dict, start: str = "2026-02-28"):
@@ -402,7 +382,6 @@ def test_an_isolated_exceedance_does_not_raise_an_alarm(spec: dict):
 def test_the_alarm_is_dated_from_the_first_of_its_consecutive_exceedances(spec: dict):
     outcome = _alarm("..XX.", spec)
     assert outcome.fired is True
-    # Onset is 2026-02-28; the pair starts on the third day.
     assert outcome.alarm_date == pd.Timestamp("2026-03-02")
     assert outcome.delay_days == 2.0
 
@@ -410,8 +389,8 @@ def test_the_alarm_is_dated_from_the_first_of_its_consecutive_exceedances(spec: 
 def test_severity_averages_the_score_over_the_frozen_windows(spec: dict):
     dates = pd.date_range("2026-02-28", periods=40, freq="D")
     scores = np.zeros(40)
-    scores[0:2] = 10.0  # the alarm pair
-    scores[2:7] = 20.0  # rest of the 7-day window
+    scores[0:2] = 10.0
+    scores[2:7] = 20.0
     outcome = first_alarm(dates, scores, spec, threshold=5.0)
     assert outcome.fired is True
     assert outcome.severity_7_day == pytest.approx((2 * 10.0 + 5 * 20.0) / 7.0)
@@ -426,9 +405,6 @@ def test_a_detector_that_never_exceeds_reports_no_alarm_and_no_severity(spec: di
     assert np.isnan(outcome.severity_7_day)
 
 
-# ---------------------------------------------------------------------------
-# Synthetic: the rescaling invariance the plan requires
-# ---------------------------------------------------------------------------
 
 
 def test_rescaling_a_whole_series_leaves_the_scale_invariant_detector_unchanged(spec: dict):
@@ -483,9 +459,6 @@ def test_rescaling_does_move_the_raw_level_detector(spec: dict):
     assert not np.allclose(results[0], results[1])
 
 
-# ---------------------------------------------------------------------------
-# Synthetic: the cross-vintage decomposition
-# ---------------------------------------------------------------------------
 
 
 def test_the_proportional_constant_is_recovered_exactly(spec: dict):
@@ -501,7 +474,6 @@ def test_a_purely_proportional_revision_leaves_no_residual(spec: dict):
     constant, frame = decompose_revision(july, august, fit_end=pd.Timestamp("2025-11-30"))
     assert constant == pytest.approx(0.83)
     assert np.allclose(frame["residual_revision"].to_numpy(), 0.0, atol=1e-9)
-    # And the split is estimated on pre-surveillance days alone.
     assert frame["pre_surveillance"].sum() == (index <= pd.Timestamp("2025-11-30")).sum()
 
 
@@ -513,7 +485,6 @@ def test_a_non_proportional_revision_lands_in_the_residual(spec: dict):
     august = august + pd.Series(np.where(bump, -7.0, 0.0), index=index)
 
     constant, frame = decompose_revision(july, august, fit_end=pd.Timestamp("2025-11-30"))
-    # The constant is estimated pre-surveillance, so the bump does not enter it.
     assert constant == pytest.approx(0.9, abs=1e-6)
     pre = frame.loc[frame["pre_surveillance"], "residual_revision"].to_numpy()
     bumped = frame["date"] >= pd.Timestamp("2026-01-01")
@@ -529,13 +500,6 @@ def test_the_decomposition_needs_a_pre_surveillance_overlap(spec: dict):
         decompose_revision(series, series, fit_end=pd.Timestamp("2025-11-30"))
 
 
-# ---------------------------------------------------------------------------
-# Execution-artifact contract: what A4 evaluates and what it records
-#
-# These guard the 2026-08-28 correction. Every one of them is about scope and
-# provenance; none touches a model, a threshold, a scale, a prediction, an
-# alarm or a severity value, and none may be satisfied by changing one.
-# ---------------------------------------------------------------------------
 
 
 def test_every_scoring_mode_declares_the_forms_it_evaluates(spec: dict):
@@ -592,7 +556,6 @@ def test_the_declared_cell_set_is_the_declared_cross_product(spec: dict):
 
     models = set(final_cfg["modes"][3]["models_scored_on_hormuz"])
     horizons = {int(h) for h in spec["tasks"]["horizons_days"]}
-    # Two same-state modes at both forms, plus one transport at one form.
     assert len(declared) == (2 * 2 + 1 * 1) * len(models) * len(horizons)
 
     transport = final_cfg["modes"][2]["name"]
@@ -673,14 +636,12 @@ def test_the_git_checkpoint_records_that_it_was_taken_before_writing(spec: dict)
     checkpoint = runner._git_checkpoint()
     assert checkpoint["captured"] == "before_writing_outputs"
     assert set(checkpoint) == {"commit", "branch", "dirty", "dirty_entries", "captured"}
-    # `dirty` must be derived from the porcelain listing it also reports, so the
-    # two can never disagree about the same checkout.
     assert checkpoint["dirty"] is bool(checkpoint["dirty_entries"])
 
 
 def test_the_plan_hash_is_declared_and_matches_the_plan_on_disk(spec: dict):
-    from lngfreight.global_forecaster import sha256_file
-    from lngfreight import config as lngconfig
+    from hormuz_throughput.global_forecaster import sha256_file
+    from hormuz_throughput import config as lngconfig
 
     plan = spec["plan"]
     assert len(plan["sha256"]) == 64
@@ -738,7 +699,7 @@ def test_every_output_the_run_writes_is_declared_in_the_config(spec: dict):
 
 
 def test_the_plan_lists_every_declared_output(spec: dict):
-    from lngfreight import config as lngconfig
+    from hormuz_throughput import config as lngconfig
 
     plan_text = (lngconfig.ROOT / spec["plan"]["path"]).read_text()
     for path in spec["final"]["outputs"].values():

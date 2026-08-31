@@ -302,7 +302,7 @@ modeling:
       Only if pre-treatment fit and interval coverage improve materially, or
       Prof. Li makes a Transformer a hard architecture requirement.
 
-  # Chronological rolling-origin validation (src/lngfreight/validation.py).
+  # Chronological rolling-origin validation (src/hormuz_throughput/validation.py).
   # Discipline: training+validation use ONLY pre-treatment data; never random-split.
   validation:
     scheme: "expanding"          # expanding (growing train) | sliding (fixed-length train)

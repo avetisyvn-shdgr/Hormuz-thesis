@@ -210,7 +210,6 @@ def evaluate_panel(
             flush=True,
         )
 
-        # Past-only forecasting league.
         for column_index, (port, vessel_class) in enumerate(wide.columns):
             scale = mase_scale(train[:, column_index])
             for model, prediction in (
@@ -235,7 +234,6 @@ def evaluate_panel(
                 daily_chunks.append(chunk)
                 score_rows.append(_score_chunk(chunk))
 
-        # Donor-assisted league. Complete chokepoints are masked together.
         for group in sorted(set(groups.values())):
             missing = _mask_for_group(wide.columns, groups, group)
             missing_indices = np.flatnonzero(missing)

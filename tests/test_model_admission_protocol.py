@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import json
 
 import pandas as pd
 import pytest
 
-from lngfreight import config
+from hormuz_throughput import config
 from build_model_admission_protocol import (
     EXPECTED_PRIMARY_MODELS,
+    HASH_MIGRATIONS_PATH,
     _verify_known_result,
     build_tables,
     load_protocol,
@@ -34,6 +36,18 @@ def test_protocol_is_an_ex_post_four_specification_governance_lock():
     assert included["locked_cutoff"].eq("2026-02-28").all()
     assert included["scoring_end"].eq("2026-07-07").all()
     assert included["unit"].eq("transits_per_day").all()
+
+
+def test_hash_migrations_are_explicit_and_fail_closed():
+    migrations = json.loads(HASH_MIGRATIONS_PATH.read_text())["migrations"]
+    assert len(migrations) == 5
+    assert len({item["path"] for item in migrations}) == len(migrations)
+    for item in migrations:
+        assert len(item["historical_sha256"]) == 64
+        assert len(item["current_sha256"]) == 64
+        assert item["historical_sha256"] != item["current_sha256"]
+        assert item["verification"].strip()
+        assert item["reason"].strip()
 
 
 def test_preperiod_admission_is_distinct_from_common_window_support():

@@ -43,9 +43,9 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight import observability_frontier as of  # noqa: E402
-from lngfreight.specification import working_specification  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput import observability_frontier as of  # noqa: E402
+from hormuz_throughput.specification import working_specification  # noqa: E402
 
 
 COUNTERFACTUAL_SUMMARY = "counterfactual_post_treatment_summary.csv"
@@ -59,14 +59,8 @@ GRID_OUT = "observability_breakdown_grid.csv"
 CALIBRATION_OUT = "observability_claim_calibration.csv"
 SUMMARY_OUT = "observability_breakdown_summary.json"
 
-# Reference window for "normal" daily throughput. The trailing pre-treatment year
-# is used rather than the full 2022-2026 history so the plausibility comparison
-# is against recent operating conditions, not a four-year average that spans
-# different market regimes.
 PRETREATMENT_REFERENCE_DAYS = 365
 
-# Dark rates the author might be willing to concede as possible. These are
-# reporting anchors for the claim-calibration table, not estimates.
 TOLERATED_DARK_RATES = (0.05, 0.10, 0.20, 0.30)
 
 
@@ -237,9 +231,6 @@ def run_target(
     )
     of.assert_false_positive_direction(grid)
 
-    # The legacy AIS-dark bound exists for the primary outcome only. Skipping is
-    # recorded explicitly rather than swallowed, so a run without the cross-check
-    # is visibly a weaker run.
     shared_cells = of.legacy_cross_check_cells(frontier, legacy)
     if shared_cells:
         of.assert_point_scenario_matches_legacy_bound(frontier, legacy)

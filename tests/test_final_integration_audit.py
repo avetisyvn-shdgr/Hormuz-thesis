@@ -12,8 +12,8 @@ import json
 import pandas as pd
 import pytest
 
-from lngfreight import config
-from lngfreight.claim_audit import (
+from hormuz_throughput import config
+from hormuz_throughput.claim_audit import (
     StalePattern,
     clearing_marker,
     context_window,
@@ -40,6 +40,7 @@ from run_final_integration_audit import (
     output_path,
     sha256_file,
     stale_patterns,
+    verify_claim_value,
 )
 
 
@@ -92,9 +93,6 @@ needs_outputs = pytest.mark.skipif(
 )
 
 
-# --------------------------------------------------------------------------
-# The scanner must still bite
-# --------------------------------------------------------------------------
 
 
 def test_planted_stale_claims_are_all_flagged():
@@ -120,9 +118,6 @@ def test_each_asserted_sentence_is_flagged_individually(sentence):
     assert any(row["verdict"] == "flagged" for row in rows)
 
 
-# --------------------------------------------------------------------------
-# The scanner must not cry wolf
-# --------------------------------------------------------------------------
 
 
 def test_hedged_text_is_cleared():
@@ -179,9 +174,6 @@ def test_clearing_marker_reports_why_it_cleared():
     assert clearing_marker("the att value", "the att value") is None
 
 
-# --------------------------------------------------------------------------
-# Layer separation
-# --------------------------------------------------------------------------
 
 
 def test_conflating_portwatch_with_lng_specific_is_flagged():
@@ -207,9 +199,6 @@ def test_contrasted_or_listed_layers_are_cleared(line):
         assert hits.iloc[0]["verdict"] == "cleared"
 
 
-# --------------------------------------------------------------------------
-# Citation checking
-# --------------------------------------------------------------------------
 
 
 def test_uncited_number_is_reported_and_cited_number_is_not():
@@ -225,9 +214,6 @@ def test_uncited_number_is_reported_and_cited_number_is_not():
     assert cited == []
 
 
-# --------------------------------------------------------------------------
-# Claim ledger and defence answers
-# --------------------------------------------------------------------------
 
 
 def test_every_claim_cites_an_existing_artifact_and_a_limitation():
@@ -235,8 +221,17 @@ def test_every_claim_cites_an_existing_artifact_and_a_limitation():
     ledger = build_claim_ledger(design)
     assert ledger["artifact_exists"].all()
     assert ledger["artifact_sha256"].str.len().eq(64).all()
+    assert ledger["value_verified"].all()
     assert not ledger["limitation"].str.strip().eq("").any()
     assert not ledger["claim_id"].duplicated().any()
+
+
+def test_claim_text_must_match_the_executable_evidence_check():
+    design, _ = _design()
+    corrupted = dict(design["claim_ledger"][0])
+    corrupted["value"] = "999 fabricated units"
+    with pytest.raises(AssertionError, match="does not match verified evidence"):
+        verify_claim_value(corrupted)
 
 
 def test_ledger_keeps_portwatch_and_wto_layers_separate():
@@ -299,9 +294,6 @@ def test_missing_defence_answer_is_rejected():
         build_defence_answers(broken, ledger)
 
 
-# --------------------------------------------------------------------------
-# Governance and generated artifacts
-# --------------------------------------------------------------------------
 
 
 def test_design_preserves_the_governance_boundaries():
@@ -321,10 +313,10 @@ def test_open_reproducibility_boundaries_are_declared():
     boundaries = design["open_reproducibility_boundaries"]
     assert "august_raw_byte_archive" in boundaries
     assert "historical_source_payload_gaps" in boundaries
-    assert "core_run_manifest_staleness" in boundaries
-    assert boundaries["core_run_manifest_staleness"][
-        "requires_explicit_approval"
-    ] is True
+    assert "core_run_manifest_refresh" in boundaries
+    assert boundaries["core_run_manifest_refresh"]["status"] == (
+        "CONTROLLED_BY_RUN_ALL"
+    )
     for spec in boundaries.values():
         assert spec["blocks_submission"] is False
         assert str(spec["description"]).strip()
@@ -340,7 +332,10 @@ def test_upstream_manifests_are_present():
 def test_excluded_paths_are_recorded_not_silent():
     design, _ = _design()
     excluded = design["excluded_paths"]
-    assert "docs/DECISION_LOG.md" in excluded
+    assert set(excluded) == {
+        "reports/audit/final_evidence_to_claim_audit.md",
+        "reports/audit/defence_preparation.md",
+    }
     documents = collect_documents(design)
     for path in excluded:
         assert path not in documents
@@ -385,7 +380,7 @@ def test_documents_state_the_boundaries_and_open_items():
     assert "NEEDS-VERIFY" in audit and "NEEDS-VERIFY" in defence
     assert "formal proposal is unedited" in audit
     assert "august_raw_byte_archive" in audit
-    assert "core_run_manifest_staleness" in audit
+    assert "core_run_manifest_refresh" in audit
     for key in ("arx_admissibility", "mutable_vintage"):
         question = next(
             item["question"]

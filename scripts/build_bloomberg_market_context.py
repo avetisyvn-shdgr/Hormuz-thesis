@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import sys
 
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/hormuz_throughput-matplotlib")
 
 import matplotlib  # noqa: E402
 matplotlib.use("Agg")
@@ -23,15 +23,15 @@ from figure_style import (  # noqa: E402
     apply_publication_style,
     style_axes,
 )
-from lngfreight import config  # noqa: E402
-from lngfreight.bloomberg_admission import load_manifest  # noqa: E402
-from lngfreight.bloomberg_market import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.bloomberg_admission import load_manifest  # noqa: E402
+from hormuz_throughput.bloomberg_market import (  # noqa: E402
     build_market_context_panel,
     load_market_context,
 )
 
 PDF_METADATA = {
-    "Creator": "lngfreight reproducible pipeline",
+    "Creator": "hormuz_throughput reproducible pipeline",
     "CreationDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
     "ModDate": datetime(2026, 2, 28, tzinfo=timezone.utc),
 }
@@ -42,7 +42,6 @@ def _plot(panel: pd.DataFrame, cutoff: str) -> None:
     panel = panel.copy()
     panel["date"] = pd.to_datetime(panel["date"])
     fig, axes = plt.subplots(3, 1, figsize=(FIGURE_WIDTH_IN, 5.6), sharex=True)
-    # No in-figure headline title: the LaTeX caption carries it in the thesis.
     axes[0].plot(panel["date"], panel["ttf_eur_per_mwh"], color="#2F6690", linewidth=1.0)
     axes[0].set_title("A. Netherlands TTF day-ahead", loc="left", pad=4)
     axes[0].set_ylabel("EUR/MWh")

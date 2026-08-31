@@ -16,8 +16,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.transmission_chain import build_evidence_cascade  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.transmission_chain import build_evidence_cascade  # noqa: E402
 
 PROC = config.ROOT / "data/processed"
 
@@ -44,7 +44,6 @@ def _load():
     decomp = json.loads((PROC / "inferred_capacity_nautical_miles_decomposition.json").read_text())
     composition_share = 100.0 * decomp["common_route_composition_change"] / decomp["common_route_total_change"]
 
-    # Destination risers: alternative corridors above their counterfactual (n_tanker).
     risers = results.loc[results["target"].eq("n_tanker")].nlargest(3, "signed_deviation")
     destination_risers = dict(zip(risers["corridor"], risers["signed_deviation"]))
 

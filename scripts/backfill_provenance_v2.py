@@ -13,9 +13,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config, provenance  # noqa: E402
-from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
-from lngfreight.sources.base import SourcePayload  # noqa: E402
+from hormuz_throughput import config, provenance  # noqa: E402
+from hormuz_throughput.registry import RegisteredArtifact, get_variable  # noqa: E402
+from hormuz_throughput.sources.base import SourcePayload  # noqa: E402
 
 
 IMPORTER_REGISTRY_VARIABLES = {

@@ -33,7 +33,6 @@ base_sum = pd.read_csv(PROCESSED / "baseline_summary.csv")
 ar_int = pd.read_csv(PROCESSED / "ar_interval_scores.csv")
 adm = pd.read_csv(PROCESSED / "tsfm_admission_test.csv")
 
-# 1. No fold silently dropped: every model scores the same fold set.
 fold_sets = pd.concat([tsfm[["model", "target", "fold"]], base[["model", "target", "fold"]]])
 counts = fold_sets.groupby(["model", "target"]).fold.nunique()
 check(
@@ -42,7 +41,6 @@ check(
     f"fold counts = {sorted(counts.unique())}",
 )
 
-# 2. Fold windows identical across families -- otherwise MASE is not comparable.
 kt = tsfm[["fold", "target", "test_start", "test_end", "n_scored"]].drop_duplicates()
 kb = base[["fold", "target", "test_start", "test_end", "n_scored"]].drop_duplicates()
 merged = kt.merge(kb, on=["fold", "target"], suffixes=("_t", "_b"), how="outer", indicator=True)
@@ -54,11 +52,9 @@ aligned = (
 )
 check("TSFM and baseline fold windows are identical", aligned)
 
-# 3. Constant scoring horizon.
 horizons = set(tsfm.n_scored) | set(base.n_scored)
 check("scoring horizon is constant across folds", len(horizons) == 1, f"n_scored = {horizons}")
 
-# 4. Recomputed means reproduce the summary files.
 r = tsfm.groupby(["model", "target"]).mase.mean().rename("recomputed").reset_index()
 m = tsfm_sum.merge(r, on=["model", "target"])
 check(
@@ -74,7 +70,6 @@ check(
     f"max |delta| = {(mb.mase_mean - mb.recomputed).abs().max():.2e}",
 )
 
-# 5. Coverage nominal levels are not pooled across incomparable levels.
 nom = tsfm.groupby("model").nominal_coverage.nunique()
 check(
     "each model reports a single nominal coverage level",
@@ -88,7 +83,6 @@ if len(levels) > 1:
         "against the diagonal, never as a single pooled coverage ranking"
     )
 
-# 6. Conformal AR intervals cover only a fold subset -- confirm, do not assume.
 ar_folds, all_folds = set(ar_int.fold), set(tsfm.fold)
 check(
     "AR conformal interval folds are a subset of the benchmark folds",
@@ -96,7 +90,6 @@ check(
     f"{len(ar_folds)} of {len(all_folds)} folds (calibration warm-up excluded)",
 )
 
-# 7. Does the frozen admission test still reconcile with the current scores?
 ar_now = base[base.model == "ar_lag1_7"].groupby("target").mase.mean()
 tsfm_now = tsfm.groupby(["model", "target"]).mase.mean()
 stale = []
@@ -120,7 +113,6 @@ check(
     "; ".join(sorted(set(stale))[:4]) + (" ..." if len(set(stale)) > 4 else ""),
 )
 
-# 8. Re-derive the admission verdicts from current data.
 print("\nAdmission test recomputed from current scores (AR-only reference):")
 cov_err = (
     tsfm.assign(err=tsfm.empirical_coverage - tsfm.nominal_coverage)
@@ -141,7 +133,6 @@ for (model, target), mase in tsfm_now.items():
         f" vs AR {ar_cov_err.get(target, float('nan')):+.4f}  admitted={beats and keeps}"
     )
 
-# 9. Nothing plotted falls outside its axis range (silent clipping).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from make_tsfm_benchmark_interactive import build_figure, load_coverage, load_scores
 

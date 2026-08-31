@@ -11,13 +11,10 @@ import pandas as pd
 import pytest
 
 
-from lngfreight.sources import spark as spark_mod
-from lngfreight.sources.spark import SparkSource, business_day_coverage
+from hormuz_throughput.sources import spark as spark_mod
+from hormuz_throughput.sources.spark import SparkSource, business_day_coverage
 
 
-# --------------------------------------------------------------------------
-# helpers: build realistic mocked API payloads (shape from Spark sample code)
-# --------------------------------------------------------------------------
 def _release(date: str, price):
     """One price-release dict, matching the real Spark response shape. `price`
     is the raw usdPerDay 'spark' string, or None to simulate a missing one."""
@@ -69,9 +66,6 @@ def _patch_releases(monkeypatch, releases):
     monkeypatch.setenv("SPARK_CLIENT_SECRET", "secret")
 
 
-# --------------------------------------------------------------------------
-# credential + input contract
-# --------------------------------------------------------------------------
 def test_missing_credentials_fails_loudly(monkeypatch):
     monkeypatch.delenv("SPARK_CLIENT_ID", raising=False)
     monkeypatch.delenv("SPARK_CLIENT_SECRET", raising=False)
@@ -80,21 +74,16 @@ def test_missing_credentials_fails_loudly(monkeypatch):
 
 
 def test_unsupported_code_rejected():
-    # No credentials needed: the code check happens first and must reject
-    # anything that is not a spot target (e.g. an FFA/forward ticker).
     with pytest.raises(ValueError, match="spot targets"):
         SparkSource().fetch("Spark30FFA", "2026-02-01", "2026-03-01")
 
 
-# --------------------------------------------------------------------------
-# happy path
-# --------------------------------------------------------------------------
 def test_fetch_returns_tidy_contract(monkeypatch):
     releases = [
-        _release("2026-03-30", "40000"),   # newest-first, as the API returns
+        _release("2026-03-30", "40000"),
         _release("2026-02-03", "31000"),
         _release("2026-02-02", "30000"),
-        _release("2026-01-10", "12000"),   # out of window -> filtered
+        _release("2026-01-10", "12000"),
     ]
     _patch_releases(monkeypatch, releases)
 
@@ -102,7 +91,6 @@ def test_fetch_returns_tidy_contract(monkeypatch):
 
     assert list(out.columns) == ["date", "value"]
     assert str(out["value"].dtype) == "float64"
-    # sorted ascending, window-filtered, string prices cast to float:
     assert list(out["date"]) == [pd.Timestamp("2026-02-02"),
                                  pd.Timestamp("2026-02-03"),
                                  pd.Timestamp("2026-03-30")]
@@ -116,7 +104,6 @@ def test_code_maps_case_insensitively(monkeypatch):
 
 
 def test_weekend_window_start_is_not_treated_as_truncation(monkeypatch):
-    # 2022-01-01 is Saturday; the first expected assessment is Monday Jan 3.
     releases = [_release("2022-01-04", "31000"),
                 _release("2022-01-03", "30000")]
     _patch_releases(monkeypatch, releases)
@@ -138,12 +125,9 @@ def test_business_day_coverage_rejects_recent_trial_slice():
     assert coverage["leading_missing_business_days"] > 5
 
 
-# --------------------------------------------------------------------------
-# anti-fabrication + discipline
-# --------------------------------------------------------------------------
 def test_null_assessment_is_skipped_not_imputed(monkeypatch):
     releases = [
-        _release("2026-02-03", None),       # missing assessment -> dropped
+        _release("2026-02-03", None),
         _release("2026-02-02", "30000"),
     ]
     _patch_releases(monkeypatch, releases)
@@ -153,8 +137,6 @@ def test_null_assessment_is_skipped_not_imputed(monkeypatch):
 
 
 def test_truncated_history_fails_loudly(monkeypatch):
-    # Earliest available release is AFTER the requested start -> the tier
-    # truncated history; must raise rather than silently shorten the pre-period.
     releases = [_release("2026-02-06", "31000"), _release("2026-02-05", "30000")]
     _patch_releases(monkeypatch, releases)
     with pytest.raises(ValueError, match="starts at"):
@@ -167,9 +149,6 @@ def test_no_releases_in_window_raises(monkeypatch):
         SparkSource().fetch("Spark30S", "2026-02-01", "2026-02-28")
 
 
-# --------------------------------------------------------------------------
-# HTTP boundary: auth + GET (mocked requests, no real network)
-# --------------------------------------------------------------------------
 def test_get_access_token_parses_token(monkeypatch):
     fake = types.SimpleNamespace(
         post=lambda *a, **k: _FakeResp({"accessToken": "abc123", "expiresIn": 1799}),

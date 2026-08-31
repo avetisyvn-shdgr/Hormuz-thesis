@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight.propagation import (
+from hormuz_throughput.propagation import (
     EventSpec,
     fit_propagation,
     reallocation_share,
@@ -91,7 +91,7 @@ def test_sanity_gate_reports_rank():
 
 
 def test_pair_reallocation_reports_recovered_fraction():
-    from lngfreight.propagation import pair_reallocation
+    from hormuz_throughput.propagation import pair_reallocation
 
     panel = _panel(n_days=1400)
     spec = EventSpec("a", "unit_0", pd.Timestamp("2022-01-01"))

@@ -24,8 +24,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.inference import block_residual_sums, residual_quantiles  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.inference import block_residual_sums, residual_quantiles  # noqa: E402
 
 
 ALPHA = 0.05

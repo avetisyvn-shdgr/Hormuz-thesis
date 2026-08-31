@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lngfreight.bsts import (
+from hormuz_throughput.bsts import (
     fit_bsts_forecast,
     posterior_predictive_check,
     posterior_shortfall,

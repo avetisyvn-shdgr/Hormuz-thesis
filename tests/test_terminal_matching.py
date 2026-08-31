@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from lngfreight.terminal_matching import (
+from hormuz_throughput.terminal_matching import (
     build_terminal_crosswalk,
     haversine_km,
     load_operating_terminals,

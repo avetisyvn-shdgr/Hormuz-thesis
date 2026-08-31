@@ -53,7 +53,7 @@
   "scaling_or_calibration_applied": false,
   "zero_lag_correlations": [
     {
-      "correlation": 0.22547822582921564,
+      "correlation": 0.22547822582921617,
       "frequency": "daily",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_departure_calls",
@@ -71,7 +71,7 @@
       "sample_period": "post"
     },
     {
-      "correlation": 0.25631492030020625,
+      "correlation": 0.25631492030020686,
       "frequency": "daily",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_nominal_departure_capacity_m3",
@@ -89,7 +89,7 @@
       "sample_period": "post"
     },
     {
-      "correlation": 0.42449969640174157,
+      "correlation": 0.4244996964017413,
       "frequency": "daily",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_departure_calls",
@@ -107,7 +107,7 @@
       "sample_period": "pre"
     },
     {
-      "correlation": 0.4323504483172412,
+      "correlation": 0.43235044831724084,
       "frequency": "daily",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_nominal_departure_capacity_m3",
@@ -125,7 +125,7 @@
       "sample_period": "pre"
     },
     {
-      "correlation": 0.47070846279542294,
+      "correlation": 0.47070846279542305,
       "frequency": "complete_7d_bins",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_departure_calls",
@@ -143,7 +143,7 @@
       "sample_period": "post"
     },
     {
-      "correlation": 0.4710893929840129,
+      "correlation": 0.471089392984013,
       "frequency": "complete_7d_bins",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_nominal_departure_capacity_m3",
@@ -161,7 +161,7 @@
       "sample_period": "post"
     },
     {
-      "correlation": 0.4397195316043869,
+      "correlation": 0.439719531604387,
       "frequency": "complete_7d_bins",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_departure_calls",
@@ -179,7 +179,7 @@
       "sample_period": "pre"
     },
     {
-      "correlation": 0.46322347859490903,
+      "correlation": 0.4632234785949092,
       "frequency": "complete_7d_bins",
       "gfw_lag_days": 0,
       "gfw_measure": "gfw_nominal_departure_capacity_m3",

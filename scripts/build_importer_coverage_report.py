@@ -7,12 +7,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.importer_coverage import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.importer_coverage import (  # noqa: E402
     build_coverage_matrix,
     coverage_summary,
 )
-from lngfreight.registry import RegisteredArtifact, get_variable  # noqa: E402
+from hormuz_throughput.registry import RegisteredArtifact, get_variable  # noqa: E402
 
 
 def _render_report(matrix, summary: dict[str, object]) -> str:

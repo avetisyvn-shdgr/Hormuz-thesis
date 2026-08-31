@@ -40,8 +40,6 @@ STEPS = [
     ("Run independent-block and conformal inference", ["scripts/run_block_inference.py"]),
     ("Calibrate residual intervals", ["scripts/run_interval_calibration.py"]),
     (
-        # Depends on the counterfactual, the block-bootstrap intervals, the
-        # conformal intervals, and the legacy AIS-dark bound it cross-checks.
         "Map the observability/counterfactual breakdown frontier",
         ["scripts/run_observability_breakdown_frontier.py"],
     ),
@@ -80,15 +78,73 @@ STEPS = [
     ("Build modeled vessel-day estimates", ["scripts/build_vessel_day_estimates.py"]),
     ("Refresh vessel-data feasibility audit", ["scripts/run_vessel_data_feasibility.py"]),
     (
-        # PortWatch vintage/regime descriptive layers. Both read the
-        # counterfactual post-treatment summary, so they follow the inference
-        # block. Neither promotes the candidate vintage.
         "Run PortWatch vintage and window sensitivity",
         ["scripts/run_portwatch_vintage_sensitivity.py"],
     ),
     (
         "Profile the rebound/relapse regime phases",
         ["scripts/run_rebound_relapse_profile.py"],
+    ),
+    (
+        "Build core model-vintage matrix cells",
+        ["scripts/run_model_vintage_matrix.py", "--phase", "core"],
+    ),
+    (
+        "Build Chronos model-vintage matrix cells",
+        [
+            ".venv-bench/bin/python",
+            "scripts/run_model_vintage_matrix.py",
+            "--phase",
+            "chronos",
+        ],
+    ),
+    (
+        "Finalize model-vintage matrix",
+        ["scripts/run_model_vintage_matrix.py", "--phase", "finalize"],
+    ),
+    (
+        "Freeze completed PortWatch sensitivity branch",
+        ["scripts/freeze_portwatch_sensitivity_complete.py"],
+    ),
+    (
+        "Render PortWatch sensitivity comparison",
+        ["scripts/make_portwatch_sensitivity_budget_card.py"],
+    ),
+    (
+        "Freeze PortWatch sensitivity comparison",
+        ["scripts/freeze_portwatch_sensitivity_budget_card.py"],
+    ),
+    (
+        "Build horizon-resolution inference frontier",
+        ["scripts/run_horizon_resolution_frontier.py"],
+    ),
+    (
+        "Freeze horizon-resolution inference frontier",
+        ["scripts/freeze_horizon_resolution_frontier.py"],
+    ),
+    (
+        "Build network-support frontier",
+        ["scripts/run_network_support_frontier.py"],
+    ),
+    (
+        "Freeze network-support frontier",
+        ["scripts/freeze_network_support_frontier.py"],
+    ),
+    (
+        "Build route-burden decomposition",
+        ["scripts/run_route_burden_decomposition.py"],
+    ),
+    (
+        "Freeze route-burden decomposition",
+        ["scripts/freeze_route_burden_decomposition.py"],
+    ),
+    (
+        "Build public-data governance decisions",
+        ["scripts/run_public_data_gate_decisions.py"],
+    ),
+    (
+        "Freeze public-data governance decisions",
+        ["scripts/freeze_public_data_gate_decisions.py"],
     ),
     ("Refresh integrated mechanism results", ["scripts/make_mechanism_summary.py"]),
     ("Render inspectable run outputs", ["scripts/make_run_output.py"]),
@@ -99,14 +155,16 @@ STEPS = [
     ),
     ("Audit provenance coverage", ["scripts/audit_provenance.py"]),
     (
-        # Capstone: asserts every thesis claim cites an existing artifact and a
-        # limitation, so it must run after every artifact-producing step above.
         "Run the final integration audit",
         ["scripts/run_final_integration_audit.py"],
     ),
     (
         "Freeze the final integration audit",
         ["scripts/freeze_final_integration_audit.py"],
+    ),
+    (
+        "Freeze regenerated reproducibility manifest",
+        ["scripts/freeze_reproducibility.py"],
     ),
     ("Recheck frozen raw snapshots", ["scripts/freeze_reproducibility.py", "--check"]),
     ("Run full test suite", ["-m", "pytest", "-q"]),
@@ -144,6 +202,13 @@ def _emit(text: str, transcript) -> None:
     transcript.flush()
 
 
+def _normalize_transcript_line(line: str) -> str:
+    """Remove line-end whitespace while preserving whether a newline existed."""
+    has_newline = line.endswith(("\n", "\r"))
+    normalized = line.rstrip()
+    return normalized + ("\n" if has_newline else "")
+
+
 def _run_step(command: list[str], env: dict[str, str], transcript) -> None:
     process = subprocess.Popen(
         command,
@@ -156,7 +221,7 @@ def _run_step(command: list[str], env: dict[str, str], transcript) -> None:
     )
     assert process.stdout is not None
     for line in process.stdout:
-        _emit(line, transcript)
+        _emit(_normalize_transcript_line(line), transcript)
     return_code = process.wait()
     if return_code:
         raise subprocess.CalledProcessError(return_code, command)
@@ -171,7 +236,7 @@ def main() -> int:
     env["NUMEXPR_NUM_THREADS"] = "1"
     env["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
     env["PYTHONUNBUFFERED"] = "1"
-    env.setdefault("MPLCONFIGDIR", "/tmp/lngfreight-matplotlib")
+    env.setdefault("MPLCONFIGDIR", "/tmp/hormuz_throughput-matplotlib")
     env.setdefault("HF_HUB_OFFLINE", "1")
     env.setdefault("TRANSFORMERS_OFFLINE", "1")
     steps = list(STEPS)
@@ -190,7 +255,7 @@ def main() -> int:
     RUN_TRANSCRIPT.parent.mkdir(parents=True, exist_ok=True)
     with RUN_TRANSCRIPT.open("w", encoding="utf-8", buffering=1) as transcript:
         _emit(
-            "LNG freight reproducibility run transcript\n"
+            "Hormuz tanker-throughput reproducibility run transcript\n"
             f"step_count={len(steps)}\n"
             f"bloomberg_layer_enabled={env.get('ENABLE_BLOOMBERG_LAYER') == '1'}\n",
             transcript,

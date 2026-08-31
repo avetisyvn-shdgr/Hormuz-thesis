@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "migrations": [
+    {
+      "path": "data/processed/counterfactual_post_treatment.csv",
+      "historical_sha256": "f1ca455188893375b3711ee6e2eac3af9c6fd9b1cdc5df498118db2bef242267",
+      "current_sha256": "3c68d78e40a7a8f352bdaf440b1af5d0c1d4ba8ebb3313edd2aeaffbd9d91e28",
+      "verification": "model-admission support, units, formulas, and declared values are recomputed from the current artifact",
+      "reason": "Deterministic regeneration after the package migration changed floating-point CSV serialization."
+    },
+    {
+      "path": "data/processed/bsts_counterfactual_daily.csv",
+      "historical_sha256": "a6646e880a726b29db28b926602c7448a4b44f24f10d26084134464fd5288c20",
+      "current_sha256": "e583ff7fd98baf941f61a23e3342d22abb5dba2bfef65226b82ecfaab53ead9a",
+      "verification": "model-admission support, units, formulas, and declared values are recomputed from the current artifact",
+      "reason": "Deterministic regeneration changed only sub-1e-12 floating-point serialization."
+    },
+    {
+      "path": "data/processed/bsts_counterfactual_summary.csv",
+      "historical_sha256": "8f2e8bb6fa75dbfab8e183ec549e854863daad380f1c0f3dadc7fc1ac84577b8",
+      "current_sha256": "fd7bee1d919d7f8121a12dd2a8bba25f1c57e02ddcb1b3ac67a9d092bffc14f1",
+      "verification": "model-admission support, units, formulas, and declared values are recomputed from the current artifact",
+      "reason": "Deterministic regeneration changed only sub-4e-12 floating-point serialization."
+    },
+    {
+      "path": "data/processed/synthetic_control_summary.csv",
+      "historical_sha256": "b882a9584ca5114503f4561178840ac09d3789a053070f1b4ba7b1248dc59543",
+      "current_sha256": "41498198fbd3ae6504a49bcc1bcf50b325d41705872cf362605883cac8262d97",
+      "verification": "model-admission support, units, formulas, and declared values are recomputed from the current artifact",
+      "reason": "Deterministic regeneration after the package migration changed CSV bytes."
+    },
+    {
+      "path": "data/processed/portwatch_vintage_sensitivity.csv",
+      "historical_sha256": "95f104baf11f7e72abed7a9a074b25728eeb21aa34cf723c6838c17bbc8bfdc6",
+      "current_sha256": "1a0c3e5514af5a7a4b3d37942dc577076c878dbf45e24b210f9deb918ce26900",
+      "verification": "all six scenario rows are recomputed and checked against the locked declarations",
+      "reason": "Deterministic regeneration after the package migration changed floating-point CSV serialization."
+    }
+  ]
+}

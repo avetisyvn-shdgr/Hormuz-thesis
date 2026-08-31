@@ -340,7 +340,7 @@ variables:
       - "scripts/run_portwatch_vintage_sensitivity.py"
       - "scripts/run_rebound_relapse_profile.py"
       - "scripts/run_revision_and_basin_exploration.py"
-      - "src/lngfreight/vintage_matrix.py"
+      - "src/hormuz_throughput/vintage_matrix.py"
       # Added 2026-08-27 on Mher's instruction for Track B phase B1. The audit
       # reads this vintage as the SECOND measurement state of a revision audit
       # (see config/hormuz_measurement_audit.yaml). It does not promote the
@@ -382,6 +382,16 @@ variables:
     role: artifact
     description: "Manually assembled 31-vessel Q-Flex feasibility roster."
     status: free
+    auditability:
+      frozen_artifact_hash_verifiable: true
+      original_source_response_reconstructible: false
+      retained_evidence: "Manual roster with row-level Nakilat and IGU source URLs."
+      missing_evidence:
+        - "source_documents"
+        - "page_extracts"
+        - "transcription_log"
+      evidence_role: "extension_only"
+      affects_portwatch_primary: false
     primary:
       provider: frozen_artifact
       path: "data/raw/gfw/lng_vessel_benchmark.csv"
@@ -500,6 +510,16 @@ variables:
     role: artifact
     description: "Frozen Korea customs LNG imports by origin."
     status: free
+    auditability:
+      frozen_artifact_hash_verifiable: true
+      original_source_response_reconstructible: false
+      retained_evidence: "Normalized table capture and capture-method metadata."
+      missing_evidence:
+        - "original_rendered_response"
+        - "query_receipt"
+        - "contemporaneous_terms_capture"
+      evidence_role: "extension_only"
+      affects_portwatch_primary: false
     primary:
       provider: frozen_artifact
       path: "data/raw/importer_customs/kr_lng_imports_by_origin.csv"
@@ -523,6 +543,16 @@ variables:
     role: artifact
     description: "Frozen China customs LNG imports by origin."
     status: free
+    auditability:
+      frozen_artifact_hash_verifiable: true
+      original_source_response_reconstructible: false
+      retained_evidence: "Three portal-export CSV files, one for each queried year."
+      missing_evidence:
+        - "surrounding_html"
+        - "query_receipts"
+        - "contemporaneous_terms_capture"
+      evidence_role: "extension_only"
+      affects_portwatch_primary: false
     primary:
       provider: frozen_artifact
       path: "data/raw/importer_customs/cn_lng_imports_by_origin.csv"
@@ -535,6 +565,16 @@ variables:
     role: artifact
     description: "Frozen India customs LNG imports by origin."
     status: free
+    auditability:
+      frozen_artifact_hash_verifiable: true
+      original_source_response_reconstructible: false
+      retained_evidence: "Parsed concatenated table capture and acquisition script."
+      missing_evidence:
+        - "original_response_html"
+        - "response_headers"
+        - "contemporaneous_terms_capture"
+      evidence_role: "extension_only"
+      affects_portwatch_primary: false
     primary:
       provider: frozen_artifact
       path: "data/raw/importer_customs/in_lng_imports_by_origin.csv"

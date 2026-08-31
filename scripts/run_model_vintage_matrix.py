@@ -20,8 +20,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config  # noqa: E402
-from lngfreight.vintage_matrix import (  # noqa: E402
+from hormuz_throughput import config  # noqa: E402
+from hormuz_throughput.vintage_matrix import (  # noqa: E402
     load_design,
     load_vintage_series,
     pinned_self_checks,
@@ -34,6 +34,11 @@ from lngfreight.vintage_matrix import (  # noqa: E402
 
 
 CONSUMER = "scripts/run_model_vintage_matrix.py"
+LOCKFILE_PATH_MIGRATIONS = {
+    "requirements-benchmark.lock.txt": (
+        "requirements/locks/benchmark-py311-macos-arm64.txt"
+    ),
+}
 
 
 def _load() -> tuple[dict, str]:
@@ -93,7 +98,10 @@ def _verify_chronos_environment(design: dict) -> dict:
     spec = design["models"]["chronos2"]
     actual_python = platform.python_version()
     actual_package = importlib.metadata.version(spec["package"])
-    lock_path = config.ROOT / spec["lockfile"]
+    lock_relative = LOCKFILE_PATH_MIGRATIONS.get(
+        spec["lockfile"], spec["lockfile"]
+    )
+    lock_path = config.ROOT / lock_relative
     actual_lock = sha256_file(lock_path)
     if actual_python != spec["python_version"]:
         raise ValueError(
@@ -123,7 +131,7 @@ def _verify_chronos_environment(design: dict) -> dict:
 def run_chronos() -> None:
     design, digest = _load()
     runtime = _verify_chronos_environment(design)
-    from lngfreight.tsfm import (  # imported only in the isolated environment
+    from hormuz_throughput.tsfm import (
         Chronos2Adapter,
         configure_deterministic_execution,
     )

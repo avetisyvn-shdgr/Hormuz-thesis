@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from lngfreight.feasibility import build_vessel_feasibility_report
+from hormuz_throughput.feasibility import build_vessel_feasibility_report
 
 
 def _settings() -> dict:

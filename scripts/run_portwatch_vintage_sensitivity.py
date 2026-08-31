@@ -34,24 +34,19 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from lngfreight import config, registry  # noqa: E402
-from lngfreight.baselines import arx_forecast  # noqa: E402
-from lngfreight.validation import Fold, resolve_cutoff  # noqa: E402
+from hormuz_throughput import config, registry  # noqa: E402
+from hormuz_throughput.baselines import arx_forecast  # noqa: E402
+from hormuz_throughput.validation import Fold, resolve_cutoff  # noqa: E402
 
 PINNED_VARIABLE = "portwatch_chokepoints_snapshot"
 VINTAGE_VARIABLE = "portwatch_chokepoints_vintage_20260809_snapshot"
 
-# Column mapping for the two working-specification outcomes.
 TARGET_COLUMNS = {
     "hormuz_tanker_transits": "n_tanker",
     "hormuz_tanker_capacity": "capacity_tanker",
 }
 CHOKEPOINT = "Strait of Hormuz"
 
-# Sensitivity window end, 1-day buffer on the 2026-08-02 vintage max. The
-# v1/v2 rule was a 5-day buffer; the departure is deliberate and documented in
-# docs/PORTWATCH_VINTAGE_REGISTER.md so that the 2026-07-29 Damietta event
-# falls inside the analysed window.
 SENSITIVITY_FULL_END = pd.Timestamp("2026-08-01")
 
 REPRODUCTION_TOLERANCE = 1e-6
@@ -63,7 +58,7 @@ def _hormuz_series(csv_path: Path, column: str) -> pd.Series:
     ``imputation.capacity_zero_with_transits`` masks days where transit count is
     positive but deadweight capacity logged zero (AIS rounding / sub-resolution
     vessels), because those are not genuine closure zeros. The same rule is
-    applied here so the harness matches ``lngfreight.clean``; without it the
+    applied here so the harness matches ``hormuz_throughput.clean``; without it the
     capacity outcome does not reproduce the committed result.
     """
     frame = pd.read_csv(csv_path, encoding="utf-8-sig", parse_dates=["date"])
@@ -163,7 +158,6 @@ def main() -> None:
         pinned = _hormuz_series(pinned_artifact.path, column)
         vintage = _hormuz_series(artifact.path, column)
 
-        # (1) Self-check: reproduce the committed pinned-vintage result.
         repro = _shortfall(pinned, start=full_start, end=primary_end)
         reference = _committed_reference(target)
         delta = abs(
@@ -184,9 +178,7 @@ def main() -> None:
                 "refusing to report an unvalidated vintage comparison."
             )
 
-        # (2) Vintage held at the primary window end: isolates the revision.
         vintage_same_window = _shortfall(vintage, start=full_start, end=primary_end)
-        # (3) Vintage extended to the sensitivity window end: adds persistence.
         vintage_extended = _shortfall(vintage, start=full_start, end=SENSITIVITY_FULL_END)
 
         for label, res in (
